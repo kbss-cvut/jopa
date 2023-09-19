@@ -22,11 +22,19 @@ import org.junit.jupiter.api.Test;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.NAMED_GRAPH;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.SUBJECT;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.TYPE_ONE;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.TYPE_TWO;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.statement;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LocalModelTest {
 
@@ -77,7 +85,7 @@ public class LocalModelTest {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.addStatements(Collections.singletonList(statement), NAMED_GRAPH);
         assertEquals(LocalModel.Containment.ADDED,
-                localModel.contains(null, statement.getPredicate(), null, Collections.singleton(NAMED_GRAPH)));
+                localModel.contains(createResource(SUBJECT), statement.getPredicate(), null, Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test
@@ -242,5 +250,43 @@ public class LocalModelTest {
         model.addStatements(Collections.singletonList(statement), null);
         assertTrue(model.getRemoved().isEmpty());
         assertTrue(model.getAdded().getDefaultModel().contains(statement));
+    }
+
+    @Test
+    void containsReturnsFalseWhenSubjectAndPredicateWereRemovedInLocalModel() {
+        final LocalModel sut = new LocalModel(true);
+        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
+                createProperty(Vocabulary.RDF_TYPE), Collections.emptySet())));
+        assertEquals(LocalModel.Containment.REMOVED, sut.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Collections.emptySet()));
+    }
+
+    @Test
+    void containsReturnsFalseWhenSubjectAndPredicateWereRemovedInLocalModelInMatchingContext() {
+        final LocalModel sut = new LocalModel(true);
+        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
+                createProperty(Vocabulary.RDF_TYPE), Set.of(NAMED_GRAPH))));
+        assertEquals(LocalModel.Containment.REMOVED, sut.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Set.of(NAMED_GRAPH)));
+    }
+
+    @Test
+    void enhanceStatementsRemovesStatementsWhoseSubjectPredicateMatchRemoved() {
+        final LocalModel sut = new LocalModel(true);
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
+        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
+                createProperty(Vocabulary.RDF_TYPE), Collections.emptySet())));
+
+        final Collection<Statement> result = sut.enhanceStatements(Set.of(statement), createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Collections.emptySet());
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void enhanceStatementsRemovesStatementsWhoseSubjectPredicateAndContextMatchRemoved() {
+        final LocalModel sut = new LocalModel(true);
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
+        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
+                createProperty(Vocabulary.RDF_TYPE), Set.of(NAMED_GRAPH))));
+
+        final Collection<Statement> result = sut.enhanceStatements(Set.of(statement), createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, Set.of(NAMED_GRAPH));
+        assertTrue(result.isEmpty());
     }
 }

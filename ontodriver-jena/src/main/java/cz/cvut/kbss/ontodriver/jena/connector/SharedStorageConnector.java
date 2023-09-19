@@ -150,6 +150,20 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
+    public void removeStatementsBySubjectAndPredicate(Collection<SubjectPredicateContext> spc) {
+        ensureTransactionalState();
+        spc.forEach(s -> {
+            if (s.getContexts().isEmpty()) {
+                storage.remove(storage.getDefaultGraph()
+                                      .listStatements(s.getSubject(), s.getPredicate(), (RDFNode) null), null);
+            } else {
+                s.getContexts().forEach(c -> storage.remove(storage.getNamedGraph(c)
+                                                                   .listStatements(s.getSubject(), s.getPredicate(), (RDFNode) null), c));
+            }
+        });
+    }
+
+    @Override
     public AbstractResultSet executeSelectQuery(Query query, StatementOntology target) throws JenaDriverException {
         ensureOpen();
         try {

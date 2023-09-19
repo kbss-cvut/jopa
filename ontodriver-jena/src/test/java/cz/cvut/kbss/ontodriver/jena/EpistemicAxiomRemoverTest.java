@@ -16,6 +16,7 @@ package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
+import cz.cvut.kbss.ontodriver.jena.connector.SubjectPredicateContext;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -28,6 +29,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.Set;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.mockito.Mockito.verify;
@@ -57,8 +60,10 @@ public class EpistemicAxiomRemoverTest {
         descriptor.addAssertion(op);
 
         remover.remove(descriptor);
-        verify(connectorMock).remove(SUBJECT_RESOURCE, createProperty(dp.getIdentifier().toString()), null, null);
-        verify(connectorMock).remove(SUBJECT_RESOURCE, createProperty(op.getIdentifier().toString()), null, null);
+        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(
+                new SubjectPredicateContext(SUBJECT_RESOURCE, createProperty(dp.getIdentifier().toString()), Collections.emptySet()),
+                new SubjectPredicateContext(SUBJECT_RESOURCE, createProperty(op.getIdentifier().toString()), Collections.emptySet())
+        ));
     }
 
     @Test
@@ -74,9 +79,9 @@ public class EpistemicAxiomRemoverTest {
         descriptor.addAssertionContext(ap, assertionContext);
 
         remover.remove(descriptor);
-        verify(connectorMock)
-                .remove(SUBJECT_RESOURCE, createProperty(ca.getIdentifier().toString()), null, mainContext.toString());
-        verify(connectorMock).remove(SUBJECT_RESOURCE, createProperty(ap.getIdentifier().toString()), null,
-                assertionContext.toString());
+        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(
+                new SubjectPredicateContext(SUBJECT_RESOURCE, createProperty(ca.getIdentifier().toString()), Set.of(mainContext.toString())),
+                new SubjectPredicateContext(SUBJECT_RESOURCE, createProperty(ap.getIdentifier().toString()), Set.of(assertionContext.toString()))
+        ));
     }
 }

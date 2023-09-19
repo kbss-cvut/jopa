@@ -74,6 +74,7 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
             final Model model = removed.getNamedModel(context);
             centralConnector.remove(model.listStatements().toList(), context);
         });
+        centralConnector.removeStatementsBySubjectAndPredicate(localModel.getRemovedSubjectPredicateStatements());
     }
 
     private void mergeAddedStatements() {
@@ -133,6 +134,12 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     public void remove(Resource subject, Property property, RDFNode object, String context) {
         transaction.verifyActive();
         localModel.removeStatements(new ArrayList<>(find(subject, property, object, context != null ? Collections.singleton(context) : Collections.emptySet())), context);
+    }
+
+    @Override
+    public void removeStatementsBySubjectAndPredicate(Collection<SubjectPredicateContext> spc) {
+        transaction.verifyActive();
+        localModel.removeStatementsBySubjectAndPredicate(spc);
     }
 
     @Override

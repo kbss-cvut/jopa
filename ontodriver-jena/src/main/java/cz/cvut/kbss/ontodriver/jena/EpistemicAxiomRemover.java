@@ -16,6 +16,7 @@ package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.descriptor.AbstractAxiomDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
+import cz.cvut.kbss.ontodriver.jena.connector.SubjectPredicateContext;
 import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -25,8 +26,11 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 
 import java.net.URI;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This class performs an epistemic removal of statements.
@@ -51,14 +55,14 @@ class EpistemicAxiomRemover {
      */
     void remove(AbstractAxiomDescriptor descriptor) {
         final Resource subject = ResourceFactory.createResource(descriptor.getSubject().getIdentifier().toString());
+        final Collection<SubjectPredicateContext> toRemove = new HashSet<>();
         descriptor.getAssertions().forEach(assertion -> {
             final Property property = ResourceFactory.createProperty(assertion.getIdentifier().toString());
-            if (descriptor.getAssertionContexts(assertion).isEmpty()) {
-                connector.remove(subject, property, null, null);
-            }
-            descriptor.getAssertionContexts(assertion)
-                      .forEach(context -> connector.remove(subject, property, null, context.toString()));
+            toRemove.add(new SubjectPredicateContext(subject, property, descriptor.getAssertionContexts(assertion)
+                                                                                  .stream().map(URI::toString)
+                                                                                  .collect(Collectors.toSet())));
         });
+        connector.removeStatementsBySubjectAndPredicate(toRemove);
     }
 
     /**
