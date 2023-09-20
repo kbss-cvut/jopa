@@ -113,4 +113,16 @@ public class LocalModelTest {
         final List<Statement> result = sut.enhanceStatements(stream, subject, property, null, Collections.emptySet());
         assertTrue(result.stream().noneMatch(s -> s.getSubject().equals(subject) && s.getPredicate().equals(property)));
     }
+
+    @Test
+    void removeStatementsBySubjectAndPredicateRemovesPreviouslyAddedStatementsWithMatchingSubjectPredicateAndContext() {
+        final IRI subject = vf.createIRI(Generator.generateUri().toString());
+        final IRI property = vf.createIRI(Generator.generateUri().toString());
+        final IRI context = vf.createIRI(Generator.generateUri().toString());
+        sut.addStatements(Collections.singletonList(
+                vf.createStatement(subject, property, vf.createLiteral(117), context)));
+        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(subject, property, Set.of(context))));
+
+        assertTrue(sut.getAddedStatements().isEmpty());
+    }
 }
