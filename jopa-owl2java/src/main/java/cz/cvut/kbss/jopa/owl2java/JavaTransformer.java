@@ -525,7 +525,7 @@ public class JavaTransformer {
                                  final OWLOntology ontology) {
         JDefinedClass cls;
 
-        String name = ensureUniqueClassName(pkg, javaClassId(ontology, clazz), clazz, cm);
+        String name = generateUniqueClassName(pkg, javaClassId(ontology, clazz), cm);
 
         try {
             cls = cm._class(name);
@@ -541,7 +541,7 @@ public class JavaTransformer {
         return cls;
     }
 
-    private String ensureUniqueClassName(String pkg, String simpleName, OWLClass clazz, JCodeModel cm) {
+    private String generateUniqueClassName(String pkg, String simpleName, JCodeModel cm) {
         String fqn = pkg + PACKAGE_SEPARATOR + simpleName;
         while (cm._getClass(fqn) != null) {
             fqn  += DISAMBIGUATION_SUFFIX;

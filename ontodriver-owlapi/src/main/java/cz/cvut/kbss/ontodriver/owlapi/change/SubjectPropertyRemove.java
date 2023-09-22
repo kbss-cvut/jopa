@@ -4,6 +4,8 @@ import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLProperty;
 import org.semanticweb.owlapi.model.OWLPropertyAssertionAxiom;
 
+import java.util.Objects;
+
 public abstract class SubjectPropertyRemove<T extends OWLProperty> implements TransactionalChange {
 
     protected final OWLNamedIndividual subject;
@@ -32,6 +34,23 @@ public abstract class SubjectPropertyRemove<T extends OWLProperty> implements Tr
 
     public T getProperty() {
         return property;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof SubjectPropertyRemove)) {
+            return false;
+        }
+        SubjectPropertyRemove<?> that = (SubjectPropertyRemove<?>) o;
+        return subject.equals(that.subject) && property.equals(that.property);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(subject, property);
     }
 
     @Override

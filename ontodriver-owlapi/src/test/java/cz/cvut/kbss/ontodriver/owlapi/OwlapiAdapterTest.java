@@ -22,9 +22,12 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.SubjectDataPropertyRemove;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
@@ -406,7 +409,9 @@ class OwlapiAdapterTest {
 
         assertTrue(sut.isInferred(axiom, Collections.emptySet()));
         final OWLAxiom owlAxiom = factory.getOWLClassAssertionAxiom(factory.getOWLClass(axiom.getValue()
-                .stringValue()), factory.getOWLNamedIndividual(axiom.getSubject().getIdentifier().toString()));
+                                                                                             .stringValue()), factory.getOWLNamedIndividual(axiom.getSubject()
+                                                                                                                                                 .getIdentifier()
+                                                                                                                                                 .toString()));
         verify(reasonerMock).isEntailed(owlAxiom);
         verify(ontology).containsAxiom(owlAxiom);
     }
@@ -419,7 +424,9 @@ class OwlapiAdapterTest {
 
         assertFalse(sut.isInferred(axiom, Collections.emptySet()));
         final OWLAxiom owlAxiom = factory.getOWLClassAssertionAxiom(factory.getOWLClass(axiom.getValue()
-                .stringValue()), factory.getOWLNamedIndividual(axiom.getSubject().getIdentifier().toString()));
+                                                                                             .stringValue()), factory.getOWLNamedIndividual(axiom.getSubject()
+                                                                                                                                                 .getIdentifier()
+                                                                                                                                                 .toString()));
         verify(reasonerMock).isEntailed(owlAxiom);
         verify(ontology).containsAxiom(owlAxiom);
     }
@@ -433,5 +440,17 @@ class OwlapiAdapterTest {
         final InOrder inOrder = inOrder(reasonerMock);
         inOrder.verify(reasonerMock).flush();
         inOrder.verify(reasonerMock).isEntailed(any(OWLAxiom.class));
+    }
+
+    @Test
+    void addTransactionalChangesRemovesAddAxiomsOverridenByRemoveSubjectPropertyChanges() throws Exception {
+        final OWLNamedIndividual subject = factory.getOWLNamedIndividual(IRI.create(INDIVIDUAL.getIdentifier()));
+        final OWLDataProperty property = factory.getOWLDataProperty(IRI.create(Generator.generateUri()));
+        final MutableAddAxiom add = new MutableAddAxiom(ontology, factory.getOWLDataPropertyAssertionAxiom(property, subject, 117));
+        startTransaction();
+        sut.addTransactionalChanges(List.of(add));
+        sut.addTransactionalChanges(List.of(new SubjectDataPropertyRemove(subject, property)));
+        sut.commit();
+        verify(connectorMock).applyChanges(List.of(new SubjectDataPropertyRemove(subject, property)));
     }
 }

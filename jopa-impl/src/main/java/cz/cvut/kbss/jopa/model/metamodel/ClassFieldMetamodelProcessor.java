@@ -122,7 +122,7 @@ class ClassFieldMetamodelProcessor<X> {
         toVisit.add(et);
 
         boolean found = false;
-        AnnotatedAccessor foundAcessor = null;
+        AnnotatedAccessor foundAccessor = null;
 
         while (!toVisit.isEmpty()) {
             IdentifiableType<?> top = toVisit.peek();
@@ -138,11 +138,11 @@ class ClassFieldMetamodelProcessor<X> {
                                                                                                   .getName(), field.getName());
                 if (!found) {  // first belonging method
                     found = true;
-                    foundAcessor = annotatedAccessor;
-                } else if (methodsAnnotationsEqual(annotatedAccessor.getMethod(), foundAcessor.getMethod())) {
+                    foundAccessor = annotatedAccessor;
+                } else if (methodsAnnotationsEqual(annotatedAccessor.getMethod(), foundAccessor.getMethod())) {
                     LOG.debug("Methods are equal, skipping");
                 } else { /// Two non-equal methods that could belong to the field - ambiguous
-                    throw new MetamodelInitializationException("Ambiguous hierarchy - fields can inherit only from multiple methods if their property mapping annotations equal. However for field " + field + " two non-compatible methods were found - " + foundAcessor.getMethod() + " and " + annotatedAccessor.getMethod());
+                    throw new MetamodelInitializationException("Ambiguous hierarchy - fields can inherit only from multiple methods if their property mapping annotations equal. However for field " + field + " two non-compatible methods were found - " + foundAccessor.getMethod() + " and " + annotatedAccessor.getMethod());
                 }
 
             }
@@ -152,7 +152,7 @@ class ClassFieldMetamodelProcessor<X> {
             toVisit.addAll(top.getSupertypes());
         }
 
-        return foundAcessor;
+        return foundAccessor;
     }
 
     private void createAndRegisterAttribute(Field field, InferenceInfo inference, Class<?> fieldValueCls,

@@ -73,30 +73,29 @@ public class ModelGenProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (TypeElement te : annotations) {
             for (Element elParent : roundEnv.getElementsAnnotatedWith(te)) {
-                if (!isAnnotatedWithNonEntity(elParent)) {
-                    if (sourcePackage == null || elParent.asType().toString().contains(sourcePackage)) {
-                        MetamodelClass parentClass = new MetamodelClass(elParent);
+                if (!isAnnotatedWithNonEntity(elParent) && (sourcePackage == null || elParent.asType().toString()
+                                                                                             .contains(sourcePackage))) {
+                    MetamodelClass parentClass = new MetamodelClass(elParent);
 
-                        if (debugOption) {
-                            messager.printMessage(Diagnostic.Kind.NOTE,
-                                    "\t - Started processing class '" + parentClass.getName() + "'");
-                        }
-                        List<? extends Element> properties = elParent.getEnclosedElements();
-                        for (Element elProperty : properties) {
-                            if (isPropertyPersistent(elProperty)) {
-                                Field field = new Field(elProperty, elParent);
-                                if (debugOption) {
-                                    messager.printMessage(Diagnostic.Kind.NOTE,
-                                            "\t\t - Processing field '" + field.getName() + "'");
-                                }
-                                parentClass.addField(field);
+                    if (debugOption) {
+                        messager.printMessage(Diagnostic.Kind.NOTE,
+                                "\t - Started processing class '" + parentClass.getName() + "'");
+                    }
+                    List<? extends Element> properties = elParent.getEnclosedElements();
+                    for (Element elProperty : properties) {
+                        if (isPropertyPersistent(elProperty)) {
+                            Field field = new Field(elProperty, elParent);
+                            if (debugOption) {
+                                messager.printMessage(Diagnostic.Kind.NOTE,
+                                        "\t\t - Processing field '" + field.getName() + "'");
                             }
+                            parentClass.addField(field);
                         }
-                        classes.put(elParent.toString(), parentClass);
-                        if (debugOption) {
-                            messager.printMessage(Diagnostic.Kind.NOTE,
-                                    "\t - Finished processing class '" + parentClass.getName() + "'");
-                        }
+                    }
+                    classes.put(elParent.toString(), parentClass);
+                    if (debugOption) {
+                        messager.printMessage(Diagnostic.Kind.NOTE,
+                                "\t - Finished processing class '" + parentClass.getName() + "'");
                     }
                 }
             }
