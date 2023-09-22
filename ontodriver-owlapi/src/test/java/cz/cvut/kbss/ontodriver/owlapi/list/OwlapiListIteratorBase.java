@@ -17,6 +17,7 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import org.junit.jupiter.api.Test;
@@ -26,9 +27,12 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.ontodriver.owlapi.list.ListHandlerTestBase.LIST_ITEMS;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 abstract class OwlapiListIteratorBase {
 
@@ -75,20 +79,27 @@ abstract class OwlapiListIteratorBase {
     @Test
     public void removeWithoutReconnectOnAllElementsClearsTheWholeList() {
         testHelper.persistList(LIST_ITEMS);
-        final List<OWLOntologyChange> changes = new ArrayList<>();
+        final List<TransactionalChange> changes = new ArrayList<>();
         while (iterator.hasNext()) {
             iterator.next();
             changes.addAll(iterator.removeWithoutReconnect());
         }
-        snapshot.getOntologyManager().applyChanges(changes);
+        applyChanges(changes);
         final OwlapiListIterator it = iterator();
         assertFalse(it.hasNext());
+    }
+
+    protected void applyChanges(List<TransactionalChange> changes) {
+        final List<OWLOntologyChange> toApply = changes.stream()
+                                                       .flatMap(o -> o.toOwlChanges(snapshot.getOntology(), snapshot.getDataFactory()).stream())
+                                                       .collect(Collectors.toList());
+        snapshot.getOntologyManager().applyChanges(toApply);
     }
 
     @Test
     public void removeWithoutReconnectClearsRestOfList() {
         testHelper.persistList(LIST_ITEMS);
-        final List<OWLOntologyChange> changes = new ArrayList<>();
+        final List<TransactionalChange> changes = new ArrayList<>();
         int i = 0;
         while (iterator.hasNext()) {
             iterator.next();
@@ -97,7 +108,7 @@ abstract class OwlapiListIteratorBase {
             }
             i++;
         }
-        snapshot.getOntologyManager().applyChanges(changes);
+        applyChanges(changes);
         final OwlapiListIterator it = iterator();
         int count = 0;
         while (it.hasNext()) {
@@ -113,8 +124,8 @@ abstract class OwlapiListIteratorBase {
         testHelper.persistList(lst);
         lst.set(0, LIST_ITEMS.get(8));
         iterator.next();
-        final List<OWLOntologyChange> changes = new ArrayList<>(iterator.replaceNode(NamedResource.create(lst.get(0))));
-        snapshot.getOntologyManager().applyChanges(changes);
+        final List<TransactionalChange> changes = new ArrayList<>(iterator.replaceNode(NamedResource.create(lst.get(0))));
+        applyChanges(changes);
 
         final OwlapiListIterator it = iterator();
         verifyIterationContent(it, lst);
@@ -132,9 +143,9 @@ abstract class OwlapiListIteratorBase {
             i++;
         }
         iterator.next();
-        final List<OWLOntologyChange> changes =
+        final List<TransactionalChange> changes =
                 new ArrayList<>(iterator.replaceNode(NamedResource.create(lst.get(replaceIndex))));
-        snapshot.getOntologyManager().applyChanges(changes);
+        applyChanges(changes);
 
         final OwlapiListIterator it = iterator();
         verifyIterationContent(it, lst);
@@ -152,9 +163,9 @@ abstract class OwlapiListIteratorBase {
             i++;
         }
         iterator.next();
-        final List<OWLOntologyChange> changes =
+        final List<TransactionalChange> changes =
                 new ArrayList<>(iterator.replaceNode(NamedResource.create(lst.get(replaceIndex))));
-        snapshot.getOntologyManager().applyChanges(changes);
+        applyChanges(changes);
 
         final OwlapiListIterator it = iterator();
         verifyIterationContent(it, lst);

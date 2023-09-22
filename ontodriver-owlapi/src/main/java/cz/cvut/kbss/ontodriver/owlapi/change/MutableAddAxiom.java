@@ -12,13 +12,16 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.ontodriver.owlapi.util;
+package cz.cvut.kbss.ontodriver.owlapi.change;
 
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -46,6 +49,12 @@ public class MutableAddAxiom extends AddAxiom implements MutableAxiomChange {
     @Override
     public OWLOntology getOntology() {
         return ontology;
+    }
+
+    @Override
+    public List<OWLOntologyChange> toOwlChanges(OWLOntology targetOntology, OWLDataFactory dataFactory) {
+        this.ontology = targetOntology;
+        return List.of(this);
     }
 
     @Override

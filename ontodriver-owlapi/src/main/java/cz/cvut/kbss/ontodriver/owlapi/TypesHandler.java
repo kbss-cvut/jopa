@@ -15,9 +15,10 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableRemoveAxiom;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.search.EntitySearcher;
@@ -80,8 +81,8 @@ class TypesHandler {
         assert !types.isEmpty();
 
         final List<OWLAxiom> axioms = getOwlAxiomsForTypes(subject, types);
-        final List<OWLOntologyChange> changes = axioms.stream().map(axiom -> new MutableAddAxiom(ontology, axiom))
-                .collect(Collectors.toList());
+        final List<TransactionalChange> changes = axioms.stream().map(axiom -> new MutableAddAxiom(ontology, axiom))
+                                                        .collect(Collectors.toList());
 
         adapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
@@ -99,8 +100,8 @@ class TypesHandler {
         assert !types.isEmpty();
 
         final List<OWLAxiom> axioms = getOwlAxiomsForTypes(subject, types);
-        final List<OWLOntologyChange> changes = axioms.stream().map(axiom -> new MutableRemoveAxiom(ontology, axiom))
-                .collect(Collectors.toList());
+        final List<TransactionalChange> changes = axioms.stream().map(axiom -> new MutableRemoveAxiom(ontology, axiom))
+                                                        .collect(Collectors.toList());
 
         adapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }

@@ -15,9 +15,10 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableRemoveAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -114,8 +115,8 @@ class ReferencedListIterator extends OwlapiListIterator {
     }
 
     @Override
-    List<OWLOntologyChange> removeWithoutReconnect() {
-        final List<OWLOntologyChange> changes = new ArrayList<>(2);
+    List<TransactionalChange> removeWithoutReconnect() {
+        final List<TransactionalChange> changes = new ArrayList<>(2);
         changes.add(new MutableRemoveAxiom(ontology,
                 dataFactory.getOWLObjectPropertyAssertionAxiom(previousNextNodeProperty, previousNode, currentNode)));
         final OWLIndividual nextNode = getNextNode();
@@ -134,11 +135,11 @@ class ReferencedListIterator extends OwlapiListIterator {
     }
 
     @Override
-    List<OWLOntologyChange> replaceNode(NamedResource newValue) {
+    List<TransactionalChange> replaceNode(NamedResource newValue) {
         // We know there is exactly one, because nextItem has to have been called before this method
         final OWLIndividual originalContent = nextItem.iterator().next();
         final OWLNamedIndividual newContent = OwlapiUtils.getIndividual(newValue, dataFactory);
-        final List<OWLOntologyChange> changes = new ArrayList<>(2);
+        final List<TransactionalChange> changes = new ArrayList<>(2);
         changes.add(new MutableRemoveAxiom(ontology,
                 dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty, currentNode, originalContent)));
         changes.add(new MutableAddAxiom(ontology,

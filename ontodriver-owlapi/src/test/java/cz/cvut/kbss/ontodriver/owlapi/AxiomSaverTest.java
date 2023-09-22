@@ -20,7 +20,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

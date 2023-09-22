@@ -14,8 +14,9 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
@@ -97,8 +98,8 @@ class AxiomSaver {
         if (axioms.isEmpty()) {
             return;
         }
-        final List<OWLOntologyChange> changes = axioms.stream().map(axiom -> new MutableAddAxiom(ontology, axiom))
-                                                      .collect(Collectors.toList());
+        final List<TransactionalChange> changes = axioms.stream().map(axiom -> new MutableAddAxiom(ontology, axiom))
+                                                        .collect(Collectors.toList());
         adapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
 
