@@ -15,7 +15,6 @@
 package cz.cvut.kbss.ontodriver.owlapi.change;
 
 import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.RemoveAxiom;
@@ -46,7 +45,7 @@ public class MutableRemoveAxiom extends RemoveAxiom implements MutableAxiomChang
     }
 
     @Override
-    public List<OWLOntologyChange> toOwlChanges(OWLOntology targetOntology, OWLDataFactory dataFactory) {
+    public List<OWLOntologyChange> toOwlChanges(OWLOntology targetOntology) {
         this.ontology = targetOntology;
         return List.of(this);
     }

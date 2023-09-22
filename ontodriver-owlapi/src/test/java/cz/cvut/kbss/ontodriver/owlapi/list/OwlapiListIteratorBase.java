@@ -91,7 +91,7 @@ abstract class OwlapiListIteratorBase {
 
     protected void applyChanges(List<TransactionalChange> changes) {
         final List<OWLOntologyChange> toApply = changes.stream()
-                                                       .flatMap(o -> o.toOwlChanges(snapshot.getOntology(), snapshot.getDataFactory()).stream())
+                                                       .flatMap(o -> o.toOwlChanges(snapshot.getOntology()).stream())
                                                        .collect(Collectors.toList());
         snapshot.getOntologyManager().applyChanges(toApply);
     }

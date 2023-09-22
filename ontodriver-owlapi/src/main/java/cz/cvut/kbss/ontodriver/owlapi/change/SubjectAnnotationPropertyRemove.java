@@ -2,7 +2,6 @@ package cz.cvut.kbss.ontodriver.owlapi.change;
 
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
-import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -20,7 +19,7 @@ public class SubjectAnnotationPropertyRemove extends SubjectPropertyRemove<OWLAn
     }
 
     @Override
-    public List<OWLOntologyChange> toOwlChanges(OWLOntology targetOntology, OWLDataFactory dataFactory) {
+    public List<OWLOntologyChange> toOwlChanges(OWLOntology targetOntology) {
         final Stream<OWLAnnotationAssertionAxiom> values =
                 EntitySearcher.getAnnotationAssertionAxioms(subject.getIRI(), targetOntology);
         return values.filter(axiom -> axiom.getProperty().equals(property))

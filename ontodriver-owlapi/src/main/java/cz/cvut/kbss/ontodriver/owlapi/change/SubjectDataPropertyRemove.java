@@ -1,6 +1,5 @@
 package cz.cvut.kbss.ontodriver.owlapi.change;
 
-import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
@@ -20,9 +19,11 @@ public class SubjectDataPropertyRemove extends SubjectPropertyRemove<OWLDataProp
     }
 
     @Override
-    public List<OWLOntologyChange> toOwlChanges(OWLOntology targetOntology, OWLDataFactory dataFactory) {
+    public List<OWLOntologyChange> toOwlChanges(OWLOntology targetOntology) {
         final Stream<OWLLiteral> values = EntitySearcher.getDataPropertyValues(subject, property, targetOntology);
-        return values.map(value -> new RemoveAxiom(targetOntology, dataFactory.getOWLDataPropertyAssertionAxiom(property, subject, value)))
+        return values.map(value -> new RemoveAxiom(targetOntology, targetOntology.getOWLOntologyManager()
+                                                                                 .getOWLDataFactory()
+                                                                                 .getOWLDataPropertyAssertionAxiom(property, subject, value)))
                      .collect(Collectors.toList());
     }
 }

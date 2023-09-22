@@ -2,7 +2,6 @@ package cz.cvut.kbss.ontodriver.owlapi.change;
 
 import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
-import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -21,9 +20,10 @@ public class SubjectClassAssertionRemove implements TransactionalChange {
     }
 
     @Override
-    public List<OWLOntologyChange> toOwlChanges(OWLOntology targetOntology, OWLDataFactory dataFactory) {
+    public List<OWLOntologyChange> toOwlChanges(OWLOntology targetOntology) {
         return EntitySearcher.getTypes(subject, targetOntology).map(cls -> new RemoveAxiom(targetOntology,
-                dataFactory.getOWLClassAssertionAxiom(cls, subject))).collect(Collectors.toList());
+                                     targetOntology.getOWLOntologyManager().getOWLDataFactory().getOWLClassAssertionAxiom(cls, subject)))
+                             .collect(Collectors.toList());
     }
 
     @Override

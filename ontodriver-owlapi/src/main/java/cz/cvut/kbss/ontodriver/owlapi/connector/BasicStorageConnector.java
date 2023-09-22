@@ -235,7 +235,7 @@ public class BasicStorageConnector extends AbstractConnector {
         try {
             final OWLDataFactory df = ontologyManager.getOWLDataFactory();
             final List<OWLOntologyChange> toApply = changes.stream()
-                                                           .flatMap(o -> o.toOwlChanges(ontology, df).stream())
+                                                           .flatMap(o -> o.toOwlChanges(ontology).stream())
                                                            .collect(Collectors.toList());
             ontologyManager.applyChanges(toApply);
             try {

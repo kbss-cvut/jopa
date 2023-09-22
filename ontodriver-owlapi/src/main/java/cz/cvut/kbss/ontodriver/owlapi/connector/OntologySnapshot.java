@@ -63,13 +63,13 @@ public class OntologySnapshot {
      */
     public List<TransactionalChange> applyChanges(List<TransactionalChange> changes) {
         final List<OWLOntologyChange> toApply = changes.stream()
-                                                       .flatMap(o -> o.toOwlChanges(ontology, dataFactory).stream())
+                                                       .flatMap(o -> o.toOwlChanges(ontology).stream())
                                                        .collect(Collectors.toList());
         final ChangeApplied result = ontologyManager.applyChanges(toApply);
         if (result == ChangeApplied.UNSUCCESSFULLY) {
             throw new OntologyChangeApplicationException(
                     "At least one of the following changes could not have been applied to this ontology snapshot: " +
-                            changes);
+                            toApply);
         }
         return changes;
     }
