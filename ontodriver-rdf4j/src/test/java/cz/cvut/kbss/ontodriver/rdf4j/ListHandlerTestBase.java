@@ -35,7 +35,12 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anySet;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends ListValueDescriptor> {
 
@@ -75,7 +80,7 @@ public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends Li
 
     @Test
     public void loadsEmptyListAndReturnsEmptyCollection() throws Exception {
-        when(connector.findStatements(eq(owner), eq(hasListProperty), any(), eq(false), anyCollection())).thenReturn(Collections.emptyList());
+        when(connector.findStatements(eq(owner), eq(hasListProperty), any(), eq(false), anySet())).thenReturn(Collections.emptyList());
         final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
         assertNotNull(res);
         assertTrue(res.isEmpty());

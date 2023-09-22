@@ -117,6 +117,13 @@ public interface StorageConnector extends Closeable, Wrapper, StatementExecutor 
      */
     void remove(Resource subject, Property property, RDFNode object, String context);
 
+    /**
+     * Removes all property values specified by the provided argument for the specified subject(s).
+     *
+     * @param spc Subject-predicate-contexts tuples
+     */
+    void removePropertyValues(Collection<SubjectPredicateContext> spc);
+
     @Override
     void close() throws JenaDriverException;
 }

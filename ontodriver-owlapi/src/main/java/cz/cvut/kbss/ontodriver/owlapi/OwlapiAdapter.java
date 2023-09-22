@@ -14,8 +14,14 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.descriptor.*;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
@@ -27,11 +33,14 @@ import cz.cvut.kbss.ontodriver.owlapi.util.IdentifierGenerator;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Adapter between OntoDriver API and OWLAPI.
@@ -44,7 +53,7 @@ public class OwlapiAdapter {
     private StatementExecutorFactory statementExecutorFactory;
 
     private TransactionState transactionState = TransactionState.INITIAL;
-    private List<OWLOntologyChange> pendingChanges = new ArrayList<>();
+    private List<TransactionalChange> pendingChanges = new ArrayList<>();
 
     private enum TransactionState {
         INITIAL, RUNNING
@@ -198,7 +207,8 @@ public class OwlapiAdapter {
         return new PropertiesHandler(this, ontologySnapshot);
     }
 
-    public void addTransactionalChanges(Collection<OWLOntologyChange> changes) {
+    public void addTransactionalChanges(Collection<TransactionalChange> changes) {
+        pendingChanges.removeIf(tc -> changes.stream().anyMatch(toAdd -> toAdd.overrides(tc)));
         pendingChanges.addAll(changes);
     }
 

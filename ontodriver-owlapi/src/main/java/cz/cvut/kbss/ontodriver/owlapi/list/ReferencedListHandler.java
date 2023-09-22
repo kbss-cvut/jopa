@@ -15,8 +15,9 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
@@ -27,7 +28,6 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +54,7 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
     }
 
     @Override
-    List<OWLOntologyChange> createListAxioms(ReferencedListValueDescriptor descriptor) {
+    List<TransactionalChange> createListAxioms(ReferencedListValueDescriptor descriptor) {
         final ReferencedListNodeGenerator nodeGenerator = new ReferencedListNodeGenerator(
                 descriptor.getListOwner(), descriptor.getNodeContent());
         boolean first = true;
@@ -98,7 +98,7 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
     private class ReferencedListNodeGenerator {
 
         private final String baseUri;
-        private final List<OWLOntologyChange> changes;
+        private final List<TransactionalChange> changes;
         private final Assertion nodeContentProperty;
 
         private int index;
@@ -118,7 +118,7 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
             this.property = property;
         }
 
-        private List<OWLOntologyChange> getChanges() {
+        private List<TransactionalChange> getChanges() {
             return changes;
         }
 
@@ -134,7 +134,7 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
             return node;
         }
 
-        private OWLOntologyChange generateNodeContent(NamedResource node, NamedResource value) {
+        private TransactionalChange generateNodeContent(NamedResource node, NamedResource value) {
             final OWLAxiom valueAxiom = axiomAdapter
                     .toOwlObjectPropertyAssertionAxiom(new AxiomImpl<>(node, nodeContentProperty, new Value<>(value)));
             return new MutableAddAxiom(ontology, valueAxiom);

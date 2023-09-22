@@ -17,11 +17,19 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector;
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.Wrapper;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
-import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
+/**
+ * A RDF4J repository connection wrapper.
+ */
 public interface Connector extends Closeable, StatementExecutor, Wrapper {
 
     /**
@@ -75,7 +83,7 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
      * @param includeInferred Whether to include inferred statements as well
      * @return Collection of matching statements
      * @throws Rdf4jDriverException If a repository access error occurs
-     * @see #findStatements(Resource, IRI, Value, boolean, Collection)
+     * @see #findStatements(Resource, IRI, Value, boolean, Set)
      */
     Collection<Statement> findStatements(Resource subject, IRI property, Value value, boolean includeInferred)
             throws Rdf4jDriverException;
@@ -95,7 +103,7 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
      * @throws Rdf4jDriverException If a repository access error occurs
      */
     Collection<Statement> findStatements(Resource subject, IRI property, Value value,
-                                         boolean includeInferred, Collection<IRI> contexts)
+                                         boolean includeInferred, Set<IRI> contexts)
             throws Rdf4jDriverException;
 
     /**
@@ -111,7 +119,7 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
      * @throws Rdf4jDriverException If a repository access error occurs
      */
     boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred,
-                              Collection<IRI> contexts)
+                              Set<IRI> contexts)
             throws Rdf4jDriverException;
 
     /**
@@ -129,7 +137,7 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
      * @return {@code true} iff the specified statement is inferred in any of the specified contexts
      * @throws Rdf4jDriverException If a repository access error occurs
      */
-    boolean isInferred(Statement statement, Collection<IRI> contexts) throws Rdf4jDriverException;
+    boolean isInferred(Statement statement, Set<IRI> contexts) throws Rdf4jDriverException;
 
     /**
      * Adds the specified statements to the underlying repository.
@@ -154,4 +162,12 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
      * @throws Rdf4jDriverException  If a repository access error occurs
      */
     void removeStatements(Collection<Statement> statements) throws Rdf4jDriverException;
+
+    /**
+     * Removes statements that have the specified subject and predicate pairs.
+     *
+     * @param spc Subject-predicate-contexts tuples
+     * @throws Rdf4jDriverException If a repository access error occurs
+     */
+    void removePropertyValues(Collection<SubjectPredicateContext> spc) throws Rdf4jDriverException;
 }

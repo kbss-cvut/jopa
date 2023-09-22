@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.jena.connector;
 
+import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Statement;
@@ -22,11 +23,22 @@ import org.junit.jupiter.api.Test;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.NAMED_GRAPH;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.SUBJECT;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.TYPE_ONE;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.TYPE_TWO;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.statement;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LocalModelTest {
 
@@ -77,7 +89,7 @@ public class LocalModelTest {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.addStatements(Collections.singletonList(statement), NAMED_GRAPH);
         assertEquals(LocalModel.Containment.ADDED,
-                localModel.contains(null, statement.getPredicate(), null, Collections.singleton(NAMED_GRAPH)));
+                localModel.contains(createResource(SUBJECT), statement.getPredicate(), null, Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test
@@ -242,5 +254,65 @@ public class LocalModelTest {
         model.addStatements(Collections.singletonList(statement), null);
         assertTrue(model.getRemoved().isEmpty());
         assertTrue(model.getAdded().getDefaultModel().contains(statement));
+    }
+
+    @Test
+    void containsReturnsFalseWhenSubjectAndPredicateWereRemovedInLocalModel() {
+        final LocalModel sut = new LocalModel(true);
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
+                createProperty(Vocabulary.RDF_TYPE), Collections.emptySet())));
+        assertEquals(LocalModel.Containment.REMOVED, sut.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Collections.emptySet()));
+    }
+
+    @Test
+    void containsReturnsFalseWhenSubjectAndPredicateWereRemovedInLocalModelInMatchingContext() {
+        final LocalModel sut = new LocalModel(true);
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
+                createProperty(Vocabulary.RDF_TYPE), Set.of(NAMED_GRAPH))));
+        assertEquals(LocalModel.Containment.REMOVED, sut.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Set.of(NAMED_GRAPH)));
+    }
+
+    @Test
+    void enhanceStatementsRemovesStatementsWhoseSubjectPredicateMatchRemoved() {
+        final LocalModel sut = new LocalModel(true);
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
+                createProperty(Vocabulary.RDF_TYPE), Collections.emptySet())));
+
+        final Collection<Statement> result = sut.enhanceStatements(Set.of(statement), createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Collections.emptySet());
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void enhanceStatementsRemovesStatementsWhoseSubjectPredicateAndContextMatchRemoved() {
+        final LocalModel sut = new LocalModel(true);
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
+                createProperty(Vocabulary.RDF_TYPE), Set.of(NAMED_GRAPH))));
+
+        final Collection<Statement> result = sut.enhanceStatements(Set.of(statement), createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, Set.of(NAMED_GRAPH));
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void removeStatementsBySubjectAndPredicateRemovesPreviouslyAddedStatementsWithMatchingSubjectPredicate() {
+        final LocalModel sut = new LocalModel(true);
+        final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
+        sut.addStatements(Collections.singletonList(statement), null);
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(statement.getSubject(), statement.getPredicate(), Collections.emptySet())));
+
+        assertTrue(sut.getAdded().getDefaultModel().listStatements().toList().isEmpty());
+    }
+
+    @Test
+    void removeStatementsBySubjectAndPredicateRemovesPreviouslyAddedStatementsWithMatchingSubjectPredicateAndContext() {
+        final LocalModel sut = new LocalModel(true);
+        final Statement addedOne = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
+        final Statement addedOther = statement(SUBJECT, Generator.generateUri().toString(), Generator.generateUri().toString());
+        sut.addStatements(List.of(addedOne, addedOther), NAMED_GRAPH);
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(addedOne.getSubject(), addedOne.getPredicate(), Set.of(NAMED_GRAPH))));
+
+        assertThat(sut.getAdded().getNamedModel(NAMED_GRAPH).listStatements().toList(), not(hasItem(addedOne)));
+        assertThat(sut.getAdded().getNamedModel(NAMED_GRAPH).listStatements().toList(), hasItem(addedOther));
     }
 }

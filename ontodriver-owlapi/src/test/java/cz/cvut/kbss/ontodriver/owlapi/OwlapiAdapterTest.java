@@ -17,7 +17,12 @@ package cz.cvut.kbss.ontodriver.owlapi;
 import com.google.common.collect.Multimap;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
@@ -30,7 +35,22 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.AxiomType;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+import org.semanticweb.owlapi.model.OWLAnnotationValue;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
+import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
@@ -38,11 +58,27 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OwlapiAdapterTest {
@@ -78,7 +114,7 @@ class OwlapiAdapterTest {
     @Test
     void commitSendsChangesToConnector() throws Exception {
         startTransaction();
-        sut.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
+        sut.addTransactionalChanges(Collections.singletonList(mock(TransactionalChange.class)));
         sut.commit();
         verify(connectorMock).applyChanges(any());
     }
@@ -92,7 +128,7 @@ class OwlapiAdapterTest {
     @Test
     void rollbackCausesChangesToEmpty() throws Exception {
         startTransaction();
-        sut.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
+        sut.addTransactionalChanges(Collections.singletonList(mock(TransactionalChange.class)));
         sut.rollback();
         sut.commit();
         verify(connectorMock, never()).applyChanges(any());
@@ -330,7 +366,7 @@ class OwlapiAdapterTest {
     @Test
     void transactionCommitClosesTransactionalSnapshot() throws Exception {
         startTransaction();
-        sut.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
+        sut.addTransactionalChanges(Collections.singletonList(mock(TransactionalChange.class)));
         sut.commit();
         verify(connectorMock).closeSnapshot(ontologySnapshot);
     }
@@ -338,7 +374,7 @@ class OwlapiAdapterTest {
     @Test
     void transactionRollbackClosesTransactionalSnapshot() throws Exception {
         startTransaction();
-        sut.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
+        sut.addTransactionalChanges(Collections.singletonList(mock(TransactionalChange.class)));
         sut.rollback();
         verify(connectorMock).closeSnapshot(ontologySnapshot);
     }

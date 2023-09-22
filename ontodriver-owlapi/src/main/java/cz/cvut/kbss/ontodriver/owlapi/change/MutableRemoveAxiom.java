@@ -12,27 +12,29 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.ontodriver.owlapi.util;
+package cz.cvut.kbss.ontodriver.owlapi.change;
 
-import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.RemoveAxiom;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Objects;
 
 /**
- * Add axiom wrapper which allows us to set ontology to which it is applied.
+ * Remove axiom wrapper which allows us to set ontology to which it is applied.
  */
-public class MutableAddAxiom extends AddAxiom implements MutableAxiomChange {
+public class MutableRemoveAxiom extends RemoveAxiom implements MutableAxiomChange {
 
     private OWLOntology ontology;
 
     /**
      * @param ont   the ontology to which the change is to be applied
-     * @param axiom The added axiom
+     * @param axiom Axiom to remove
      */
-    public MutableAddAxiom(OWLOntology ont, OWLAxiom axiom) {
+    public MutableRemoveAxiom(OWLOntology ont, OWLAxiom axiom) {
         super(ont, axiom);
         this.ontology = ont;
     }
@@ -40,6 +42,12 @@ public class MutableAddAxiom extends AddAxiom implements MutableAxiomChange {
     @Override
     public void setOntology(OWLOntology ontology) {
         this.ontology = ontology;
+    }
+
+    @Override
+    public List<OWLOntologyChange> toOwlChanges(OWLOntology targetOntology) {
+        this.ontology = targetOntology;
+        return List.of(this);
     }
 
     @Nonnull
@@ -53,13 +61,13 @@ public class MutableAddAxiom extends AddAxiom implements MutableAxiomChange {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof MutableAddAxiom)) {
+        if (!(o instanceof MutableRemoveAxiom)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        MutableAddAxiom that = (MutableAddAxiom) o;
+        MutableRemoveAxiom that = (MutableRemoveAxiom) o;
         return Objects.equals(ontology, that.ontology) && Objects.equals(getAxiom(), that.getAxiom());
     }
 

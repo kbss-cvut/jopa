@@ -19,7 +19,7 @@ import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
 import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;

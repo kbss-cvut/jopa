@@ -122,7 +122,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         assertThrows(IntegrityConstraintViolatedException.class, () -> handler.loadList(listDescriptor));
         verify(connector, never())
                 .findStatements(any(Resource.class), eq(nextNodeProperty), any(Value.class), any(Boolean.class),
-                        anyCollection());
+                        anySet());
     }
 
     @Test

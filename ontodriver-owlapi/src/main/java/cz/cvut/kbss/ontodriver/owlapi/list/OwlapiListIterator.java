@@ -17,9 +17,9 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.util.Collection;
 import java.util.List;
@@ -51,7 +51,7 @@ abstract class OwlapiListIterator {
      *
      * @return List of changes to apply
      */
-    abstract List<OWLOntologyChange> removeWithoutReconnect();
+    abstract List<TransactionalChange> removeWithoutReconnect();
 
     /**
      * Replaces the current value with the specified one.
@@ -61,7 +61,7 @@ abstract class OwlapiListIterator {
      * @param newValue The new value to use
      * @return List of changes to apply
      */
-    abstract List<OWLOntologyChange> replaceNode(NamedResource newValue);
+    abstract List<TransactionalChange> replaceNode(NamedResource newValue);
 
     static void checkMaxSuccessors(OWLObjectProperty property, Collection<? extends OWLIndividual> successors) {
         if (successors.size() > 1) {

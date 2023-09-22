@@ -18,10 +18,15 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.InferredStorageConnector;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
+import cz.cvut.kbss.ontodriver.jena.connector.SubjectPredicateContext;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.query.JenaPreparedStatement;
 import cz.cvut.kbss.ontodriver.jena.query.JenaStatement;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -37,11 +42,21 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyCollection;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class JenaAdapterTest {
 
@@ -184,7 +199,7 @@ class JenaAdapterTest {
         verify(connectorMock).find(SUBJECT_RESOURCE, null, null, Collections.emptySet());
     }
 
-    private Property assertionToProperty(Assertion assertion) {
+    private static Property assertionToProperty(Assertion assertion) {
         return ResourceFactory.createProperty(assertion.getIdentifier().toString());
     }
 
@@ -195,7 +210,7 @@ class JenaAdapterTest {
         descriptor.addAssertion(assertion);
 
         adapter.remove(descriptor);
-        verify(connectorMock).remove(SUBJECT_RESOURCE, assertionToProperty(assertion), null, null);
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(SUBJECT_RESOURCE, assertionToProperty(assertion), Collections.emptySet())));
     }
 
     @Test
@@ -210,7 +225,7 @@ class JenaAdapterTest {
         descriptor.addAssertionValue(assertion, new Value<>(NamedResource.create(newValue)));
 
         adapter.update(descriptor);
-        verify(connectorMock).remove(SUBJECT_RESOURCE, assertionToProperty(assertion), null, null);
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(SUBJECT_RESOURCE, assertionToProperty(assertion), Collections.emptySet())));
         final ArgumentCaptor<List<Statement>> captor = ArgumentCaptor.forClass(List.class);
         verify(connectorMock).add(captor.capture(), eq(null));
         assertEquals(1, captor.getValue().size());

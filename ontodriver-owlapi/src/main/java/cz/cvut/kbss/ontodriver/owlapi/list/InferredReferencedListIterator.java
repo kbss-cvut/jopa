@@ -17,12 +17,12 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.util.Collection;
@@ -83,12 +83,12 @@ class InferredReferencedListIterator extends ReferencedListIterator {
     }
 
     @Override
-    List<OWLOntologyChange> removeWithoutReconnect() {
+    List<TransactionalChange> removeWithoutReconnect() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    List<OWLOntologyChange> replaceNode(NamedResource newValue) {
+    List<TransactionalChange> replaceNode(NamedResource newValue) {
         throw new UnsupportedOperationException();
     }
 }

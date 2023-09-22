@@ -14,9 +14,6 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
-import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
@@ -24,8 +21,11 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +46,8 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
     }
 
     @Override
-    List<OWLOntologyChange> createListAxioms(SimpleListValueDescriptor descriptor) {
-        final List<OWLOntologyChange> changes = new ArrayList<>(descriptor.getValues().size());
+    List<TransactionalChange> createListAxioms(SimpleListValueDescriptor descriptor) {
+        final List<TransactionalChange> changes = new ArrayList<>(descriptor.getValues().size());
         NamedResource previous = descriptor.getListOwner();
         boolean first = true;
         for (NamedResource item : descriptor.getValues()) {
@@ -79,7 +79,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         if (index >= descriptor.getValues().size()) {
             return;
         }
-        final List<OWLOntologyChange> changes = new ArrayList<>(descriptor.getValues().size() - index);
+        final List<TransactionalChange> changes = new ArrayList<>(descriptor.getValues().size() - index);
         for (; index < descriptor.getValues().size(); index++) {
             final NamedResource next = descriptor.getValues().get(index);
             changes.add(new MutableAddAxiom(ontology, appendNode(lastNode, descriptor.getNextNode(), next)));

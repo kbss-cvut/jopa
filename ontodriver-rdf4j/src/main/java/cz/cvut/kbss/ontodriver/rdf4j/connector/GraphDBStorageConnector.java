@@ -21,7 +21,7 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
-import java.util.Collection;
+import java.util.Set;
 
 public class GraphDBStorageConnector extends StorageConnector {
 
@@ -30,7 +30,7 @@ public class GraphDBStorageConnector extends StorageConnector {
     }
 
     @Override
-    public boolean isInferred(Statement statement, Collection<IRI> contexts) throws Rdf4jDriverException {
+    public boolean isInferred(Statement statement, Set<IRI> contexts) throws Rdf4jDriverException {
         try (final RepositoryConnection conn = acquireConnection()) {
             final IRI[] ctxArr = contexts.toArray(new IRI[0]);
             // Inferred statements are in the implicit graph in GraphDB. This graph is not accessible via the RDF4J API

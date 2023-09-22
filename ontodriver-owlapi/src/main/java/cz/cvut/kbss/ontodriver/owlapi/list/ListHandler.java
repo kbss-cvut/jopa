@@ -16,12 +16,12 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,7 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
 
     abstract OwlapiListIterator iterator(ListDescriptor descriptor);
 
-    abstract List<OWLOntologyChange> createListAxioms(V descriptor);
+    abstract List<TransactionalChange> createListAxioms(V descriptor);
 
     public void updateList(V descriptor) {
         if (descriptor.getValues().isEmpty()) {
@@ -77,7 +77,7 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
     private void mergeLists(V descriptor) {
         final OwlapiListIterator it = iterator(descriptor);
         final List<NamedResource> values = descriptor.getValues();
-        final List<OWLOntologyChange> changes = new ArrayList<>(values.size());
+        final List<TransactionalChange> changes = new ArrayList<>(values.size());
         int i = 0;
         NamedResource lastNode = null;
         while (it.hasNext() && i < values.size()) {
@@ -99,7 +99,7 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
         if (!iterator.hasNext()) {
             return;
         }
-        final List<OWLOntologyChange> changes = new ArrayList<>();
+        final List<TransactionalChange> changes = new ArrayList<>();
         while (iterator.hasNext()) {
             iterator.next();
             changes.addAll(iterator.removeWithoutReconnect());

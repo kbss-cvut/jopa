@@ -16,9 +16,10 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 
 
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableRemoveAxiom;
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -96,8 +97,8 @@ class SimpleListIterator extends OwlapiListIterator {
     }
 
     @Override
-    List<OWLOntologyChange> removeWithoutReconnect() {
-        final List<OWLOntologyChange> changes = new ArrayList<>(2);
+    List<TransactionalChange> removeWithoutReconnect() {
+        final List<TransactionalChange> changes = new ArrayList<>(2);
         changes.add(new MutableRemoveAxiom(ontology,
                 dataFactory.getOWLObjectPropertyAssertionAxiom(previousProperty, previousNode, currentNode)));
         final OWLIndividual nextNode = getNextNode();
@@ -118,13 +119,13 @@ class SimpleListIterator extends OwlapiListIterator {
      * @return The changes to apply
      */
     @Override
-    List<OWLOntologyChange> replaceNode(NamedResource newValue) {
-        final List<OWLOntologyChange> changes = new ArrayList<>(4);
+    List<TransactionalChange> replaceNode(NamedResource newValue) {
+        final List<TransactionalChange> changes = new ArrayList<>(4);
         changes.addAll(removeWithoutReconnect());
         final OWLNamedIndividual newNode = dataFactory.getOWLNamedIndividual(IRI.create(newValue.getIdentifier()));
         changes.add(new MutableAddAxiom(ontology,
                 dataFactory.getOWLObjectPropertyAssertionAxiom(previousProperty, previousNode, newNode)));
-        final OWLOntologyChange connectionToNext = connectToNextNode(newNode);
+        final TransactionalChange connectionToNext = connectToNextNode(newNode);
         if (connectionToNext != null) {
             changes.add(connectionToNext);
         }
@@ -132,7 +133,7 @@ class SimpleListIterator extends OwlapiListIterator {
         return changes;
     }
 
-    private OWLOntologyChange connectToNextNode(OWLNamedIndividual newNode) {
+    private TransactionalChange connectToNextNode(OWLNamedIndividual newNode) {
         final OWLIndividual nextNode = getNextNode();
         if (nextNode == null || nextNode.equals(newNode)) {
             return null;

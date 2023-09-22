@@ -32,6 +32,7 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
 import static org.apache.jena.rdf.model.ResourceFactory.*;
@@ -130,7 +131,7 @@ public class ChangeTrackingStorageConnectorTest {
         final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added), null);
-        assertTrue(connector.contains(null, null, added.getObject(), Collections.emptySet()));
+        assertTrue(connector.contains(createResource(SUBJECT), null, added.getObject(), Collections.emptySet()));
     }
 
     @Test
@@ -142,7 +143,7 @@ public class ChangeTrackingStorageConnectorTest {
         centralConnector.add(Collections.singletonList(existing), null);
         centralConnector.commit();
         connector.begin();
-        assertTrue(connector.contains(null, null, createResource(TYPE_ONE), Collections.emptySet()));
+        assertTrue(connector.contains(createResource(SUBJECT), null, createResource(TYPE_ONE), Collections.emptySet()));
     }
 
     @Test
@@ -172,7 +173,7 @@ public class ChangeTrackingStorageConnectorTest {
         final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added), null);
-        assertFalse(connector.contains(null, null, added.getObject(), Collections.singleton(NAMED_GRAPH)));
+        assertFalse(connector.contains(createResource(SUBJECT), null, added.getObject(), Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test
@@ -292,9 +293,12 @@ public class ChangeTrackingStorageConnectorTest {
         final Statement added = createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added), NAMED_GRAPH);
+        final SubjectPredicateContext spcToRemove = new SubjectPredicateContext(createResource(SUBJECT), createProperty(Generator.generateUri().toString()), Collections.emptySet());
+        getLocalModel().removePropertyValues(Set.of(spcToRemove));
         connector.commit();
         assertTrue(centralConnector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO), Collections.singleton(NAMED_GRAPH)));
+        verify(centralConnector).removePropertyValues(Set.of(spcToRemove));
     }
 
     @Test

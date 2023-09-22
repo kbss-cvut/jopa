@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
+import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
@@ -1375,5 +1376,30 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassA aResult = findRequired(OWLClassA.class, entityA.getUri());
         // The incorrect merge messes up the cached value of the original entityA
         assertEquals(entityA.getUri(), aResult.getUri());
+    }
+
+    /**
+     * Bug #202
+     */
+    @Test
+    void concurrentTransactionsLeaveDataInConsistentState() {
+        final String a1String = "a1String";
+        final String a2String = "a2String";
+        this.em= getEntityManager("concurrentTransactionsLeaveDataInConsistentState", false);
+        final EntityManager secondEm = em.getEntityManagerFactory().createEntityManager();
+        persist(entityA);
+        em.getTransaction().begin();
+        final OWLClassA a1 = em.find(OWLClassA.class, entityA.getUri());
+
+        secondEm.getTransaction().begin();
+        final OWLClassA a2 = secondEm.find(OWLClassA.class, entityA.getUri());
+
+        a1.setStringAttribute(a1String);
+        a2.setStringAttribute(a2String);
+        em.getTransaction().commit();
+        secondEm.getTransaction().commit();
+
+        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
+        assertEquals(a2String, result.getStringAttribute());
     }
 }
