@@ -14,16 +14,16 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
-import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
@@ -86,12 +86,12 @@ class InferredSimpleListIterator extends SimpleListIterator {
     }
 
     @Override
-    List<OWLOntologyChange> removeWithoutReconnect() {
+    List<TransactionalChange> removeWithoutReconnect() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    List<OWLOntologyChange> replaceNode(NamedResource newValue) {
+    List<TransactionalChange> replaceNode(NamedResource newValue) {
         throw new UnsupportedOperationException();
     }
 }

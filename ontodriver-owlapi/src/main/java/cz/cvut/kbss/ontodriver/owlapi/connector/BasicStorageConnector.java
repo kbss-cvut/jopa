@@ -18,13 +18,25 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.DriverConfigParam;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
-import cz.cvut.kbss.ontodriver.owlapi.exception.*;
+import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OntologySnapshotException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OntologyStorageException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.owlapi.util.DefaultOntologyIriMapper;
 import cz.cvut.kbss.ontodriver.owlapi.util.MappingFileParser;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableAxiomChange;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.AddImport;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.slf4j.Logger;
@@ -216,14 +228,16 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     @Override
-    public void applyChanges(List<OWLOntologyChange> changes) {
+    public void applyChanges(List<TransactionalChange> changes) {
         ensureOpen();
         assert changes != null;
         WRITE.lock();
         try {
-            changes.stream().filter(ch -> ch instanceof MutableAxiomChange)
-                   .forEach(ch -> ((MutableAxiomChange) ch).setOntology(ontology));
-            ontologyManager.applyChanges(changes);
+            final OWLDataFactory df = ontologyManager.getOWLDataFactory();
+            final List<OWLOntologyChange> toApply = changes.stream()
+                                                           .flatMap(o -> o.toOwlChanges(ontology).stream())
+                                                           .collect(Collectors.toList());
+            ontologyManager.applyChanges(toApply);
             try {
                 writeToFile();
             } catch (OntologyStorageException e) {

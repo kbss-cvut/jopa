@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2023 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
@@ -18,6 +16,11 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.owlapi.change.SubjectAnnotationPropertyRemove;
+import cz.cvut.kbss.ontodriver.owlapi.change.SubjectClassAssertionRemove;
+import cz.cvut.kbss.ontodriver.owlapi.change.SubjectDataPropertyRemove;
+import cz.cvut.kbss.ontodriver.owlapi.change.SubjectObjectPropertyRemove;
+import cz.cvut.kbss.ontodriver.owlapi.change.SubjectPropertyRemove;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
@@ -26,16 +29,41 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLProperty;
+import org.semanticweb.owlapi.model.OWLPropertyExpression;
+import org.semanticweb.owlapi.model.RemoveAxiom;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 class EpistemicAxiomRemoverTest {
 
@@ -68,14 +96,6 @@ class EpistemicAxiomRemoverTest {
     }
 
     @Test
-    void removeDoesNothingWhenNoMatchingValuesAreFound() {
-        final Assertion clsAssertion = Assertion.createClassAssertion(false);
-        descriptor.addAssertion(clsAssertion);
-        axiomRemover.remove(descriptor);
-        verify(adapterMock, never()).addTransactionalChanges(anyList());
-    }
-
-    @Test
     void removeAxiomsByDescriptorWithClassAssertions() {
         final Assertion clsAssertion = Assertion.createClassAssertion(false);
         descriptor.addAssertion(clsAssertion);
@@ -85,11 +105,7 @@ class EpistemicAxiomRemoverTest {
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(adapterMock).addTransactionalChanges(captor.capture());
         final List<?> changes = captor.getValue();
-        for (Object change : changes) {
-            assertTrue(change instanceof RemoveAxiom);
-            final RemoveAxiom ax = (RemoveAxiom) change;
-            assertTrue(ax.getAxiom() instanceof OWLClassAssertionAxiom);
-        }
+        changes.forEach(ch -> assertInstanceOf(SubjectClassAssertionRemove.class, ch));
     }
 
     private void initClassAssertions() {
@@ -106,14 +122,12 @@ class EpistemicAxiomRemoverTest {
         final OWLDataProperty odp = dataFactory.getOWLDataProperty(IRI.create(dpAssertion.getIdentifier()));
         descriptor.addAssertion(dpAssertion);
         initDataPropertyAssertions(odp);
-        final int count =
-                EntitySearcher.getDataPropertyValues(individual, odp, ontology).collect(Collectors.toSet()).size();
         axiomRemover.remove(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(adapterMock).addTransactionalChanges(captor.capture());
         final List<?> changes = captor.getValue();
-        assertEquals(count, changes.size());
-        verifyRemoveAxioms(odp, OWLDataPropertyAssertionAxiom.class, changes);
+        assertEquals(1, changes.size());
+        verifyRemoveAxioms(SubjectDataPropertyRemove.class, odp, changes);
     }
 
     private void initDataPropertyAssertions(OWLDataProperty... dataProperties) {
@@ -123,14 +137,12 @@ class EpistemicAxiomRemoverTest {
         }
     }
 
-    private void verifyRemoveAxioms(OWLProperty property, Class<? extends OWLPropertyAssertionAxiom> assertionType,
+    private void verifyRemoveAxioms(Class<? extends SubjectPropertyRemove<?>> changeType, OWLProperty property,
                                     Collection<?> changes) {
         for (Object change : changes) {
-            assertTrue(change instanceof RemoveAxiom);
-            final RemoveAxiom ax = (RemoveAxiom) change;
-            assertTrue(assertionType.isAssignableFrom(ax.getAxiom().getClass()));
-            final OWLPropertyAssertionAxiom removed = (OWLPropertyAssertionAxiom) ax.getAxiom();
-            assertEquals(property, removed.getProperty());
+            assertInstanceOf(changeType, change);
+            final SubjectPropertyRemove<?> ax = (SubjectPropertyRemove<?>) change;
+            assertEquals(property, ax.getProperty());
         }
     }
 
@@ -141,14 +153,12 @@ class EpistemicAxiomRemoverTest {
         final OWLObjectProperty oop = dataFactory.getOWLObjectProperty(IRI.create(opAssertion.getIdentifier()));
         descriptor.addAssertion(opAssertion);
         initObjectPropertyAssertions(oop);
-        final int count =
-                EntitySearcher.getObjectPropertyValues(individual, oop, ontology).collect(Collectors.toSet()).size();
         axiomRemover.remove(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(adapterMock).addTransactionalChanges(captor.capture());
         final List<?> changes = captor.getValue();
-        assertEquals(count, changes.size());
-        verifyRemoveAxioms(oop, OWLObjectPropertyAssertionAxiom.class, changes);
+        assertEquals(1, changes.size());
+        verifyRemoveAxioms(SubjectObjectPropertyRemove.class, oop, changes);
     }
 
     private void initObjectPropertyAssertions(OWLObjectProperty... objectProperties) {
@@ -194,7 +204,7 @@ class EpistemicAxiomRemoverTest {
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(adapterMock).addTransactionalChanges(captor.capture());
         final List<?> changes = captor.getValue();
-        verifyAnnotationRemoveAxioms(oap, changes);
+        verifyRemoveAxioms(SubjectAnnotationPropertyRemove.class, oap, changes);
     }
 
     private void initAnnotationAssertions(OWLAnnotationProperty... annotationProperties) {
@@ -206,16 +216,6 @@ class EpistemicAxiomRemoverTest {
         }
     }
 
-    private void verifyAnnotationRemoveAxioms(OWLProperty property, Collection<?> changes) {
-        for (Object change : changes) {
-            assertTrue(change instanceof RemoveAxiom);
-            final RemoveAxiom ax = (RemoveAxiom) change;
-            assertTrue(OWLAnnotationAssertionAxiom.class.isAssignableFrom(ax.getAxiom().getClass()));
-            final OWLAnnotationAssertionAxiom removed = (OWLAnnotationAssertionAxiom) ax.getAxiom();
-            assertEquals(property, removed.getProperty());
-        }
-    }
-
     @Test
     void removeCombinationOfDataObjectAndAnnotationPropertiesAndClassAssertion() {
         final Set<OWLPropertyExpression> removed = initForCombinedTest();
@@ -224,16 +224,12 @@ class EpistemicAxiomRemoverTest {
         verify(adapterMock).addTransactionalChanges(captor.capture());
         final List<?> changes = captor.getValue();
         for (Object change : changes) {
-            final RemoveAxiom ax = (RemoveAxiom) change;
-            final OWLPropertyExpression op;
-            if (!(ax.getAxiom() instanceof OWLClassAssertionAxiom)) {
-                if (ax.getAxiom() instanceof OWLAnnotationAssertionAxiom) {
-                    op = ((OWLAnnotationAssertionAxiom) ax.getAxiom()).getProperty();
-                } else {
-                    op = ((OWLPropertyAssertionAxiom) ax.getAxiom()).getProperty();
-                }
-                assertTrue(removed.contains(op));
+            if (change instanceof SubjectClassAssertionRemove) {
+                continue;
             }
+            assertInstanceOf(SubjectPropertyRemove.class, change);
+            final SubjectPropertyRemove<?> ax = (SubjectPropertyRemove<?>) change;
+            assertThat(removed, hasItem(ax.getProperty()));
         }
     }
 

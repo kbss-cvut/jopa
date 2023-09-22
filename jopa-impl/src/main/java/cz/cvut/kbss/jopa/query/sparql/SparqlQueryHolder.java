@@ -185,7 +185,7 @@ public class SparqlQueryHolder implements QueryHolder {
      * @param parameters Projected parameters to output into query as VALUES clause
      * @return VALUES clause, if there were any set parameters
      */
-    private Optional<String> assembleValuesClause(Set<QueryParameter<?>> parameters) {
+    private static Optional<String> assembleValuesClause(Set<QueryParameter<?>> parameters) {
         if (parameters.isEmpty()) {
             return Optional.empty();
         }

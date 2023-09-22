@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
-import org.semanticweb.owlapi.model.OWLOntologyChange;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 
 import java.net.URI;
 import java.util.List;
@@ -69,7 +69,7 @@ public interface Connector {
      *
      * @param changes The changes to apply
      */
-    void applyChanges(List<OWLOntologyChange> changes);
+    void applyChanges(List<TransactionalChange> changes);
 
     /**
      * Closes the specified transactional snapshot.

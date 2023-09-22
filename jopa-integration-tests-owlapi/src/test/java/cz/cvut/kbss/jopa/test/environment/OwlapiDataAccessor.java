@@ -18,7 +18,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.search.EntitySearcher;
@@ -39,7 +39,7 @@ public class OwlapiDataAccessor implements DataAccessor {
         final OwlapiAdapter owlapiAdapter = em.unwrap(OwlapiAdapter.class);
         for (Quad t : data) {
             final OWLNamedIndividual ind = df.getOWLNamedIndividual(IRI.create(t.getSubject()));
-            final AddAxiom axiom;
+            final MutableAddAxiom axiom;
             if (t.getProperty().toString().equals(RDF.TYPE)) {
                 final OWLClass cls = df.getOWLClass(IRI.create(t.getValue().toString()));
                 axiom = new MutableAddAxiom(ontology, df.getOWLClassAssertionAxiom(cls, ind));

@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -29,6 +30,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -87,7 +89,6 @@ class ClassFieldMetamodelProcessorTest {
         final AbstractIdentifiableType<OWLInterfaceC> cInterfaceMock = mock(AbstractIdentifiableType.class);
         final Set<AbstractIdentifiableType<? super OWLClassY>> classSuperTypes = new HashSet<>();
 
-
         classSuperTypes.add(cInterfaceMock);
         classSuperTypes.add(eInterfaceMock);
 
@@ -100,7 +101,6 @@ class ClassFieldMetamodelProcessorTest {
         when(metamodelBuilder.getAnnotatedAccessorsForClass(dInterfaceMock)).thenReturn(Collections.singleton(AnnotatedAccessor.from(OWLInterfaceD.getSetNameMethod())));
 
         processor.processField(field);
-
 
         final ArgumentCaptor<AbstractAttribute> captor = ArgumentCaptor.forClass(AbstractAttribute.class);
         verify(baseMock).addDeclaredAttribute(eq(field.getName()), captor.capture());
@@ -118,7 +118,6 @@ class ClassFieldMetamodelProcessorTest {
         final Set<AbstractIdentifiableType<? super OWLClassX>> classSuperTypes = new HashSet<>();
         classSuperTypes.add(BInterfaceMock);
         classSuperTypes.add(AInterfaceMock);
-
 
         final ClassFieldMetamodelProcessor<OWLClassX> processor = prepareProcessorForClass(baseMock);
         final Field field = OWLClassX.getPropertyField();
@@ -142,8 +141,6 @@ class ClassFieldMetamodelProcessorTest {
         Set<AnnotatedAccessor> owlClassZAccessors = new HashSet<>();
         owlClassZAccessors.add(AnnotatedAccessor.from(OWLClassZ.getAmbiguousPropertyGetMethod()));
         owlClassZAccessors.add(AnnotatedAccessor.from(OWLClassZ.getAmbiguousPropertySetMethod()));
-
-
 
         final ClassFieldMetamodelProcessor<OWLClassZ> processor = prepareProcessorForClass(baseMock);
         final Field field = OWLClassZ.getAmbiguousField();
@@ -172,8 +169,6 @@ class ClassFieldMetamodelProcessorTest {
         classSuperTypes.add(FInterfaceMock);
         classSuperTypes.add(GInterfaceMock);
 
-
-
         final ClassFieldMetamodelProcessor<OWLClasAA> processor = prepareProcessorForClass(baseMock);
         final Field field = OWLClasAA.getPropertyField();
 
@@ -196,7 +191,6 @@ class ClassFieldMetamodelProcessorTest {
 
         final AbstractIdentifiableType<OWLInterfaceA> AInterfaceMock = mock(AbstractIdentifiableType.class);
 
-
         when(baseMock.getJavaType()).thenReturn(OWLClassZ.class);
         when(baseMock.getSupertypes()).thenReturn(Collections.singleton(AInterfaceMock));
 
@@ -216,9 +210,7 @@ class ClassFieldMetamodelProcessorTest {
 
         final Set<AbstractIdentifiableType<? super OWLClassWithAnnotatedPropertyAndMethod>> classSuperTypes = new HashSet<>();
 
-
         classSuperTypes.add(AInterfaceMock);
-
 
         when(baseMock.getJavaType()).thenReturn(OWLClassWithAnnotatedPropertyAndMethod.class);
         when(baseMock.getSupertypes()).thenReturn(classSuperTypes);
@@ -241,8 +233,6 @@ class ClassFieldMetamodelProcessorTest {
     void fieldProcessingFailsOnNonCompatibleTypes() throws NoSuchFieldException, NoSuchMethodException {
         final IdentifiableEntityType<OWLClassWithWrongTypes> baseMock = mock(IdentifiableEntityType.class);
 
-
-
         when(baseMock.getJavaType()).thenReturn(OWLClassWithWrongTypes.class);
         when(baseMock.getSupertypes()).thenReturn(Collections.emptySet());
 
@@ -255,6 +245,24 @@ class ClassFieldMetamodelProcessorTest {
         assertTrue(ex.getMessage().contains("Non-compatible types"));
     }
 
+    @Test
+    void processFieldHandlesPrefixUseInSequenceAnnotation() throws Exception {
+        final IdentifiableEntityType<OWLClassWithRdfList> etMock = mock(IdentifiableEntityType.class);
+        when(etMock.getJavaType()).thenReturn(OWLClassWithRdfList.class);
+        final ClassFieldMetamodelProcessor<OWLClassWithRdfList> sut = prepareProcessorForClass(etMock);
+
+        sut.processField(OWLClassWithRdfList.class.getDeclaredField("rdfList"));
+        final ArgumentCaptor<AbstractAttribute> captor = ArgumentCaptor.forClass(AbstractAttribute.class);
+        verify(etMock).addDeclaredAttribute(eq("rdfList"), captor.capture());
+        assertInstanceOf(ListAttributeImpl.class, captor.getValue());
+        final ListAttributeImpl<?, ?> result = (ListAttributeImpl<?, ?>) captor.getValue();
+        assertEquals(SequenceType.referenced, result.getSequenceType());
+        assertEquals(RDF.LIST, result.getOWLListClass().toString());
+        assertEquals(RDF.FIRST, result.getOWLPropertyHasContentsIRI().toString());
+        assertEquals(RDF.REST, result.getOWLObjectPropertyHasNextIRI().toString());
+    }
+
+    // Test classes
 
     private <X> ClassFieldMetamodelProcessor<X> prepareProcessorForClass(IdentifiableEntityType<X> etMock) {
         final TypeBuilderContext<X> context = new TypeBuilderContext<>(etMock, new NamespaceResolver());
@@ -454,9 +462,14 @@ class ClassFieldMetamodelProcessorTest {
         public static Method getSetCountMethod() throws NoSuchMethodException {
             return OWLClassWithWrongTypes.class.getMethod("setCount", String.class);
         }
-
     }
 
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLClassWithRdfList")
+    private static class OWLClassWithRdfList {
+        @Sequence(type = SequenceType.referenced, ClassOWLListIRI = "rdf:List",ObjectPropertyHasContentsIRI = "rdf:first", ObjectPropertyHasNextIRI = "rdf:rest")
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "rdflist")
+        private List<String> rdfList;
+    }
 }
 
 

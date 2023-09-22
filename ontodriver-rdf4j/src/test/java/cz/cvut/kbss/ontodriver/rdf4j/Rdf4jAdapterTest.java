@@ -19,10 +19,15 @@ import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
 import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.SubjectPredicateContext;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.model.IRI;
@@ -41,10 +46,33 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyCollection;
+import static org.mockito.Mockito.anySet;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class Rdf4jAdapterTest {
@@ -68,7 +96,7 @@ class Rdf4jAdapterTest {
     void setUp() {
         when(connectorMock.getValueFactory()).thenReturn(VF);
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(Rdf4jDataSource.class.getName())
-                .physicalUri("memory-store").build();
+                                                                      .physicalUri("memory-store").build();
         final DriverConfiguration configuration = new DriverConfiguration(sp);
         this.adapter = new Rdf4jAdapter(connectorMock, new RuntimeConfiguration(configuration));
 
@@ -77,7 +105,7 @@ class Rdf4jAdapterTest {
     @Test
     void constructorUsesProvidedConfiguration() throws Exception {
         final OntologyStorageProperties sp = OntologyStorageProperties.driver(Rdf4jDataSource.class.getName())
-                .physicalUri("memory-store").build();
+                                                                      .physicalUri("memory-store").build();
         final DriverConfiguration dc = new DriverConfiguration(sp);
         dc.setProperty(Rdf4jConfigParam.LOAD_ALL_THRESHOLD, "1");
         this.adapter = new Rdf4jAdapter(connectorMock, new RuntimeConfiguration(dc));
@@ -288,7 +316,7 @@ class Rdf4jAdapterTest {
         for (Axiom<?> ax : res) {
             assertTrue(statements.containsKey(ax.getAssertion()));
             assertEquals(statements.get(ax.getAssertion()).getObject().stringValue(), ax.getValue().getValue()
-                    .toString());
+                                                                                        .toString());
         }
     }
 
@@ -350,7 +378,7 @@ class Rdf4jAdapterTest {
         for (Axiom<?> ax : res) {
             assertTrue(statements.containsKey(ax.getAssertion()));
             assertEquals(statements.get(ax.getAssertion()).getObject().stringValue(), ax.getValue()
-                    .getValue().toString());
+                                                                                        .getValue().toString());
         }
     }
 
@@ -497,7 +525,7 @@ class Rdf4jAdapterTest {
         // This statement should be filtered out
         statements.add(VF.createStatement(subjectIri, VF.createIRI(propertyOne),
                 VF.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa#entityOne")));
-        when(connectorMock.findStatements(eq(subjectIri), eq(VF.createIRI(propertyOne)), any(), eq(false), anyCollection())).thenReturn(statements);
+        when(connectorMock.findStatements(eq(subjectIri), eq(VF.createIRI(propertyOne)), any(), eq(false), anySet())).thenReturn(statements);
         final Collection<Axiom<?>> res = adapter.find(desc);
         assertTrue(res.isEmpty());
     }
@@ -590,19 +618,13 @@ class Rdf4jAdapterTest {
         desc.addAssertion(Assertion.createClassAssertion(false));
         desc.addAssertion(Assertion.createDataPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/dataProperty"), false));
-        final Collection<Statement> statements = new HashSet<>(initStatementsForDescriptor(desc)
-                .values());
-        when(connectorMock
-                .findStatements(eq(subjectIri), any(IRI.class), any(), eq(false),
-                        eq(Collections.emptySet())))
-                .thenReturn(statements);
 
         adapter.remove(desc);
-        for (Assertion ass : desc.getAssertions()) {
-            verify(connectorMock).findStatements(subjectIri,
-                    VF.createIRI(ass.getIdentifier().toString()), null, false, Collections.emptySet());
-        }
-        verify(connectorMock).removeStatements(statements);
+        final Set<SubjectPredicateContext> toRemove = desc.getAssertions().stream().map(
+                a -> new SubjectPredicateContext(subjectIri, VF.createIRI(a.getIdentifier()
+                                                                           .toString()), Collections.emptySet())
+        ).collect(Collectors.toSet());
+        verify(connectorMock).removePropertyValues(toRemove);
     }
 
     @Test
@@ -610,7 +632,7 @@ class Rdf4jAdapterTest {
         final Axiom<URI> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         when(connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE), eq(VF.createIRI(ax.getValue()
-                        .stringValue())),
+                                                                                             .stringValue())),
                 anyBoolean(), anySet())).thenReturn(true);
 
         assertTrue(adapter.contains(ax, Collections.emptySet()));
@@ -626,7 +648,7 @@ class Rdf4jAdapterTest {
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         when(connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE),
                 eq(VF.createIRI(ax.getValue().stringValue())), anyBoolean(),
-                anyCollection())).thenReturn(true);
+                anySet())).thenReturn(true);
 
         assertTrue(adapter.contains(ax, Collections.singleton(context)));
         verify(connectorMock).containsStatement(subjectIri, RDF.TYPE,
@@ -641,7 +663,7 @@ class Rdf4jAdapterTest {
         final Axiom<Integer> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(val));
         when(connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE),
-                eq(VF.createLiteral(val)), anyBoolean(), anyCollection()))
+                eq(VF.createLiteral(val)), anyBoolean(), anySet()))
                 .thenReturn(false);
 
         assertFalse(adapter.contains(ax, Collections.singleton(context)));
@@ -661,15 +683,9 @@ class Rdf4jAdapterTest {
         final String newValue = "newValue";
         desc.addAssertion(assertion);
         desc.addAssertionValue(assertion, new Value<>(newValue));
-        final Collection<Statement> statements = Collections.singleton(VF.createStatement(
-                subjectIri, rdf4jProperty, VF.createLiteral(oldValue, "en")));
-        when(connectorMock
-                .findStatements(eq(subjectIri), eq(rdf4jProperty), any(), eq(inferred), eq(Collections.emptySet())))
-                .thenReturn(statements);
 
         adapter.update(desc);
-        verify(connectorMock).findStatements(subjectIri, rdf4jProperty, null, inferred, Collections.emptySet());
-        verify(connectorMock).removeStatements(statements);
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(subjectIri, rdf4jProperty, Collections.emptySet())));
         final Collection<Statement> inserted = Collections.singletonList(VF.createStatement(
                 subjectIri, rdf4jProperty, VF.createLiteral(newValue, "en")));
         verify(connectorMock).addStatements(inserted);
@@ -686,15 +702,9 @@ class Rdf4jAdapterTest {
         final IRI newValue = VF.createIRI("http://www.new-value.org");
         desc.addAssertion(assertion);
         desc.addAssertionValue(assertion, new Value<>(URI.create(newValue.stringValue())));
-        final Collection<Statement> statements = Collections.singleton(VF.createStatement(
-                subjectIri, rdf4jProperty, oldValue));
-        when(connectorMock
-                .findStatements(eq(subjectIri), eq(rdf4jProperty), any(), eq(inferred), eq(Collections.emptySet())))
-                .thenReturn(statements);
 
         adapter.update(desc);
-        verify(connectorMock).findStatements(subjectIri, rdf4jProperty, null, inferred, Collections.emptySet());
-        verify(connectorMock).removeStatements(statements);
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(subjectIri, rdf4jProperty, Collections.emptySet())));
         final Collection<Statement> inserted = Collections.singletonList(VF.createStatement(
                 subjectIri, rdf4jProperty, newValue));
         verify(connectorMock).addStatements(inserted);
@@ -710,15 +720,9 @@ class Rdf4jAdapterTest {
         final IRI oldValue = VF.createIRI("http://www.old-value.org");
         desc.addAssertion(assertion);
         desc.addAssertionValue(assertion, Value.nullValue());
-        final Collection<Statement> statements = Collections.singleton(VF.createStatement(
-                subjectIri, rdf4jProperty, oldValue));
-        when(connectorMock
-                .findStatements(eq(subjectIri), eq(rdf4jProperty), any(), eq(inferred), eq(Collections.emptySet())))
-                .thenReturn(statements);
 
         adapter.update(desc);
-        verify(connectorMock).findStatements(subjectIri, rdf4jProperty, null, inferred, Collections.emptySet());
-        verify(connectorMock).removeStatements(statements);
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(subjectIri, rdf4jProperty, Collections.emptySet())));
         verify(connectorMock, never()).addStatements(anyCollection());
     }
 
@@ -738,14 +742,9 @@ class Rdf4jAdapterTest {
         for (String t : newTypes) {
             desc.addAssertionValue(assertion, new Value<>(URI.create(t)));
         }
-        final Collection<Statement> statements = initOldTypes();
-        when(connectorMock.findStatements(eq(subjectIri), eq(RDF.TYPE), any(), eq(inferred),
-                eq(Collections.singleton(iriContext))))
-                .thenReturn(statements);
 
         adapter.update(desc);
-        verify(connectorMock).findStatements(subjectIri, RDF.TYPE, null, inferred, Collections.singleton(iriContext));
-        verify(connectorMock).removeStatements(statements);
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(subjectIri, RDF.TYPE, Collections.singleton(iriContext))));
         final Collection<Statement> inserted = initNewTypes(newTypes, iriContext);
         verify(connectorMock).addStatements(inserted);
     }

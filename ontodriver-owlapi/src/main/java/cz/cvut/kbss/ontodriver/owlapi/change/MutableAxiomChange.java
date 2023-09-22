@@ -12,14 +12,14 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.ontodriver.owlapi.util;
+package cz.cvut.kbss.ontodriver.owlapi.change;
 
 import org.semanticweb.owlapi.model.OWLOntology;
 
 /**
  * Interface which enables to set owner ontology of axiom changes.
  */
-public interface MutableAxiomChange {
+public interface MutableAxiomChange extends TransactionalChange {
 
     /**
      * Sets ontology on this object.

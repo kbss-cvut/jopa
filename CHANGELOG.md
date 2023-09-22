@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+## 1.1.3 - 2023-09-22
+- Fix a transaction isolation issue. Now when multiple transactions edit the same data, the one that commits last wins (same behavior as JPA, Bug #202).
+- Fix an issue with missing interpretation of prefixes in the `@Sequence` annotation values (Bug #204).
+
 ## 1.1.2 - 2023-09-14
 - Fix missing processing of connection pool configuration in RDF4J driver.
 - Disambiguate classes of the same name in OWL2Java using a default suffix (Bug #199).

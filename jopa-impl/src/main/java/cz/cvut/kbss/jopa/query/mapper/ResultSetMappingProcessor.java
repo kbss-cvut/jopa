@@ -89,7 +89,7 @@ public class ResultSetMappingProcessor {
         return (EntityType<?>) targetType;
     }
 
-    private void generateFieldMappersForFieldResults(EntityResult er, EntityType<?> et,
+    private static void generateFieldMappersForFieldResults(EntityResult er, EntityType<?> et,
                                                      EntityResultMapper<?> etMapper) {
         for (FieldResult fr : er.fields()) {
             try {
@@ -116,7 +116,7 @@ public class ResultSetMappingProcessor {
         }
     }
 
-    private List<FieldResultMapper> generateFieldMappersForUnconfiguredFields(EntityType<?> et, EntityResult er) {
+    private static List<FieldResultMapper> generateFieldMappersForUnconfiguredFields(EntityType<?> et, EntityResult er) {
         final Set<String> configuredFields = new HashSet<>(er.fields().length);
         for (FieldResult fr : er.fields()) {
             configuredFields.add(fr.name());

@@ -74,6 +74,26 @@ public final class RDF {
      */
     public static final String LANG_STRING = NAMESPACE + "langString";
 
+    /**
+     * The {@code rdf:List} class representing (linked) lists in RDF.
+     */
+    public static final String LIST = NAMESPACE + "List";
+
+    /**
+     * The {@code rdf:first} property for RDF list elements (values).
+     */
+    public static final String FIRST = NAMESPACE + "first";
+
+    /**
+     * The {@code rdf:rest} property for linking RDF list elements.
+     */
+    public static final String REST = NAMESPACE + "rest";
+
+    /**
+     * The {@code rdf:nil} object representing an empty RDF list (used to mark the end of a RDF list).
+     */
+    public static final String NIL = NAMESPACE + "nil";
+
     private RDF() {
         throw new AssertionError();
     }

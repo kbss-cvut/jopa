@@ -59,7 +59,7 @@ public class JenaStatement implements Statement {
         }
     }
 
-    private Query parseQuery(String sparql) throws JenaDriverException {
+    private static Query parseQuery(String sparql) throws JenaDriverException {
         try {
             return QueryFactory.create(sparql);
         } catch (QueryParseException e) {

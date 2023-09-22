@@ -42,7 +42,9 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -116,7 +118,7 @@ class GraphDBStatementLoaderTest {
         final Statement rdfStatement =
                 VF.createStatement(subjectIri, VF.createIRI(a.getIdentifier().toString()),
                         VF.createLiteral(Generator.randomInt()), null);
-        when(connector.findStatements(eq(subjectIri), isNull(), isNull(), eq(true), anyCollection())).thenReturn(
+        when(connector.findStatements(eq(subjectIri), isNull(), isNull(), eq(true), anySet())).thenReturn(
                 Collections.singleton(rdfStatement));
 
         sut.setIncludeInferred(true);
@@ -137,7 +139,7 @@ class GraphDBStatementLoaderTest {
         final Statement rdfStatement =
                 VF.createStatement(subjectIri, VF.createIRI(a.getIdentifier().toString()),
                         VF.createLiteral(Generator.randomInt()), null);
-        when(connector.findStatements(eq(subjectIri), isNull(), isNull(), eq(false), anyCollection())).thenReturn(
+        when(connector.findStatements(eq(subjectIri), isNull(), isNull(), eq(false), anySet())).thenReturn(
                 Collections.singleton(rdfStatement));
 
         sut.setIncludeInferred(false);
