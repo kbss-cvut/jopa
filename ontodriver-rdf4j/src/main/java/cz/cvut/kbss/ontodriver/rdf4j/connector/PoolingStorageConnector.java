@@ -121,7 +121,7 @@ public class PoolingStorageConnector extends AbstractConnector {
         try {
             centralConnector.begin();
             centralConnector.removeStatements(localModel.getRemovedStatements());
-            centralConnector.removeStatementsBySubjectAndPredicate(localModel.getRemovedSubjectPredicateStatements());
+            centralConnector.removePropertyValues(localModel.getRemovedSubjectPredicateStatements());
             centralConnector.addStatements(localModel.getAddedStatements());
             centralConnector.commit();
             transaction.afterCommit();
@@ -169,8 +169,8 @@ public class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
-    public void removeStatementsBySubjectAndPredicate(Collection<SubjectPredicateContext> spc) {
-        localModel.removeStatementsBySubjectAndPredicate(spc);
+    public void removePropertyValues(Collection<SubjectPredicateContext> spc) {
+        localModel.removePropertyValues(spc);
     }
 
     @Override

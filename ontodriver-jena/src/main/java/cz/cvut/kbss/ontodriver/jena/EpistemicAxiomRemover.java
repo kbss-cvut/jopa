@@ -62,7 +62,7 @@ class EpistemicAxiomRemover {
                                                                                   .stream().map(URI::toString)
                                                                                   .collect(Collectors.toSet())));
         });
-        connector.removeStatementsBySubjectAndPredicate(toRemove);
+        connector.removePropertyValues(toRemove);
     }
 
     /**

@@ -210,7 +210,7 @@ class JenaAdapterTest {
         descriptor.addAssertion(assertion);
 
         adapter.remove(descriptor);
-        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(SUBJECT_RESOURCE, assertionToProperty(assertion), Collections.emptySet())));
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(SUBJECT_RESOURCE, assertionToProperty(assertion), Collections.emptySet())));
     }
 
     @Test
@@ -225,7 +225,7 @@ class JenaAdapterTest {
         descriptor.addAssertionValue(assertion, new Value<>(NamedResource.create(newValue)));
 
         adapter.update(descriptor);
-        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(SUBJECT_RESOURCE, assertionToProperty(assertion), Collections.emptySet())));
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(SUBJECT_RESOURCE, assertionToProperty(assertion), Collections.emptySet())));
         final ArgumentCaptor<List<Statement>> captor = ArgumentCaptor.forClass(List.class);
         verify(connectorMock).add(captor.capture(), eq(null));
         assertEquals(1, captor.getValue().size());

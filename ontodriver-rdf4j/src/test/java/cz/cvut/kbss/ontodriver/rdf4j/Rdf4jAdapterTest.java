@@ -624,7 +624,7 @@ class Rdf4jAdapterTest {
                 a -> new SubjectPredicateContext(subjectIri, VF.createIRI(a.getIdentifier()
                                                                            .toString()), Collections.emptySet())
         ).collect(Collectors.toSet());
-        verify(connectorMock).removeStatementsBySubjectAndPredicate(toRemove);
+        verify(connectorMock).removePropertyValues(toRemove);
     }
 
     @Test
@@ -685,7 +685,7 @@ class Rdf4jAdapterTest {
         desc.addAssertionValue(assertion, new Value<>(newValue));
 
         adapter.update(desc);
-        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(subjectIri, rdf4jProperty, Collections.emptySet())));
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(subjectIri, rdf4jProperty, Collections.emptySet())));
         final Collection<Statement> inserted = Collections.singletonList(VF.createStatement(
                 subjectIri, rdf4jProperty, VF.createLiteral(newValue, "en")));
         verify(connectorMock).addStatements(inserted);
@@ -704,7 +704,7 @@ class Rdf4jAdapterTest {
         desc.addAssertionValue(assertion, new Value<>(URI.create(newValue.stringValue())));
 
         adapter.update(desc);
-        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(subjectIri, rdf4jProperty, Collections.emptySet())));
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(subjectIri, rdf4jProperty, Collections.emptySet())));
         final Collection<Statement> inserted = Collections.singletonList(VF.createStatement(
                 subjectIri, rdf4jProperty, newValue));
         verify(connectorMock).addStatements(inserted);
@@ -722,7 +722,7 @@ class Rdf4jAdapterTest {
         desc.addAssertionValue(assertion, Value.nullValue());
 
         adapter.update(desc);
-        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(subjectIri, rdf4jProperty, Collections.emptySet())));
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(subjectIri, rdf4jProperty, Collections.emptySet())));
         verify(connectorMock, never()).addStatements(anyCollection());
     }
 
@@ -744,7 +744,7 @@ class Rdf4jAdapterTest {
         }
 
         adapter.update(desc);
-        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(subjectIri, RDF.TYPE, Collections.singleton(iriContext))));
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(subjectIri, RDF.TYPE, Collections.singleton(iriContext))));
         final Collection<Statement> inserted = initNewTypes(newTypes, iriContext);
         verify(connectorMock).addStatements(inserted);
     }

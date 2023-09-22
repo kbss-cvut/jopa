@@ -7,6 +7,11 @@ import org.apache.jena.rdf.model.Statement;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Represents the subject, predicate and context(s) of a statement.
+ *
+ * Used to indicate what property values to remove from the repository.
+ */
 public final class SubjectPredicateContext {
 
     private final Resource subject;

@@ -294,11 +294,11 @@ public class ChangeTrackingStorageConnectorTest {
                 createResource(TYPE_TWO));
         getLocalModel().addStatements(Collections.singletonList(added), NAMED_GRAPH);
         final SubjectPredicateContext spcToRemove = new SubjectPredicateContext(createResource(SUBJECT), createProperty(Generator.generateUri().toString()), Collections.emptySet());
-        getLocalModel().removeStatementsBySubjectAndPredicate(Set.of(spcToRemove));
+        getLocalModel().removePropertyValues(Set.of(spcToRemove));
         connector.commit();
         assertTrue(centralConnector.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
                 createResource(TYPE_TWO), Collections.singleton(NAMED_GRAPH)));
-        verify(centralConnector).removeStatementsBySubjectAndPredicate(Set.of(spcToRemove));
+        verify(centralConnector).removePropertyValues(Set.of(spcToRemove));
     }
 
     @Test

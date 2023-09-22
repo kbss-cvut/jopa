@@ -68,8 +68,8 @@ public class EpistemicAxiomRemoverTest {
 
         axiomRemover.remove(descriptor);
 
-        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(vf.createIRI(SUBJECT.toString()),
-                vf.createIRI(PROPERTY), Set.of(vf.createIRI(context.toString())))));
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(vf.createIRI(SUBJECT.toString()),
+                                                                                      vf.createIRI(PROPERTY), Set.of(vf.createIRI(context.toString())))));
     }
 
     @Test
@@ -79,7 +79,7 @@ public class EpistemicAxiomRemoverTest {
 
         axiomRemover.remove(descriptor);
 
-        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(vf.createIRI(SUBJECT.toString()),
-                vf.createIRI(PROPERTY), Collections.emptySet())));
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(vf.createIRI(SUBJECT.toString()),
+                                                                                      vf.createIRI(PROPERTY), Collections.emptySet())));
     }
 }

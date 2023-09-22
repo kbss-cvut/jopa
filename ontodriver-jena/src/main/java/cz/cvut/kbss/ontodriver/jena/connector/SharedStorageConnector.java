@@ -150,7 +150,7 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public void removeStatementsBySubjectAndPredicate(Collection<SubjectPredicateContext> spc) {
+    public void removePropertyValues(Collection<SubjectPredicateContext> spc) {
         ensureTransactionalState();
         spc.forEach(s -> {
             if (s.getContexts().isEmpty()) {

@@ -62,7 +62,7 @@ class EpistemicAxiomRemover {
                                                      .collect(Collectors.toSet());
             toRemove.add(new SubjectPredicateContext(individual, toRdf4jIri(a, valueFactory), contexts));
         }
-        connector.removeStatementsBySubjectAndPredicate(toRemove);
+        connector.removePropertyValues(toRemove);
     }
 
     void remove(NamedResource individual, Map<Assertion, Set<Value<?>>> values, java.net.URI context)

@@ -7,6 +7,11 @@ import org.eclipse.rdf4j.model.Statement;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * A combination of statement subject, predicate and context(s).
+ *
+ * It is used to indicate values of properties to remove.
+ */
 public final class SubjectPredicateContext {
 
     private final Resource subject;

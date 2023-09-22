@@ -74,7 +74,7 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
             final Model model = removed.getNamedModel(context);
             centralConnector.remove(model.listStatements().toList(), context);
         });
-        centralConnector.removeStatementsBySubjectAndPredicate(localModel.getRemovedSubjectPredicateStatements());
+        centralConnector.removePropertyValues(localModel.getRemovedSubjectPredicateStatements());
     }
 
     private void mergeAddedStatements() {
@@ -137,9 +137,9 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     }
 
     @Override
-    public void removeStatementsBySubjectAndPredicate(Collection<SubjectPredicateContext> spc) {
+    public void removePropertyValues(Collection<SubjectPredicateContext> spc) {
         transaction.verifyActive();
-        localModel.removeStatementsBySubjectAndPredicate(spc);
+        localModel.removePropertyValues(spc);
     }
 
     @Override

@@ -170,7 +170,7 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
     }
 
     @Override
-    public void removeStatementsBySubjectAndPredicate(Collection<SubjectPredicateContext> spc) {
+    public void removePropertyValues(Collection<SubjectPredicateContext> spc) {
         ensureOpen();
         spc.forEach(s -> {
             if (s.getContexts().isEmpty()) {
@@ -179,7 +179,7 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
                 s.getContexts().forEach(ctx -> remove(s.getSubject(), s.getPredicate(), null, ctx));
             }
         });
-        transactionalChanges.removeStatementsBySubjectAndPredicate(spc);
+        transactionalChanges.removePropertyValues(spc);
     }
 
     @Override

@@ -212,8 +212,7 @@ public class StorageConnector extends AbstractConnector {
     }
 
     @Override
-    public void removeStatementsBySubjectAndPredicate(
-            Collection<SubjectPredicateContext> spc) throws Rdf4jDriverException {
+    public void removePropertyValues(Collection<SubjectPredicateContext> spc) throws Rdf4jDriverException {
         verifyTransactionActive();
         assert connection != null;
 

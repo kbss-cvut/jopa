@@ -55,7 +55,7 @@ public class LocalModelTest {
     void containsReturnsFalseWhenStatementSubjectAndPredicateWereRemovedInLocalModel() {
         final IRI subject = vf.createIRI(Generator.generateUri().toString());
         final IRI property = vf.createIRI(Generator.generateUri().toString());
-        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(subject, property, Collections.emptySet())));
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(subject, property, Collections.emptySet())));
 
         assertEquals(LocalModel.Contains.FALSE, sut.contains(subject, property, null, Collections.emptySet()));
     }
@@ -102,7 +102,7 @@ public class LocalModelTest {
     void enhanceStatementsRemovesStatementsWhoseSubjectPredicateAndContextMatchRemoved() {
         final IRI subject = vf.createIRI(Generator.generateUri().toString());
         final IRI property = vf.createIRI(Generator.generateUri().toString());
-        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(subject, property, Collections.emptySet())));
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(subject, property, Collections.emptySet())));
         final Stream<Statement> stream = Stream.of(
                 vf.createStatement(subject, property, vf.createLiteral(1)),
                 vf.createStatement(subject, property, vf.createLiteral(2)),
@@ -121,7 +121,7 @@ public class LocalModelTest {
         final IRI context = vf.createIRI(Generator.generateUri().toString());
         sut.addStatements(Collections.singletonList(
                 vf.createStatement(subject, property, vf.createLiteral(117), context)));
-        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(subject, property, Set.of(context))));
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(subject, property, Set.of(context))));
 
         assertTrue(sut.getAddedStatements().isEmpty());
     }

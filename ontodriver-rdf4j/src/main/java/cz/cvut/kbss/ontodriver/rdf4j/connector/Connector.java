@@ -27,6 +27,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * A RDF4J repository connection wrapper.
+ */
 public interface Connector extends Closeable, StatementExecutor, Wrapper {
 
     /**
@@ -80,7 +83,7 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
      * @param includeInferred Whether to include inferred statements as well
      * @return Collection of matching statements
      * @throws Rdf4jDriverException If a repository access error occurs
-     * @see #findStatements(Resource, IRI, Value, boolean, Collection)
+     * @see #findStatements(Resource, IRI, Value, boolean, Set)
      */
     Collection<Statement> findStatements(Resource subject, IRI property, Value value, boolean includeInferred)
             throws Rdf4jDriverException;
@@ -166,5 +169,5 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
      * @param spc Subject-predicate-contexts tuples
      * @throws Rdf4jDriverException If a repository access error occurs
      */
-    void removeStatementsBySubjectAndPredicate(Collection<SubjectPredicateContext> spc) throws Rdf4jDriverException;
+    void removePropertyValues(Collection<SubjectPredicateContext> spc) throws Rdf4jDriverException;
 }

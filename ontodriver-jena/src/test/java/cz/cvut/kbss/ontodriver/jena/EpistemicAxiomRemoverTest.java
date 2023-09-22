@@ -60,7 +60,7 @@ public class EpistemicAxiomRemoverTest {
         descriptor.addAssertion(op);
 
         remover.remove(descriptor);
-        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(
+        verify(connectorMock).removePropertyValues(Set.of(
                 new SubjectPredicateContext(SUBJECT_RESOURCE, createProperty(dp.getIdentifier().toString()), Collections.emptySet()),
                 new SubjectPredicateContext(SUBJECT_RESOURCE, createProperty(op.getIdentifier().toString()), Collections.emptySet())
         ));
@@ -79,7 +79,7 @@ public class EpistemicAxiomRemoverTest {
         descriptor.addAssertionContext(ap, assertionContext);
 
         remover.remove(descriptor);
-        verify(connectorMock).removeStatementsBySubjectAndPredicate(Set.of(
+        verify(connectorMock).removePropertyValues(Set.of(
                 new SubjectPredicateContext(SUBJECT_RESOURCE, createProperty(ca.getIdentifier().toString()), Set.of(mainContext.toString())),
                 new SubjectPredicateContext(SUBJECT_RESOURCE, createProperty(ap.getIdentifier().toString()), Set.of(assertionContext.toString()))
         ));

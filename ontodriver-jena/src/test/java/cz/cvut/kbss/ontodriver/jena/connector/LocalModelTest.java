@@ -259,7 +259,7 @@ public class LocalModelTest {
     @Test
     void containsReturnsFalseWhenSubjectAndPredicateWereRemovedInLocalModel() {
         final LocalModel sut = new LocalModel(true);
-        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
                 createProperty(Vocabulary.RDF_TYPE), Collections.emptySet())));
         assertEquals(LocalModel.Containment.REMOVED, sut.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Collections.emptySet()));
     }
@@ -267,7 +267,7 @@ public class LocalModelTest {
     @Test
     void containsReturnsFalseWhenSubjectAndPredicateWereRemovedInLocalModelInMatchingContext() {
         final LocalModel sut = new LocalModel(true);
-        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
                 createProperty(Vocabulary.RDF_TYPE), Set.of(NAMED_GRAPH))));
         assertEquals(LocalModel.Containment.REMOVED, sut.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Set.of(NAMED_GRAPH)));
     }
@@ -276,7 +276,7 @@ public class LocalModelTest {
     void enhanceStatementsRemovesStatementsWhoseSubjectPredicateMatchRemoved() {
         final LocalModel sut = new LocalModel(true);
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
-        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
                 createProperty(Vocabulary.RDF_TYPE), Collections.emptySet())));
 
         final Collection<Statement> result = sut.enhanceStatements(Set.of(statement), createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Collections.emptySet());
@@ -287,7 +287,7 @@ public class LocalModelTest {
     void enhanceStatementsRemovesStatementsWhoseSubjectPredicateAndContextMatchRemoved() {
         final LocalModel sut = new LocalModel(true);
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
-        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
                 createProperty(Vocabulary.RDF_TYPE), Set.of(NAMED_GRAPH))));
 
         final Collection<Statement> result = sut.enhanceStatements(Set.of(statement), createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), null, Set.of(NAMED_GRAPH));
@@ -299,7 +299,7 @@ public class LocalModelTest {
         final LocalModel sut = new LocalModel(true);
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
         sut.addStatements(Collections.singletonList(statement), null);
-        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(statement.getSubject(), statement.getPredicate(), Collections.emptySet())));
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(statement.getSubject(), statement.getPredicate(), Collections.emptySet())));
 
         assertTrue(sut.getAdded().getDefaultModel().listStatements().toList().isEmpty());
     }
@@ -310,7 +310,7 @@ public class LocalModelTest {
         final Statement addedOne = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
         final Statement addedOther = statement(SUBJECT, Generator.generateUri().toString(), Generator.generateUri().toString());
         sut.addStatements(List.of(addedOne, addedOther), NAMED_GRAPH);
-        sut.removeStatementsBySubjectAndPredicate(Set.of(new SubjectPredicateContext(addedOne.getSubject(), addedOne.getPredicate(), Set.of(NAMED_GRAPH))));
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(addedOne.getSubject(), addedOne.getPredicate(), Set.of(NAMED_GRAPH))));
 
         assertThat(sut.getAdded().getNamedModel(NAMED_GRAPH).listStatements().toList(), not(hasItem(addedOne)));
         assertThat(sut.getAdded().getNamedModel(NAMED_GRAPH).listStatements().toList(), hasItem(addedOther));

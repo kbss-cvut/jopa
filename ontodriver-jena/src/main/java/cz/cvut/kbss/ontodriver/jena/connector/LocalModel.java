@@ -133,7 +133,7 @@ class LocalModel {
         registerStatements(statements, context, removed, added);
     }
 
-    void removeStatementsBySubjectAndPredicate(Collection<SubjectPredicateContext> toRemove) {
+    void removePropertyValues(Collection<SubjectPredicateContext> toRemove) {
         removedSubjectPredicateStatements.addAll(toRemove);
         toRemove.forEach(spc -> {
             if (spc.getContexts().isEmpty()) {

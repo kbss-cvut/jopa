@@ -77,7 +77,7 @@ class LocalModel {
         removedStatements.addAll(statements);
     }
 
-    void removeStatementsBySubjectAndPredicate(Collection<SubjectPredicateContext> toRemove) {
+    void removePropertyValues(Collection<SubjectPredicateContext> toRemove) {
         removedSubjectPredicateStatements.addAll(toRemove);
         addedStatements.removeIf(s -> toRemove.stream().anyMatch(spc -> spc.matches(s)));
     }
