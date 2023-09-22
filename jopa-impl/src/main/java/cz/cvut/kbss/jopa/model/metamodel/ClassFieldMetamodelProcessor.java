@@ -50,11 +50,11 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
     void processField(Field field) {
-        LOG.trace("processing field: {}", field);
+        LOG.trace("processing field: {}.", field);
         if (EntityPropertiesUtils.isFieldTransient(field)) {
             // Do not log static fields
             if (!EntityPropertiesUtils.isFieldStatic(field)) {
-                LOG.trace("Skipping transient field {}", field);
+                LOG.trace("Skipping transient field {}.", field);
             }
             return;
         }
@@ -95,7 +95,8 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
 
-        if (tryProcessIdentifierField(field)) {
+        if (isIdentifierField(field)) {
+            processIdentifierField(field);
             return;
         }
 
@@ -133,7 +134,8 @@ class ClassFieldMetamodelProcessor<X> {
                     continue;
                 }
 
-                LOG.debug("Found annotated method belonging to field - {} - {}", annotatedAccessor.getMethod().getName(), field.getName());
+                LOG.debug("Found annotated method belonging to field - {} - {}", annotatedAccessor.getMethod()
+                                                                                                  .getName(), field.getName());
                 if (!found) {  // first belonging method
                     found = true;
                     foundAcessor = annotatedAccessor;
@@ -153,7 +155,8 @@ class ClassFieldMetamodelProcessor<X> {
         return foundAcessor;
     }
 
-    private void createAndRegisterAttribute(Field field, InferenceInfo inference, Class<?> fieldValueCls, AnnotatedAccessor annotatedAccessor) {
+    private void createAndRegisterAttribute(Field field, InferenceInfo inference, Class<?> fieldValueCls,
+                                            AnnotatedAccessor annotatedAccessor) {
         final PropertyInfo info = PropertyInfo.from(annotatedAccessor.getMethod(), field);
 
         final PropertyAttributes propertyAtt = PropertyAttributes.create(info, mappingValidator, context);
@@ -181,7 +184,7 @@ class ClassFieldMetamodelProcessor<X> {
             return false;
         }
         if (!property.getType().isAssignableFrom(accessor.getPropertyType())) {
-            throw new MetamodelInitializationException("Non-compatible types between method " + accessor + " and field " + property.getName() + ". Method is accessor to type " + accessor.getPropertyType() + ", field type is "+property.getType());
+            throw new MetamodelInitializationException("Non-compatible types between method " + accessor + " and field " + property.getName() + ". Method is accessor to type " + accessor.getPropertyType() + ", field type is " + property.getType());
         }
 
         return true;
@@ -245,9 +248,9 @@ class ClassFieldMetamodelProcessor<X> {
         final FetchType fetchType = inference.inferred ? FetchType.EAGER : properties.fetchType();
         et.addOtherProperties(
                 PropertiesSpecificationImpl.declaringType(et).fetchType(fetchType).javaField(field)
-                        .javaType(fieldValueCls).inferred(inference.inferred)
-                        .propertyIdType(paramsResolver.getPropertyIdentifierType())
-                        .propertyValueType(paramsResolver.getPropertyValueType()).build());
+                                           .javaType(fieldValueCls).inferred(inference.inferred)
+                                           .propertyIdType(paramsResolver.getPropertyIdentifierType())
+                                           .propertyValueType(paramsResolver.getPropertyValueType()).build());
     }
 
     private static boolean isQueryAttribute(Field field) {
@@ -271,7 +274,8 @@ class ClassFieldMetamodelProcessor<X> {
             type = BasicTypeImpl.get(fieldValueCls);
         }
 
-        Optional<ConverterWrapper<?, ?>> optionalConverterWrapper = context.getConverterResolver().resolveConverter(type);
+        Optional<ConverterWrapper<?, ?>> optionalConverterWrapper = context.getConverterResolver()
+                                                                           .resolveConverter(type);
         ConverterWrapper<?, ?> converterWrapper = null;
 
         if (optionalConverterWrapper.isPresent()) {
@@ -293,19 +297,31 @@ class ClassFieldMetamodelProcessor<X> {
             inference, PropertyAttributes propertyAttributes) {
         final AbstractAttribute<X, ?> a;
         if (property.getType().isAssignableFrom(Collection.class)) {
-            final AbstractPluralAttribute.PluralAttributeBuilder builder = CollectionAttributeImpl.builder(propertyAttributes).declaringType(et).propertyInfo(property).inferred(inference.inferred).includeExplicit(inference.includeExplicit);
+            final AbstractPluralAttribute.PluralAttributeBuilder builder = CollectionAttributeImpl.builder(propertyAttributes)
+                                                                                                  .declaringType(et)
+                                                                                                  .propertyInfo(property)
+                                                                                                  .inferred(inference.inferred)
+                                                                                                  .includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         } else if (property.getType().isAssignableFrom(List.class)) {
             a = createListAttribute(property, inference, propertyAttributes);
         } else if (property.getType().isAssignableFrom(Set.class)) {
-            final AbstractPluralAttribute.PluralAttributeBuilder builder = SetAttributeImpl.builder(propertyAttributes).declaringType(et).propertyInfo(property).inferred(inference.inferred).includeExplicit(inference.includeExplicit);
+            final AbstractPluralAttribute.PluralAttributeBuilder builder = SetAttributeImpl.builder(propertyAttributes)
+                                                                                           .declaringType(et)
+                                                                                           .propertyInfo(property)
+                                                                                           .inferred(inference.inferred)
+                                                                                           .includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         } else if (property.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
-            final SingularAttributeImpl.SingularAttributeBuilder builder = SingularAttributeImpl.builder(propertyAttributes).declaringType(et).propertyInfo(property).inferred(inference.inferred).includeExplicit(inference.includeExplicit);
+            final SingularAttributeImpl.SingularAttributeBuilder builder = SingularAttributeImpl.builder(propertyAttributes)
+                                                                                                .declaringType(et)
+                                                                                                .propertyInfo(property)
+                                                                                                .inferred(inference.inferred)
+                                                                                                .includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = (AbstractAttribute<X, ?>) builder.build();
         }
@@ -319,9 +335,21 @@ class ClassFieldMetamodelProcessor<X> {
         if (os == null) {
             throw new MetamodelInitializationException("Expected Sequence annotation.");
         }
-        final ListAttributeImpl.ListAttributeBuilder builder = ListAttributeImpl.builder(propertyAttributes).declaringType(et).propertyInfo(property).inferred(inference.inferred).includeExplicit(inference.includeExplicit).owlListClass(IRI.create(os.ClassOWLListIRI())).hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI())).hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI())).sequenceType(os.type());
+        final ListAttributeImpl.ListAttributeBuilder builder = ListAttributeImpl.builder(propertyAttributes)
+                                                                                .declaringType(et)
+                                                                                .propertyInfo(property)
+                                                                                .inferred(inference.inferred)
+                                                                                .includeExplicit(inference.includeExplicit)
+                                                                                .owlListClass(IRI.create(resolvePrefix(os.ClassOWLListIRI())))
+                                                                                .hasNextProperty(IRI.create(resolvePrefix(os.ObjectPropertyHasNextIRI())))
+                                                                                .hasContentsProperty(IRI.create(resolvePrefix(os.ObjectPropertyHasContentsIRI())))
+                                                                                .sequenceType(os.type());
         context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
         return builder.build();
+    }
+
+    private String resolvePrefix(String value) {
+        return context.resolveNamespace(value);
     }
 
     private void registerTypeReference(Attribute<X, ?> attribute) {
@@ -331,20 +359,22 @@ class ClassFieldMetamodelProcessor<X> {
         }
     }
 
-    private boolean tryProcessIdentifierField(Field field) {
+    private void processIdentifierField(Field field) {
         final Id id = field.getAnnotation(Id.class);
-        if (id == null) {
-            return false;
-        }
+        assert id != null;
+
         mappingValidator.validateIdentifierType(field.getType());
         et.setIdentifier(new IRIIdentifierImpl<>(et, field, id.generated()));
-        return true;
     }
 
     private static boolean isAspectIntegrationField(Field field) {
         // AspectJ integration fields cannot be declared transitive (they're generated by the AJC), so we have to
         // skip them manually
         return field.getType().equals(BeanListenerAspect.Manageable.class);
+    }
+
+    private static boolean isIdentifierField(Field field) {
+        return field.getAnnotation(Id.class) != null;
     }
 
     private static class InferenceInfo {
