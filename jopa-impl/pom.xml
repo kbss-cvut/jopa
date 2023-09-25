@@ -15,7 +15,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <org.antlr4.version>4.9.3</org.antlr4.version>
+        <org.antlr4.version>4.12.0</org.antlr4.version>
     </properties>
 
     <dependencies>
@@ -43,12 +43,6 @@
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <version>${org.aspectj.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jgrapht</groupId>
-            <artifactId>jgrapht-core</artifactId>
-            <version>1.1.0</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
