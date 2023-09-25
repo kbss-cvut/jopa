@@ -194,7 +194,6 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     @Override
     public boolean isLoaded(Object entity) {
         Objects.requireNonNull(entity);
-        // Since we do not support getReference yet, all EAGER attributes are always loaded for managed instances
         return em.stream().anyMatch(emi -> emi.isLoaded(entity));
     }
 

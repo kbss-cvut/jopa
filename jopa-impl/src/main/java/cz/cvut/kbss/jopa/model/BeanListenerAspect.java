@@ -34,12 +34,6 @@ public class BeanListenerAspect {
 
     private static final Logger LOG = LoggerFactory.getLogger(BeanListenerAspect.class);
 
-    public interface Manageable {
-        void setPersistenceContext(UnitOfWorkImpl uow);
-
-        UnitOfWorkImpl getPersistenceContext();
-    }
-
     public static class ManageableImpl implements Manageable, Serializable {
         private transient UnitOfWorkImpl persistenceContext;
 
