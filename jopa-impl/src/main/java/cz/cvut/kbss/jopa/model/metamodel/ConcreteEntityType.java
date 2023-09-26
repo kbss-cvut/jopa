@@ -17,20 +17,30 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.model.IRI;
 
 /**
- * Instances of the type ConcreteEntityType represent entity
- * types which are can be directly instantiated while loading from storage.
- *
+ * Instances of the type ConcreteEntityType represent entity types that can be directly instantiated after being loaded from storage.
  *
  * @param <X> Entity type being represented by this instance
  */
 public class ConcreteEntityType<X> extends IdentifiableEntityType<X> {
 
+    /**
+     * The java type that can be used to instantiate an object of the entity class represented by this entity type.
+     */
+    private final Class<? extends X> instantiableType;
+
     public ConcreteEntityType(String name, Class<X> javaType, IRI iri) {
         super(name, javaType, iri);
+        // TODO for now
+        this.instantiableType = javaType;
     }
 
     @Override
     public boolean isAbstract() {
         return false;
+    }
+
+    @Override
+    public Class<? extends X> getInstantiableJavaType() {
+        return instantiableType;
     }
 }

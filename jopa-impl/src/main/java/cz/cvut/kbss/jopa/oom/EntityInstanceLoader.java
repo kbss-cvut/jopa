@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
@@ -83,7 +84,7 @@ abstract class EntityInstanceLoader {
      */
     abstract <T> T loadReference(LoadingParameters<T> loadingParameters);
 
-    <U extends T, T> U loadInstance(LoadingParameters<T> loadingParameters, EntityType<U> et) {
+    <U extends T, T> U loadInstance(LoadingParameters<T> loadingParameters, IdentifiableEntityType<U> et) {
         final URI identifier = loadingParameters.getIdentifier();
         final Descriptor descriptor = loadingParameters.getDescriptor();
         if (isCached(loadingParameters, et)) {
@@ -142,7 +143,7 @@ abstract class EntityInstanceLoader {
         });
     }
 
-    <T> T loadReferenceInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
+    <T> T loadReferenceInstance(LoadingParameters<T> loadingParameters, IdentifiableEntityType<? extends T> et) {
         final URI identifier = loadingParameters.getIdentifier();
         final Axiom<NamedResource> typeAxiom = descriptorFactory.createForReferenceLoading(identifier, et);
         try {

@@ -55,13 +55,13 @@ class EntityConstructor {
      * attributes from the specified axioms.
      *
      * @param identifier Entity identifier
-     * @param et         Entity type
+     * @param et         Entity type to instantiate and reconstruct
      * @param descriptor Entity descriptor with context info
      * @param axioms     Axioms from which the instance attribute values should be reconstructed
      * @param <T>        Entity type
      * @return New instance with populated attributes
      */
-    <T> T reconstructEntity(URI identifier, EntityType<T> et, Descriptor descriptor, Collection<Axiom<?>> axioms) {
+    <T> T reconstructEntity(URI identifier, IdentifiableEntityType<T> et, Descriptor descriptor, Collection<Axiom<?>> axioms) {
         assert !axioms.isEmpty();
 
         if (!axiomsContainEntityClassAssertion(axioms, et)) {
@@ -88,8 +88,9 @@ class EntityConstructor {
      * @param <T>        Entity type
      * @return Newly created instance with identifier set
      */
-    <T> T createEntityInstance(URI identifier, EntityType<T> et) {
-        final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getJavaType());
+    <T> T createEntityInstance(URI identifier, IdentifiableEntityType<T> et) {
+
+        final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getInstantiableJavaType());
         EntityPropertiesUtils.setIdentifier(identifier, instance, et);
         return instance;
     }
