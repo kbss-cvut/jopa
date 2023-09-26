@@ -52,6 +52,7 @@ class ManageableClassGeneratorTest {
         assertInstanceOf(Manageable.class, instance);
         assertInstanceOf(OWLClassA.class, instance);
         ((Manageable) instance).setPersistenceContext(uow);
+        when(uow.isInTransaction()).thenReturn(true);
         assertEquals(uow, ((Manageable) instance).getPersistenceContext());
         instance.setStringAttribute("test value");
         assertEquals("test value", instance.getStringAttribute());
@@ -66,6 +67,7 @@ class ManageableClassGeneratorTest {
         assertInstanceOf(Manageable.class, instance);
         assertInstanceOf(OWLClassI.class, instance);
         ((Manageable) instance).setPersistenceContext(uow);
+        when(uow.contains(instance)).thenReturn(true);
         assertEquals(uow, ((Manageable) instance).getPersistenceContext());
         assertNull(instance.getOwlClassA());
         verify(uow).loadEntityField(instance, OWLClassI.getOwlClassAField());

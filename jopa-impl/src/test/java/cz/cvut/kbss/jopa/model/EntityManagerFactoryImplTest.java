@@ -50,7 +50,7 @@ class EntityManagerFactoryImplTest {
         final Map<String, String> props = new HashMap<>();
         props.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, DataSourceStub.class.getName());
         props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
-                  Generators.createIndividualIdentifier().toString());
+                Generators.createIndividualIdentifier().toString());
         props.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
         this.emf = new EntityManagerFactoryImpl(props, closeListener);
         emf.createEntityManager();
@@ -61,50 +61,32 @@ class EntityManagerFactoryImplTest {
     void isLoadedReturnsTrueForManagedInstance() {
         when(connection.types()).thenReturn(mock(Types.class));
         final EntityManager em = emf.createEntityManager();
-        try {
-            final OWLClassA a = Generators.generateOwlClassAInstance();
-            em.persist(a);
-            assertTrue(emf.isLoaded(a));
-        } finally {
-            em.close();
-        }
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        em.persist(a);
+        assertTrue(emf.isLoaded(a));
     }
 
     @Test
     void isLoadedReturnsTrueForAttributeOfManagedInstance() throws Exception {
         when(connection.types()).thenReturn(mock(Types.class));
         final EntityManager em = emf.createEntityManager();
-        try {
-            final OWLClassA a = Generators.generateOwlClassAInstance();
-            em.persist(a);
-            assertTrue(emf.isLoaded(a, OWLClassA.getStrAttField().getName()));
-        } finally {
-            em.close();
-        }
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        em.persist(a);
+        assertTrue(emf.isLoaded(a, OWLClassA.getStrAttField().getName()));
     }
 
     @Test
     void isLoadedReturnsFalseNonNonManagedInstance() {
-        final EntityManager emOne = emf.createEntityManager();
-        final EntityManager emTwo = emf.createEntityManager();
-        try {
-            assertFalse(emf.isLoaded(Generators.generateOwlClassAInstance()));
-        } finally {
-            emOne.close();
-            emTwo.close();
-        }
+        emf.createEntityManager();
+        emf.createEntityManager();
+        assertFalse(emf.isLoaded(Generators.generateOwlClassAInstance()));
     }
 
     @Test
     void isLoadedReturnsFalseNonNonManagedInstanceWithAttribute() throws Exception {
-        final EntityManager emOne = emf.createEntityManager();
-        final EntityManager emTwo = emf.createEntityManager();
-        try {
-            assertFalse(emf.isLoaded(Generators.generateOwlClassAInstance(), OWLClassA.getStrAttField().getName()));
-        } finally {
-            emOne.close();
-            emTwo.close();
-        }
+        emf.createEntityManager();
+        emf.createEntityManager();
+        assertFalse(emf.isLoaded(Generators.generateOwlClassAInstance(), OWLClassA.getStrAttField().getName()));
     }
 
     @Test

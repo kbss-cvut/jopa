@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
@@ -50,7 +49,6 @@ class EntityResultMapperTest {
     void setUp() {
         this.mapper = new EntityResultMapper<>(etMock);
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) OWLClassA.class);
     }
 
     @Test

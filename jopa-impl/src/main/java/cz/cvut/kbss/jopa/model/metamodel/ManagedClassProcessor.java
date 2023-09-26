@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
 import cz.cvut.kbss.jopa.model.annotations.Namespace;
 import cz.cvut.kbss.jopa.model.annotations.Namespaces;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.metamodel.gen.ManageableClassGenerator;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 
 import java.lang.reflect.AnnotatedElement;
@@ -105,10 +106,11 @@ public class ManagedClassProcessor {
         assert c != null;
 
         if (cls.isInterface() || Modifier.isAbstract(cls.getModifiers())) {
-            return new AbstractEntityType<>(cls.getSimpleName(), cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
+            return new AbstractEntityType<>(cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
         } else {
             checkForNoArgConstructor(cls);
-            return new ConcreteEntityType<>(cls.getSimpleName(), cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
+            final Class<? extends T> instantiableType = new ManageableClassGenerator().generate(cls);
+            return new ConcreteEntityType<>(cls, instantiableType, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
         }
     }
 
@@ -133,7 +135,7 @@ public class ManagedClassProcessor {
         return null;
     }
 
-    public static <T> Set<Class<? super T>> getManagedSuperInterfaces(Class<T> cls) {
+    static <T> Set<Class<? super T>> getManagedSuperInterfaces(Class<T> cls) {
         return Arrays.stream(cls.getInterfaces()).filter(ManagedClassProcessor::isManagedType)
                      .map(clazz -> (Class<? super T>) clazz)
                      .collect(Collectors.toSet());

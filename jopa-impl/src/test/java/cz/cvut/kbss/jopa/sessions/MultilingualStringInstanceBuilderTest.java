@@ -45,7 +45,7 @@ class MultilingualStringInstanceBuilderTest {
         final MultilingualString original = MultilingualString.create("building", Generators.LANG);
         original.set("cs", "stavba");
         final Object result = sut.buildClone(new OWLClassU(), OWLClassU.getSingularStringAttField(), original,
-                new CloneConfiguration(descriptor));
+                new CloneConfiguration(descriptor, false));
         assertThat(result, instanceOf(MultilingualString.class));
         final MultilingualString typedResult = (MultilingualString) result;
         assertEquals(original.getValue(), typedResult.getValue());
@@ -54,7 +54,7 @@ class MultilingualStringInstanceBuilderTest {
     @Test
     void buildCloneResultsNullWhenOriginalIsNull() throws Exception {
         final Object result = sut.buildClone(new OWLClassU(), OWLClassU.getSingularStringAttField(), null,
-                new CloneConfiguration(descriptor));
+                new CloneConfiguration(descriptor, false));
         assertNull(result);
     }
 
@@ -63,7 +63,7 @@ class MultilingualStringInstanceBuilderTest {
         final MultilingualString original = MultilingualString.create("building", Generators.LANG);
         original.set("cs", "stavba");
         final Object result = sut.buildClone(new OWLClassU(), OWLClassU.getSingularStringAttField(), original,
-                new CloneConfiguration(descriptor));
+                new CloneConfiguration(descriptor, false));
         assertThat(result, instanceOf(IndirectMultilingualString.class));
     }
 
@@ -72,7 +72,7 @@ class MultilingualStringInstanceBuilderTest {
         final MultilingualString original = MultilingualString.create("building", Generators.LANG);
         final IndirectMultilingualString arg = new IndirectMultilingualString(new OWLClassU(),
                 OWLClassU.getSingularStringAttField(), mock(UnitOfWorkImpl.class), original);
-        final Object result = sut.buildClone(new OWLClassU(), OWLClassU.getSingularStringAttField(), arg, new CloneConfiguration(descriptor));
+        final Object result = sut.buildClone(new OWLClassU(), OWLClassU.getSingularStringAttField(), arg, new CloneConfiguration(descriptor, false));
         assertThat(result, instanceOf(IndirectMultilingualString.class));
         final IndirectMultilingualString resultIndirect = (IndirectMultilingualString) result;
         assertEquals(original, resultIndirect.unwrap());

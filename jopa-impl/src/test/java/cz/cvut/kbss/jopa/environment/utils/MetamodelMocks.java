@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassE;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
 import cz.cvut.kbss.jopa.environment.OWLClassG;
 import cz.cvut.kbss.jopa.environment.OWLClassH;
+import cz.cvut.kbss.jopa.environment.OWLClassI;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
 import cz.cvut.kbss.jopa.environment.OWLClassK;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
@@ -146,6 +147,13 @@ public class MetamodelMocks {
     private SingularAttributeImpl<OWLClassH, OWLClassA> hOwlClassAAtt;
     @Mock
     private SingularAttributeImpl<OWLClassH, OWLClassG> hOwlClassGAtt;
+
+    @Mock
+    private IdentifiableEntityType<OWLClassI> etI;
+    @Mock
+    private Identifier<OWLClassI, URI> idI;
+    @Mock
+    private SingularAttributeImpl<OWLClassI, OWLClassA> iOwlClassAAtt;
 
     @Mock
     private IdentifiableEntityType<OWLClassJ> etJ;
@@ -350,6 +358,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassFMocks(etF, fSetAtt, fStringAtt, idF);
         MetamodelFactory.initOWLClassGMocks(etG, gOwlClassHAtt, etH, idG);
         MetamodelFactory.initOWLClassHMocks(etH, hOwlClassAAtt, hOwlClassGAtt, etA, etG, idH);
+        MetamodelFactory.initOWLClassIMocks(etI, iOwlClassAAtt, idI);
         MetamodelFactory.initOWLClassJMocks(etJ, jSetAtt, idJ);
         MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, idK);
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
@@ -389,6 +398,7 @@ public class MetamodelMocks {
         etMap.put(OWLClassF.class, etF);
         etMap.put(OWLClassG.class, etG);
         etMap.put(OWLClassH.class, etH);
+        etMap.put(OWLClassI.class, etI);
         etMap.put(OWLClassJ.class, etJ);
         etMap.put(OWLClassK.class, etK);
         etMap.put(OWLClassL.class, etL);
@@ -633,7 +643,20 @@ public class MetamodelMocks {
         public AbstractAttribute<OWLClassH, OWLClassA> owlClassAAtt() {
             return MetamodelMocks.this.hOwlClassAAtt;
         }
+    }
 
+    public class OWLClassIMetamodel {
+        public IdentifiableEntityType<OWLClassI> entityType() {
+            return MetamodelMocks.this.etI;
+        }
+
+        public Identifier<OWLClassI, URI> identifier() {
+            return MetamodelMocks.this.idI;
+        }
+
+        public SingularAttributeImpl<OWLClassI, OWLClassA> setAttribute() {
+            return MetamodelMocks.this.iOwlClassAAtt;
+        }
     }
 
     public class OWLClassJMetamodel {

@@ -28,10 +28,9 @@ public class ConcreteEntityType<X> extends IdentifiableEntityType<X> {
      */
     private final Class<? extends X> instantiableType;
 
-    public ConcreteEntityType(String name, Class<X> javaType, IRI iri) {
-        super(name, javaType, iri);
-        // TODO for now
-        this.instantiableType = javaType;
+    public ConcreteEntityType(Class<X> javaType, Class<? extends X> instantiableType, IRI iri) {
+        super(javaType, iri);
+        this.instantiableType = instantiableType;
     }
 
     @Override

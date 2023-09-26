@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.*;
@@ -168,9 +169,10 @@ class MetamodelImplInheritanceTest {
                 ex.getMessage());
     }
 
+    @TestLocal
     @Inheritance(strategy = InheritanceType.TRY_FIRST)
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#SubclassWithInheritanceType")
-    private static final class SubclassWithInheritanceType extends OWLClassS {
+    public static class SubclassWithInheritanceType extends OWLClassS {
 
     }
 
@@ -183,8 +185,9 @@ class MetamodelImplInheritanceTest {
         assertTrue(supertype.getSubtypes().contains(metamodel.entity(AnotherSubclass.class)));
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "AnotherSubtype")
-    private static class AnotherSubclass extends OWLClassS {
+    public static class AnotherSubclass extends OWLClassS {
     }
 
     /**
@@ -211,11 +214,13 @@ class MetamodelImplInheritanceTest {
         private Set<ChildWithCircular> children;
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ChildWithCircular")
-    private static class ChildWithCircular extends ParentWithCircular {
+    public static class ChildWithCircular extends ParentWithCircular {
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "AnotherChildWithCircular")
-    private static class AnotherChildWithCircular extends ParentWithCircular {
+    public static class AnotherChildWithCircular extends ParentWithCircular {
     }
 }

@@ -31,9 +31,9 @@ public abstract class IdentifiableEntityType<X> extends AbstractIdentifiableType
 
     private InheritanceType inheritanceType;
 
-    public IdentifiableEntityType(String name, Class<X> javaType, final IRI iri) {
+    public IdentifiableEntityType(Class<X> javaType, final IRI iri) {
         super(javaType);
-        this.name = name;
+        this.name = javaType.getSimpleName();
         this.iri = iri;
     }
 

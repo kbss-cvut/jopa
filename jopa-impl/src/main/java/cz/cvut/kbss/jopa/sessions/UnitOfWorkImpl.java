@@ -20,15 +20,15 @@ import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
-import cz.cvut.kbss.jopa.model.BeanListenerAspect;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.model.LoadState;
+import cz.cvut.kbss.jopa.model.Manageable;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
@@ -42,13 +42,19 @@ import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
 import cz.cvut.kbss.jopa.sessions.validator.InferredAttributeChangeValidator;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.MetamodelUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;
-import org.aspectj.lang.Aspects;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException.individualAlreadyManaged;
@@ -196,16 +202,17 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         if (result == null) {
             return null;
         }
-        instanceDescriptors.put(result, InstanceDescriptorFactory.createNotLoaded(result, entityType(cls)));
-        registerEntityWithPersistenceContext(result);
-        registerEntityWithOntologyContext(result, descriptor);
+        final T clone = (T) cloneBuilder.buildReferenceClone(result, new CloneConfiguration(descriptor, true));
+        instanceDescriptors.put(clone, InstanceDescriptorFactory.createNotLoaded(result, entityType(cls)));
+        registerEntityWithPersistenceContext(clone);
+        registerEntityWithOntologyContext(clone, descriptor);
         if (getLiveObjectCache().contains(cls, identifier, descriptor)) {
-            cloneToOriginals.put(result, getLiveObjectCache().get(cls, identifier, descriptor));
+            cloneToOriginals.put(clone, getLiveObjectCache().get(cls, identifier, descriptor));
         } else {
-            cloneToOriginals.put(result, null);
+            cloneToOriginals.put(clone, null);
         }
-        keysToClones.put(identifier, result);
-        return result;
+        keysToClones.put(identifier, clone);
+        return clone;
     }
 
     /**
@@ -230,7 +237,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         for (Object clone : newObjectsCloneToOriginal.keySet()) {
             final Descriptor c = getDescriptor(clone);
             Object original = newObjectsCloneToOriginal
-                    .computeIfAbsent(clone, key -> cloneBuilder.buildClone(key, new CloneConfiguration(c)));
+                    .computeIfAbsent(clone, key -> cloneBuilder.buildClone(key, new CloneConfiguration(c, false)));
             if (original == null) {
                 throw new OWLPersistenceException(
                         "Error while calculating changes for new objects. Original not found.");
@@ -271,10 +278,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             removeIndirectCollections(instance);
             deregisterEntityFromPersistenceContext(instance);
         });
-        newObjectsCloneToOriginal.keySet().forEach(instance -> {
-            removeIndirectCollections(instance);
-            deregisterEntityFromPersistenceContext(instance);
-        });
+        newObjectsCloneToOriginal.keySet().forEach(this::removeIndirectCollections);
     }
 
     @Override
@@ -328,7 +332,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
                 cacheManager.evictInferredObjects();
             }
         }
-
     }
 
     /**
@@ -596,7 +599,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private boolean isSameType(Object id, Object entity) {
         final Class<?> mergedType = entity.getClass();
         final Object managed = keysToClones.containsKey(id) ? keysToClones.get(id) : newObjectsKeyToClone.get(id);
-        return managed != null && managed.getClass().isAssignableFrom(mergedType);
+        assert managed != null;
+        final Class<?> managedType = MetamodelUtils.getEntityClass(managed.getClass());
+        return managedType.isAssignableFrom(mergedType);
     }
 
     private <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
@@ -662,11 +667,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     }
 
     private void registerEntityWithPersistenceContext(Object entity) {
-        Aspects.aspectOf(BeanListenerAspect.class).register(entity, this);
+        assert entity instanceof Manageable;
+        ((Manageable) entity).setPersistenceContext(this);
     }
 
     private static void deregisterEntityFromPersistenceContext(Object entity) {
-        Aspects.aspectOf(BeanListenerAspect.class).deregister(entity);
+        if (!(entity instanceof Manageable)) {
+            return;
+        }
+        ((Manageable) entity).setPersistenceContext(null);
     }
 
     @Override
@@ -692,7 +701,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         if (cloneToOriginals.containsValue(entity)) {
             return getCloneForOriginal(entity);
         }
-        final CloneConfiguration cloneConfig = new CloneConfiguration(descriptor);
+        final CloneConfiguration cloneConfig = new CloneConfiguration(descriptor, true);
         postClone.forEach(cloneConfig::addPostRegisterHandler);
         Object clone = cloneBuilder.buildClone(entity, cloneConfig);
         assert clone != null;
@@ -741,7 +750,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             if (original == null) {
                 throw new EntityNotFoundException("Entity " + object + " no longer exists in the repository.");
             }
-            T source = (T) cloneBuilder.buildClone(original, new CloneConfiguration(descriptor));
+            T source = (T) cloneBuilder.buildClone(original, new CloneConfiguration(descriptor, false));
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(source, object, descriptor);
             changeManager.calculateChanges(chSet);
             new RefreshInstanceMerger(indirectWrapperHelper).mergeChanges(chSet);
@@ -796,7 +805,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         assert id != null;
         // Original is null until commit
         newObjectsCloneToOriginal.put(entity, null);
-        registerEntityWithPersistenceContext(entity);
         registerEntityWithOntologyContext(entity, descriptor);
         instanceDescriptors.put(entity, InstanceDescriptorFactory.createAllLoaded(entity, (EntityType<Object>) eType));
         newObjectsKeyToClone.put(id, entity);
@@ -978,7 +986,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     public void removeObjectFromCache(Object toRemove, URI context) {
         Objects.requireNonNull(toRemove);
 
-        cacheManager.evict(toRemove.getClass(), getIdentifier(toRemove), context);
+        cacheManager.evict(MetamodelUtils.getEntityClass(toRemove.getClass()), getIdentifier(toRemove), context);
     }
 
     @Override

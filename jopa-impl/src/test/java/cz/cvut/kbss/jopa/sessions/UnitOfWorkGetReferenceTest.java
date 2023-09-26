@@ -71,7 +71,8 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         final OWLClassA reference = new OWLClassA(entityA.getUri());
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
-        assertEquals(reference, result);
+        assertNotNull(result);
+        assertEquals(reference.getUri(), result.getUri());
         verify(storageMock).getReference(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor));
     }
 

@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.QMappedSuperclass;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,7 @@ class ManagedClassProcessorTest {
                      ex.getMessage());
     }
 
+    @TestLocal
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithoutNoArgConstructor")
     private static class ClassWithoutNoArgConstructor {
         private String name;
@@ -51,21 +53,29 @@ class ManagedClassProcessorTest {
     @Test
     void processManagedTypeReturnsEntityTypeForEntity() {
         final TypeBuilderContext<OWLClassA> res = ManagedClassProcessor.processManagedType(OWLClassA.class);
-        assertTrue(res.getType() instanceof EntityType);
+        assertInstanceOf(EntityType.class, res.getType());
+    }
+
+    @Test
+    void processManagedTypeGeneratesInstantiableTypeForEntityClass() {
+        final TypeBuilderContext<OWLClassA> res = ManagedClassProcessor.processManagedType(OWLClassA.class);
+        final Class<? extends OWLClassA> instantiableType = res.getType().getInstantiableJavaType();
+        assertTrue(OWLClassA.class.isAssignableFrom(instantiableType));
+        assertNotEquals(OWLClassA.class, instantiableType);
     }
 
     @Test
     void processManagedTypeReturnsMappedSuperclassTypeForMappedSuperclass() {
         final TypeBuilderContext<QMappedSuperclass> res = ManagedClassProcessor
                 .processManagedType(QMappedSuperclass.class);
-        assertTrue(res.getType() instanceof MappedSuperclassType);
+        assertInstanceOf(MappedSuperclassType.class, res.getType());
     }
 
     @Test
     void processManagedTypeReturnsAbstractEntityTypeTypeForInterfaces() {
         final TypeBuilderContext<InterfaceClass> res = ManagedClassProcessor
                 .processManagedType(InterfaceClass.class);
-        assertTrue(res.getType() instanceof AbstractEntityType);
+        assertInstanceOf(AbstractEntityType.class, res.getType());
     }
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "Interface")
@@ -75,13 +85,13 @@ class ManagedClassProcessorTest {
 
     @Test
     void processManagedTypeReturnsConcreteEntityTypeTypeForClasses() {
-        final TypeBuilderContext<OWLEntity> res = ManagedClassProcessor
-                .processManagedType(OWLEntity.class);
-        assertTrue(res.getType() instanceof ConcreteEntityType);
+        final TypeBuilderContext<OWLEntity> res = ManagedClassProcessor.processManagedType(OWLEntity.class);
+        assertInstanceOf(ConcreteEntityType.class, res.getType());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "Class")
-    private static class OWLEntity {
+    public static class OWLEntity {
 
     }
 
@@ -124,8 +134,10 @@ class ManagedClassProcessorTest {
     private interface ManagedInterfaceB {
 
     }
+
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ChildClassWithMultipleParents")
-    private static class ChildClassWithMultipleParents extends OWLEntity implements ManagedInterfaceA, ManagedInterfaceB, NonManagedInterfaceA, NonManagedInterfaceB {
+    public static class ChildClassWithMultipleParents extends OWLEntity implements ManagedInterfaceA, ManagedInterfaceB, NonManagedInterfaceA, NonManagedInterfaceB {
 
     }
 }

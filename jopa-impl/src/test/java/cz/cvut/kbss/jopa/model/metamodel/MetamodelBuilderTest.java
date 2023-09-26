@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
@@ -65,9 +66,10 @@ class MetamodelBuilderTest {
         assertEquals(Vocabulary.CLASS_BASE + "EntityWithNamespace", result.getIRI().toString());
     }
 
+    @TestLocal
     @Namespace(prefix = "class", namespace = Vocabulary.CLASS_BASE)
     @OWLClass(iri = "class:EntityWithNamespace")
-    private static class EntityWithNamespace {
+    public static class EntityWithNamespace {
         @Id
         private URI uri;
     }
@@ -81,9 +83,10 @@ class MetamodelBuilderTest {
         assertEquals(Vocabulary.CLASS_BASE + "EntityWithNamespaces", result.getIRI().toString());
     }
 
+    @TestLocal
     @Namespaces({@Namespace(prefix = "class", namespace = Vocabulary.CLASS_BASE)})
     @OWLClass(iri = "class:EntityWithNamespaces")
-    private static class EntityWithNamespaces {
+    public static class EntityWithNamespaces {
         @Id
         private URI uri;
     }
@@ -101,10 +104,11 @@ class MetamodelBuilderTest {
         assertEquals(DC.Elements.DESCRIPTION, descriptionAtt.getIRI().toString());
     }
 
+    @TestLocal
     @Namespaces({@Namespace(prefix = "dc", namespace = DC.Elements.NAMESPACE),
             @Namespace(prefix = "ex2", namespace = "http://www.example2.org/")})
     @OWLClass(iri = "ex2:EntityWithNamespaceAttributes")
-    private static class EntityWithNamespaceAttributes {
+    public static class EntityWithNamespaceAttributes {
         @Id
         private URI uri;
 
@@ -124,8 +128,9 @@ class MetamodelBuilderTest {
         assertEquals("http://www.example.org/EntityWithNamespaceFromPackage", result.getIRI().toString());
     }
 
+    @TestLocal
     @OWLClass(iri = "ex:EntityWithNamespaceFromPackage")
-    private static class EntityWithNamespaceFromPackage {
+    public static class EntityWithNamespaceFromPackage {
         @Id
         private URI uri;
     }
@@ -177,6 +182,7 @@ class MetamodelBuilderTest {
                 .anyMatch(parent -> parent.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST)));
     }
 
+    @TestLocal
     @MappedSuperclass
     public static class ParentWithCallback {
 
@@ -188,6 +194,7 @@ class MetamodelBuilderTest {
         }
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ChildWithCallback")
     public static class ChildWithCallback extends ParentWithCallback {
 
@@ -233,8 +240,9 @@ class MetamodelBuilderTest {
         assertEquals(String.class, att.getElementType().getJavaType());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithPluralSimpleLiteral")
-    private static class WithPluralSimpleLiteral {
+    public static class WithPluralSimpleLiteral {
 
         @Id
         private URI uri;
@@ -266,8 +274,9 @@ class MetamodelBuilderTest {
         assertEquals(CollectionType.COLLECTION, objectAtt.getCollectionType());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithCollectionAttributes")
-    private static class WithCollectionAttributes {
+    public static class WithCollectionAttributes {
         @Id
         private URI uri;
 
@@ -302,8 +311,9 @@ class MetamodelBuilderTest {
         assertThrows(InvalidFieldMappingException.class, () -> builder.buildMetamodel(finderMock));
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithInvalidTypeField")
-    private static class WithInvalidTypeField {
+    public static class WithInvalidTypeField {
         @Id
         private URI uri;
 
@@ -327,16 +337,19 @@ class MetamodelBuilderTest {
         assertThat(cClassEt.getSupertypes(), containsInAnyOrder(AParentEt, BParentEt));
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "AParentI")
     private interface AParentI {
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "BParentI")
     private interface BParentI {
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "InterfaceChild")
-    private static class InterfaceChild implements AParentI, BParentI {
+    public static class InterfaceChild implements AParentI, BParentI {
         @Id
         private URI uri;
     }
@@ -357,14 +370,16 @@ class MetamodelBuilderTest {
         assertThat(cClassEt.getSupertypes(), containsInAnyOrder(AParentEt, BParentEt));
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "BParent")
-    private static class BParent {
+    public static class BParent {
         @Id
         private URI uri;
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "Child")
-    private static class ClassChild extends BParent implements AParentI {
+    public static class ClassChild extends BParent implements AParentI {
 
     }
 
@@ -375,6 +390,7 @@ class MetamodelBuilderTest {
         assertThrows(MetamodelInitializationException.class, () -> builder.buildMetamodel(finderMock));
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidMethod")
     private interface InterfaceWithInvalidMethod {
         @OWLDataProperty(iri = Vocabulary.CLASS_BASE + "name")
@@ -402,8 +418,9 @@ class MetamodelBuilderTest {
         assertEquals(FetchType.EAGER, types.getFetchType());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithInferredTypesAndProperties")
-    private static class WithInferredTypesAndProperties {
+    public static class WithInferredTypesAndProperties {
 
         @Id
         private URI uri;

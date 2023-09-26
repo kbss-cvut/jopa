@@ -28,12 +28,16 @@ public class CloneConfiguration {
 
     private final List<Consumer<Object>> postRegister = new ArrayList<>(1);
 
-    public CloneConfiguration(Descriptor descriptor) {
+    private final boolean forPersistenceContext;
+
+    public CloneConfiguration(Descriptor descriptor, boolean forPersistenceContext) {
         this.descriptor = Objects.requireNonNull(descriptor);
+        this.forPersistenceContext = forPersistenceContext;
     }
 
-    public CloneConfiguration(Descriptor descriptor, List<Consumer<Object>> handlers) {
+    public CloneConfiguration(Descriptor descriptor, boolean forPersistenceContext, List<Consumer<Object>> handlers) {
         this.descriptor = Objects.requireNonNull(descriptor);
+        this.forPersistenceContext = forPersistenceContext;
         Objects.requireNonNull(handlers);
         postRegister.addAll(handlers);
     }
@@ -48,5 +52,9 @@ public class CloneConfiguration {
 
     public List<Consumer<Object>> getPostRegister() {
         return Collections.unmodifiableList(postRegister);
+    }
+
+    public boolean isForPersistenceContext() {
+        return forPersistenceContext;
     }
 }
