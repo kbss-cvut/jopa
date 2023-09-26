@@ -90,7 +90,7 @@ class EntityConstructor {
      */
     <T> T createEntityInstance(URI identifier, IdentifiableEntityType<T> et) {
 
-        final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getInstantiableJavaType());
+        final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getJavaType());
         EntityPropertiesUtils.setIdentifier(identifier, instance, et);
         return instance;
     }

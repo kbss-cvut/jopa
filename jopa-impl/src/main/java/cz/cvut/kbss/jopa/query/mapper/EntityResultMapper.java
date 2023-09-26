@@ -55,7 +55,7 @@ class EntityResultMapper<T> implements SparqlResultMapper {
     @Override
     public T map(ResultRow resultRow, UnitOfWorkImpl uow) {
         try {
-            final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getInstantiableJavaType());
+            final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getJavaType());
             fieldMappers.forEach(m -> m.map(resultRow, instance, uow));
             return et.getJavaType().cast(uow.registerExistingObject(instance, new EntityDescriptor(),
                     Collections.singletonList(new PostLoadInvoker(uow.getMetamodel()))));
