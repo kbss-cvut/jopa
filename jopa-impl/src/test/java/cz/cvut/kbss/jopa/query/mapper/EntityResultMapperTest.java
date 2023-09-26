@@ -49,6 +49,7 @@ class EntityResultMapperTest {
     void setUp() {
         this.mapper = new EntityResultMapper<>(etMock);
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
+        when(etMock.getInstantiableJavaType()).thenReturn((Class) OWLClassA.class);
     }
 
     @Test
