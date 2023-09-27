@@ -62,19 +62,10 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     void persistObjectTwiceInPersistenceContextIsLegal() throws Exception {
         em.getTransaction().begin();
         em.persist(entityA);
-        entityA.setStringAttribute("UpdatedString");
         em.persist(entityA);
         em.getTransaction().commit();
 
         verify(connectionMock).persist(any(AxiomValueDescriptor.class));
-        final ArgumentCaptor<AxiomValueDescriptor> captor = ArgumentCaptor.forClass(AxiomValueDescriptor.class);
-        verify(connectionMock).update(captor.capture());
-        final AxiomValueDescriptor descriptor = captor.getValue();
-        assertEquals(1, descriptor.getAssertions().size());
-        final List<Value<?>> values = descriptor.getAssertionValues(Assertion.createDataPropertyAssertion(URI.create(
-                Vocabulary.P_A_STRING_ATTRIBUTE), false));
-        assertEquals(1, values.size());
-        assertEquals(entityA.getStringAttribute(), values.get(0).getValue());
     }
 
     @Test

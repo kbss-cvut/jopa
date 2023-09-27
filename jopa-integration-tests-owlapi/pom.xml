@@ -79,11 +79,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>dev.aspectj</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-            </plugin>
-
             <!-- Do not deploy/generate Javadoc for integration tests -->
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>

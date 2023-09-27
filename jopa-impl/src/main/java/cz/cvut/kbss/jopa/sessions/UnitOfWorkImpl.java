@@ -160,8 +160,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         if (result == null) {
             return null;
         }
-        final Object clone = registerExistingObject(result, descriptor,
-                                                    Collections.singletonList(new PostLoadInvoker(getMetamodel())));
+        final Object clone = registerExistingObject(result, descriptor, Collections.singletonList(new PostLoadInvoker(getMetamodel())));
         checkForIndirectObjects(clone);
         return cls.cast(clone);
     }
@@ -186,6 +185,29 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw individualAlreadyManaged(identifier);
         }
         return isInRepository(descriptor, clone) && !deletedObjects.containsKey(clone) ? cls.cast(clone) : null;
+    }
+
+    /**
+     * Reads an object but does not register it with this persistence context.
+     * <p>
+     * Useful when the caller knows the object will be registered eventually by another routine.
+     *
+     * @param cls        Expected result class
+     * @param identifier Object identifier
+     * @param descriptor Entity descriptor
+     * @return The retrieved object or {@code null} if there is no object with the specified identifier in the specified
+     * repository
+     */
+    public <T> T readObjectWithoutRegistration(Class<T> cls, Object identifier, Descriptor descriptor) {
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull(identifier);
+        Objects.requireNonNull(descriptor);
+
+        T result = readManagedObject(cls, identifier, descriptor);
+        if (result != null) {
+            return result;
+        }
+        return storage.find(new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor));
     }
 
     @Override
@@ -236,11 +258,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private void calculateNewObjects(UnitOfWorkChangeSet changeSet) {
         for (Object clone : newObjectsCloneToOriginal.keySet()) {
             final Descriptor c = getDescriptor(clone);
-            Object original = newObjectsCloneToOriginal
-                    .computeIfAbsent(clone, key -> cloneBuilder.buildClone(key, new CloneConfiguration(c, false)));
+            Object original = newObjectsCloneToOriginal.computeIfAbsent(clone, key -> cloneBuilder.buildClone(key, new CloneConfiguration(c, false)));
             if (original == null) {
-                throw new OWLPersistenceException(
-                        "Error while calculating changes for new objects. Original not found.");
+                throw new OWLPersistenceException("Error while calculating changes for new objects. Original not found.");
             }
             newObjectsCloneToOriginal.put(clone, original);
             changeSet.addNewObjectChangeSet(ChangeSetFactory.createObjectChangeSet(original, clone, c));
@@ -348,8 +368,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private void validateIntegrityConstraints() {
         final IntegrityConstraintsValidator validator = getValidator();
         for (ObjectChangeSet changeSet : uowChangeSet.getNewObjects()) {
-            validator.validate(changeSet.getCloneObject(), entityType((Class<Object>) changeSet.getObjectClass()),
-                               isNotInferred());
+            validator.validate(changeSet.getCloneObject(), entityType((Class<Object>) changeSet.getObjectClass()), isNotInferred());
         }
         uowChangeSet.getExistingObjectsChanges().forEach(changeSet -> validator.validate(changeSet, getMetamodel()));
     }
@@ -501,8 +520,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     public boolean isObjectManaged(Object entity) {
         Objects.requireNonNull(entity);
 
-        return cloneMapping.contains(entity) && !deletedObjects.containsKey(entity) ||
-                newObjectsCloneToOriginal.containsKey(entity);
+        return cloneMapping.contains(entity) && !deletedObjects.containsKey(entity) || newObjectsCloneToOriginal.containsKey(entity);
     }
 
     /**
@@ -538,9 +556,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         if (orig == null) {
             return;
         }
-        final ChangeRecord record = new ChangeRecordImpl(fieldSpec,
-                                                         EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(),
-                                                                                             clone));
+        final ChangeRecord record = new ChangeRecordImpl(fieldSpec, EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(), clone));
         preventCachingIfReferenceIsNotLoaded(record);
         registerChangeRecord(clone, orig, descriptor, record);
     }
@@ -616,10 +632,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             changeManager.calculateChanges(chSet);
             if (chSet.hasChanges()) {
                 // Have to check for inferred attribute changes before the actual merge
-                chSet.getChanges().stream().filter(chr -> chr.getAttribute().isInferred()).forEach(
-                        chr -> inferredAttributeChangeValidator.validateChange(entity, clone,
-                                                                               (FieldSpecification<? super T, ?>) chr.getAttribute(),
-                                                                               descriptor));
+                chSet.getChanges().stream().filter(chr -> chr.getAttribute().isInferred())
+                     .forEach(chr -> inferredAttributeChangeValidator.validateChange(entity, clone, (FieldSpecification<? super T, ?>) chr.getAttribute(), descriptor));
                 et.getLifecycleListenerManager().invokePreUpdateCallbacks(clone);
                 final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
                 merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
@@ -667,6 +681,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     }
 
     private void registerEntityWithPersistenceContext(Object entity) {
+        if (isInCommit()) {
+            return;
+        }
         assert entity instanceof Manageable;
         ((Manageable) entity).setPersistenceContext(this);
     }
@@ -701,7 +718,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         if (cloneToOriginals.containsValue(entity)) {
             return getCloneForOriginal(entity);
         }
-        final CloneConfiguration cloneConfig = new CloneConfiguration(descriptor, true);
+        final CloneConfiguration cloneConfig = new CloneConfiguration(descriptor, !isInCommit());
         postClone.forEach(cloneConfig::addPostRegisterHandler);
         Object clone = cloneBuilder.buildClone(entity, cloneConfig);
         assert clone != null;
@@ -770,8 +787,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     private <T> void revertTransactionalChanges(T object, Descriptor descriptor, ObjectChangeSet chSet) {
         for (ChangeRecord change : chSet.getChanges()) {
-            storage.merge(object, (FieldSpecification<? super T, ?>) change.getAttribute(),
-                    descriptor.getAttributeDescriptor(change.getAttribute()));
+            storage.merge(object, (FieldSpecification<? super T, ?>) change.getAttribute(), descriptor.getAttributeDescriptor(change.getAttribute()));
         }
     }
 
@@ -818,14 +834,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw individualAlreadyManaged(id);
         }
         if (storage.contains(id, instance.getClass(), descriptor)) {
-            throw new OWLEntityExistsException(
-                    "Individual " + id + " of type " + et.getIRI() + " already exists in storage.");
+            throw new OWLEntityExistsException("Individual " + id + " of type " + et.getIRI() + " already exists in storage.");
         }
     }
 
     private boolean isIndividualManaged(Object identifier, Object entity) {
-        return keysToClones.containsKey(identifier) ||
-                newObjectsKeyToClone.containsKey(identifier) && !cloneMapping.contains(entity);
+        return keysToClones.containsKey(identifier) || newObjectsKeyToClone.containsKey(identifier) && !cloneMapping.contains(entity);
     }
 
     @Override
@@ -938,12 +952,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
         final Descriptor entityDescriptor = getDescriptor(entity);
         if (!instanceDescriptors.containsKey(entity)) {
-            throw new OWLPersistenceException(
-                    "Unable to find repository identifier for entity " + entity + ". Is it managed by this UoW?");
+            throw new OWLPersistenceException("Unable to find repository identifier for entity " + entity + ". Is it managed by this UoW?");
         }
         final InstanceDescriptor<?> instanceDescriptor = instanceDescriptors.get(entity);
-        final FieldSpecification<? super T, ?> fieldSpec = entityType((Class<Object>) entity.getClass())
-                .getFieldSpecification(field.getName());
+        final FieldSpecification<? super T, ?> fieldSpec = entityType((Class<Object>) entity.getClass()).getFieldSpecification(field.getName());
         if (instanceDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
             return;
         }
@@ -1014,8 +1026,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     public LoadState isLoaded(Object entity, String attributeName) {
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
-        return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded(fs) :
-                LoadState.UNKNOWN;
+        return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity)
+                                                                            .isLoaded(fs) : LoadState.UNKNOWN;
     }
 
     @Override
@@ -1065,8 +1077,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             return;
         }
         if (IndirectWrapperHelper.requiresIndirectWrapper(value)) {
-            EntityPropertiesUtils
-                    .setFieldValue(field, entity, indirectWrapperHelper.createIndirectWrapper(value, entity, field));
+            EntityPropertiesUtils.setFieldValue(field, entity, indirectWrapperHelper.createIndirectWrapper(value, entity, field));
         }
     }
 

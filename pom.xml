@@ -250,58 +250,6 @@
                 <version>${maven.surefire.plugin.version}</version>
             </plugin>
         </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>dev.aspectj</groupId>
-                    <artifactId>aspectj-maven-plugin</artifactId>
-                    <version>${maven.aspectj.plugin.version}</version>
-                    <configuration>
-                        <complianceLevel>${jdk.version}</complianceLevel>
-                        <source>${jdk.version}</source>
-                        <target>${jdk.version}</target>
-                        <aspectLibraries>
-                            <aspectLibrary>
-                                <groupId>cz.cvut.kbss.jopa</groupId>
-                                <artifactId>jopa-impl</artifactId>
-                            </aspectLibrary>
-                        </aspectLibraries>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.aspectj</groupId>
-                            <artifactId>aspectjtools</artifactId>
-                            <version>${org.aspectj.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.aspectj</groupId>
-                            <artifactId>aspectjrt</artifactId>
-                            <version>${org.aspectj.version}</version>
-                        </dependency>
-                    </dependencies>
-                    <executions>
-                        <execution>
-                            <id>compile</id>
-                            <phase>process-classes</phase>
-                            <goals>
-                                <goal>compile</goal>
-                                <!-- use this goal to weave all your main classes -->
-                            </goals>
-                        </execution>
-                        <execution>
-                            <!-- Split into two executions to ensure AJC runs AFTER regular compile in tests as well -->
-                            <id>test-compile</id>
-                            <phase>process-test-classes</phase>
-                            <goals>
-                                <!-- use this goal to weave all test classes -->
-                                <goal>test-compile</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 
     <licenses>

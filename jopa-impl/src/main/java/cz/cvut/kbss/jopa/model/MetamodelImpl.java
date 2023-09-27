@@ -16,25 +16,33 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.metamodel.MetamodelBuilder;
+import cz.cvut.kbss.jopa.model.metamodel.StaticMetamodelInitializer;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.MetamodelUtils;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MetamodelImpl implements Metamodel, MetamodelProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(Metamodel.class);
-
-    private static final String ASPECTJ_CLASS = "org.aspectj.weaver.loadtime.Agent";
 
     private Map<Class<?>, ManagedType<?>> typeMap;
     private Map<Class<?>, EntityType<?>> entities;
@@ -66,7 +74,6 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     public void build(PersistenceUnitClassFinder classFinder) {
         Objects.requireNonNull(classFinder);
         LOG.debug("Building metamodel...");
-        checkForWeaver();
         classFinder.scanClasspath(configuration);
 
         final MetamodelBuilder metamodelBuilder = new MetamodelBuilder(configuration);
@@ -79,18 +86,6 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         this.resultSetMappingManager = metamodelBuilder.getResultSetMappingManager();
         this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
         new StaticMetamodelInitializer(this).initializeStaticMetamodel();
-    }
-
-    /**
-     * Check the class path for aspectj weaver, which is vital for using lazy loading.
-     */
-    private static void checkForWeaver() {
-        try {
-            MetamodelImpl.class.getClassLoader().loadClass(ASPECTJ_CLASS);
-        } catch (ClassNotFoundException e) {
-            LOG.error("AspectJ not found on classpath. Cannot run without AspectJ.");
-            throw new OWLPersistenceException(e);
-        }
     }
 
     /**
@@ -118,10 +113,13 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
 
     @Override
     public <X> IdentifiableEntityType<X> entity(Class<X> cls) {
-        if (!isEntityType(cls)) {
-            throw new IllegalArgumentException(cls.getName() + " is not a known entity in this persistence unit.");
+        Objects.requireNonNull(cls);
+        // Unwrap parent from generated subclass if necessary
+        final Class<?> actualCls = MetamodelUtils.getEntityClass(cls);
+        if (!isEntityType(actualCls)) {
+            throw new IllegalArgumentException(actualCls.getName() + " is not a known entity in this persistence unit.");
         }
-        return (IdentifiableEntityType<X>) entities.get(cls);
+        return (IdentifiableEntityType<X>) entities.get(actualCls);
     }
 
     @Override
@@ -201,7 +199,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     @Override
     public boolean isEntityType(Class<?> cls) {
         Objects.requireNonNull(cls);
-        return entities.containsKey(cls);
+        return entities.containsKey(MetamodelUtils.getEntityClass(cls));
     }
 
     /**
