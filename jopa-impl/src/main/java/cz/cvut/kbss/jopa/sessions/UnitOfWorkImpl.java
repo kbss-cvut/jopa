@@ -252,8 +252,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     /**
      * Create object change sets for the new objects and adds them into our UnitOfWorkChangeSet.
-     *
-     * @param changeSet UnitOfWorkChangeSet
      */
     private void calculateNewObjects(UnitOfWorkChangeSet changeSet) {
         for (Object clone : newObjectsCloneToOriginal.keySet()) {
