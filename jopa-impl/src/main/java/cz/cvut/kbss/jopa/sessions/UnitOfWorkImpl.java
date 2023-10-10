@@ -357,10 +357,22 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      */
     private void commitToOntology() {
         if (this.hasNew || this.hasChanges || this.hasDeleted) {
+            saveNewObjects();
             calculateChanges();
         }
         validateIntegrityConstraints();
         storageCommit();
+    }
+
+    private void saveNewObjects() {
+        if (hasNew) {
+            newObjectsKeyToClone.forEach((id, entity) -> {
+                final Descriptor descriptor = getDescriptor(entity);
+                storage.persist(id, entity, descriptor);
+                final IdentifiableEntityType<?> et = entityType(entity.getClass());
+                et.getLifecycleListenerManager().invokePostPersistCallbacks(entity);
+            });
+        }
     }
 
     private void validateIntegrityConstraints() {
@@ -794,29 +806,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         Objects.requireNonNull(entity);
         Objects.requireNonNull(descriptor);
 
-        registerNewObjectInternal(entity, descriptor);
-    }
-
-    /**
-     * Registers the specified entity for persist in this Unit of Work.
-     *
-     * @param entity     The entity to register
-     * @param descriptor Entity descriptor, specifying optionally contexts into which the entity will be persisted
-     */
-    private void registerNewObjectInternal(Object entity, Descriptor descriptor) {
         final IdentifiableEntityType<?> eType = entityType(entity.getClass());
         eType.getLifecycleListenerManager().invokePrePersistCallbacks(entity);
-        Object id = getIdentifier(entity);
-        if (id == null) {
-            EntityPropertiesUtils.verifyIdentifierIsGenerated(entity, eType);
-        }
-        verifyCanPersist(id, entity, eType, descriptor);
-        storage.persist(id, entity, descriptor);
-        if (id == null) {
-            // If the ID was null, extract it from the entity. It is present now
-            id = getIdentifier(entity);
-        }
+        Object id = initEntityIdentifier(entity, (EntityType<Object>) eType);
         assert id != null;
+        verifyCanPersist(id, entity, eType, descriptor);
         // Original is null until commit
         newObjectsCloneToOriginal.put(entity, null);
         registerEntityWithOntologyContext(entity, descriptor);
@@ -824,7 +818,16 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         newObjectsKeyToClone.put(id, entity);
         checkForIndirectObjects(entity);
         this.hasNew = true;
-        eType.getLifecycleListenerManager().invokePostPersistCallbacks(entity);
+    }
+
+    private Object initEntityIdentifier(Object entity, EntityType<Object> et) {
+        Object id = getIdentifier(entity);
+        if (id == null) {
+            EntityPropertiesUtils.verifyIdentifierIsGenerated(entity, et);
+            id = storage.generateIdentifier(et);
+            EntityPropertiesUtils.setIdentifier(id, entity, et);
+        }
+        return id;
     }
 
     private void verifyCanPersist(Object id, Object instance, EntityType<?> et, Descriptor descriptor) {

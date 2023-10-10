@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassE;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
 import cz.cvut.kbss.jopa.environment.OWLClassR;
@@ -36,6 +37,7 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -337,12 +339,23 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void registerNewObjectAddsArgumentToPersistenceContextAndPersistsIt() {
+    void registerNewObjectGeneratesIdentifierWhenInstancesDoesNotHaveOne() {
+        final OWLClassE entity = new OWLClassE();
+        entity.setStringAttribute("Test value");
+        final URI id = Generators.createIndividualIdentifier();
+        when(storageMock.generateIdentifier(any(EntityType.class))).thenReturn(id);
+        uow.registerNewObject(entity, descriptor);
+        assertEquals(id, entity.getUri());
+        verify(storageMock).generateIdentifier(metamodelMocks.forOwlClassE().entityType());
+    }
+
+    @Test
+    void registerNewObjectAddsArgumentToPersistenceContext() {
         final OWLClassA newOne = Generators.generateOwlClassAInstance();
         uow.registerNewObject(newOne, descriptor);
         assertTrue(uow.contains(newOne));
         assertEquals(State.MANAGED_NEW, uow.getState(newOne));
-        verify(storageMock).persist(newOne.getUri(), newOne, descriptor);
+        verify(storageMock, never()).persist(newOne.getUri(), newOne, descriptor);
     }
 
     @Test
@@ -420,7 +433,6 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     void rollbackRollsBackStorageChangesAndRemovesObjectsFromPersistenceContext() {
         uow.registerNewObject(entityA, descriptor);
         final Object clone = uow.registerExistingObject(entityB, descriptor);
-        verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
         assertTrue(uow.contains(entityA));
         assertTrue(uow.contains(clone));
 
@@ -448,7 +460,6 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     void testClearCacheAfterCommit() {
         uow.registerNewObject(entityA, descriptor);
         final Object clone = uow.registerExistingObject(entityB, descriptor);
-        verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
         assertTrue(uow.contains(entityA));
         assertTrue(uow.contains(clone));
         uow.setShouldClearAfterCommit(true);
@@ -1117,5 +1128,17 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     void isInferredThrowsIllegalArgumentExceptionWhenInstanceIsNotManaged() {
         assertThrows(IllegalArgumentException.class, () -> uow.isInferred(entityD, metamodelMocks.forOwlClassD().owlClassAAtt(), entityD.getOwlClassA()));
         verify(storageMock, never()).isInferred(any(), any(), any(), any());
+    }
+
+    @Test
+    void commitPersistsAllNewlyRegisteredObjects() {
+        when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+        uow.registerNewObject(entityA, descriptor);
+        uow.registerNewObject(entityB, descriptor);
+        verify(storageMock, never()).persist(any(), any(), any());
+        uow.commit();
+
+        verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
+        verify(storageMock).persist(entityB.getUri(), entityB, descriptor);
     }
 }

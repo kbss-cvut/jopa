@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE")
+@OWLClass(iri = Vocabulary.c_OwlClassE)
 public class OWLClassE {
 
 	private static final String STR_ATT_FIELD = "stringAttribute";
@@ -29,7 +29,7 @@ public class OWLClassE {
 	@Id(generated = true)
 	private URI uri;
 
-	@OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute")
+	@OWLDataProperty(iri = Vocabulary.p_e_stringAttribute)
 	private String stringAttribute;
 
 	public URI getUri() {

@@ -59,7 +59,6 @@ class EntityManagerFactoryImplTest {
 
     @Test
     void isLoadedReturnsTrueForManagedInstance() {
-        when(connection.types()).thenReturn(mock(Types.class));
         final EntityManager em = emf.createEntityManager();
         final OWLClassA a = Generators.generateOwlClassAInstance();
         em.persist(a);
@@ -68,7 +67,6 @@ class EntityManagerFactoryImplTest {
 
     @Test
     void isLoadedReturnsTrueForAttributeOfManagedInstance() throws Exception {
-        when(connection.types()).thenReturn(mock(Types.class));
         final EntityManager em = emf.createEntityManager();
         final OWLClassA a = Generators.generateOwlClassAInstance();
         em.persist(a);

@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapper;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapperImpl;
@@ -62,6 +63,10 @@ public class ConnectionWrapper implements Wrapper {
 
     public <T> void merge(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor) {
         mapper.updateFieldValue(entity, fieldSpec, descriptor);
+    }
+
+    public URI generateIdentifier(EntityType<?> et) {
+        return mapper.generateIdentifier(et);
     }
 
     public <T> void persist(Object identifier, T entity, Descriptor descriptor) {

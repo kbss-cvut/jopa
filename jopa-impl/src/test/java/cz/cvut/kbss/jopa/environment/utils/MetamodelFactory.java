@@ -381,6 +381,8 @@ public class MetamodelFactory {
         when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassE.class.getDeclaredField("uri"));
+        when(idMock.isGenerated()).thenReturn(true);
+        when(idMock.getDeclaringType()).thenReturn(etMock);
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 

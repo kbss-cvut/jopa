@@ -40,7 +40,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.*;
@@ -96,21 +99,20 @@ public class EntityLifecycleListenersTest {
     }
 
     @Test
-    public void prePersistLifecycleListenerIsCalledBeforeInstanceIsInsertedIntoPersistenceContext() {
+    public void prePersistLifecycleListenerIsCalledBeforeInstanceIsInsertedIntoPersistenceContext() throws Exception {
+        final Map<Object, Object> mockMap = spy(new HashMap<>());
+        TestEnvironmentUtils.setMock(uow, UnitOfWorkImpl.class.getDeclaredField("newObjectsKeyToClone"), mockMap);
+        final URI rId = Generators.createIndividualIdentifier();
         final OWLClassR rInstance = spy(new OWLClassR());
-        doAnswer(invocationOnMock -> {
-            final OWLClassR instance = (OWLClassR) invocationOnMock.getArguments()[1];
-            instance.setUri(Generators.createIndividualIdentifier());
-            return null;
-        }).when(storageMock).persist(null, rInstance, descriptor);
+        when(storageMock.generateIdentifier(metamodelMock.entity(OWLClassR.class))).thenReturn(rId);
         uow.registerNewObject(rInstance, descriptor);
         final InOrder inOrder = inOrder(rInstance, parentListenerMock, concreteListenerMock, anotherListenerMock,
-                storageMock);
+                storageMock, mockMap);
         inOrder.verify(parentListenerMock).prePersist(rInstance);
         inOrder.verify(concreteListenerMock).prePersist(rInstance);
         inOrder.verify(anotherListenerMock).prePersist(rInstance);
         inOrder.verify(rInstance).prePersist();
-        inOrder.verify(storageMock).persist(any(), eq(rInstance), eq(descriptor));
+        inOrder.verify(mockMap).put(rId, rInstance);
     }
 
     @Test
@@ -132,16 +134,15 @@ public class EntityLifecycleListenersTest {
     }
 
     @Test
-    public void postPersistEntityLifecycleListenerIsCalledAfterStoragePersistOccurs() {
+    public void postPersistEntityLifecycleListenerIsCalledAfterInstanceIsInsertedIntoStorage() {
+        final URI rId = Generators.createIndividualIdentifier();
         final OWLClassR rInstance = spy(new OWLClassR());
-        doAnswer(invocationOnMock -> {
-            final OWLClassR instance = (OWLClassR) invocationOnMock.getArguments()[1];
-            instance.setUri(Generators.createIndividualIdentifier());
-            return null;
-        }).when(storageMock).persist(null, rInstance, descriptor);
+        when(cloneBuilderMock.buildClone(eq(rInstance), any(CloneConfiguration.class))).thenReturn(rInstance);
+        when(storageMock.generateIdentifier(metamodelMock.entity(OWLClassR.class))).thenReturn(rId);
         uow.registerNewObject(rInstance, descriptor);
+        uow.commit();
         final InOrder inOrder = inOrder(rInstance, concreteListenerMock, storageMock);
-        inOrder.verify(storageMock).persist(any(), eq(rInstance), eq(descriptor));
+        inOrder.verify(storageMock).persist(rId, rInstance, descriptor);
         inOrder.verify(concreteListenerMock).postPersist(rInstance);
         inOrder.verify(rInstance).postPersist();
     }
