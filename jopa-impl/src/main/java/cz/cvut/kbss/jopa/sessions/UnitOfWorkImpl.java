@@ -357,14 +357,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      */
     private void commitToOntology() {
         if (this.hasNew || this.hasChanges || this.hasDeleted) {
-            saveNewObjects();
+            persistNewObjects();
             calculateChanges();
         }
         validateIntegrityConstraints();
         storageCommit();
     }
 
-    private void saveNewObjects() {
+    private void persistNewObjects() {
         if (hasNew) {
             newObjectsKeyToClone.forEach((id, entity) -> {
                 final Descriptor descriptor = getDescriptor(entity);

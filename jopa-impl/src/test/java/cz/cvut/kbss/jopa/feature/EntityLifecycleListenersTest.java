@@ -199,7 +199,7 @@ public class EntityLifecycleListenersTest {
 
         uow.registerExistingObject(rOriginal, descriptor);
         rInstance.setStringAtt("Update");
-        // Have to call it manually, aspects do not work here
+        // Manually trigger attribute change handling
         uow.attributeChanged(rInstance, OWLClassR.getStringAttField());
         final InOrder inOrder = inOrder(rInstance, concreteListenerMock, storageMock);
         inOrder.verify(concreteListenerMock).preUpdate(rInstance);
@@ -248,7 +248,7 @@ public class EntityLifecycleListenersTest {
 
         uow.registerExistingObject(rOriginal, descriptor);
         rInstance.setStringAtt("Update");
-        // Have to call it manually, aspects do not work here
+        // Manually trigger attribute change handling
         uow.attributeChanged(rInstance, OWLClassR.getStringAttField());
         final InOrder inOrder = inOrder(rInstance, concreteListenerMock, storageMock);
         inOrder.verify(storageMock).merge(rInstance, mocks.forOwlClassR().rStringAtt(), descriptor);
