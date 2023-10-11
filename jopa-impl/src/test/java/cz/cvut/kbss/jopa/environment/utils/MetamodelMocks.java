@@ -461,6 +461,10 @@ public class MetamodelMocks {
         return new OWLClassGMetamodel();
     }
 
+    public OWLClassIMetamodel forOwlClassI() {
+        return new OWLClassIMetamodel();
+    }
+
     public OWLClassJMetamodel forOwlClassJ() {
         return new OWLClassJMetamodel();
     }
@@ -654,7 +658,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idI;
         }
 
-        public SingularAttributeImpl<OWLClassI, OWLClassA> setAttribute() {
+        public SingularAttributeImpl<OWLClassI, OWLClassA> owlClassAAtt() {
             return MetamodelMocks.this.iOwlClassAAtt;
         }
     }

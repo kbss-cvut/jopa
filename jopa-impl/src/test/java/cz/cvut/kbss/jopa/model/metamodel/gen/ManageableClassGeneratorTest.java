@@ -27,11 +27,13 @@ class ManageableClassGeneratorTest {
     @Mock
     private UnitOfWorkImpl uow;
 
+    private MetamodelMocks metamodelMocks;
+
     private final ManageableClassGenerator sut = new ManageableClassGenerator();
 
     @BeforeEach
     void setUp() throws Exception {
-        final MetamodelMocks metamodelMocks = new MetamodelMocks();
+        this.metamodelMocks = new MetamodelMocks();
         final MetamodelImpl mm = mock(MetamodelImpl.class);
         metamodelMocks.setMocks(mm);
         when(uow.getMetamodel()).thenReturn(mm);
@@ -56,7 +58,7 @@ class ManageableClassGeneratorTest {
         assertEquals(uow, ((Manageable) instance).getPersistenceContext());
         instance.setStringAttribute("test value");
         assertEquals("test value", instance.getStringAttribute());
-        verify(uow).attributeChanged(instance, OWLClassA.getStrAttField());
+        verify(uow).attributeChanged(instance, metamodelMocks.forOwlClassA().stringAttribute());
     }
 
     @Test
@@ -70,6 +72,6 @@ class ManageableClassGeneratorTest {
         when(uow.contains(instance)).thenReturn(true);
         assertEquals(uow, ((Manageable) instance).getPersistenceContext());
         assertNull(instance.getOwlClassA());
-        verify(uow).loadEntityField(instance, OWLClassI.getOwlClassAField());
+        verify(uow).loadEntityField(instance, metamodelMocks.forOwlClassI().owlClassAAtt());
     }
 }

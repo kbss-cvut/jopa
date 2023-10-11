@@ -70,10 +70,7 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
                 return;
             }
             AttributeModificationValidator.verifyCanModify(fieldSpec);
-//            instance.getPersistenceContext()
-//                    .attributeChanged(instance, et.getFieldSpecification(fieldName));
-            // TODO UnitOfWork.attributeChanged should take FieldSpecification instead of Field
-            pc.attributeChanged(instance, fieldSpec.getJavaField());
+            pc.attributeChanged(instance, fieldSpec);
         }
     }
 
@@ -91,10 +88,7 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
                                                                                       .equals(fieldSpec)) {
                 return;
             }
-//            instance.getPersistenceContext()
-//                    .loadEntityField(instance, et.getFieldSpecification(fieldName));
-            // TODO UnitOfWork.loadEntityField should take FieldSpecification instead of Field
-            pc.loadEntityField(instance, fieldSpec.getJavaField());
+            pc.loadEntityField(instance, (FieldSpecification) fieldSpec);
         }
     }
 }

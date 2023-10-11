@@ -539,23 +539,36 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      * @param entity Entity with changes (the clone)
      * @param f      The field whose value has changed
      * @throws IllegalStateException If this UoW is not in transaction
+     * @see #attributeChanged(Object, FieldSpecification)
      */
     public void attributeChanged(Object entity, Field f) {
+        final IdentifiableEntityType<Object> et = entityType((Class<Object>) entity.getClass());
+        final FieldSpecification<Object, ?> fieldSpec = et.getFieldSpecification(f.getName());
+        attributeChanged(entity, fieldSpec);
+    }
+
+    /**
+     * Persists changed value of the specified field.
+     *
+     * @param entity Entity with changes (the clone)
+     * @param fieldSpec Metamodel element representing the attribute that changed
+     * @throws IllegalStateException If this UoW is not in transaction
+     */
+    public void attributeChanged(Object entity, FieldSpecification<?, ?> fieldSpec) {
         if (!isInTransaction()) {
             throw new IllegalStateException("This unit of work is not in a transaction.");
         }
         final Descriptor descriptor = getDescriptor(entity);
         final IdentifiableEntityType<Object> et = entityType((Class<Object>) entity.getClass());
-        final FieldSpecification<Object, ?> fieldSpec = et.getFieldSpecification(f.getName());
         final Object original = getOriginal(entity);
         if (fieldSpec.isInferred() && original != null) {
-            inferredAttributeChangeValidator.validateChange(entity, getOriginal(entity), fieldSpec, descriptor);
+            inferredAttributeChangeValidator.validateChange(entity, getOriginal(entity), (FieldSpecification<? super Object, ?>) fieldSpec, descriptor);
         }
         et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
-        storage.merge(entity, fieldSpec, descriptor);
+        storage.merge(entity, (FieldSpecification<? super Object, ?>) fieldSpec, descriptor);
         createAndRegisterChangeRecord(entity, fieldSpec, descriptor);
         setHasChanges();
-        setIndirectObjectIfPresent(entity, f);
+        setIndirectObjectIfPresent(entity, fieldSpec.getJavaField());
         et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
         instanceDescriptors.get(entity).setLoaded(fieldSpec, LoadState.LOADED);
     }
@@ -946,9 +959,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     }
 
     @Override
-    public <T> void loadEntityField(T entity, Field field) {
+    public <T> void loadEntityField(T entity, FieldSpecification<? super T, ?> fieldSpec) {
         Objects.requireNonNull(entity);
-        Objects.requireNonNull(field);
+        Objects.requireNonNull(fieldSpec);
+        final Field field = fieldSpec.getJavaField();
         assert field.getDeclaringClass().isAssignableFrom(entity.getClass());
 
         final Descriptor entityDescriptor = getDescriptor(entity);
@@ -956,7 +970,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw new OWLPersistenceException("Unable to find repository identifier for entity " + entity + ". Is it managed by this UoW?");
         }
         final InstanceDescriptor<?> instanceDescriptor = instanceDescriptors.get(entity);
-        final FieldSpecification<? super T, ?> fieldSpec = entityType((Class<Object>) entity.getClass()).getFieldSpecification(field.getName());
         if (instanceDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
             return;
         }
