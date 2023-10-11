@@ -90,6 +90,7 @@ import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLongConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.LocalDateTimeConverter;
+import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -122,7 +123,7 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class MetamodelFactory {
 
-    private static final PersistenceContextAwareClassGenerator INSTANTIABLE_TYPE_GENERATOR = new ManageableClassGenerator();
+    private static final PersistenceContextAwareClassGenerator INSTANTIABLE_TYPE_GENERATOR = new ManageableClassGenerator(new Configuration());
 
     private MetamodelFactory() {
     }

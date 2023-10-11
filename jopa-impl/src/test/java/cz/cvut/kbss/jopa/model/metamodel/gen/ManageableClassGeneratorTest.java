@@ -7,6 +7,7 @@ import cz.cvut.kbss.jopa.model.Manageable;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +30,7 @@ class ManageableClassGeneratorTest {
 
     private MetamodelMocks metamodelMocks;
 
-    private final ManageableClassGenerator sut = new ManageableClassGenerator();
+    private final ManageableClassGenerator sut = new ManageableClassGenerator(new Configuration());
 
     @BeforeEach
     void setUp() throws Exception {

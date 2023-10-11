@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -32,12 +33,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @SuppressWarnings("unused")
 class ManagedClassProcessorTest {
 
+
     @Test
     void processManagedTypeThrowsInitializationExceptionWhenClassIsMissingNoArgConstructor() {
         final MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class,
-                                                                 () -> ManagedClassProcessor.processManagedType(ClassWithoutNoArgConstructor.class));
+                () -> ManagedClassProcessor.processManagedType(ClassWithoutNoArgConstructor.class, new Configuration()));
         assertEquals("Class " + ClassWithoutNoArgConstructor.class + " is missing required no-arg constructor.",
-                     ex.getMessage());
+                ex.getMessage());
     }
 
     @TestLocal
@@ -52,13 +54,13 @@ class ManagedClassProcessorTest {
 
     @Test
     void processManagedTypeReturnsEntityTypeForEntity() {
-        final TypeBuilderContext<OWLClassA> res = ManagedClassProcessor.processManagedType(OWLClassA.class);
+        final TypeBuilderContext<OWLClassA> res = ManagedClassProcessor.processManagedType(OWLClassA.class, new Configuration());
         assertInstanceOf(EntityType.class, res.getType());
     }
 
     @Test
     void processManagedTypeGeneratesInstantiableTypeForEntityClass() {
-        final TypeBuilderContext<OWLClassA> res = ManagedClassProcessor.processManagedType(OWLClassA.class);
+        final TypeBuilderContext<OWLClassA> res = ManagedClassProcessor.processManagedType(OWLClassA.class, new Configuration());
         final Class<? extends OWLClassA> instantiableType = res.getType().getInstantiableJavaType();
         assertTrue(OWLClassA.class.isAssignableFrom(instantiableType));
         assertNotEquals(OWLClassA.class, instantiableType);
@@ -67,14 +69,14 @@ class ManagedClassProcessorTest {
     @Test
     void processManagedTypeReturnsMappedSuperclassTypeForMappedSuperclass() {
         final TypeBuilderContext<QMappedSuperclass> res = ManagedClassProcessor
-                .processManagedType(QMappedSuperclass.class);
+                .processManagedType(QMappedSuperclass.class, new Configuration());
         assertInstanceOf(MappedSuperclassType.class, res.getType());
     }
 
     @Test
     void processManagedTypeReturnsAbstractEntityTypeTypeForInterfaces() {
         final TypeBuilderContext<InterfaceClass> res = ManagedClassProcessor
-                .processManagedType(InterfaceClass.class);
+                .processManagedType(InterfaceClass.class, new Configuration());
         assertInstanceOf(AbstractEntityType.class, res.getType());
     }
 
@@ -85,7 +87,7 @@ class ManagedClassProcessorTest {
 
     @Test
     void processManagedTypeReturnsConcreteEntityTypeTypeForClasses() {
-        final TypeBuilderContext<OWLEntity> res = ManagedClassProcessor.processManagedType(OWLEntity.class);
+        final TypeBuilderContext<OWLEntity> res = ManagedClassProcessor.processManagedType(OWLEntity.class, new Configuration());
         assertInstanceOf(ConcreteEntityType.class, res.getType());
     }
 
@@ -98,9 +100,9 @@ class ManagedClassProcessorTest {
     @Test
     void processManagedTypeThrowsExceptionOnNonManagedInterface() {
         final MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class,
-                                                                 () -> ManagedClassProcessor.processManagedType(NonManagedInterfaceA.class));
+                () -> ManagedClassProcessor.processManagedType(NonManagedInterfaceA.class, new Configuration()));
         assertEquals("Type " + NonManagedInterfaceA.class + " is not a managed type.",
-                     ex.getMessage());
+                ex.getMessage());
     }
 
     @Test
@@ -114,7 +116,7 @@ class ManagedClassProcessorTest {
     @Test
     void getManagedSuperClassReturnsOnlyManagedSuperClass() {
         Class<? super ChildClassWithMultipleParents> managedSuperClass = ManagedClassProcessor.getManagedSuperClass(ChildClassWithMultipleParents.class);
-        assertEquals(OWLEntity.class,managedSuperClass);
+        assertEquals(OWLEntity.class, managedSuperClass);
     }
 
     private interface NonManagedInterfaceA {

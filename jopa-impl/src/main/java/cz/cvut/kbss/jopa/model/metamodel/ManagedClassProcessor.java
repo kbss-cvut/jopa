@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.annotations.Namespace;
 import cz.cvut.kbss.jopa.model.annotations.Namespaces;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.metamodel.gen.ManageableClassGenerator;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 
 import java.lang.reflect.AnnotatedElement;
@@ -37,11 +38,11 @@ public class ManagedClassProcessor {
         throw new AssertionError();
     }
 
-    static <T> TypeBuilderContext<T> processManagedType(Class<T> cls) {
+    static <T> TypeBuilderContext<T> processManagedType(Class<T> cls, Configuration config) {
         final NamespaceResolver resolver = detectNamespaces(cls);
         final AbstractIdentifiableType<T> type;
         if (isEntityType(cls)) {
-            type = processEntityType(cls, resolver);
+            type = processEntityType(cls, resolver, config);
         } else if (isMappedSuperclassType(cls)) {
             type = processMappedSuperclassType(cls);
         } else {
@@ -101,7 +102,8 @@ public class ManagedClassProcessor {
         }
     }
 
-    private static <T> IdentifiableEntityType<T> processEntityType(Class<T> cls, NamespaceResolver namespaceResolver) {
+    private static <T> IdentifiableEntityType<T> processEntityType(Class<T> cls, NamespaceResolver namespaceResolver,
+                                                                   Configuration config) {
         final OWLClass c = cls.getDeclaredAnnotation(OWLClass.class);
         assert c != null;
 
@@ -109,7 +111,7 @@ public class ManagedClassProcessor {
             return new AbstractEntityType<>(cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
         } else {
             checkForNoArgConstructor(cls);
-            final Class<? extends T> instantiableType = new ManageableClassGenerator().generate(cls);
+            final Class<? extends T> instantiableType = new ManageableClassGenerator(config).generate(cls);
             return new ConcreteEntityType<>(cls, instantiableType, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
         }
     }
