@@ -75,7 +75,7 @@ class EntityConstructorTest {
     void setUp() throws Exception {
         when(mapperMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
         when(mapperMock.getUow()).thenReturn(uowMock);
-        when(uowMock.getQueryFactory()).thenReturn(queryFactoryMock);
+        when(uowMock.sparqlQueryFactory()).thenReturn(queryFactoryMock);
         this.mocks = new MetamodelMocks();
         this.descriptor = new EntityDescriptor();
         this.constructor = new EntityConstructor(mapperMock);
@@ -199,8 +199,7 @@ class EntityConstructorTest {
         final OWLClassA entityA = new OWLClassA();
         entityA.setUri(ID_TWO);
         entityA.setStringAttribute(STRING_ATT);
-        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, fieldDesc))
-                .thenReturn(entityA);
+        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, fieldDesc)).thenReturn(entityA);
         final OWLClassD res = constructor.reconstructEntity(ID, mocks.forOwlClassD().entityType(), descriptor, axiomsD);
         assertNotNull(res);
         assertEquals(ID, res.getUri());

@@ -72,7 +72,7 @@ public class EntityConstructorQueryAttributesTest {
     void setUp() throws Exception {
         when(mapperMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
         when(mapperMock.getUow()).thenReturn(uowMock);
-        when(uowMock.getQueryFactory()).thenReturn(queryFactoryMock);
+        when(uowMock.sparqlQueryFactory()).thenReturn(queryFactoryMock);
         this.mocks = new MetamodelMocks();
         this.descriptor = new EntityDescriptor();
         this.constructor = new EntityConstructor(mapperMock);

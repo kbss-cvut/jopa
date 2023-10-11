@@ -160,7 +160,7 @@ class EntityConstructor {
      * @param <T>      the entity class
      */
     public <T> void populateQueryAttributes(final T instance, EntityType<T> et) {
-        final SparqlQueryFactory queryFactory = mapper.getUow().getQueryFactory();
+        final SparqlQueryFactory queryFactory = mapper.getUow().sparqlQueryFactory();
 
         final Set<QueryAttribute<? super T, ?>> queryAttributes = et.getQueryAttributes();
 
@@ -268,7 +268,7 @@ class EntityConstructor {
     }
 
     <T> void setQueryAttributeFieldValue(T entity, QueryAttribute<? super T, ?> queryAttribute, EntityType<T> et) {
-        final SparqlQueryFactory queryFactory = mapper.getUow().getQueryFactory();
+        final SparqlQueryFactory queryFactory = mapper.getUow().sparqlQueryFactory();
         populateQueryAttribute(entity, queryAttribute, queryFactory, et);
     }
 }

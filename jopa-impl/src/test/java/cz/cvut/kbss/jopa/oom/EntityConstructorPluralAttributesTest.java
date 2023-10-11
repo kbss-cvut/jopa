@@ -68,7 +68,7 @@ public class EntityConstructorPluralAttributesTest {
     public void setUp() throws Exception {
         final UnitOfWorkImpl uowMock = mock(UnitOfWorkImpl.class);
         when(mapperMock.getUow()).thenReturn(uowMock);
-        when(uowMock.getQueryFactory()).thenReturn(mock(SparqlQueryFactory.class));
+        when(uowMock.sparqlQueryFactory()).thenReturn(mock(SparqlQueryFactory.class));
         when(mapperMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
         this.metamodelMocks = new MetamodelMocks();
         this.simpleListMock = metamodelMocks.forOwlClassC().simpleListAtt();
