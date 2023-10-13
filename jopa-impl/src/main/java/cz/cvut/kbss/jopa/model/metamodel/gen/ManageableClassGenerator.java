@@ -59,9 +59,9 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
                                                              .defineField("persistenceContext", UnitOfWorkImpl.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
                                                              .implement(Manageable.class)
                                                              .intercept(FieldAccessor.ofBeanProperty())
-                                                             .method(isSetter().and(not(named("setPersistenceContext"))))
+                                                             .method(isSetter().and(not(named("setPersistenceContext"))).and(new PersistentPropertyMatcher<>(entityClass)))
                                                              .intercept(SuperMethodCall.INSTANCE.andThen(MethodDelegation.to(SetterInterceptor.class)))
-                                                             .method(isGetter().and(not(named("getPersistenceContext"))))
+                                                             .method(isGetter().and(not(named("getPersistenceContext"))).and(new PersistentPropertyMatcher<>(entityClass)))
                                                              .intercept(MethodDelegation.to(GetterInterceptor.class)
                                                                                         .andThen(SuperMethodCall.INSTANCE))
                                                              .make();
@@ -111,8 +111,8 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
             final String fieldName = AnnotatedAccessor.from(getter).getPropertyName();
             final EntityType<?> et = pc.getMetamodel().entity(MetamodelUtils.getEntityClass(instance.getClass()));
             final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(fieldName);
-            if (EntityPropertiesUtils.isFieldTransient(fieldSpec.getJavaField()) || et.getIdentifier()
-                                                                                      .equals(fieldSpec)) {
+            assert fieldSpec != null;
+            if (et.getIdentifier().equals(fieldSpec)) {
                 return;
             }
             pc.loadEntityField(instance, (FieldSpecification) fieldSpec);

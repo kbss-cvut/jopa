@@ -1008,6 +1008,7 @@ public class MetamodelFactory {
         when(stringAtt.hasLanguage()).thenReturn(true);
         when(stringAtt.getLanguage()).thenReturn(Generators.LANG);
         when(et.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        when(et.getFieldSpecification(anyString())).thenThrow(IllegalArgumentException.class);
     }
 
     public static void initOWLClassPMock(IdentifiableEntityType<OWLClassP> et, TypesSpecification types,
