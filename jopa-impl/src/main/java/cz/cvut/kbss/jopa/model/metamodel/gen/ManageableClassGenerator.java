@@ -29,8 +29,6 @@ import java.util.Objects;
 
 import static net.bytebuddy.matcher.ElementMatchers.isGetter;
 import static net.bytebuddy.matcher.ElementMatchers.isSetter;
-import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.not;
 
 /**
  * Generates persistence context-aware classes that implement the {@link cz.cvut.kbss.jopa.model.Manageable} interface.
@@ -59,9 +57,9 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
                                                              .defineField("persistenceContext", UnitOfWorkImpl.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
                                                              .implement(Manageable.class)
                                                              .intercept(FieldAccessor.ofBeanProperty())
-                                                             .method(isSetter().and(not(named("setPersistenceContext"))).and(new PersistentPropertyMatcher<>(entityClass)))
+                                                             .method(isSetter().and(new PersistentPropertySetterMatcher<>(entityClass)))
                                                              .intercept(SuperMethodCall.INSTANCE.andThen(MethodDelegation.to(SetterInterceptor.class)))
-                                                             .method(isGetter().and(not(named("getPersistenceContext"))).and(new PersistentPropertyMatcher<>(entityClass)))
+                                                             .method(isGetter().and(new PersistentPropertyGetterMatcher<>(entityClass)))
                                                              .intercept(MethodDelegation.to(GetterInterceptor.class)
                                                                                         .andThen(SuperMethodCall.INSTANCE))
                                                              .make();

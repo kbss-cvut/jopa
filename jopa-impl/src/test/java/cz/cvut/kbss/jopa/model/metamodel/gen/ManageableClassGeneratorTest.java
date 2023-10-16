@@ -124,4 +124,16 @@ class ManageableClassGeneratorTest {
         verify(uow, never()).attributeChanged(eq(instance), any(FieldSpecification.class));
         verify(uow, never()).attributeChanged(eq(instance), any(Field.class));
     }
+
+    @Test
+    void doesNotOverrideIdentifierGetter() throws Exception {
+        final Class<? extends OWLClassA> cls = sut.generate(OWLClassA.class);
+
+        final OWLClassA instance = cls.getDeclaredConstructor().newInstance();
+        ((Manageable) instance).setPersistenceContext(uow);
+        when(uow.contains(instance)).thenReturn(true);
+        assertNull(instance.getUri());
+        verify(uow, never()).contains(instance);
+        verify(uow, never()).loadEntityField(instance, metamodelMocks.forOwlClassA().identifier());
+    }
 }
