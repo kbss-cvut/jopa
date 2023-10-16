@@ -20,11 +20,15 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
-import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.OWLClassM;
+import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -32,11 +36,20 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class TypedQueryRunner extends BaseQueryRunner {
 
@@ -195,24 +208,6 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         assertNotNull(res);
         assertEquals(1, res.size());
         assertFalse(res.get(0));
-    }
-
-    @Disabled
-    @Test
-    public void askQueryAgainstTransactionalOntologyContainsUncommittedChangesAsWell() {
-        final OWLClassE e = new OWLClassE();
-        getEntityManager().getTransaction().begin();
-        try {
-            getEntityManager().persist(e);
-            final TypedQuery<Boolean> query = getEntityManager().createNativeQuery(
-                    "ASK { ?individual a ?type . }",
-                    Boolean.class).setParameter("individual", e.getUri()).setParameter("type",
-                    URI.create(Vocabulary.C_OWL_CLASS_E));
-            final Boolean res = query.getSingleResult();
-            assertTrue(res);
-        } finally {
-            getEntityManager().getTransaction().rollback();
-        }
     }
 
     @Test
