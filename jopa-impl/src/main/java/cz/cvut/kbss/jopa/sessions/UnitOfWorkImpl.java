@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.Manageable;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
@@ -651,12 +652,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         final T clone = getInstanceForMerge(idUri, et, descriptor);
         try {
             // Merge only the changed attributes
-            final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
+            ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
+            // Have to check for inferred attribute changes before the actual merge
             changeManager.calculateChanges(chSet);
+            chSet = processInferredValueChanges(chSet);
             if (chSet.hasChanges()) {
-                // Have to check for inferred attribute changes before the actual merge
-                chSet.getChanges().stream().filter(chr -> chr.getAttribute().isInferred())
-                     .forEach(chr -> inferredAttributeChangeValidator.validateChange(entity, clone, (FieldSpecification<? super T, ?>) chr.getAttribute(), descriptor));
                 et.getLifecycleListenerManager().invokePreUpdateCallbacks(clone);
                 final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
                 merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
@@ -687,6 +687,23 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         assert original != null;
 
         return (T) registerExistingObject(original, descriptor);
+    }
+
+    private ObjectChangeSet processInferredValueChanges(ObjectChangeSet changeSet) {
+        if (getConfiguration().is(JOPAPersistenceProperties.IGNORE_INFERRED_VALUE_REMOVAL_ON_MERGE)) {
+            final ObjectChangeSet copy = ChangeSetFactory.createObjectChangeSet(changeSet.getChangedObject(), changeSet.getCloneObject(), changeSet.getEntityDescriptor());
+            changeSet.getChanges().stream().filter(chr -> !(chr.getAttribute().isInferred() &&
+                    inferredAttributeChangeValidator.isInferredValueRemoval(changeSet.getCloneObject(), changeSet.getChangedObject(),
+                            (FieldSpecification) chr.getAttribute(),
+                            changeSet.getEntityDescriptor()))).forEach(copy::addChangeRecord);
+            return copy;
+        } else {
+            changeSet.getChanges().stream().filter(chr -> chr.getAttribute().isInferred()).forEach(
+                    chr -> inferredAttributeChangeValidator.validateChange(changeSet.getCloneObject(), changeSet.getChangedObject(),
+                            (FieldSpecification) chr.getAttribute(),
+                            changeSet.getEntityDescriptor()));
+            return changeSet;
+        }
     }
 
     private static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
