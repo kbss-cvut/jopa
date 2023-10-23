@@ -14,7 +14,7 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 
 /**
@@ -28,13 +28,13 @@ class DefaultInstanceLoader extends EntityInstanceLoader {
 
     @Override
     <T> T loadEntity(LoadingParameters<T> loadingParameters) {
-        final EntityType<T> et = metamodel.entity(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> et = metamodel.entity(loadingParameters.getEntityType());
         return loadInstance(loadingParameters, et);
     }
 
     @Override
     <T> T loadReference(LoadingParameters<T> loadingParameters) {
-        final EntityType<T> et = metamodel.entity(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> et = metamodel.entity(loadingParameters.getEntityType());
         return loadReferenceInstance(loadingParameters, et);
     }
 

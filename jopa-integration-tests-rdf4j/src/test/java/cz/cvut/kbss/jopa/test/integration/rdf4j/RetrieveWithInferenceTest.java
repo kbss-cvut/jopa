@@ -66,7 +66,7 @@ public class RetrieveWithInferenceTest extends RetrieveWithInferenceRunner {
     }
 
     // Apparently, RDF4J supports only SHACL validation, not SHACL inference with SPARQL rules
-    // See https://github.com/eclipse/rdf4j/issues/191
+    // See https://github.com/eclipse/rdf4j/issues/1912
     @Disabled
     @Test
     void retrieveSupportsLoadingInferredStatementsFromDefaultContext() {

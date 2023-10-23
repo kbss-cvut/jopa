@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassE;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
 import cz.cvut.kbss.jopa.environment.OWLClassR;
@@ -36,6 +37,7 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -90,38 +92,38 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testReadObjectNullPrimaryKey() {
+    void readObjectWithNullIdentifierArgumentThrowsNullPointerException() {
         assertThrows(NullPointerException.class, () -> uow.readObject(entityA.getClass(), null, descriptor));
         verify(cacheManagerMock, never()).get(any(), any(), any());
     }
 
     @Test
-    void testReadObjectNullClass() {
+    void readObjectWithNullClassThrowsNullPointerException() {
         assertThrows(NullPointerException.class, () -> uow.readObject(null, entityB.getUri(), descriptor));
         verify(cacheManagerMock, never()).get(any(), any(), any());
     }
 
     @Test
-    void testReadObjectNullContext() {
+    void readObjectWithNullDescriptorThrowsNullPointerException() {
         assertThrows(NullPointerException.class, () -> uow.readObject(entityA.getClass(), entityA.getUri(), null));
         verify(cacheManagerMock, never()).get(any(), any(), any());
     }
 
     @Test
-    void testReadObjectFromOntology() {
+    void readObjectLoadsObjectFromStorage() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor)))
                 .thenReturn(entityA);
         OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         assertNotNull(res);
         assertEquals(entityA.getUri(), res.getUri());
+        verify(storageMock).find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor));
     }
 
     @Test
-    void testReadObjectJustPersisted() {
+    void readNewlyRegisteredObjectReturnsIt() {
         uow.registerNewObject(entityA, descriptor);
         assertTrue(uow.contains(entityA));
         final OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
-        assertNotNull(res);
         assertSame(entityA, res);
     }
 
@@ -136,7 +138,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testCalculateNewObjects() {
+    void commitAddsNewObjectsToCache() {
         uow.registerNewObject(entityA, descriptor);
         uow.registerNewObject(entityB, descriptor);
         uow.registerNewObject(entityD, descriptor);
@@ -152,18 +154,27 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testCalculateDeletedObjects() {
+    void commitRemovesRemovedObjectsFromStorage() {
+        final Object toRemove = uow.registerExistingObject(entityA, descriptor);
+        uow.registerExistingObject(entityB, descriptor);
+        uow.removeObject(toRemove);
+        uow.commit();
+
+        verify(storageMock).remove(entityA.getUri(), entityA.getClass(), descriptor);
+    }
+
+    @Test
+    void commitEvictsRemovedObjectsFromCache() {
         final Object toRemove = uow.registerExistingObject(entityA, descriptor);
         uow.registerExistingObject(entityB, descriptor);
         uow.removeObject(toRemove);
         uow.commit();
 
         verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
-        verify(storageMock).remove(entityA.getUri(), entityA.getClass(), descriptor);
     }
 
     @Test
-    void testCalculateModificationsObjectProperty() throws Exception {
+    void commitAddsNewlyAddedReferenceToObjectToCache() throws Exception {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
         final OWLClassD d = new OWLClassD();
         d.setUri(URI.create("http://tempD"));
@@ -186,23 +197,18 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void testCalculateModificationsDataProperty() throws Exception {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
-        final OWLClassA newA = new OWLClassA();
-        newA.setUri(URI.create("http://newA"));
-        newA.setStringAttribute("somestring");
-        final OWLClassA clone = (OWLClassA) uow.registerExistingObject(newA, descriptor);
-        // Trigger change, otherwise we would have to stub
-        // OWLAPIPersistenceProvider's emfs and server session
-        uow.setHasChanges();
+        final OWLClassA original = Generators.generateOwlClassAInstance();
+        final OWLClassA clone = (OWLClassA) uow.registerExistingObject(original, descriptor);
         final String newStr = "newStr";
         clone.setStringAttribute(newStr);
         uow.attributeChanged(clone, OWLClassA.getStrAttField());
         uow.commit();
 
-        assertEquals(newStr, newA.getStringAttribute());
+        assertEquals(newStr, original.getStringAttribute());
     }
 
     @Test
-    void testContains() {
+    void containsReturnsTrueForRegisteredExistingObject() {
         OWLClassA res = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertNotNull(res);
         assertTrue(uow.contains(res));
@@ -215,9 +221,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         assertEquals(State.MANAGED, uow.getState(toRemove));
         uow.removeObject(toRemove);
         assertEquals(State.REMOVED, uow.getState(toRemove));
-        final OWLClassA stateTest = new OWLClassA();
-        final URI pk = URI.create("http://stateTest");
-        stateTest.setUri(pk);
+        final OWLClassA stateTest = Generators.generateOwlClassAInstance();
         uow.registerNewObject(stateTest, descriptor);
         assertEquals(State.MANAGED_NEW, uow.getState(stateTest));
     }
@@ -229,15 +233,13 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         assertEquals(State.MANAGED, uow.getState(toRemove, descriptor));
         uow.removeObject(toRemove);
         assertEquals(State.REMOVED, uow.getState(toRemove, descriptor));
-        final OWLClassA stateTest = new OWLClassA();
-        final URI pk = URI.create("http://stateTest");
-        stateTest.setUri(pk);
+        final OWLClassA stateTest = Generators.generateOwlClassAInstance();
         uow.registerNewObject(stateTest, descriptor);
         assertEquals(State.MANAGED_NEW, uow.getState(stateTest, descriptor));
     }
 
     @Test
-    void testGetOriginal() {
+    void getOriginalReturnsOriginalRegisteredByReadObject() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(
                 entityA);
         OWLClassA tO = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
@@ -249,7 +251,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testGetOriginalNull() {
+    void getOriginalWithNullArgumentReturnsNull() {
         assertNull(uow.getOriginal(null));
     }
 
@@ -280,35 +282,36 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testIsObjectNew() {
-        final OWLClassA testNew = new OWLClassA();
-        final URI pk = URI.create("http://testNewOne");
-        testNew.setUri(pk);
+    void isObjectNewReturnsTrueForNewlyRegisteredObject() {
+        final OWLClassA testNew = Generators.generateOwlClassAInstance();
         uow.registerNewObject(testNew, descriptor);
         assertTrue(uow.isObjectNew(testNew));
-        verify(storageMock).persist(pk, testNew, descriptor);
     }
 
     @Test
-    void testIsObjectNewWithNullAndManaged() {
+    void isObjectNewReturnsFalseForNullArgument() {
         assertFalse(uow.isObjectNew(null));
+    }
+
+    @Test
+    void isObjectNewReturnsFalseForRegisteredExistingObject() {
         OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertFalse(uow.isObjectNew(managed));
     }
 
     @Test
-    void testIsObjectManaged() {
+    void isObjectManagedReturnsTrueForRegisteredExistingObject() {
         OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertTrue(uow.isObjectManaged(managed));
     }
 
     @Test
-    void testIsObjectManagerNull() {
+    void isObjectManagedThrowsNullPointerExceptionForNullArgument() {
         assertThrows(NullPointerException.class, () -> uow.isObjectManaged(null));
     }
 
     @Test
-    void testRegisterExistingObject() {
+    void registerExistingObjectReturnsRegisteredClone() {
         OWLClassB clone = (OWLClassB) uow.registerExistingObject(entityB, descriptor);
         assertNotNull(clone);
         assertEquals(entityB.getUri(), clone.getUri());
@@ -321,7 +324,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
      * tests the second branch of the register method.
      */
     @Test
-    void testRegisterExistingObjectTwice() {
+    void registerExistingObjectTwiceReturnsSameClone() {
         OWLClassB clone = (OWLClassB) uow.registerExistingObject(entityB, descriptor);
         assertNotNull(clone);
         assertEquals(entityB.getUri(), clone.getUri());
@@ -330,30 +333,38 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testRemoveObjectFromCache() {
+    void removeObjectFromCacheEvictsObjectFromCacheManager() {
         uow.removeObjectFromCache(entityB, descriptor.getSingleContext().orElse(null));
         verify(cacheManagerMock).evict(OWLClassB.class, entityB.getUri(), descriptor.getSingleContext().orElse(null));
     }
 
     @Test
-    void testRegisterNewObject() {
-        final OWLClassA newOne = new OWLClassA();
-        final URI pk = URI.create("http://newEntity");
-        newOne.setUri(pk);
-        newOne.setStringAttribute("stringAttributeOne");
-        uow.registerNewObject(newOne, descriptor);
-        assertTrue(uow.contains(newOne));
-        assertEquals(State.MANAGED_NEW, uow.getState(newOne));
-        verify(storageMock).persist(pk, newOne, descriptor);
+    void registerNewObjectGeneratesIdentifierWhenInstancesDoesNotHaveOne() {
+        final OWLClassE entity = new OWLClassE();
+        entity.setStringAttribute("Test value");
+        final URI id = Generators.createIndividualIdentifier();
+        when(storageMock.generateIdentifier(any(EntityType.class))).thenReturn(id);
+        uow.registerNewObject(entity, descriptor);
+        assertEquals(id, entity.getUri());
+        verify(storageMock).generateIdentifier(metamodelMocks.forOwlClassE().entityType());
     }
 
     @Test
-    void testRegisterNewObjectNull() {
+    void registerNewObjectAddsArgumentToPersistenceContext() {
+        final OWLClassA newOne = Generators.generateOwlClassAInstance();
+        uow.registerNewObject(newOne, descriptor);
+        assertTrue(uow.contains(newOne));
+        assertEquals(State.MANAGED_NEW, uow.getState(newOne));
+        verify(storageMock, never()).persist(newOne.getUri(), newOne, descriptor);
+    }
+
+    @Test
+    void registerNewObjectThrowsNullPointerExceptionForNullArgument() {
         assertThrows(NullPointerException.class, () -> uow.registerNewObject(null, descriptor));
     }
 
     @Test
-    void testRegisterNewObjectNullDescriptor() {
+    void registerNewObjectThrowsNullPointerExceptionForNullDescriptor() {
         assertThrows(NullPointerException.class, () -> uow.registerNewObject(entityA, null));
     }
 
@@ -365,7 +376,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testReleaseUnitOfWork() {
+    void releaseUnitOfWorkClosesStorageAndMakesUoWInactive() {
         assertTrue(uow.isActive());
         uow.release();
         assertFalse(uow.isActive());
@@ -382,10 +393,8 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testRemoveNewObject() {
-        final OWLClassB newOne = new OWLClassB();
-        final URI pk = URI.create("http://testObject");
-        newOne.setUri(pk);
+    void removeManagedNewObjectRemovesItFromPersistenceContext() {
+        final OWLClassB newOne = new OWLClassB(Generators.createIndividualIdentifier());
         newOne.setStringAttribute("strAtt");
         this.uow.registerNewObject(newOne, descriptor);
         assertTrue(uow.contains(newOne));
@@ -395,12 +404,12 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testRemoveObjectNotRegistered() {
+    void removeNotRegisteredObjectThrowsIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> uow.removeObject(entityA));
     }
 
     @Test
-    void testUnregisterObject() {
+    void unregisterRegisteredExistingObjectRemovesItFromPersistenceContext() {
         final OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertTrue(uow.contains(managed));
         uow.unregisterObject(managed);
@@ -415,16 +424,15 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testCommitInactive() {
+    void commitInactiveUoWThrowsIllegalStateException() {
         uow.release();
         assertThrows(IllegalStateException.class, () -> uow.commit());
     }
 
     @Test
-    void testRollback() {
+    void rollbackRollsBackStorageChangesAndRemovesObjectsFromPersistenceContext() {
         uow.registerNewObject(entityA, descriptor);
         final Object clone = uow.registerExistingObject(entityB, descriptor);
-        verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
         assertTrue(uow.contains(entityA));
         assertTrue(uow.contains(clone));
 
@@ -435,13 +443,13 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testRollbackInactive() {
+    void rollbackInactiveUoWThrowsIllegalStateException() {
         uow.release();
         assertThrows(IllegalStateException.class, () -> uow.rollback());
     }
 
     @Test
-    void testCommitFailed() {
+    void exceptionDuringStorageCommitRemovesUoWFromEntityManagerAndRethrowsException() {
         doThrow(OWLPersistenceException.class).when(storageMock).commit();
 
         assertThrows(OWLPersistenceException.class, () -> uow.commit());
@@ -452,7 +460,6 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     void testClearCacheAfterCommit() {
         uow.registerNewObject(entityA, descriptor);
         final Object clone = uow.registerExistingObject(entityB, descriptor);
-        verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
         assertTrue(uow.contains(entityA));
         assertTrue(uow.contains(clone));
         uow.setShouldClearAfterCommit(true);
@@ -462,29 +469,27 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void loadFieldLoadsLiteralValueAttribute() throws Exception {
+    void loadFieldLoadsLiteralValueAttribute() {
         final OWLClassB b = new OWLClassB();
         b.setUri(URI.create("http://bUri"));
         final Map<String, Set<String>> props = Collections
                 .singletonMap(Vocabulary.p_m_IntegerSet, Collections.singleton("12345"));
         final OWLClassB clone = (OWLClassB) uow.registerExistingObject(b, descriptor);
-        final Field propsField = OWLClassB.getPropertiesField();
         doAnswer(invocation -> {
             final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
             EntityPropertiesUtils.setFieldValue(f.getJavaField(), invocation.getArguments()[0], props);
             return null;
         }).when(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassB().propertiesSpec(), descriptor);
 
-        uow.loadEntityField(clone, propsField);
+        uow.loadEntityField(clone, metamodelMocks.forOwlClassB().propertiesSpec());
         assertNotNull(clone.getProperties());
         verify(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassB().propertiesSpec(), descriptor);
     }
 
     @Test
-    void loadFieldLoadsManagedTypeAttribute() throws Exception {
+    void loadFieldLoadsManagedTypeAttribute() {
         final OWLClassL original = new OWLClassL(Generators.createIndividualIdentifier());
         final OWLClassL clone = (OWLClassL) uow.registerExistingObject(original, descriptor);
-        final Field toLoad = OWLClassL.getSetField();
         doAnswer(invocation -> {
             final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
             EntityPropertiesUtils.setFieldValue(f.getJavaField(), invocation.getArguments()[0], Collections.singleton(entityA));
@@ -492,7 +497,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         }).when(storageMock)
           .loadFieldValue(eq(clone), eq(metamodelMocks.forOwlClassL().setAttribute()), eq(descriptor));
 
-        uow.loadEntityField(clone, toLoad);
+        uow.loadEntityField(clone, metamodelMocks.forOwlClassL().setAttribute());
         verify(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassL().setAttribute(), descriptor);
         assertNotNull(clone.getSet());
         assertEquals(1, clone.getSet().size());
@@ -502,16 +507,15 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void findOfObjectAlreadyManagedAsLazilyLoadedValueReturnSameObject() throws Exception {
+    void findOfObjectAlreadyManagedAsLazilyLoadedValueReturnSameObject() {
         final OWLClassL original = new OWLClassL(Generators.createIndividualIdentifier());
         final OWLClassL clone = (OWLClassL) uow.registerExistingObject(original, descriptor);
-        final Field toLoad = OWLClassL.getSetField();
         doAnswer(invocation -> {
             final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
             EntityPropertiesUtils.setFieldValue(f.getJavaField(), invocation.getArguments()[0], Collections.singleton(entityA));
             return null;
         }).when(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassL().setAttribute(), descriptor);
-        uow.loadEntityField(clone, toLoad);
+        uow.loadEntityField(clone, metamodelMocks.forOwlClassL().setAttribute());
         assertNotNull(clone.getSet());
 
         final OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
@@ -520,15 +524,15 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testLoadFieldValueNotRegistered() {
-        assertThrows(OWLPersistenceException.class, () -> uow.loadEntityField(entityB, OWLClassB.getStrAttField()));
+    void loadEntityFieldOnUnmanagedObjectThrowsOwlPersistenceException() {
+        assertThrows(OWLPersistenceException.class, () -> uow.loadEntityField(entityB, metamodelMocks.forOwlClassB().stringAttribute()));
         verify(storageMock, never()).loadFieldValue(any(OWLClassB.class),
                                                     eq(metamodelMocks.forOwlClassB().stringAttribute()),
                                                     eq(descriptor));
     }
 
     @Test
-    void testAttributeChanged() throws Exception {
+    void attributeChangedMergesChangeToStorage() throws Exception {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
         final OWLClassA clone = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         final Field strField = OWLClassA.getStrAttField();
@@ -538,7 +542,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testAttributeChangedNotRegistered() throws Exception {
+    void attributeMergeOnUnmanagedObjectThrowsOwlPersistenceException() throws Exception {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
         final Field strField = OWLClassA.getStrAttField();
         assertThrows(OWLPersistenceException.class, () -> uow.attributeChanged(entityA, strField));
@@ -547,7 +551,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testAttributeChangedOutsideTransaction() throws Exception {
+    void attributeChangedOutsideTransactionThrowsIllegalStateException() throws Exception {
         final Field strField = OWLClassA.getStrAttField();
         assertThrows(IllegalStateException.class, () -> uow.attributeChanged(entityA, strField));
         verify(storageMock, never()).merge(any(OWLClassA.class), eq(metamodelMocks.forOwlClassA().stringAttribute()),
@@ -555,7 +559,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testIsConsistent() {
+    void isConsistentCallsStorageConsistencyCheck() {
         when(storageMock.isConsistent(CONTEXT_URI)).thenReturn(Boolean.TRUE);
         final boolean res = uow.isConsistent(CONTEXT_URI);
         assertTrue(res);
@@ -563,12 +567,11 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testGetContexts() {
+    void getContextsRetrievesContextsFromStorage() {
         final List<URI> contexts = new ArrayList<>(1);
         contexts.add(CONTEXT_URI);
         when(storageMock.getContexts()).thenReturn(contexts);
         final List<URI> res = uow.getContexts();
-        assertSame(contexts, res);
         assertEquals(contexts, res);
         verify(storageMock).getContexts();
     }
@@ -981,7 +984,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
             inst.setSet(Collections.singleton(entityA));
             return null;
         }).when(storageMock).loadFieldValue(eq(instance), eq(metamodelMocks.forOwlClassL().setAttribute()), any());
-        uow.loadEntityField(instance, OWLClassL.getSetField());
+        uow.loadEntityField(instance, metamodelMocks.forOwlClassL().setAttribute());
 
         assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
     }
@@ -991,7 +994,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
         assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
         // Do nothing when load field is triggered
-        uow.loadEntityField(instance, OWLClassL.getSetField());
+        uow.loadEntityField(instance, metamodelMocks.forOwlClassL().setAttribute());
 
         assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
     }
@@ -1014,7 +1017,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
         uow.attributeChanged(instance, OWLClassL.getSetField());
         assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
-        uow.loadEntityField(instance, OWLClassL.getSetField());
+        uow.loadEntityField(instance, metamodelMocks.forOwlClassL().setAttribute());
         verify(storageMock, never()).loadFieldValue(eq(instance), eq(metamodelMocks.forOwlClassL().setAttribute()),
                                                     any(Descriptor.class));
     }
@@ -1122,5 +1125,17 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     void isInferredThrowsIllegalArgumentExceptionWhenInstanceIsNotManaged() {
         assertThrows(IllegalArgumentException.class, () -> uow.isInferred(entityD, metamodelMocks.forOwlClassD().owlClassAAtt(), entityD.getOwlClassA()));
         verify(storageMock, never()).isInferred(any(), any(), any(), any());
+    }
+
+    @Test
+    void commitPersistsAllNewlyRegisteredObjects() {
+        when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+        uow.registerNewObject(entityA, descriptor);
+        uow.registerNewObject(entityB, descriptor);
+        verify(storageMock, never()).persist(any(), any(), any());
+        uow.commit();
+
+        verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
+        verify(storageMock).persist(entityB.getUri(), entityB, descriptor);
     }
 }

@@ -161,16 +161,12 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     @Override
     public <T> void persistEntity(URI identifier, T entity, Descriptor descriptor) {
+        assert identifier != null;
         assert entity != null;
         assert descriptor != null;
 
         @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         try {
-            if (identifier == null) {
-                identifier = generateIdentifier(et);
-                assert identifier != null;
-                EntityPropertiesUtils.setIdentifier(identifier, entity, et);
-            }
             entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
             final AxiomValueGatherer axiomBuilder = entityBreaker.mapEntityToAxioms(identifier, entity, et, descriptor);
             axiomBuilder.persist(storageConnection);

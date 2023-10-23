@@ -25,36 +25,34 @@ class IdentifiableEntityTypeTest {
 
     private static Class<OWLClassA> cls;
     private static IRI classIri;
-    private static String className;
 
     @BeforeAll
     static void setUpBeforeClass() {
         cls = OWLClassA.class;
         classIri = IRI.create(OWLClassA.getClassIri());
-        className = OWLClassA.class.getName();
     }
 
     @Test
     void getAttributeThrowsIAEWhenAttributeIsNotPresent() {
-        final EntityType<OWLClassA> et = new ConcreteEntityType<>(className, cls, classIri);
+        final EntityType<OWLClassA> et = new ConcreteEntityType<>(cls, cls, classIri);
         assertThrows(IllegalArgumentException.class, () -> et.getAttribute("someUnknownAttribute"));
     }
 
     @Test
     void getDeclaredAttributeThrowsIAEWhenAttributeIsNotPresent() {
-        final EntityType<OWLClassA> et = new ConcreteEntityType<>(className, cls, classIri);
+        final EntityType<OWLClassA> et = new ConcreteEntityType<>(cls, cls, classIri);
         assertThrows(IllegalArgumentException.class, () -> et.getDeclaredAttribute("someUnknownAttribute"));
     }
 
     @Test
     void getFieldSpecificationThrowsIAEWhenAttributeIsNotPresent() {
-        final EntityType<OWLClassA> et = new ConcreteEntityType<>(className, cls, classIri);
+        final EntityType<OWLClassA> et = new ConcreteEntityType<>(cls, cls, classIri);
         assertThrows(IllegalArgumentException.class, () -> et.getFieldSpecification("someUnknownAttribute"));
     }
 
     @Test
     void getFieldSpecificationReturnsTypesIfNameMatches() throws Exception {
-        final IdentifiableEntityType<OWLClassA> et = new ConcreteEntityType<>(className, cls, classIri);
+        final IdentifiableEntityType<OWLClassA> et = new ConcreteEntityType<>(cls, cls, classIri);
         final TypesSpecification typesSpec = mock(TypesSpecification.class);
         when(typesSpec.getName()).thenReturn(OWLClassA.getTypesField().getName());
         when(typesSpec.getJavaField()).thenReturn(OWLClassA.getTypesField());

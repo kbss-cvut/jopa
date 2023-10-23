@@ -1,9 +1,0 @@
-<!DOCTYPE aspectj PUBLIC "-//AspectJ//DTD//EN" "http://www.eclipse.org/aspectj/dtd/aspectj.dtd">
-
-<aspectj>
-    <weaver/>
-
-    <aspects>
-        <aspect name="cz.cvut.kbss.jopa.model.BeanListenerAspect"/>
-    </aspects>
-</aspectj>

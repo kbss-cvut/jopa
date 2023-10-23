@@ -61,10 +61,20 @@ class AnnotatedAccessorTest {
 
         AnnotatedAccessor accessor = AnnotatedAccessor.from(genericGetter);
 
-
         assertEquals(genericGetter, accessor.getMethod());
         assertEquals("foo", accessor.getPropertyName());
         assertEquals(Boolean.class, accessor.getPropertyType());
+    }
+
+    @Test
+    void fromParsesPrimitiveBooleanIsGetterCorrectly() throws NoSuchMethodException {
+        Method genericGetter = MethodHolder.class.getDeclaredMethod("isBar");
+
+        AnnotatedAccessor accessor = AnnotatedAccessor.from(genericGetter);
+
+        assertEquals(genericGetter, accessor.getMethod());
+        assertEquals("bar", accessor.getPropertyName());
+        assertEquals(boolean.class, accessor.getPropertyType());
     }
 
     private static Stream<Arguments> fromThrowsExceptionOnInvalidMethodsTestValues() {
@@ -96,6 +106,8 @@ class AnnotatedAccessorTest {
         abstract Boolean hasFoo();
 
         abstract Boolean isFoo();
+
+        abstract boolean isBar();
 
         //-- invalid getters
         abstract void  getBar();

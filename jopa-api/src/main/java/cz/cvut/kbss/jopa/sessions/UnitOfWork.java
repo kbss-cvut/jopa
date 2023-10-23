@@ -19,7 +19,6 @@ import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.function.Consumer;
@@ -98,12 +97,12 @@ public interface UnitOfWork extends Session {
      * The value is set on the entity.
      *
      * @param entity The entity to load field for
-     * @param field  The field to load
+     * @param fieldSpec  Metamodel element representing the field to load
      * @throws NullPointerException    If {@code entity} or {@code field} is {@code null}
-     * @throws OWLPersistenceException If an error occurs, this may be e. g. that the field is not present on the
+     * @throws OWLPersistenceException If an error occurs, this may be e.g. that the field is not present on the
      *                                 entity, an ontology access error occurred etc.
      */
-    <T> void loadEntityField(T entity, Field field);
+    <T> void loadEntityField(T entity, FieldSpecification<? super T, ?> fieldSpec);
 
     /**
      * Merges the state of the given entity into the current persistence context.

@@ -57,9 +57,8 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
         child.setId(id);
         child.setStringAttribute("AttRVal");
         child.setPluralAnnotationProperty(Collections.singleton("seeet"));
+        persist(child);
 
-        em.persist(child);
-        em.clear();
         final OWLChildClassA found = findRequired(OWLChildClassA.class, id);
         em.clear();
         final OWLParentB parentBFound = findRequired(OWLParentB.class, id);
@@ -77,8 +76,7 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
 
         classWithUnProperties.setName("NAME_VALUE");
         classWithUnProperties.setTitles(Collections.singleton("title"));
-        em.persist(classWithUnProperties);
-        em.clear();
+        persist(classWithUnProperties);
 
         OWLClassWithUnProperties found = em.find(OWLClassWithUnProperties.class, classWithUnProperties.getId());
 
@@ -101,8 +99,8 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
         child.setId(id);
         child.setAttributeA("Value");
         child.setAttributeB(Boolean.FALSE);
-        em.persist(child);
-        em.clear();
+        persist(child);
+
         final OWLChildClassB found = findRequired(OWLChildClassB.class, id);
         em.clear();
         final OWLInterfaceA parentAFound = findRequired(OWLInterfaceA.class, id);
@@ -128,9 +126,8 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
         child.setId(id);
         child.setName("Name");
         child.setAttributeB(Generators.randomBoolean());
+        persist(child);
 
-        em.persist(child);
-        em.clear();
         final OWLChildClassC found = findRequired(OWLChildClassC.class, id);
         em.clear();
         final OWLInterfaceAnMethods commonParentFound = findRequired(OWLInterfaceAnMethods.class, id);
@@ -153,11 +150,7 @@ public abstract class MultipleInheritanceTestRunner extends BaseRunner {
         childOfMappedSuperClass.setUri(uri);
         childOfMappedSuperClass.setLabel(label);
 
-        em.getTransaction().begin();
-
-        em.persist(childOfMappedSuperClass);
-
-        em.getTransaction().commit();
+        persist(childOfMappedSuperClass);
 
 
         verifyExists(ChildOfMappedSuperClass.class, uri);

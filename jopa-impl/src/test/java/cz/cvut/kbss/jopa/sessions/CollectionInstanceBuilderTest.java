@@ -81,7 +81,7 @@ public class CollectionInstanceBuilderTest {
         owner.list = new TestList<>(owner);
         IntStream.range(0, 10).forEach(i -> owner.list.add("String" + i));
         final Object result =
-                builder.buildClone(owner, CollectionOwner.listField(), owner.list, new CloneConfiguration(descriptor));
+                builder.buildClone(owner, CollectionOwner.listField(), owner.list, new CloneConfiguration(descriptor, false));
         assertNotNull(result);
         assertTrue(result instanceof List);
         final List<?> lstResult = (List<?>) result;
@@ -95,7 +95,7 @@ public class CollectionInstanceBuilderTest {
         owner.set = new TestSet<>(owner);
         IntStream.range(0, 10).forEach(i -> owner.set.add("String" + i));
         final Object result =
-                builder.buildClone(owner, CollectionOwner.setField(), owner.set, new CloneConfiguration(descriptor));
+                builder.buildClone(owner, CollectionOwner.setField(), owner.set, new CloneConfiguration(descriptor, false));
         assertNotNull(result);
         assertTrue(result instanceof Set);
         final Set<?> setResult = (Set<?>) result;
@@ -107,7 +107,7 @@ public class CollectionInstanceBuilderTest {
         final CollectionOwner owner = new CollectionOwner();
         owner.queue = new TestQueue<>(owner);
         final OWLPersistenceException ex = assertThrows(OWLPersistenceException.class, () -> builder
-                .buildClone(owner, CollectionOwner.queueField(), owner.queue, new CloneConfiguration(descriptor)));
+                .buildClone(owner, CollectionOwner.queueField(), owner.queue, new CloneConfiguration(descriptor, false)));
         assertThat(ex.getMessage(),
                    containsString("Cannot clone unsupported collection instance of type " + owner.queue.getClass()));
     }
@@ -173,7 +173,7 @@ public class CollectionInstanceBuilderTest {
         when(uowMock.registerExistingObject(aOrig, descriptor, Collections.emptyList())).thenReturn(aClone);
         when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
         final Set<?> clone = (Set<?>) builder.buildClone(owner, OWLClassJ.getOwlClassAField(), owner.getOwlClassA(),
-                                                         new CloneConfiguration(descriptor));
+                                                         new CloneConfiguration(descriptor, false));
         assertEquals(owner.getOwlClassA().size(), clone.size());
         assertSame(aClone, clone.iterator().next());
         verify(uowMock).registerExistingObject(aOrig, descriptor, Collections.emptyList());
@@ -190,7 +190,7 @@ public class CollectionInstanceBuilderTest {
         when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
 
         final List<?> clone = (List<?>) builder.buildClone(owner, OWLClassC.getSimpleListField(), owner.getSimpleList(),
-                                                           new CloneConfiguration(descriptor));
+                                                           new CloneConfiguration(descriptor, false));
         assertEquals(1, clone.size());
         assertSame(aClone, clone.get(0));
         verify(uowMock).registerExistingObject(aOrig, descriptor, Collections.emptyList());
@@ -210,7 +210,7 @@ public class CollectionInstanceBuilderTest {
         when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
 
         final List<?> clone = (List<?>) builder.buildClone(owner, OWLClassC.getSimpleListField(), owner.getSimpleList(),
-                                                           new CloneConfiguration(descriptor));
+                                                           new CloneConfiguration(descriptor, false));
         assertEquals(2, clone.size());
         assertSame(aOneClone, clone.get(0));
         assertSame(aTwoClone, clone.get(1));

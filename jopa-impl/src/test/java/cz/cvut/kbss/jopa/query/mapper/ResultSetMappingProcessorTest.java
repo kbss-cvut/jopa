@@ -176,7 +176,7 @@ public class ResultSetMappingProcessorTest {
         final SparqlResultMappingException ex = assertThrows(SparqlResultMappingException.class,
                 () -> processor.buildMapper(getMapping(WithEntityMapping.class)));
         assertEquals("Type " + OWLClassA.class +
-                " is not a known entity type and cannot be used as @EntityResult target class.", ex.getMessage());
+                " is not a known instantiable entity type and cannot be used as @EntityResult target class.", ex.getMessage());
     }
 
     @Test

@@ -45,7 +45,7 @@ class DateInstanceBuilderTest {
     @Test
     void testBuildClone() {
         final Date original = new Date();
-        final Object res = builder.buildClone(entityM, dateField, original, new CloneConfiguration(descriptor));
+        final Object res = builder.buildClone(entityM, dateField, original, new CloneConfiguration(descriptor, false));
         assertTrue(res instanceof Date);
         assertNotSame(original, res);
         assertEquals(original, res);
@@ -53,7 +53,7 @@ class DateInstanceBuilderTest {
 
     @Test
     void testBuildCloneOfNull() {
-        final Object res = builder.buildClone(entityM, dateField, null, new CloneConfiguration(descriptor));
+        final Object res = builder.buildClone(entityM, dateField, null, new CloneConfiguration(descriptor, false));
         assertNull(res);
     }
 

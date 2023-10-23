@@ -71,7 +71,8 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         final OWLClassA reference = new OWLClassA(entityA.getUri());
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
-        assertEquals(reference, result);
+        assertNotNull(result);
+        assertEquals(reference.getUri(), result.getUri());
         verify(storageMock).getReference(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor));
     }
 
@@ -109,7 +110,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         final OWLClassL reference = new OWLClassL(entityL.getUri());
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassL result = uow.getReference(OWLClassL.class, entityL.getUri(), descriptor);
-        uow.loadEntityField(result, OWLClassL.getSetField());
+        uow.loadEntityField(result, metamodelMocks.forOwlClassL().setAttribute());
         verify(storageMock).loadFieldValue(result, metamodelMocks.forOwlClassL().setAttribute(), descriptor);
         assertEquals(LoadState.LOADED, uow.isLoaded(result, OWLClassL.getSetField().getName()));
     }
@@ -120,9 +121,9 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         final OWLClassL reference = new OWLClassL(entityL.getUri());
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassL result = uow.getReference(OWLClassL.class, entityL.getUri(), descriptor);
-        uow.loadEntityField(result, OWLClassL.getSetField());
+        uow.loadEntityField(result, metamodelMocks.forOwlClassL().setAttribute());
         // Call it twice. Storage should be called only once
-        uow.loadEntityField(result, OWLClassL.getSetField());
+        uow.loadEntityField(result, metamodelMocks.forOwlClassL().setAttribute());
         verify(storageMock).loadFieldValue(result, metamodelMocks.forOwlClassL().setAttribute(), descriptor);
         assertEquals(LoadState.LOADED, uow.isLoaded(result, OWLClassL.getSetField().getName()));
     }

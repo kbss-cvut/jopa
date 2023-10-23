@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
@@ -350,8 +351,9 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidTypes")
-    private static class ClassWithInvalidTypes {
+    public static class ClassWithInvalidTypes {
         @Id
         private String id;
         @Types
@@ -364,8 +366,9 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidProperties")
-    private static class ClassWithInvalidProperties {
+    public static class ClassWithInvalidProperties {
         @Id
         private String id;
         @Properties
@@ -378,8 +381,9 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidIdentifier")
-    private static class ClassWithInvalidIdentifier {
+    public static class ClassWithInvalidIdentifier {
         @Id
         private Integer id;
     }
@@ -390,8 +394,9 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithoutIdentifier")
-    private static class ClassWithoutIdentifier {
+    public static class ClassWithoutIdentifier {
         @Properties
         private Map<String, Set<String>> properties;
     }
@@ -475,8 +480,9 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithoutNoArgConstructor")
-    private static class ClassWithoutNoArgConstructor {
+    public static class ClassWithoutNoArgConstructor {
 
         @Id
         private URI id;
@@ -492,8 +498,9 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithArrayAttribute")
-    private static class ClassWithArrayAttribute {
+    public static class ClassWithArrayAttribute {
 
         @Id
         private URI id;
@@ -516,8 +523,9 @@ class MetamodelImplTest {
         assertArrayEquals(new CascadeType[0], att.getCascadeTypes());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithOPUri")
-    private static class ClassWithOPUri {
+    public static class ClassWithOPUri {
 
         @Id
         private URI id;
@@ -543,8 +551,9 @@ class MetamodelImplTest {
         assertEquals(CollectionType.SET, ((PluralAttribute<?, ?, ?>) att).getCollectionType());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithOPUri")
-    private static class ClassWithPluralOPUrls {
+    public static class ClassWithPluralOPUrls {
 
         @Id
         private URI id;
@@ -563,8 +572,9 @@ class MetamodelImplTest {
         assertEquals(URI.class, et.getTypes().getElementType());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithUriTypes")
-    private static class ClassWithUriTypes {
+    public static class ClassWithUriTypes {
         @Id
         private URI id;
 
@@ -590,12 +600,13 @@ class MetamodelImplTest {
         assertNotNull(queryManager.getQuery("askQuery"));
     }
 
+    @TestLocal
     @NamedNativeQueries({
             @NamedNativeQuery(name = "selectAll", query = "SELECT ?x ?y ?z WHERE { ?x ?y ?z . }"),
             @NamedNativeQuery(name = "askQuery", query = "ASK WHERE { ?x a ?type . }")
     })
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithNamedQueries")
-    private static class ClassWithNamedQueries {
+    public static class ClassWithNamedQueries {
         @Id
         private URI id;
 

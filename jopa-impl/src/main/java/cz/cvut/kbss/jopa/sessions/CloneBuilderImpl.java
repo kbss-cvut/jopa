@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2023 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -76,7 +74,7 @@ public class CloneBuilderImpl implements CloneBuilder {
             // Normally this is a bad practice, but since stringify could be quite costly, we want to avoid it if possible
             LOG.trace("Cloning object {} with owner {}", stringify(original), stringify(cloneOwner));
         }
-        return buildCloneImpl(cloneOwner, clonedField, original, new CloneConfiguration(descriptor));
+        return buildCloneImpl(cloneOwner, clonedField, original, new CloneConfiguration(descriptor, false));
     }
 
     private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original,
@@ -97,12 +95,25 @@ public class CloneBuilderImpl implements CloneBuilder {
         final AbstractInstanceBuilder builder = getInstanceBuilder(original);
         Object clone = builder.buildClone(cloneOwner, clonedField, original, cloneConfiguration);
         if (managed) {
-            // Register visited object before populating attributes to prevent endless cloning cycles
+            // Register visited object before populating attributes to prevent infinite cloning cycles
             putVisitedEntity(descriptor, original, clone);
         }
         if (!builder.populatesAttributes() && !isImmutable(cls)) {
             populateAttributes(original, clone, cloneConfiguration);
         }
+        return clone;
+    }
+
+    @Override
+    public Object buildReferenceClone(Object original, CloneConfiguration cloneConfiguration) {
+        Objects.requireNonNull(original);
+        Objects.requireNonNull(cloneConfiguration);
+        assert isTypeManaged(original.getClass());
+
+        final Class<?> originalClass = original.getClass();
+        final EntityType<?> et = getMetamodel().entity(originalClass);
+        final Object clone = getInstanceBuilder(original).buildClone(null, null, original, cloneConfiguration);
+        cloneIdentifier(original, clone, et);
         return clone;
     }
 
@@ -134,10 +145,11 @@ public class CloneBuilderImpl implements CloneBuilder {
                 final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, configuration.getDescriptor());
                 // Collection or Map
                 clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal,
-                                                                     new CloneConfiguration(fieldDescriptor,
-                                                                                            configuration.getPostRegister()));
+                        new CloneConfiguration(fieldDescriptor,
+                                configuration.isForPersistenceContext(),
+                                configuration.getPostRegister()));
             } else {
-                // Otherwise we have a relationship and we need to clone its target as well
+                // Otherwise, we have a relationship, and we need to clone its target as well
                 if (isOriginalInUoW(origVal)) {
                     // If the reference is already managed
                     clonedValue = uow.getCloneForOriginal(origVal);
@@ -148,7 +160,7 @@ public class CloneBuilderImpl implements CloneBuilder {
                         clonedValue = getVisitedEntity(configuration.getDescriptor(), origVal);
                         if (clonedValue == null) {
                             clonedValue = uow.registerExistingObject(origVal, fieldDescriptor,
-                                                                     configuration.getPostRegister());
+                                    configuration.getPostRegister());
                         }
                     } else {
                         clonedValue = buildClone(origVal, configuration);
@@ -274,9 +286,9 @@ public class CloneBuilderImpl implements CloneBuilder {
     private String stringify(Object object) {
         assert object != null;
         return isTypeManaged(object.getClass()) ?
-               (object.getClass().getSimpleName() + IdentifierTransformer.stringifyIri(
-                       EntityPropertiesUtils.getIdentifier(object, getMetamodel()))) :
-               object.toString();
+                (object.getClass().getSimpleName() + IdentifierTransformer.stringifyIri(
+                        EntityPropertiesUtils.getIdentifier(object, getMetamodel()))) :
+                object.toString();
     }
 
     private static Set<Class<?>> getImmutableTypes() {
@@ -309,6 +321,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
     private final class Builders {
         private final AbstractInstanceBuilder defaultBuilder;
+        private final ManagedInstanceBuilder managedInstanceBuilder;
         private final AbstractInstanceBuilder dateBuilder;
         private final AbstractInstanceBuilder multilingualStringBuilder;
         // Lists and Sets
@@ -317,6 +330,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
         private Builders() {
             this.defaultBuilder = new DefaultInstanceBuilder(CloneBuilderImpl.this, uow);
+            this.managedInstanceBuilder = new ManagedInstanceBuilder(CloneBuilderImpl.this, uow);
             this.dateBuilder = new DateInstanceBuilder(CloneBuilderImpl.this, uow);
             this.multilingualStringBuilder = new MultilingualStringInstanceBuilder(CloneBuilderImpl.this, uow);
         }
@@ -338,6 +352,8 @@ public class CloneBuilderImpl implements CloneBuilder {
                     this.collectionBuilder = new CollectionInstanceBuilder(CloneBuilderImpl.this, uow);
                 }
                 return collectionBuilder;
+            } else if (isTypeManaged(toClone.getClass())) {
+                return managedInstanceBuilder;
             } else {
                 return defaultBuilder;
             }

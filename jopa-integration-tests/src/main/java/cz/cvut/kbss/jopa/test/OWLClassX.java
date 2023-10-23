@@ -43,7 +43,7 @@ public class OWLClassX implements HasUri {
     private Set<Object> objectAnnotation;
 
     @OWLObjectProperty(iri = Vocabulary.P_X_COLLECTION_ATTRIBUTE, cascade = CascadeType.PERSIST)
-    private Collection<OWLClassA> aCollection;
+    private Collection<OWLClassA> owlClassACollection;
 
     @OWLDataProperty(iri = Vocabulary.p_m_explicitDatatype, datatype = XSD.INT)
     private Set<String> explicitDatatypes;
@@ -88,12 +88,12 @@ public class OWLClassX implements HasUri {
         this.objectAnnotation = objectAnnotation;
     }
 
-    public Collection<OWLClassA> getACollection() {
-        return aCollection;
+    public Collection<OWLClassA> getOwlClassACollection() {
+        return owlClassACollection;
     }
 
-    public void setACollection(Collection<OWLClassA> aCollection) {
-        this.aCollection = aCollection;
+    public void setOwlClassACollection(Collection<OWLClassA> aCollection) {
+        this.owlClassACollection = aCollection;
     }
 
     public Set<String> getExplicitDatatypes() {
@@ -112,7 +112,7 @@ public class OWLClassX implements HasUri {
                 ", localDateTime=" + localDateTime +
                 ", instant=" + instant +
                 ", objectAnnotation=" + objectAnnotation +
-                ", aCollection=" + aCollection +
+                ", aCollection=" + owlClassACollection +
                 ", explicitDatatypes=" + explicitDatatypes +
                 '}';
     }

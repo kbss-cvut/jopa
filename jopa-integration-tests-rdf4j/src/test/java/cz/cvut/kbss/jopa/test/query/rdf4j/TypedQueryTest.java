@@ -20,7 +20,9 @@ import cz.cvut.kbss.jopa.test.environment.Rdf4jPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.TypedQueryRunner;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jOntoDriverProperties;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,12 +62,5 @@ public class TypedQueryTest extends TypedQueryRunner {
     @Override
     protected EntityManager getEntityManager() {
         return em;
-    }
-
-    @Disabled
-    @Test
-    @Override
-    public void askQueryAgainstTransactionalOntologyContainsUncommittedChangesAsWell() {
-        // This is not solved in RDF4J driver, yet
     }
 }

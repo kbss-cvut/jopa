@@ -67,19 +67,19 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
 
     @Test
     void mergeDetachedEvictsInstanceFromCache() {
-        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(Boolean.TRUE);
+        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
         mergeDetachedTest();
         verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
     }
 
     @Test
     void mergeDetachedRegistersNewObjectWhenItDoesNotExist() {
-        when(storageMock.contains(entityA.getUri(), entityA.getClass(), descriptor))
-                .thenReturn(Boolean.FALSE);
+        when(storageMock.contains(entityA.getUri(), entityA.getClass(), descriptor)).thenReturn(false);
+        assertFalse(uow.contains(entityA));
         final OWLClassA res = uow.mergeDetached(entityA, descriptor);
         assertNotNull(res);
         assertSame(entityA, res);
-        verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
+        assertTrue(uow.isObjectNew(res));
     }
 
     @Test

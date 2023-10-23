@@ -22,12 +22,11 @@ import java.lang.reflect.Method;
 /**
  * Class used for extracting field name from getter or setter.
  */
-
 public abstract class AnnotatedAccessor {
-    private static final String GET_PREFIX="get";
-    private static final String SET_PREFIX="set";
-    private static final String IS_PREFIX="is";
-    private static final String HAS_PREFIX="has";
+    public static final String GET_PREFIX = "get";
+    public static final String SET_PREFIX = "set";
+    public static final String IS_PREFIX = "is";
+    public static final String HAS_PREFIX = "has";
 
     protected final Method method;
     protected final String propertyName;
@@ -45,7 +44,7 @@ public abstract class AnnotatedAccessor {
         } else if (isGetter(method)) {
             return new AnnotatedGetter(method);
         } else {
-            throw new MetamodelInitializationException("Method {} is neither a setter or getter. Only simple getters and setters following the Java naming convection can be used for OWL property annotations.");
+            throw new MetamodelInitializationException("Method " + method + " is neither a setter nor a getter. Only simple getters and setters following the Java naming convection can be used for OWL property annotations.");
         }
 
     }
@@ -59,14 +58,15 @@ public abstract class AnnotatedAccessor {
     }
 
     private static boolean isGetter(Method m) {
-        if (m.getParameterCount() != 0 || m.getReturnType().equals(Void.TYPE)) { /// getter has 0 arguments and returns something
+        if (m.getParameterCount() != 0 || m.getReturnType()
+                                           .equals(Void.TYPE)) { /// getter has 0 arguments and returns something
             return false;
         }
 
         if (m.getName().startsWith(GET_PREFIX)) {
             return true;
-        } else if (m.getReturnType()
-                    .isAssignableFrom(Boolean.class)) {/// getter on bools - can start with is,get or has
+        } else if (m.getReturnType().isAssignableFrom(Boolean.class) || m.getReturnType()
+                                                                         .isAssignableFrom(boolean.class)) {/// getter on bools - can start with is,get or has
             return m.getName().startsWith(IS_PREFIX) || m.getName().startsWith(HAS_PREFIX);
         } else {
             return false;

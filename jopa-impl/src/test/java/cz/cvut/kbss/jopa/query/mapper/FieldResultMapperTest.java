@@ -22,7 +22,7 @@ import cz.cvut.kbss.jopa.model.annotations.EntityResult;
 import cz.cvut.kbss.jopa.model.annotations.FieldResult;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
@@ -35,8 +35,12 @@ import java.time.OffsetDateTime;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FieldResultMapperTest {
@@ -45,7 +49,7 @@ class FieldResultMapperTest {
     private ResultRow resultRow;
 
     @Mock
-    private UnitOfWork uowMock;
+    private UnitOfWorkImpl uowMock;
 
     @SparqlResultSetMapping(name = "test", entities = {
             @EntityResult(entityClass = WithMapping.class, fields = {

@@ -29,17 +29,27 @@ public interface CloneBuilder {
      *
      * @param original           Object
      * @param cloneConfiguration Configuration for the cloning process
-     * @return Object The clone
-     * @throws NullPointerException If {@code original} or {@code repository} is {@code null}
+     * @return The clone
+     * @throws NullPointerException If {@code original} is {@code null}
      */
     Object buildClone(Object original, CloneConfiguration cloneConfiguration);
+
+    /**
+     * Builds a clone of the specified entity reference.
+     *
+     * It is expected that the specified original is an entity, only its identifier is cloned.
+     * @param original Entity
+     * @param cloneConfiguration Clone configuration
+     * @return The clone
+     */
+    Object buildReferenceClone(Object original, CloneConfiguration cloneConfiguration);
 
     /**
      * Builds clone of the given object.
      * <p>
      * This method differs from {@link #buildClone(Object, CloneConfiguration)} in that it
      * accepts another argument which represents the owner of the built clone.
-     * This is useful in situations when we are cloning attributes directly, e. g. when lazily loading a field value.
+     * This is useful in situations when we are cloning attributes directly, e.g. when lazily loading a field value.
      *
      * @param cloneOwner  The owner of the created clone
      * @param clonedField The field whose value is being cloned
