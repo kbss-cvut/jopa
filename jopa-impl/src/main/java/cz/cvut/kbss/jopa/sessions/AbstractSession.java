@@ -29,8 +29,7 @@ public abstract class AbstractSession implements Session, MetamodelProvider, Con
 
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractSession.class);
 
-
-    private final Configuration configuration;
+    protected Configuration configuration;
 
     protected AbstractSession(Configuration configuration) {
         this.configuration = configuration;
@@ -38,6 +37,7 @@ public abstract class AbstractSession implements Session, MetamodelProvider, Con
 
     @Override
     public UnitOfWork acquireUnitOfWork() {
+        // TODO UoW acquisition needs to be provided with configuration from EntityManager, because it may override the server session config
         UnitOfWork uow = new UnitOfWorkImpl(this);
         LOG.trace("UnitOfWork acquired.");
         return uow;

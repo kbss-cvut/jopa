@@ -904,6 +904,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     public void setEntityManager(AbstractEntityManager entityManager) {
         this.entityManager = entityManager;
+        // TODO This is a temporary workaround, configuration should be provided in constructor
+        this.configuration = entityManager.getConfiguration();
     }
 
     @Override

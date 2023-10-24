@@ -195,5 +195,12 @@ public class AxiomValueDescriptor extends AbstractAxiomDescriptor {
             this.context = context;
             this.hasContext = true;
         }
+
+        @Override
+        public String toString() {
+            return "AssertionData{" +
+                    "values=" + values +
+                    '}';
+        }
     }
 }
