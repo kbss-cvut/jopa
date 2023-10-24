@@ -27,7 +27,7 @@ public class OWLClassF implements HasUri {
     private URI uri;
 
     @Inferred
-    @OWLDataProperty(iri = "http://F-secondStringAttribute")
+    @OWLDataProperty(iri = Vocabulary.P_F_STRING_ATTRIBUTE)
     private String secondStringAttribute;
 
     @OWLObjectProperty(iri = Vocabulary.P_F_HAS_SIMPLE_SET)
