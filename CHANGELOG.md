@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+## 1.1.4 - 2023-10-25
+- Support ignoring removals of inferred values on entity merge into persistence context (Enhancement #189).
+- Dependency updates: RDF4J 4.3.7.
+
 ## 1.1.3 - 2023-09-22
 - Fix a transaction isolation issue. Now when multiple transactions edit the same data, the one that commits last wins (same behavior as JPA, Bug #202).
 - Fix an issue with missing interpretation of prefixes in the `@Sequence` annotation values (Bug #204).
