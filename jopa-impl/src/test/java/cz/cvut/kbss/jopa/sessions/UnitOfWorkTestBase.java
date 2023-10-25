@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -8,7 +8,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -76,6 +77,7 @@ public abstract class UnitOfWorkTestBase {
         when(serverSessionStub.getLiveObjectCache()).thenReturn(cacheManagerMock);
         when(serverSessionStub.acquireConnection()).thenReturn(storageMock);
         when(emMock.getTransaction()).thenReturn(transactionMock);
+        when(emMock.getConfiguration()).thenReturn(new Configuration());
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodelMock);
         uow = new UnitOfWorkImpl(serverSessionStub);

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -8,7 +8,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -101,6 +101,7 @@ public class Vocabulary {
     public static final String P_A_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "A-stringAttribute";
     public static final String P_B_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "B-stringAttribute";
     public static final String P_E_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "E-stringAttribute";
+    public static final String P_F_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "F-stringAttribute";
     public static final String P_F_HAS_SIMPLE_SET = ATTRIBUTE_IRI_BASE + "F-hasSimpleSet";
 
     public static final String P_T_INTEGER_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "T-integerAttribute";

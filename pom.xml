@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>1.1.3</version>
+    <version>1.1.4</version>
     <artifactId>jopa-all</artifactId>
     <packaging>pom</packaging>
     <name>JOPA</name>
@@ -48,8 +48,8 @@
         <net.sourceforge.owlapi.version>5.5.0</net.sourceforge.owlapi.version>
 
         <maven.aspectj.plugin.version>1.13.1</maven.aspectj.plugin.version>
-        <maven.deploy.plugin.version>3.0.0</maven.deploy.plugin.version>
-        <maven.javadoc.plugin.version>3.4.1</maven.javadoc.plugin.version>
+        <maven.deploy.plugin.version>3.1.1</maven.deploy.plugin.version>
+        <maven.javadoc.plugin.version>3.6.0</maven.javadoc.plugin.version>
         <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
     </properties>
 
@@ -113,7 +113,7 @@
                 <plugins>
                     <plugin>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.2.0</version>
+                        <version>3.3.0</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -219,6 +219,9 @@
                 <artifactId>license-maven-plugin</artifactId>
                 <version>3.0</version>
                 <configuration>
+                    <mapping>
+                        <java>SLASHSTAR_STYLE</java>
+                    </mapping>
                     <header>header.txt</header>
                     <excludes>
                         <exclude>**/src/test/resources/**</exclude>
@@ -232,6 +235,7 @@
                         <exclude>**/maven.yml</exclude>
                         <exclude>**/pom.xml</exclude>
                         <exclude>.editorconfig</exclude>
+                        <exclude>.gitattributes</exclude>
                     </excludes>
                 </configuration>
             </plugin>

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -8,7 +8,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -55,21 +55,47 @@ public class InferredAttributeChangeValidator {
      */
     public <T> void validateChange(T instance, T original, FieldSpecification<? super T, ?> fieldSpec,
                                    Descriptor instanceDescriptor) {
+        final Optional<Axiom<?>> removedInferredValue = getRemovedInferredValues(instance, original, fieldSpec, instanceDescriptor);
+        if (removedInferredValue.isPresent()) {
+            throw new InferredAttributeModifiedException("Value " + removedInferredValue.get()
+                                                                                        .getValue() + " of attribute " + fieldSpec + " is inferred and cannot be removed!");
+        }
+    }
+
+    private <T> Optional<Axiom<?>> getRemovedInferredValues(T instance, T original,
+                                                            FieldSpecification<? super T, ?> fieldSpec,
+                                                            Descriptor instanceDescriptor) {
         final Set<Axiom<?>> originalValues = new HashSet<>(
                 connectionWrapper.getAttributeAxioms(original, fieldSpec, instanceDescriptor));
         final Set<Axiom<?>> newValues = connectionWrapper.getAttributeAxioms(instance, fieldSpec, instanceDescriptor);
         originalValues.removeAll(newValues);
         if (originalValues.isEmpty()) {
             // Short circuit when there are no values to remove
-            return;
+            return Optional.empty();
         }
         final Set<URI> ctx = instanceDescriptor.getSingleAttributeContext(fieldSpec).map(Collections::singleton)
                                                .orElse(Collections.emptySet());
-        final Optional<Axiom<?>> inferred =
-                originalValues.stream().filter(a -> connectionWrapper.isInferred(a, ctx)).findAny();
-        if (inferred.isPresent()) {
-            throw new InferredAttributeModifiedException("Value " + inferred.get()
-                                                                            .getValue() + " of attribute " + fieldSpec + " is inferred and cannot be removed!");
-        }
+        return originalValues.stream().filter(a -> connectionWrapper.isInferred(a, ctx))
+                             .findAny();
+    }
+
+    /**
+     * Checks whether a change to the specified attribute on the specified instance involves removal of an inferred
+     * value.
+     * <p>
+     * Removal of inferred values is generally not possible and should lead to an exception or another predictable
+     * reject of such a change.
+     *
+     * @param instance           The changed instance
+     * @param original           Object containing original values
+     * @param fieldSpec          Specification of the modified field
+     * @param instanceDescriptor Instance descriptor for repository context resolution
+     * @param <T>                Instance type
+     * @return {@code true} when changed instance removes inferred value from the specified attribute, {@code false}
+     * otherwise
+     */
+    public <T> boolean isInferredValueRemoval(T instance, T original, FieldSpecification<? super T, ?> fieldSpec,
+                                              Descriptor instanceDescriptor) {
+        return getRemovedInferredValues(instance, original, fieldSpec, instanceDescriptor).isPresent();
     }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -8,7 +8,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -87,6 +87,16 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
      * The specified class must have a public no-arg constructor.
      */
     public static final String CLASSPATH_SCANNER_CLASS = "cz.cvut.jopa.classpathScanner";
+
+    /**
+     * Ignores removal of inferred values when entity state is merged into the persistence context.
+     * <p>
+     * Normally, attempts to remove inferred values lead to an {@link cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException}.
+     * But when an entity is merged into the persistence context, it may be merged without inferred attribute values
+     * because they were not accessible to the client application. Instead of requiring the application to reconstruct
+     * them, this configuration allows to ignore such changes completely.
+     */
+    public static final String IGNORE_INFERRED_VALUE_REMOVAL_ON_MERGE = "cz.cvut.kbss.jopa.ignoreInferredValueRemovalOnMerge";
 
     private JOPAPersistenceProperties() {
         throw new AssertionError();

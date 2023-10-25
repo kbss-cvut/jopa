@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -8,7 +8,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -42,7 +42,9 @@ import java.util.stream.Collectors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
@@ -179,5 +181,48 @@ class InferredAttributeChangeValidatorTest {
         }).when(connectionWrapper).getAttributeAxioms(any(), any(), any());
 
         assertDoesNotThrow(() -> sut.validateChange(clone, original, fieldSpec, descriptor));
+    }
+
+    @Test
+    void isInferredValueRemovalReturnsTrueWhenChangeRemovesInferredValue() {
+        final OWLClassF original = new OWLClassF(SUBJECT.getIdentifier());
+        original.setSecondStringAttribute("Something original");
+        final OWLClassF clone = new OWLClassF(original.getUri());
+        clone.setSecondStringAttribute("Something different");
+        final FieldSpecification<? super OWLClassF, ?> fieldSpec = mock(FieldSpecification.class);
+        final Descriptor descriptor = new EntityDescriptor();
+        doAnswer(inv -> {
+            final OWLClassF instance = inv.getArgument(0, OWLClassF.class);
+            return Collections.singleton(new AxiomImpl<>(SUBJECT,
+                    Assertion.createDataPropertyAssertion(
+                            URI.create("http://F-secondStringAttribute"),
+                            true),
+                    new Value<>(instance.getSecondStringAttribute())));
+        }).when(connectionWrapper).getAttributeAxioms(any(), any(), any());
+        when(connectionWrapper.isInferred(any(Axiom.class), eq(Collections.emptySet()))).thenReturn(true);
+
+        assertTrue(sut.isInferredValueRemoval(clone, original, fieldSpec, descriptor));
+    }
+
+    @Test
+    void insInferredValueRemovalReturnsFalseWhenChangeToInferredAttributeIsAdditive() {
+        final OWLClassF original = new OWLClassF(SUBJECT.getIdentifier());
+        original.setSecondStringAttribute(null);
+        final OWLClassF clone = new OWLClassF(original.getUri());
+        clone.setSecondStringAttribute("Something different");
+        final FieldSpecification<? super OWLClassF, ?> fieldSpec = mock(FieldSpecification.class);
+        final Descriptor descriptor = new EntityDescriptor();
+        doAnswer(inv -> {
+            final OWLClassF instance = inv.getArgument(0, OWLClassF.class);
+            if (instance.getSecondStringAttribute() == null) {
+                return Collections.emptySet();
+            }
+            return Collections.singleton(new AxiomImpl<>(SUBJECT,
+                    Assertion.createDataPropertyAssertion(
+                            URI.create(Vocabulary.p_f_stringAttribute), true),
+                    new Value<>(instance.getSecondStringAttribute())));
+        }).when(connectionWrapper).getAttributeAxioms(any(), any(), any());
+
+        assertFalse(sut.isInferredValueRemoval(clone, original, fieldSpec, descriptor));
     }
 }

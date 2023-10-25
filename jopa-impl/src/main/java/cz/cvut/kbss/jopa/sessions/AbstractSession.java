@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -8,7 +8,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -29,8 +29,7 @@ public abstract class AbstractSession implements Session, MetamodelProvider, Con
 
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractSession.class);
 
-
-    private final Configuration configuration;
+    protected Configuration configuration;
 
     protected AbstractSession(Configuration configuration) {
         this.configuration = configuration;
@@ -38,6 +37,7 @@ public abstract class AbstractSession implements Session, MetamodelProvider, Con
 
     @Override
     public UnitOfWork acquireUnitOfWork() {
+        // TODO UoW acquisition needs to be provided with configuration from EntityManager, because it may override the server session config
         UnitOfWork uow = new UnitOfWorkImpl(this);
         LOG.trace("UnitOfWork acquired.");
         return uow;

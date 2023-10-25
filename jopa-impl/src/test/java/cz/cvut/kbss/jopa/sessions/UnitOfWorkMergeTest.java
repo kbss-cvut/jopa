@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2023 Czech Technical University in Prague
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -8,7 +8,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
@@ -225,5 +226,32 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
                                                        new Value<>(original.getSecondStringAttribute())),
                                        Collections.singleton(CONTEXT_URI));
         verify(storageMock, never()).merge(any(), eq(metamodelMocks.forOwlClassF().stringAttribute()), any());
+    }
+
+    @Test
+    void mergeDetachedIgnoresRemovalsOfInferredAttributeValuesWhenConfiguredTo() {
+        uow.getConfiguration().set(JOPAPersistenceProperties.IGNORE_INFERRED_VALUE_REMOVAL_ON_MERGE, Boolean.toString(true));
+        final OWLClassF original = new OWLClassF(Generators.createIndividualIdentifier());
+        original.setSecondStringAttribute("Original value");
+        final OWLClassF detached = new OWLClassF(original.getUri());
+        detached.setSecondStringAttribute("Changed value");
+        when(transactionMock.isActive()).thenReturn(true);
+        when(storageMock.contains(detached.getUri(), OWLClassF.class, descriptor)).thenReturn(true);
+        when(storageMock.find(any(LoadingParameters.class))).thenReturn(original);
+        final Assertion assertion =
+                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_f_stringAttribute), true);
+        doAnswer(inv -> {
+            final OWLClassF inst = inv.getArgument(0, OWLClassF.class);
+            return Collections.singleton(new AxiomImpl<>(NamedResource.create(inst.getUri()), assertion,
+                    new Value<>(inst.getSecondStringAttribute())));
+        }).when(storageMock).getAttributeAxioms(any(), any(), any());
+        when(storageMock.isInferred(any(), any())).thenReturn(true);
+
+        final OWLClassF result = uow.mergeDetached(detached, descriptor);
+        verify(storageMock).isInferred(new AxiomImpl<>(NamedResource.create(original.getUri()), assertion,
+                        new Value<>(original.getSecondStringAttribute())),
+                Collections.singleton(CONTEXT_URI));
+        verify(storageMock, never()).merge(any(), eq(metamodelMocks.forOwlClassF().stringAttribute()), any());
+        assertEquals(original.getSecondStringAttribute(), result.getSecondStringAttribute());
     }
 }
