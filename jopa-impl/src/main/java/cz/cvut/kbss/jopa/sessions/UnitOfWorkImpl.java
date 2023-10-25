@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2023 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -22,13 +20,14 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.model.BeanListenerAspect;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
@@ -47,8 +46,14 @@ import org.aspectj.lang.Aspects;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException.individualAlreadyManaged;
@@ -155,7 +160,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             return null;
         }
         final Object clone = registerExistingObject(result, descriptor,
-                                                    Collections.singletonList(new PostLoadInvoker(getMetamodel())));
+                Collections.singletonList(new PostLoadInvoker(getMetamodel())));
         checkForIndirectObjects(clone);
         return cls.cast(clone);
     }
@@ -346,7 +351,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         final IntegrityConstraintsValidator validator = getValidator();
         for (ObjectChangeSet changeSet : uowChangeSet.getNewObjects()) {
             validator.validate(changeSet.getCloneObject(), entityType((Class<Object>) changeSet.getObjectClass()),
-                               isNotInferred());
+                    isNotInferred());
         }
         uowChangeSet.getExistingObjectsChanges().forEach(changeSet -> validator.validate(changeSet, getMetamodel()));
     }
@@ -536,8 +541,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             return;
         }
         final ChangeRecord record = new ChangeRecordImpl(fieldSpec,
-                                                         EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(),
-                                                                                             clone));
+                EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(),
+                        clone));
         preventCachingIfReferenceIsNotLoaded(record);
         registerChangeRecord(clone, orig, descriptor, record);
     }
@@ -607,14 +612,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         final T clone = getInstanceForMerge(idUri, et, descriptor);
         try {
             // Merge only the changed attributes
-            final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
+            ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
+            // Have to check for inferred attribute changes before the actual merge
             changeManager.calculateChanges(chSet);
+            chSet = processInferredValueChanges(chSet);
             if (chSet.hasChanges()) {
-                // Have to check for inferred attribute changes before the actual merge
-                chSet.getChanges().stream().filter(chr -> chr.getAttribute().isInferred()).forEach(
-                        chr -> inferredAttributeChangeValidator.validateChange(entity, clone,
-                                                                               (FieldSpecification<? super T, ?>) chr.getAttribute(),
-                                                                               descriptor));
                 et.getLifecycleListenerManager().invokePreUpdateCallbacks(clone);
                 final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
                 merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
@@ -645,6 +647,23 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         assert original != null;
 
         return (T) registerExistingObject(original, descriptor);
+    }
+
+    private ObjectChangeSet processInferredValueChanges(ObjectChangeSet changeSet) {
+        if (getConfiguration().is(JOPAPersistenceProperties.IGNORE_INFERRED_VALUE_REMOVAL_ON_MERGE)) {
+            final ObjectChangeSet copy = ChangeSetFactory.createObjectChangeSet(changeSet.getChangedObject(), changeSet.getCloneObject(), changeSet.getEntityDescriptor());
+            changeSet.getChanges().stream().filter(chr -> !(chr.getAttribute().isInferred() &&
+                    inferredAttributeChangeValidator.isInferredValueRemoval(changeSet.getCloneObject(), changeSet.getChangedObject(),
+                            (FieldSpecification) chr.getAttribute(),
+                            changeSet.getEntityDescriptor()))).forEach(copy::addChangeRecord);
+            return copy;
+        } else {
+            changeSet.getChanges().stream().filter(chr -> chr.getAttribute().isInferred()).forEach(
+                    chr -> inferredAttributeChangeValidator.validateChange(changeSet.getCloneObject(), changeSet.getChangedObject(),
+                            (FieldSpecification) chr.getAttribute(),
+                            changeSet.getEntityDescriptor()));
+            return changeSet;
+        }
     }
 
     private static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
@@ -885,6 +904,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     public void setEntityManager(AbstractEntityManager entityManager) {
         this.entityManager = entityManager;
+        // TODO This is a temporary workaround, configuration should be provided in constructor
+        this.configuration = entityManager.getConfiguration();
     }
 
     @Override

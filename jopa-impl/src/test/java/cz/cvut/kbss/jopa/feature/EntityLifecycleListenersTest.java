@@ -30,6 +30,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.*;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,6 +85,7 @@ public class EntityLifecycleListenersTest {
         when(serverSessionStub.getLiveObjectCache()).thenReturn(mock(CacheManager.class));
         when(emMock.getTransaction()).thenReturn(transactionMock);
         when(transactionMock.isActive()).thenReturn(true);
+        when(emMock.getConfiguration()).thenReturn(new Configuration());
         this.mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         this.parentListenerMock = mocks.forOwlClassS().parentListener();
