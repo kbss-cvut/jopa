@@ -31,7 +31,7 @@ import java.util.Objects;
  * @see SimpleListDescriptorImpl
  */
 public class SimpleListValueDescriptor extends SimpleListDescriptorImpl implements
-        ListValueDescriptor {
+        ListValueDescriptor<NamedResource> {
 
     private final List<NamedResource> values;
 
