@@ -17,25 +17,29 @@
  */
 package cz.cvut.kbss.ontodriver.rdf4j;
 
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.rdf4j.environment.Vocabulary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ReferencedListHandlerWithStorageTest
-        extends ListHandlerWithStorageTestBase<ReferencedListDescriptor, ReferencedListValueDescriptor<?>> {
+public class ReferencedListHandlerWithStorageTest extends ListHandlerWithStorageTestBase {
 
     private static final String NODE_CONTENT_PROPERTY =
             "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
+
+    private ReferencedListHandler handler;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -61,21 +65,20 @@ public class ReferencedListHandlerWithStorageTest
                 Assertion.createObjectPropertyAssertion(URI.create(NEXT_NODE_PROPERTY), false),
                 Assertion.createObjectPropertyAssertion(URI.create(NODE_CONTENT_PROPERTY), false));
         for (int i = 0; i < count; i++) {
-            desc.addValue(NamedResource
-                    .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#EntityA_" + i));
+            desc.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + "EntityA_" + i));
         }
         return desc;
     }
 
-    @Override
-    Collection<Axiom<NamedResource>> generateAxiomsForList(ReferencedListValueDescriptor<?> listDescriptor) {
+    Collection<Axiom<NamedResource>> generateAxiomsForList(
+            ReferencedListValueDescriptor<NamedResource> listDescriptor) {
         final Collection<Axiom<NamedResource>> axioms = new ArrayList<>(listDescriptor.getValues().size());
         if (listDescriptor.getValues().isEmpty()) {
             return axioms;
         }
         int counter = 0;
         final String uriBase = OWNER.getIdentifier().toString();
-        for (NamedResource val : (List<NamedResource>)listDescriptor.getValues()) {
+        for (NamedResource val : listDescriptor.getValues()) {
 
             NamedResource node = NamedResource.create(uriBase + "-SEQ_" + counter++);
             Axiom<NamedResource> ax = new AxiomImpl<>(node, listDescriptor.getNodeContent(), new Value<>(val));
@@ -136,9 +139,17 @@ public class ReferencedListHandlerWithStorageTest
             updated.addValue(r);
         }
         for (int i = 0; i < 5; i++) {
-            updated.addValue(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Appended_" + i));
+            updated.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + "Appended_" + i));
         }
         updateAndCheck(updated);
+    }
+
+    void updateAndCheck(ReferencedListValueDescriptor<NamedResource> descriptor) throws Exception {
+        final Collection<Axiom<NamedResource>> axioms = generateAxiomsForList(descriptor);
+        handler.updateList(descriptor);
+        connector.commit();
+        connector.begin();
+        verifyListContent(axioms, handler.loadList(descriptor));
     }
 
     @Test
@@ -159,8 +170,7 @@ public class ReferencedListHandlerWithStorageTest
         final ReferencedListValueDescriptor<NamedResource> updated = initValues(0);
         for (int i = 0; i < original.getValues().size(); i++) {
             if (i % 2 != 0) {
-                updated.addValue(NamedResource
-                        .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Modified_" + i));
+                updated.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + "Modified_" + i));
             } else {
                 updated.addValue(original.getValues().get(i));
             }
@@ -174,8 +184,7 @@ public class ReferencedListHandlerWithStorageTest
 
         final ReferencedListValueDescriptor<NamedResource> updated = initValues(0);
         for (int i = 0; i < 4; i++) {
-            updated.addValue(NamedResource
-                    .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Prepended_" + i));
+            updated.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + "Prepended_" + i));
         }
         for (NamedResource elem : original.getValues()) {
             updated.addValue(elem);
@@ -189,8 +198,7 @@ public class ReferencedListHandlerWithStorageTest
 
         final ReferencedListValueDescriptor<NamedResource> updated = initValues(0);
         for (int i = 0; i < original.getValues().size() + 2; i++) {
-            updated.addValue(NamedResource
-                    .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Replacement_" + i));
+            updated.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + "Replacement_" + i));
         }
         updateAndCheck(updated);
     }
@@ -207,5 +215,4 @@ public class ReferencedListHandlerWithStorageTest
         }
         updateAndCheck(updated);
     }
-
 }

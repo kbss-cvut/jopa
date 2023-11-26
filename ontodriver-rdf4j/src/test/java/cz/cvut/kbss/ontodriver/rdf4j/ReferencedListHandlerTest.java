@@ -58,7 +58,6 @@ import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestSupport.OWNER;
 import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestSupport.generateList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
@@ -78,27 +77,24 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class ReferencedListHandlerTest {
 
-    private static final String NODE_CONTENT_PROPERTY =
-            "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
-
     private static final ValueFactory vf = SimpleValueFactory.getInstance();
     private static final Resource owner = vf.createIRI(OWNER.toString());
 
     private static final IRI hasListProperty = vf.createIRI(LIST_PROPERTY);
     private static final IRI nextNodeProperty = vf.createIRI(NEXT_NODE_PROPERTY);
-    private static final IRI nodeContentProperty = vf.createIRI(NODE_CONTENT_PROPERTY);
+    private static final IRI nodeContentProperty = vf.createIRI(ListHandlerTestSupport.NODE_CONTENT_PROPERTY);
 
     private static final Assertion hasListAssertion = Assertion.createObjectPropertyAssertion(URI.create(LIST_PROPERTY), false);
     private static final Assertion nextNodeAssertion = Assertion.createObjectPropertyAssertion(URI.create(NEXT_NODE_PROPERTY), false);
     private static final Assertion nodeContentAssertion = Assertion.createObjectPropertyAssertion(
-            URI.create(NODE_CONTENT_PROPERTY), false);
+            URI.create(ListHandlerTestSupport.NODE_CONTENT_PROPERTY), false);
 
     @Mock
     private Connector connector;
 
     private ReferencedListDescriptor listDescriptor;
 
-    private ReferencedListHandler<?> handler;
+    private ReferencedListHandler handler;
 
     private final List<Statement> added = new ArrayList<>();
     private final List<Statement> removed = new ArrayList<>();
@@ -121,13 +117,6 @@ public class ReferencedListHandlerTest {
     }
 
     @Test
-    public void staticFactoryMethodForReferencedLists() {
-        final ListHandler<?, ?, ?> h = ListHandler.createForReferencedList(connector, vf);
-        assertNotNull(h);
-        assertTrue(h instanceof ReferencedListHandler);
-    }
-
-    @Test
     public void loadsReferencedList() throws Exception {
         final List<NamedResource> refList = generateList();
         final List<URI> listNodes = initListNodes(refList);
@@ -142,7 +131,7 @@ public class ReferencedListHandlerTest {
     private List<URI> initListNodes(List<?> content) {
         final List<URI> nodes = new ArrayList<>();
         for (int i = 0; i < content.size(); i++) {
-            nodes.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/SEQ_" + i));
+            nodes.add(URI.create(OWNER + "SEQ_" + i));
         }
         return nodes;
     }
@@ -181,7 +170,7 @@ public class ReferencedListHandlerTest {
 
     @Test
     public void throwsICViolationWhenThereIsNoContentInHeadNode() throws Exception {
-        final IRI headNode = vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/SEQ0");
+        final IRI headNode = vf.createIRI(OWNER + "-SEQ_0");
         when(connector.findStatements(eq(owner), eq(hasListProperty), eq(null),
                 anyBoolean(), eq(Collections.emptySet()))).thenReturn(
                 Collections.singleton(vf.createStatement(owner, hasListProperty, headNode)));
@@ -286,7 +275,7 @@ public class ReferencedListHandlerTest {
                 Assertion.createObjectPropertyAssertion(URI.create(LIST_PROPERTY), false),
                 Assertion.createObjectPropertyAssertion(URI.create(NEXT_NODE_PROPERTY),
                         false), Assertion.createObjectPropertyAssertion(
-                URI.create(NODE_CONTENT_PROPERTY), false));
+                URI.create(ListHandlerTestSupport.NODE_CONTENT_PROPERTY), false));
         for (int i = 0; i < count; i++) {
             desc.addValue(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA_" + i));
         }
@@ -344,10 +333,10 @@ public class ReferencedListHandlerTest {
         final ReferencedListValueDescriptor<Integer> desc = new ReferencedListValueDescriptor<>(OWNER,
                 Assertion.createObjectPropertyAssertion(URI.create(LIST_PROPERTY), false),
                 Assertion.createObjectPropertyAssertion(URI.create(NEXT_NODE_PROPERTY),
-                        false), Assertion.createDataPropertyAssertion(URI.create(NODE_CONTENT_PROPERTY), false));
+                        false), Assertion.createDataPropertyAssertion(URI.create(ListHandlerTestSupport.NODE_CONTENT_PROPERTY), false));
         IntStream.range(0, 5).mapToObj(i -> Generator.randomInt()).forEach(desc::addValue);
 
-        final ReferencedListHandler<Integer> sut = new ReferencedListHandler<>(connector, vf);
+        final ReferencedListHandler sut = new ReferencedListHandler(connector, vf);
         sut.persistList(desc);
         final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
         verify(connector).addStatements(captor.capture());

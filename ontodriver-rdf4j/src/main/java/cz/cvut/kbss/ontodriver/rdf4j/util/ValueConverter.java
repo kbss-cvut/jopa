@@ -57,7 +57,7 @@ public class ValueConverter {
                 if (!(value instanceof Resource)) {
                     return Optional.empty();
                 }
-                return Optional.of(new cz.cvut.kbss.ontodriver.model.Value<>(NamedResource.create(value.stringValue())));
+                return Optional.of(NamedResource.create(value.stringValue()));
             case ANNOTATION_PROPERTY:   // Intentional fall-through
             case PROPERTY:
                 return resolveUnknownPropertyTypeValue(assertion, value);

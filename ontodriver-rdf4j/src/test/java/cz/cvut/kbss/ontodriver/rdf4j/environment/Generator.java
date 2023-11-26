@@ -42,7 +42,7 @@ public class Generator {
         final GeneratedData data = new GeneratedData();
         int classCount = randomPositiveInt(10);
         for (int i = 0; i < classCount; i++) {
-            final String cls = "https://onto.fel.cvut.cz/ontologies/jopa/entities#OWLClass" + RAND.nextInt();
+            final String cls = Vocabulary.CLASS_IRI_BASE + RAND.nextInt();
             data.classes.add(cls);
             int individualCount = randomPositiveInt(20);
             for (int j = 0; j < individualCount; j++) {
@@ -65,15 +65,14 @@ public class Generator {
         final ValueFactory vf = connection.getValueFactory();
         final int propCount = randomPositiveInt(20);
         for (int i = 0; i < propCount; i++) {
-            final String property = "https://onto.fel.cvut.cz/ontologies/jopa/attributes#property" + RAND.nextInt();
+            final String property = Vocabulary.PROPERTY_IRI_BASE + RAND.nextInt();
             final IRI propertyUri = vf.createIRI(property);
             final int valueCount = randomPositiveInt(5);
             final boolean isOp = RAND.nextBoolean();
             for (int j = 0; j < valueCount; j++) {
                 if (isOp) {
                     final Assertion a = Assertion.createObjectPropertyAssertion(URI.create(property), false);
-                    final String object =
-                            "https://onto.fel.cvut.cz/ontologies/jopa/entities#OWLClassXY_instance" + RAND.nextInt();
+                    final String object = Vocabulary.INDIVIDUAL_IRI_BASE + RAND.nextInt();
                     connection.add(individual, propertyUri, vf.createIRI(object));
                     data.addValue(individual.toString(), a, NamedResource.create(object));
                 } else {
@@ -107,7 +106,7 @@ public class Generator {
     }
 
     public static URI generateUri() {
-        return URI.create("https://onto.fel.cvut.cz/ontologies/jopa/individual-" + randomInt());
+        return URI.create(Vocabulary.INDIVIDUAL_IRI_BASE + randomInt());
     }
 
     public static class GeneratedData {

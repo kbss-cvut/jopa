@@ -31,7 +31,7 @@ import java.util.Iterator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-abstract class ListHandlerWithStorageTestBase<D extends ListDescriptor, V extends ListValueDescriptor<?>> {
+abstract class ListHandlerWithStorageTestBase {
 
     static final NamedResource OWNER = NamedResource.create(Generator.generateUri());
 
@@ -41,9 +41,6 @@ abstract class ListHandlerWithStorageTestBase<D extends ListDescriptor, V extend
     final TestRepositoryProvider repositoryProvider = new TestRepositoryProvider();
 
     protected Connector connector;
-
-    // TODO Refactor - move the handler down to subclasses, remove generics from the class
-    protected ListHandler<D, V, ?> handler;
 
     @AfterEach
     public void tearDown() throws Exception {
@@ -60,14 +57,4 @@ abstract class ListHandlerWithStorageTestBase<D extends ListDescriptor, V extend
             assertEquals(itExp.next(), itAct.next());
         }
     }
-
-    void updateAndCheck(V descriptor) throws Exception {
-        final Collection<Axiom<NamedResource>> axioms = generateAxiomsForList(descriptor);
-        handler.updateList(descriptor);
-        connector.commit();
-        connector.begin();
-        verifyListContent(axioms, handler.loadList((D) descriptor));
-    }
-
-    abstract Collection<Axiom<NamedResource>> generateAxiomsForList(V listDescriptor);
 }

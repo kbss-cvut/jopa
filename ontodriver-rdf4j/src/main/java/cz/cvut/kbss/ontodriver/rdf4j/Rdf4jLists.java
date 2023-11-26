@@ -84,7 +84,7 @@ class Rdf4jLists implements Lists {
     }
 
     @Override
-    public void updateReferencedList(ReferencedListValueDescriptor descriptor)
+    public <T> void updateReferencedList(ReferencedListValueDescriptor<T> descriptor)
             throws OntoDriverException {
         verifyArgs(descriptor);
         adapter.getReferencedListHandler().updateList(descriptor);

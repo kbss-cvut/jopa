@@ -97,7 +97,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
 
     @Override
     public T currentContent() {
-        return (T) ValueConverter.fromRdf4jValue(listDescriptor.getListProperty(), currentContent.getObject());
+        return (T) ValueConverter.fromRdf4jValue(listDescriptor.getListProperty(), currentContent.getObject()).orElse(null);
     }
 
     @Override

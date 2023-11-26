@@ -19,6 +19,7 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
@@ -27,20 +28,51 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> {
+class SimpleListHandler extends ListHandler {
 
     SimpleListHandler(Connector connector, ValueFactory vf) {
         super(connector, vf);
     }
 
-    @Override
-    ListIterator<NamedResource> createIterator(SimpleListDescriptor listDescriptor) throws Rdf4jDriverException {
-        return new SimpleListIterator(listDescriptor, connector, vf);
+    /**
+     * Loads axioms representing list described by the specified list descriptor.
+     *
+     * @return Collection of axioms representing sequence values
+     * @throws Rdf4jDriverException When storage access error occurs
+     */
+    List<Axiom<NamedResource>> loadList(SimpleListDescriptor listDescriptor) throws Rdf4jDriverException {
+        final List<Axiom<NamedResource>> axioms = new ArrayList<>();
+        final ListIterator<?> it = new SimpleListIterator(listDescriptor, connector, vf);
+        while (it.hasNext()) {
+            axioms.add(it.nextAxiom());
+        }
+        return axioms;
     }
 
-    @Override
+    /**
+     * Persists list values specified by the descriptor.
+     * <p>
+     * The values are saved in the order in which they appear in the descriptor.
+     *
+     * @param listValueDescriptor Describes values to persist
+     * @throws Rdf4jDriverException When storage access error occurs
+     */
+    void persistList(SimpleListValueDescriptor listValueDescriptor) throws Rdf4jDriverException {
+        if (listValueDescriptor.getValues().isEmpty()) {
+            return;
+        }
+        final Collection<Statement> statements = new ArrayList<>(listValueDescriptor.getValues().size());
+        final IRI head = createListHead(listValueDescriptor, statements);
+        statements.addAll(createListRest(head, listValueDescriptor));
+        connector.addStatements(statements);
+    }
+
     IRI createListHead(SimpleListValueDescriptor listValueDescriptor, Collection<Statement> listStatements) {
         final IRI firstNode = toRdf4jIri(listValueDescriptor.getValues().get(0).getIdentifier());
         listStatements.add(vf.createStatement(owner(listValueDescriptor), hasList(listValueDescriptor),
@@ -48,7 +80,6 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         return firstNode;
     }
 
-    @Override
     List<Statement> createListRest(IRI head, SimpleListValueDescriptor listValueDescriptor) {
         final List<Statement> statements = new ArrayList<>(listValueDescriptor.getValues().size());
         IRI previous = head;
@@ -65,12 +96,27 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
     }
 
     /**
-     * We are using this code instead of iterator.remove for performance
-     * reasons. The iterator has to reconnect the list for each removed node,
-     * which takes a lot of time.
+     * Updates list with values specified by the descriptor.
+     *
+     * @param listValueDescriptor Describes the updated values
+     * @throws Rdf4jDriverException When storage access error occurs
      */
-    @Override
-    void clearList(SimpleListValueDescriptor listValueDescriptor) throws Rdf4jDriverException {
+    void updateList(SimpleListValueDescriptor listValueDescriptor) throws Rdf4jDriverException {
+        if (listValueDescriptor.getValues().isEmpty()) {
+            clearList(listValueDescriptor);
+        } else if (isOldListEmpty(owner(listValueDescriptor), hasList(listValueDescriptor),
+                listValueDescriptor.getListProperty().isInferred(), contexts(listValueDescriptor))) {
+            persistList(listValueDescriptor);
+        } else {
+            mergeList(listValueDescriptor);
+        }
+    }
+
+    /**
+     * We are using this code instead of iterator.remove for performance reasons. The iterator has to reconnect the list
+     * for each removed node, which takes a lot of time.
+     */
+    private void clearList(SimpleListValueDescriptor listValueDescriptor) throws Rdf4jDriverException {
         final Set<IRI> contexts = contexts(listValueDescriptor);
         final Collection<Statement> toRemove = new ArrayList<>();
         IRI currentProperty = hasList(listValueDescriptor);
@@ -89,9 +135,19 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         connector.removeStatements(toRemove);
     }
 
-    @Override
+    private void mergeList(SimpleListValueDescriptor listDescriptor) throws Rdf4jDriverException {
+        final ListIterator<NamedResource> it = iterator(listDescriptor);
+        final ListHandler.MergeResult mergeResult = mergeWithOriginalList(listDescriptor, it);
+        removeObsoletes(it);
+        assert mergeResult.i > 0;
+        assert mergeResult.previous != null;
+        if (mergeResult.i < listDescriptor.getValues().size()) {
+            appendNewNodes(listDescriptor, mergeResult);
+        }
+    }
+
     MergeResult mergeWithOriginalList(SimpleListValueDescriptor listDescriptor, ListIterator<NamedResource> it) throws
-                                                                                                   Rdf4jDriverException {
+            Rdf4jDriverException {
         int i = 0;
         Resource node = null;
         while (it.hasNext() && i < listDescriptor.getValues().size()) {
@@ -106,9 +162,8 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         return new MergeResult(i, node);
     }
 
-    @Override
     void appendNewNodes(SimpleListValueDescriptor listDescriptor, MergeResult mergeResult) throws
-                                                                                           Rdf4jDriverException {
+            Rdf4jDriverException {
         int i = mergeResult.i;
         final Collection<Statement> toAdd = new ArrayList<>(listDescriptor.getValues().size() - i);
         Resource previous = mergeResult.previous;
@@ -124,8 +179,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         connector.addStatements(toAdd);
     }
 
-    @Override
-    ListIterator<NamedResource> iterator(SimpleListValueDescriptor listDescriptor) throws Rdf4jDriverException {
+    private ListIterator<NamedResource> iterator(SimpleListValueDescriptor listDescriptor) throws Rdf4jDriverException {
         return new SimpleListIterator(listDescriptor, connector, vf);
     }
 }

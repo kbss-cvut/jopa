@@ -25,6 +25,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.environment.Vocabulary;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -80,7 +81,6 @@ public class SimpleListHandlerTest {
     private static IRI hasListProperty = vf.createIRI(LIST_PROPERTY);
     private static IRI nextNodeProperty = vf.createIRI(NEXT_NODE_PROPERTY);
 
-
     @Mock
     private Connector connector;
 
@@ -118,13 +118,6 @@ public class SimpleListHandlerTest {
         }).when(connector).removeStatements(anyCollection());
 
         this.handler = new SimpleListHandler(connector, vf);
-    }
-
-    @Test
-    public void staticFactoryMethodForSimpleLists() {
-        final ListHandler<SimpleListDescriptor, SimpleListValueDescriptor, NamedResource> h = ListHandler.createForSimpleList(connector, vf);
-        assertNotNull(h);
-        assertTrue(h instanceof SimpleListHandler);
     }
 
     @Test
@@ -186,7 +179,7 @@ public class SimpleListHandlerTest {
         final Collection<Statement> stmts = new HashSet<>();
         stmts.add(mock(Statement.class));
         stmts.add(mock(Statement.class));
-        final Resource firstElem = vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
+        final Resource firstElem = vf.createIRI(Vocabulary.INDIVIDUAL_IRI_BASE + "firstElem");
         final Statement firstStmt = vf.createStatement(owner, hasListProperty, firstElem);
 
         when(connector.findStatements(owner, hasListProperty, null, false, Collections.emptySet()))
@@ -200,7 +193,7 @@ public class SimpleListHandlerTest {
 
     @Test
     public void throwsICViolationExceptionWhenLiteralIsFoundInList() throws Exception {
-        final Resource firstElem = vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
+        final Resource firstElem = vf.createIRI(Vocabulary.INDIVIDUAL_IRI_BASE + "firstElem");
         final Statement firstStmt = vf.createStatement(owner, hasListProperty, firstElem);
         when(connector.findStatements(owner, hasListProperty, null, false, Collections.emptySet()))
                 .thenReturn(Collections.singleton(firstStmt));
