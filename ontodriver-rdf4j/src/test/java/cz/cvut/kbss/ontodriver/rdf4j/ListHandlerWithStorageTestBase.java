@@ -31,7 +31,7 @@ import java.util.Iterator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-abstract class ListHandlerWithStorageTestBase<D extends ListDescriptor, V extends ListValueDescriptor> {
+abstract class ListHandlerWithStorageTestBase<D extends ListDescriptor, V extends ListValueDescriptor<?>> {
 
     static final NamedResource OWNER = NamedResource.create(Generator.generateUri());
 
@@ -42,7 +42,8 @@ abstract class ListHandlerWithStorageTestBase<D extends ListDescriptor, V extend
 
     protected Connector connector;
 
-    protected ListHandler<D, V> handler;
+    // TODO Refactor - move the handler down to subclasses, remove generics from the class
+    protected ListHandler<D, V, ?> handler;
 
     @AfterEach
     public void tearDown() throws Exception {

@@ -96,7 +96,7 @@ public interface Lists {
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    void persistReferencedList(ReferencedListValueDescriptor descriptor) throws OntoDriverException;
+    <T> void persistReferencedList(ReferencedListValueDescriptor<T> descriptor) throws OntoDriverException;
 
     /**
      * Updates referenced list based on the values in the specified list descriptor.
@@ -108,5 +108,5 @@ public interface Lists {
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    void updateReferencedList(ReferencedListValueDescriptor descriptor) throws OntoDriverException;
+    <T> void updateReferencedList(ReferencedListValueDescriptor<T> descriptor) throws OntoDriverException;
 }

@@ -22,17 +22,18 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.model.Resource;
 
-interface ListIterator {
+interface ListIterator<JT> {
 
     boolean hasNext() throws Rdf4jDriverException;
 
     Resource nextNode() throws Rdf4jDriverException;
 
-    Resource currentContent() throws Rdf4jDriverException;
+    JT currentContent() throws Rdf4jDriverException;
 
+    // Change to JT
     Axiom<NamedResource> nextAxiom() throws Rdf4jDriverException;
 
     void remove() throws Rdf4jDriverException;
 
-    void replaceCurrentWith(NamedResource newNode) throws Rdf4jDriverException;
+    void replaceCurrentWith(JT newNode) throws Rdf4jDriverException;
 }

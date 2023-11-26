@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-class SimpleListIterator extends AbstractListIterator {
+class SimpleListIterator extends AbstractListIterator<NamedResource> {
 
     private final SimpleListDescriptor listDescriptor;
 
@@ -80,10 +80,10 @@ class SimpleListIterator extends AbstractListIterator {
     }
 
     @Override
-    public Resource currentContent() {
+    public NamedResource currentContent() {
         assert current.getObject() instanceof Resource;
 
-        return (Resource) current.getObject();
+        return NamedResource.create(current.getObject().stringValue());
     }
 
     @Override

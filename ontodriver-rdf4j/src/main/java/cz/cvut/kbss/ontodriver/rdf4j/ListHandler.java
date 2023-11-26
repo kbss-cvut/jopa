@@ -36,7 +36,7 @@ import java.util.*;
  * @param <T> List descriptor type
  * @param <V> List value descriptor type
  */
-abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescriptor> {
+abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescriptor<?>> {
 
     protected final Connector connector;
     protected final ValueFactory vf;
@@ -54,14 +54,14 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
      */
     List<Axiom<NamedResource>> loadList(T listDescriptor) throws Rdf4jDriverException {
         final List<Axiom<NamedResource>> axioms = new ArrayList<>();
-        final ListIterator it = createIterator(listDescriptor);
+        final ListIterator<?> it = createIterator(listDescriptor);
         while (it.hasNext()) {
             axioms.add(it.nextAxiom());
         }
         return axioms;
     }
 
-    abstract ListIterator createIterator(T listDescriptor) throws Rdf4jDriverException;
+    abstract ListIterator<?> createIterator(T listDescriptor) throws Rdf4jDriverException;
 
     /**
      * Persists list values specified by the descriptor.
@@ -75,8 +75,7 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
         if (listValueDescriptor.getValues().isEmpty()) {
             return;
         }
-        final Collection<Statement> statements = new ArrayList<>(listValueDescriptor.getValues()
-                                                                                    .size());
+        final Collection<Statement> statements = new ArrayList<>(listValueDescriptor.getValues().size());
         final IRI head = createListHead(listValueDescriptor, statements);
         statements.addAll(createListRest(head, listValueDescriptor));
         connector.addStatements(statements);
@@ -113,7 +112,7 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
     abstract void clearList(V listDescriptor) throws Rdf4jDriverException;
 
     private void mergeList(V listDescriptor) throws Rdf4jDriverException {
-        final ListIterator it = iterator(listDescriptor);
+        final ListIterator<?> it = iterator(listDescriptor);
         final MergeResult mergeResult = mergeWithOriginalList(listDescriptor, it);
         removeObsoletes(it);
         assert mergeResult.i > 0;
@@ -123,13 +122,13 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
         }
     }
 
-    abstract ListIterator iterator(V listDescriptor) throws Rdf4jDriverException;
+    abstract ListIterator<?> iterator(V listDescriptor) throws Rdf4jDriverException;
 
-    abstract MergeResult mergeWithOriginalList(V listDescriptor, ListIterator it) throws Rdf4jDriverException;
+    abstract MergeResult mergeWithOriginalList(V listDescriptor, ListIterator<?> it) throws Rdf4jDriverException;
 
     abstract void appendNewNodes(V listDescriptor, MergeResult mergeResult) throws Rdf4jDriverException;
 
-    private void removeObsoletes(ListIterator it) throws Rdf4jDriverException {
+    private void removeObsoletes(ListIterator<?> it) throws Rdf4jDriverException {
         while (it.hasNext()) {
             it.nextNode();
             it.remove();
@@ -197,7 +196,7 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
      * @param vf        RDF4J value factory
      * @return List handler
      */
-    static ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> createForReferencedList(
+    static ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor<?>> createForReferencedList(
             Connector connector, ValueFactory vf) {
         assert connector != null;
         assert vf != null;

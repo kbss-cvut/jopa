@@ -36,7 +36,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
     }
 
     @Override
-    ListIterator createIterator(SimpleListDescriptor listDescriptor) throws Rdf4jDriverException {
+    ListIterator<NamedResource> createIterator(SimpleListDescriptor listDescriptor) throws Rdf4jDriverException {
         return new SimpleListIterator(listDescriptor, connector, vf);
     }
 
@@ -90,7 +90,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
     }
 
     @Override
-    MergeResult mergeWithOriginalList(SimpleListValueDescriptor listDescriptor, ListIterator it) throws
+    MergeResult mergeWithOriginalList(SimpleListValueDescriptor listDescriptor, ListIterator<NamedResource> it) throws
                                                                                                    Rdf4jDriverException {
         int i = 0;
         Resource node = null;
@@ -125,7 +125,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
     }
 
     @Override
-    ListIterator iterator(SimpleListValueDescriptor listDescriptor) throws Rdf4jDriverException {
+    ListIterator<NamedResource> iterator(SimpleListValueDescriptor listDescriptor) throws Rdf4jDriverException {
         return new SimpleListIterator(listDescriptor, connector, vf);
     }
 }

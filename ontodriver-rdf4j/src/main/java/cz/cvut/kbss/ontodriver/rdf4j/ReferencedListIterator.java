@@ -24,6 +24,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
+import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -33,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-class ReferencedListIterator extends AbstractListIterator {
+class ReferencedListIterator<T> extends AbstractListIterator<T> {
 
     private final ReferencedListDescriptor listDescriptor;
 
@@ -95,9 +96,8 @@ class ReferencedListIterator extends AbstractListIterator {
     }
 
     @Override
-    public Resource currentContent() {
-        assert currentContent.getObject() instanceof Resource;
-        return (Resource) currentContent.getObject();
+    public T currentContent() {
+        return (T) ValueConverter.fromRdf4jValue(listDescriptor.getListProperty(), currentContent.getObject());
     }
 
     @Override
@@ -134,15 +134,14 @@ class ReferencedListIterator extends AbstractListIterator {
     }
 
     @Override
-    public void replaceCurrentWith(NamedResource newContent) throws Rdf4jDriverException {
+    public void replaceCurrentWith(T newContent) throws Rdf4jDriverException {
         assert currentNode.getObject() instanceof Resource;
         // We just replace the original content statement with new one
         connector.removeStatements(Collections.singleton(currentContent));
         final Resource node = (Resource) currentNode.getObject();
         final Statement stmt = vf
-                .createStatement(node, hasContentProperty, Rdf4jUtils.toRdf4jIri(newContent.getIdentifier(), vf),
+                .createStatement(node, hasContentProperty, valueConverter.toRdf4jValue(listDescriptor.getListProperty(), newContent),
                                  context);
         connector.addStatements(Collections.singleton(stmt));
     }
-
 }

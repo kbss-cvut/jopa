@@ -22,6 +22,7 @@ import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
+import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -32,7 +33,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-abstract class AbstractListIterator implements ListIterator {
+abstract class AbstractListIterator<JT> implements ListIterator<JT> {
 
     protected final Resource listOwner;
     protected final IRI hasListProperty;
@@ -43,6 +44,8 @@ abstract class AbstractListIterator implements ListIterator {
     protected final Connector connector;
     protected final ValueFactory vf;
 
+    protected final ValueConverter valueConverter;
+
     public AbstractListIterator(ListDescriptor listDescriptor, Connector connector, ValueFactory vf) {
         this.listOwner = Rdf4jUtils.toRdf4jIri(listDescriptor.getListOwner().getIdentifier(), vf);
         this.hasListProperty = Rdf4jUtils.toRdf4jIri(listDescriptor.getListProperty()
@@ -52,6 +55,7 @@ abstract class AbstractListIterator implements ListIterator {
         this.includeInferred = listDescriptor.getListProperty().isInferred();
         this.connector = connector;
         this.vf = vf;
+        this.valueConverter = new ValueConverter(vf);
     }
 
     protected Set<IRI> contexts() {

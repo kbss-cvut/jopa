@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
 import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
@@ -209,12 +210,12 @@ class Rdf4jAdapter implements Closeable, Wrapper {
         return connector;
     }
 
-    ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler() throws Rdf4jDriverException {
+    ListHandler<SimpleListDescriptor, SimpleListValueDescriptor, NamedResource> getSimpleListHandler() throws Rdf4jDriverException {
         startTransactionIfNotActive();
         return ListHandler.createForSimpleList(connector, valueFactory);
     }
 
-    ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler() throws
+    ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor<?>, ?> getReferencedListHandler() throws
             Rdf4jDriverException {
         startTransactionIfNotActive();
         return ListHandler.createForReferencedList(connector, valueFactory);

@@ -24,36 +24,79 @@ import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestSupport.LIST_PROPERTY;
+import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestSupport.NEXT_NODE_PROPERTY;
+import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestSupport.OWNER;
+import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestSupport.generateList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anySet;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@SuppressWarnings({"unchecked"})
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescriptor, SimpleListValueDescriptor> {
+public class SimpleListHandlerTest {
+
+    private static ValueFactory vf = SimpleValueFactory.getInstance();
+
+    private static Resource owner = vf.createIRI(OWNER.toString());
+    private static IRI hasListProperty = vf.createIRI(LIST_PROPERTY);
+    private static IRI nextNodeProperty = vf.createIRI(NEXT_NODE_PROPERTY);
+
+
+    @Mock
+    private Connector connector;
+
+    private SimpleListDescriptor listDescriptor;
+
+    private SimpleListHandler handler;
 
     private final Collection<Statement> added = new ArrayList<>();
     private final Collection<Statement> removed = new ArrayList<>();
 
     @BeforeAll
     public static void setUpBeforeClass() {
-        init();
+        vf = SimpleValueFactory.getInstance();
+        owner = vf.createIRI(OWNER.toString());
+        hasListProperty = vf.createIRI(LIST_PROPERTY);
+        nextNodeProperty = vf.createIRI(NEXT_NODE_PROPERTY);
     }
 
     @BeforeEach
@@ -67,26 +110,36 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
             final Collection<Statement> arg = (Collection<Statement>) invocation.getArguments()[0];
             added.addAll(arg);
             return null;
-        }).when(connector).addStatements(any(Collection.class));
+        }).when(connector).addStatements(anyCollection());
         doAnswer(invocation -> {
             final Collection<Statement> arg = (Collection<Statement>) invocation.getArguments()[0];
             removed.addAll(arg);
             return null;
-        }).when(connector).removeStatements(any(Collection.class));
+        }).when(connector).removeStatements(anyCollection());
 
         this.handler = new SimpleListHandler(connector, vf);
     }
 
     @Test
     public void staticFactoryMethodForSimpleLists() {
-        final ListHandler<?, ?> h = ListHandler.createForSimpleList(connector, vf);
+        final ListHandler<SimpleListDescriptor, SimpleListValueDescriptor, NamedResource> h = ListHandler.createForSimpleList(connector, vf);
         assertNotNull(h);
         assertTrue(h instanceof SimpleListHandler);
     }
 
     @Test
+    public void loadsEmptyListAndReturnsEmptyCollection() throws Exception {
+        when(connector.findStatements(eq(owner), eq(hasListProperty), any(), eq(false), anySet())).thenReturn(Collections.emptyList());
+        final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
+        assertNotNull(res);
+        assertTrue(res.isEmpty());
+        verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
+                any(Value.class), any(Boolean.class), eq(null));
+    }
+
+    @Test
     public void loadsSimpleList() throws Exception {
-        final List<NamedResource> simpleList = initList();
+        final List<NamedResource> simpleList = generateList();
         initStatementsForList(simpleList);
 
         final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
@@ -166,7 +219,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         final SimpleListValueDescriptor listDescriptor = initValues(5);
 
         handler.persistList(listDescriptor);
-        verify(connector).addStatements(any(Collection.class));
+        verify(connector).addStatements(anyCollection());
         for (Statement elem : added) {
             final NamedResource subject = NamedResource.create(Rdf4jUtils.toJavaUri(elem.getSubject()));
             assertTrue(listDescriptor.getListOwner().equals(subject)
@@ -180,7 +233,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
 
         handler.persistList(listDescriptor);
         verify(listDescriptor).getValues();
-        verify(connector, never()).addStatements(any(Collection.class));
+        verify(connector, never()).addStatements(anyCollection());
     }
 
     private static SimpleListValueDescriptor initValues(int count) {
@@ -188,9 +241,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
                 Assertion.createObjectPropertyAssertion(java.net.URI.create(LIST_PROPERTY), false),
                 Assertion.createObjectPropertyAssertion(java.net.URI.create(NEXT_NODE_PROPERTY),
                         false));
-        for (int i = 0; i < count; i++) {
-            desc.addValue(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA_" + i));
-        }
+        generateList(count).forEach(desc::addValue);
         return desc;
     }
 
@@ -198,12 +249,12 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
     public void clearsListOnUpdateWhenDescriptorHasNoValues() throws Exception {
         final SimpleListValueDescriptor descriptor = initValues(0);
         // old list
-        final List<NamedResource> simpleList = initList();
+        final List<NamedResource> simpleList = generateList();
         final List<Statement> oldList = initStatementsForList(simpleList);
 
         handler.updateList(descriptor);
         verify(connector).removeStatements(oldList);
-        verify(connector, never()).addStatements(any(Collection.class));
+        verify(connector, never()).addStatements(anyCollection());
     }
 
     @Test
@@ -214,7 +265,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
                 .thenReturn(Collections.emptyList());
 
         handler.updateList(descriptor);
-        verify(connector, never()).removeStatements(any(Collection.class));
+        verify(connector, never()).removeStatements(anyCollection());
         int i = 0;
         assertFalse(added.isEmpty());
         for (Statement stmt : added) {
@@ -227,7 +278,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
     public void updateListAddsNewValuesToTheEnd() throws Exception {
         final SimpleListValueDescriptor descriptor = initValues(0);
         final SimpleListValueDescriptor tempDesc = initValues(8);
-        final List<NamedResource> simpleList = initList();
+        final List<NamedResource> simpleList = generateList();
         initStatementsForList(simpleList);
         // The original items
         for (NamedResource item : simpleList) {
@@ -239,8 +290,8 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         }
 
         handler.updateList(descriptor);
-        verify(connector, never()).removeStatements(any(Collection.class));
-        verify(connector, atLeast(1)).addStatements(any(Collection.class));
+        verify(connector, never()).removeStatements(anyCollection());
+        verify(connector, atLeast(1)).addStatements(anyCollection());
         assertEquals(tempDesc.getValues().size(), added.size());
         for (Statement stmt : added) {
             final java.net.URI u = java.net.URI.create(stmt.getObject().stringValue());
@@ -251,7 +302,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
     @Test
     public void updateListRemovesSeveralElements() throws Exception {
         final SimpleListValueDescriptor descriptor = initValues(0);
-        final List<NamedResource> simpleList = initList();
+        final List<NamedResource> simpleList = generateList();
         initStatementsForList(simpleList);
         // Retain every even element, others will be removed
         int i = 0;
