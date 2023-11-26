@@ -24,6 +24,7 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-public abstract class ListIteratorTestBase<T extends AbstractListIterator, D extends ListDescriptor> {
+public abstract class ListIteratorTestBase<T extends AbstractListIterator<NamedResource, ? extends RDFNode>, D extends ListDescriptor> {
 
     static final Resource RESOURCE = createResource(Generator.generateUri().toString());
     static final Property HAS_LIST = ResourceFactory.createProperty(Generator.generateUri().toString());
@@ -64,13 +65,13 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator, D ext
     @Test
     public void hasNextReturnsTrueForListHead() {
         generateList();
-        final AbstractListIterator iterator = iterator();
+        final AbstractListIterator<NamedResource, ? extends RDFNode> iterator = iterator();
         assertTrue(iterator.hasNext());
     }
 
     @Test
     public void nextThrowsNoSuchElementWhenNoMoreElementsExist() {
-        final AbstractListIterator iterator = iterator();
+        final AbstractListIterator<NamedResource, ? extends RDFNode> iterator = iterator();
         assertFalse(iterator.hasNext());
         assertThrows(NoSuchElementException.class, iterator::nextAxiom);
     }
@@ -78,7 +79,7 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator, D ext
     @Test
     public void nextAllowsToReadWholeList() {
         final List<URI> list = generateList();
-        final AbstractListIterator iterator = iterator();
+        final AbstractListIterator<NamedResource, ? extends RDFNode> iterator = iterator();
         final List<URI> actual = new ArrayList<>();
         while (iterator.hasNext()) {
             final Axiom<NamedResource> axiom = iterator.nextAxiom();
@@ -93,7 +94,7 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator, D ext
         when(connectorMock.find(RESOURCE, HAS_LIST, null, Collections.emptySet())).thenReturn(
                 Arrays.asList(createStatement(RESOURCE, HAS_LIST, createResource()),
                         createStatement(RESOURCE, HAS_LIST, createResource())));
-        final AbstractListIterator iterator = iterator();
+        final AbstractListIterator<NamedResource, ? extends RDFNode> iterator = iterator();
         final IntegrityConstraintViolatedException ex = assertThrows(IntegrityConstraintViolatedException.class,
                 iterator::nextAxiom);
         assertThat(ex.getMessage(),
@@ -103,7 +104,7 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator, D ext
     @Test
     public void removeWithoutReconnectThrowsIllegalStateExceptionWhenNextWasNotCalledBefore() {
         generateList();
-        final AbstractListIterator iterator = iterator();
+        final AbstractListIterator<NamedResource, ? extends RDFNode> iterator = iterator();
         final IllegalStateException ex = assertThrows(IllegalStateException.class, iterator::removeWithoutReconnect);
         assertThat(ex.getMessage(), containsString("Cannot call remove before calling next."));
     }
@@ -111,7 +112,7 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator, D ext
     @Test
     public void removeWithoutReconnectThrowsIllegalStateExceptionWhenRemoveIsCalledTwiceOnElement() {
         generateList();
-        final AbstractListIterator iterator = iterator();
+        final AbstractListIterator<NamedResource, ? extends RDFNode> iterator = iterator();
         iterator.nextValue();
         iterator.removeWithoutReconnect();
         final IllegalStateException ex = assertThrows(IllegalStateException.class, iterator::removeWithoutReconnect);

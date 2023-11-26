@@ -21,10 +21,12 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -265,5 +268,35 @@ public class ReferencedListHandlerTest extends ListHandlerTestHelper {
         assertEquals(statementsInserted.get(0).getObject(), statementsInserted.get(1).getSubject());
         assertEquals(HAS_CONTENT_PROPERTY, statementsInserted.get(1).getPredicate());
         assertEquals(added.toString(), statementsInserted.get(1).getObject().asResource().getURI());
+    }
+
+    @Test
+    void persistListSupportsSavingDataPropertyValuesAsListElements() {
+        final ReferencedListValueDescriptor<Integer> desc = new ReferencedListValueDescriptor<>(OWNER,
+                HAS_LIST,
+                HAS_NEXT, Assertion.createDataPropertyAssertion(HAS_CONTENT.getIdentifier(), false));
+        IntStream.range(0, 5).mapToObj(i -> Generator.randomInt()).forEach(desc::addValue);
+
+        final ReferencedListHandler sut = new ReferencedListHandler(connectorMock);
+        sut.persistList(desc);
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock).add(captor.capture(), eq(null));
+        final List<Statement> stmts = captor.getValue();
+        assertEquals(desc.getValues().size() * 2, stmts.size());
+        int i = 0;
+        for (Statement stmt : stmts) {
+            if (i == 0) {
+                assertEquals(HAS_LIST_PROPERTY, stmt.getPredicate());
+            } else if (i % 2 == 1) {
+                assertEquals(HAS_CONTENT_PROPERTY, stmt.getPredicate());
+                final RDFNode nodeContent = stmt.getObject();
+                assertTrue(nodeContent.isLiteral());
+                final Integer nodeContentLit = (Integer) JenaUtils.literalToValue(nodeContent.asLiteral());
+                assertTrue(desc.getValues().contains(nodeContentLit));
+            } else {
+                assertEquals(HAS_NEXT_PROPERTY, stmt.getPredicate());
+            }
+            i++;
+        }
     }
 }

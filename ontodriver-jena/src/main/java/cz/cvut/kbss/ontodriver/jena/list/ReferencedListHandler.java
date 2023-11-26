@@ -34,7 +34,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.jena.rdf.model.ResourceFactory.*;
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 
 public class ReferencedListHandler {
 
@@ -46,7 +48,7 @@ public class ReferencedListHandler {
 
     List<Axiom<NamedResource>> loadList(ReferencedListDescriptor descriptor) {
         final List<Axiom<NamedResource>> result = new ArrayList<>();
-        final AbstractListIterator it = new ReferencedListIterator(descriptor, connector);
+        final ReferencedListIterator<NamedResource> it = new ReferencedListIterator<>(descriptor, connector);
         while (it.hasNext()) {
             result.add(it.nextAxiom());
         }
@@ -78,7 +80,8 @@ public class ReferencedListHandler {
     }
 
     private <V> Resource appendNode(Resource previousNode, V value, Property link, Property hasContent,
-                                String context, List<Statement> statements, ReferencedListValueDescriptor<V> descriptor) {
+                                    String context, List<Statement> statements,
+                                    ReferencedListValueDescriptor<V> descriptor) {
         final Resource node = generateNewListNode(descriptor.getListOwner().getIdentifier(), context);
         statements.add(createStatement(previousNode, link, node));
         statements.add(createStatement(node, hasContent, JenaUtils.valueToRdfNode(descriptor.getNodeContent(), new Value<>(value))));
@@ -98,14 +101,13 @@ public class ReferencedListHandler {
     }
 
     <V> void updateList(ReferencedListValueDescriptor<V> descriptor) {
-        final AbstractListIterator it = new ReferencedListIterator(descriptor, connector);
+        final ReferencedListIterator<V> it = new ReferencedListIterator<>(descriptor, connector);
         int i = 0;
         while (it.hasNext() && i < descriptor.getValues().size()) {
             final V update = descriptor.getValues().get(i);
-            final NamedResource existing = it.nextValue();
+            final V existing = it.nextValue();
             if (!existing.equals(update)) {
-                // TODO Replace with generic handling of an object, we do not know that it is a NamedResource
-                it.replace(createResource(update.toString()));
+                it.replace(JenaUtils.valueToRdfNode(descriptor.getNodeContent(), new Value<>(update)));
             }
             i++;
         }
@@ -115,7 +117,7 @@ public class ReferencedListHandler {
         }
     }
 
-    private static void removeObsoleteNodes(AbstractListIterator it) {
+    private static void removeObsoleteNodes(ReferencedListIterator<?> it) {
         while (it.hasNext()) {
             it.nextValue();
             it.removeWithoutReconnect();

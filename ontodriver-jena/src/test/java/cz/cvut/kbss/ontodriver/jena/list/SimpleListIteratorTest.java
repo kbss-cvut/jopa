@@ -28,25 +28,34 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.jena.rdf.model.ResourceFactory.*;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
+import static org.apache.jena.rdf.model.ResourceFactory.createTypedLiteral;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListIterator, SimpleListDescriptor> {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         super.setUp();
     }
 
@@ -75,7 +84,7 @@ public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListItera
     @Test
     public void nextReturnsFirstListElement() {
         final List<URI> list = generateList();
-        final AbstractListIterator iterator = iterator();
+        final SimpleListIterator iterator = iterator();
         assertTrue(iterator.hasNext());
         final Axiom<NamedResource> head = iterator.nextAxiom();
         assertNotNull(head);

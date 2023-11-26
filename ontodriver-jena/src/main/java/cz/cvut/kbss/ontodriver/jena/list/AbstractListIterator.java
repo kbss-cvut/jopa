@@ -36,7 +36,7 @@ import java.util.Set;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
-abstract class AbstractListIterator {
+abstract class AbstractListIterator<T, JT extends RDFNode> {
 
     final StorageConnector connector;
 
@@ -106,9 +106,9 @@ abstract class AbstractListIterator {
         connector.remove(subject, property, object, context);
     }
 
-    abstract Axiom<NamedResource> nextAxiom();
+    abstract Axiom<T> nextAxiom();
 
-    abstract NamedResource nextValue();
+    abstract T nextValue();
 
     /**
      * Only returns current node.
@@ -137,5 +137,5 @@ abstract class AbstractListIterator {
         this.removed = true;
     }
 
-    abstract void replace(Resource replacement);
+    abstract void replace(JT replacement);
 }

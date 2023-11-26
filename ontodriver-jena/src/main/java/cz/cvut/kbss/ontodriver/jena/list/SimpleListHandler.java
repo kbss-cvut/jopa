@@ -43,7 +43,7 @@ public class SimpleListHandler {
 
     List<Axiom<NamedResource>> loadList(SimpleListDescriptor descriptor) {
         final List<Axiom<NamedResource>> result = new ArrayList<>();
-        final AbstractListIterator it = new SimpleListIterator(descriptor, connector);
+        final SimpleListIterator it = new SimpleListIterator(descriptor, connector);
         while (it.hasNext()) {
             result.add(it.nextAxiom());
         }
@@ -79,7 +79,7 @@ public class SimpleListHandler {
     }
 
     void updateList(SimpleListValueDescriptor descriptor) {
-        final AbstractListIterator it = new SimpleListIterator(descriptor, connector);
+        final SimpleListIterator it = new SimpleListIterator(descriptor, connector);
         int i = 0;
         while (it.hasNext() && i < descriptor.getValues().size()) {
             final NamedResource update = descriptor.getValues().get(i);
@@ -95,7 +95,7 @@ public class SimpleListHandler {
         }
     }
 
-    private static void removeObsoleteNodes(AbstractListIterator it) {
+    private static void removeObsoleteNodes(SimpleListIterator it) {
         while (it.hasNext()) {
             it.nextValue();
             it.removeWithoutReconnect();
