@@ -20,7 +20,10 @@ package cz.cvut.kbss.ontodriver.jena.list;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
+import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -33,24 +36,33 @@ import java.util.List;
 
 import static org.apache.jena.rdf.model.ResourceFactory.*;
 
-class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> {
+public class ReferencedListHandler {
 
-    ReferencedListHandler(StorageConnector connector) {
-        super(connector);
+    private final StorageConnector connector;
+
+    public ReferencedListHandler(StorageConnector connector) {
+        this.connector = connector;
     }
 
-    @Override
-    AbstractListIterator iterator(ReferencedListDescriptor descriptor) {
-        return new ReferencedListIterator(descriptor, connector);
+    List<Axiom<NamedResource>> loadList(ReferencedListDescriptor descriptor) {
+        final List<Axiom<NamedResource>> result = new ArrayList<>();
+        final AbstractListIterator it = new ReferencedListIterator(descriptor, connector);
+        while (it.hasNext()) {
+            result.add(it.nextAxiom());
+        }
+        return result;
     }
 
-    @Override
-    AbstractListIterator iterator(ReferencedListValueDescriptor descriptor) {
-        return iterator((ReferencedListDescriptor) descriptor);
+    <V> void persistList(ReferencedListValueDescriptor<V> descriptor) {
+        final List<V> values = descriptor.getValues();
+        if (values.isEmpty()) {
+            return;
+        }
+        Resource owner = createResource(descriptor.getListOwner().getIdentifier().toString());
+        appendNewNodes(descriptor, 0, owner);
     }
 
-    @Override
-    void appendNewNodes(ReferencedListValueDescriptor descriptor, int i, Resource lastNode) {
+    <V> void appendNewNodes(ReferencedListValueDescriptor<V> descriptor, int i, Resource lastNode) {
         assert lastNode != null;
         final List<Statement> toAdd = new ArrayList<>((descriptor.getValues().size() - i) * 2);
         final Property hasList = createProperty(descriptor.getListProperty().getIdentifier().toString());
@@ -60,16 +72,16 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
         for (; i < descriptor.getValues().size(); i++) {
             lastNode =
                     appendNode(lastNode, descriptor.getValues().get(i), i == 0 ? hasList : hasNext, hasContent, context,
-                            toAdd);
+                            toAdd, descriptor);
         }
         connector.add(toAdd, context);
     }
 
-    private Resource appendNode(Resource previousNode, NamedResource value, Property link, Property hasContent,
-                                String context, List<Statement> statements) {
-        final Resource node = generateNewListNode(value.getIdentifier(), context);
+    private <V> Resource appendNode(Resource previousNode, V value, Property link, Property hasContent,
+                                String context, List<Statement> statements, ReferencedListValueDescriptor<V> descriptor) {
+        final Resource node = generateNewListNode(descriptor.getListOwner().getIdentifier(), context);
         statements.add(createStatement(previousNode, link, node));
-        statements.add(createStatement(node, hasContent, createResource(value.getIdentifier().toString())));
+        statements.add(createStatement(node, hasContent, JenaUtils.valueToRdfNode(descriptor.getNodeContent(), new Value<>(value))));
         return node;
     }
 
@@ -83,5 +95,30 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
                     .find(node, null, null, context != null ? Collections.singleton(context) : Collections.emptySet());
         } while (!statements.isEmpty());
         return node;
+    }
+
+    <V> void updateList(ReferencedListValueDescriptor<V> descriptor) {
+        final AbstractListIterator it = new ReferencedListIterator(descriptor, connector);
+        int i = 0;
+        while (it.hasNext() && i < descriptor.getValues().size()) {
+            final V update = descriptor.getValues().get(i);
+            final NamedResource existing = it.nextValue();
+            if (!existing.equals(update)) {
+                // TODO Replace with generic handling of an object, we do not know that it is a NamedResource
+                it.replace(createResource(update.toString()));
+            }
+            i++;
+        }
+        removeObsoleteNodes(it);
+        if (i < descriptor.getValues().size()) {
+            appendNewNodes(descriptor, i, it.getCurrentNode());
+        }
+    }
+
+    private static void removeObsoleteNodes(AbstractListIterator it) {
+        while (it.hasNext()) {
+            it.nextValue();
+            it.removeWithoutReconnect();
+        }
     }
 }

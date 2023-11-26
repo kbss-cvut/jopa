@@ -49,10 +49,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestSupport.LIST_PROPERTY;
-import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestSupport.NEXT_NODE_PROPERTY;
-import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestSupport.OWNER;
-import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestSupport.generateList;
+import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestHelper.LIST_PROPERTY;
+import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestHelper.NEXT_NODE_PROPERTY;
+import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestHelper.OWNER;
+import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestHelper.generateList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
