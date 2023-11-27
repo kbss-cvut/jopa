@@ -81,14 +81,14 @@ public class OwlapiLists implements Lists {
     }
 
     @Override
-    public void persistReferencedList(ReferencedListValueDescriptor descriptor) throws OntoDriverException {
+    public <V> void persistReferencedList(ReferencedListValueDescriptor<V> descriptor) throws OntoDriverException {
         ensureStateAndArgumentValid(descriptor);
         adapter.getReferencedListHandler().persistList(descriptor);
         afterChangeCallback.execute();
     }
 
     @Override
-    public void updateReferencedList(ReferencedListValueDescriptor descriptor) throws OntoDriverException {
+    public <V> void updateReferencedList(ReferencedListValueDescriptor<V> descriptor) throws OntoDriverException {
         ensureStateAndArgumentValid(descriptor);
         adapter.getReferencedListHandler().updateList(descriptor);
         afterChangeCallback.execute();

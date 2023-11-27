@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
+import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
@@ -33,10 +34,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class ReferencedListIterator extends OwlapiListIterator {
+class ReferencedListIterator<T> extends OwlapiListIterator<T> {
 
     final OWLObjectProperty hasNextProperty;
-    final OWLObjectProperty hasContentProperty;
+    final OWLProperty hasContentProperty;
 
     final OWLOntology ontology;
     private final OWLDataFactory dataFactory;
@@ -47,7 +48,7 @@ class ReferencedListIterator extends OwlapiListIterator {
     OWLIndividual currentNode;
     OWLObjectProperty previousNextNodeProperty;
     OWLObjectProperty currentNextNodeProperty;
-    Collection<? extends OWLIndividual> nextItem;
+    Collection<? extends OWLObject> nextItem;
 
     final ReferencedListDescriptor descriptor;
 
@@ -55,16 +56,27 @@ class ReferencedListIterator extends OwlapiListIterator {
                            AxiomAdapter axiomAdapter) {
         this.ontology = snapshot.getOntology();
         this.dataFactory = snapshot.getDataFactory();
+        this.descriptor = descriptor;
         this.hasNextProperty = dataFactory.getOWLObjectProperty(IRI.create(descriptor.getNextNode().getIdentifier()));
-        this.hasContentProperty = dataFactory
-                .getOWLObjectProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
+        this.hasContentProperty = assertionToOwlProperty(descriptor.getNodeContent());
         this.axiomAdapter = axiomAdapter;
         this.currentNextNodeProperty = dataFactory
                 .getOWLObjectProperty(IRI.create(descriptor.getListProperty().getIdentifier()));
         this.previousNextNodeProperty = currentNextNodeProperty;
         this.currentNode = OwlapiUtils.getIndividual(descriptor.getListOwner(), dataFactory);
         this.previousNode = currentNode;
-        this.descriptor = descriptor;
+    }
+
+    private OWLProperty assertionToOwlProperty(Assertion a) {
+        switch (a.getType()) {
+            case OBJECT_PROPERTY:
+                return dataFactory
+                        .getOWLObjectProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
+            case DATA_PROPERTY:
+                return dataFactory.getOWLDataProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
+            default:
+                throw new IllegalArgumentException("Node content property cannot be type " + a.getType());
+        }
     }
 
     @Override
@@ -88,28 +100,44 @@ class ReferencedListIterator extends OwlapiListIterator {
         checkIsNamed(node);
         this.previousNode = currentNode;
         this.currentNode = node;
-        this.nextItem =
-                EntitySearcher.getObjectPropertyValues(node, hasContentProperty, ontology).collect(Collectors.toSet());
+        this.nextItem = resolveCurrentContent();
+    }
+
+    private Collection<? extends OWLObject> resolveCurrentContent() {
+        if (hasContentProperty.isOWLObjectProperty()) {
+            return EntitySearcher.getObjectPropertyValues(currentNode, hasContentProperty.asOWLObjectProperty(), ontology)
+                                 .collect(Collectors.toSet());
+        } else {
+            assert hasContentProperty.isOWLDataProperty();
+            return EntitySearcher.getDataPropertyValues(currentNode, hasContentProperty.asOWLDataProperty(), ontology)
+                                 .collect(Collectors.toSet());
+        }
     }
 
     @Override
-    public Axiom<NamedResource> next() {
-        final NamedResource value = nextValue();
+    public Axiom<T> next() {
+        final T value = nextValue();
         return axiomAdapter
                 .createAxiom(NamedResource.create(currentNode.asOWLNamedIndividual().getIRI().toURI()),
                         descriptor.getNodeContent(), value);
     }
 
     @Override
-    NamedResource nextValue() {
+    T nextValue() {
         doStep();
         if (nextItem.isEmpty()) {
             throw new NoSuchElementException("There are no more elements.");
         }
         checkMaxSuccessors(hasContentProperty, nextItem);
-        final OWLIndividual value = nextItem.iterator().next();
-        checkIsNamed(value);
-        return NamedResource.create(value.asOWLNamedIndividual().getIRI().toURI());
+        final OWLObject value = nextItem.iterator().next();
+        if (value.isIndividual()) {
+            final OWLIndividual individual = (OWLIndividual) value;
+            checkIsNamed(individual);
+            return (T) NamedResource.create(individual.asOWLNamedIndividual().getIRI().toURI());
+        } else {
+            final OWLLiteral literal = (OWLLiteral) value;
+            return (T) OwlapiUtils.owlLiteralToValue(literal);
+        }
     }
 
     @Override
@@ -138,15 +166,22 @@ class ReferencedListIterator extends OwlapiListIterator {
     }
 
     @Override
-    List<TransactionalChange> replaceNode(NamedResource newValue) {
+    List<TransactionalChange> replaceNode(T newValue) {
         // We know there is exactly one, because nextItem has to have been called before this method
-        final OWLIndividual originalContent = nextItem.iterator().next();
-        final OWLNamedIndividual newContent = OwlapiUtils.getIndividual(newValue, dataFactory);
-        final List<TransactionalChange> changes = new ArrayList<>(2);
-        changes.add(new MutableRemoveAxiom(ontology,
-                dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty, currentNode, originalContent)));
-        changes.add(new MutableAddAxiom(ontology,
-                dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty, currentNode, newContent)));
+        final OWLObject originalContent = nextItem.iterator().next();
+        final List<TransactionalChange> changes;
+        if (hasContentProperty.isOWLObjectProperty()) {
+            final OWLNamedIndividual newContent = OwlapiUtils.getIndividual((NamedResource) newValue, dataFactory);
+            changes = List.of(
+                    new MutableRemoveAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty.asOWLObjectProperty(), currentNode, (OWLIndividual) originalContent)),
+                    new MutableAddAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty.asOWLObjectProperty(), currentNode, newContent)));
+        } else {
+            final OWLLiteral newContent = OwlapiUtils.createOWLLiteralFromValue(newValue, descriptor.getNodeContent()
+                                                                                                    .getLanguage());
+            changes = List.of(
+                    new MutableRemoveAxiom(ontology, dataFactory.getOWLDataPropertyAssertionAxiom(hasContentProperty.asOWLDataProperty(), currentNode, (OWLLiteral) originalContent)),
+                    new MutableAddAxiom(ontology, dataFactory.getOWLDataPropertyAssertionAxiom(hasContentProperty.asOWLDataProperty(), currentNode, newContent)));
+        }
         return changes;
     }
 }

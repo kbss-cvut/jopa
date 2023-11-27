@@ -33,13 +33,13 @@ public class ReferencedListIteratorTest extends OwlapiListIteratorBase {
         super.setUp();
         final OWLNamedIndividual individual = snapshot.getDataFactory().getOWLNamedIndividual(IRI.create(SUBJECT));
         this.testHelper = new ReferencedListTestHelper(snapshot, individual, SUBJECT);
-        this.descriptor = new ReferencedListDescriptorImpl(NamedResource.create(SUBJECT), ListHandlerTestBase.HAS_LIST,
-                ListHandlerTestBase.HAS_NEXT, ListHandlerTestBase.HAS_CONTENT);
+        this.descriptor = new ReferencedListDescriptorImpl(NamedResource.create(SUBJECT), ListTestHelper.HAS_LIST,
+                ListTestHelper.HAS_NEXT, ListTestHelper.HAS_CONTENT);
         this.iterator = iterator();
     }
 
     @Override
-    OwlapiListIterator iterator() {
-        return new ReferencedListIterator(descriptor, snapshot, axiomAdapter);
+    OwlapiListIterator<NamedResource> iterator() {
+        return new ReferencedListIterator<>(descriptor, snapshot, axiomAdapter);
     }
 }
