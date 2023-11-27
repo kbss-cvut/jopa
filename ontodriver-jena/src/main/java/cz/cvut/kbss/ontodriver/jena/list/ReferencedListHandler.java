@@ -74,23 +74,22 @@ public class ReferencedListHandler {
         for (; i < descriptor.getValues().size(); i++) {
             lastNode =
                     appendNode(lastNode, descriptor.getValues().get(i), i == 0 ? hasList : hasNext, hasContent, context,
-                            toAdd, descriptor);
+                            toAdd, descriptor, i);
         }
         connector.add(toAdd, context);
     }
 
     private <V> Resource appendNode(Resource previousNode, V value, Property link, Property hasContent,
                                     String context, List<Statement> statements,
-                                    ReferencedListValueDescriptor<V> descriptor) {
-        final Resource node = generateNewListNode(descriptor.getListOwner().getIdentifier(), context);
+                                    ReferencedListValueDescriptor<V> descriptor, int index) {
+        final Resource node = generateNewListNode(descriptor.getListOwner().getIdentifier(), context, index);
         statements.add(createStatement(previousNode, link, node));
         statements.add(createStatement(node, hasContent, JenaUtils.valueToRdfNode(descriptor.getNodeContent(), new Value<>(value))));
         return node;
     }
 
-    private Resource generateNewListNode(URI baseUri, String context) {
+    private Resource generateNewListNode(URI baseUri, String context, int index) {
         Resource node;
-        int index = 0;
         Collection<Statement> statements;
         do {
             node = createResource(baseUri.toString() + "-SEQ_" + index++);

@@ -89,7 +89,7 @@ class ListPropertyStrategyTestBase {
         }
     }
 
-    void verifyListItems(List<URI> expected, ListValueDescriptor actual) {
+    void verifyListItems(List<URI> expected, ListValueDescriptor<NamedResource> actual) {
         assertEquals(expected.size(), actual.getValues().size());
         for (int i = 0; i < expected.size(); i++) {
             assertEquals(expected.get(i), actual.getValues().get(i).getIdentifier());
