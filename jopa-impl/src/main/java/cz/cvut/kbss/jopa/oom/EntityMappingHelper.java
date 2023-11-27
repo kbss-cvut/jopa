@@ -34,6 +34,8 @@ interface EntityMappingHelper extends ConfigurationHolder {
 
     <T> EntityType<T> getEntityType(Class<T> cls);
 
+    boolean isManagedType(Class<?> cls);
+
     URI generateIdentifier(EntityType<?> et);
 
     <T> T getOriginalInstance(T clone);

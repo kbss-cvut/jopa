@@ -134,6 +134,11 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
+    public boolean isManagedType(Class<?> cls) {
+        return uow.isEntityType(cls);
+    }
+
+    @Override
     public <T> void loadFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor) {
         assert entity != null;
         assert fieldSpec != null;

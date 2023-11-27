@@ -24,7 +24,6 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
-import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.util.Collections;
@@ -82,10 +81,6 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
                     .shouldSaveReferenceToItem(item, getAttributeValueContexts())).collect(Collectors.toList());
         }
     }
-
-    abstract L createListDescriptor(Axiom<?> ax);
-
-    abstract V createListValueDescriptor(X instance);
 
     abstract <K> void extractListValues(List<K> list, X instance, AxiomValueGatherer valueBuilder);
 }

@@ -45,7 +45,6 @@ class SimpleListPropertyStrategy<X> extends
         sequence.forEach(super::addValueFromAxiom);
     }
 
-    @Override
     SimpleListDescriptor createListDescriptor(Axiom<?> ax) {
         final NamedResource owner = ax.getSubject();
         final Assertion listProperty = Assertion
@@ -70,7 +69,6 @@ class SimpleListPropertyStrategy<X> extends
         valueBuilder.addSimpleListValues(listDescriptor);
     }
 
-    @Override
     SimpleListValueDescriptor createListValueDescriptor(X instance) {
         final NamedResource owner = NamedResource.create(resolveValueIdentifier(instance, et));
         final Assertion listProperty = Assertion

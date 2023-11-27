@@ -21,14 +21,26 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassP;
 import cz.cvut.kbss.jopa.environment.OneOfEnum;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
+import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.Sequence;
+import cz.cvut.kbss.jopa.model.annotations.SequenceType;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,11 +51,23 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -65,7 +89,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         super.setUp();
         this.refListMock = mocks.forOwlClassC().referencedListAtt();
         this.strategy = new ReferencedListPropertyStrategy<>(mocks.forOwlClassC().entityType(), refListMock, descriptor,
-                                                             mapperMock);
+                mapperMock);
         strategy.setReferenceSavingResolver(new ReferenceSavingResolver(mapperMock));
     }
 
@@ -108,19 +132,19 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
                     node = new AxiomImpl<>(
                             previous,
                             Assertion.createObjectPropertyAssertion(refListMock
-                                                                            .getOWLObjectPropertyHasNextIRI().toURI(),
-                                                                    refListMock.isInferred()),
+                                            .getOWLObjectPropertyHasNextIRI().toURI(),
+                                    refListMock.isInferred()),
                             new Value<>(nodeUri));
                 }
                 axioms.add(node);
             }
             final Axiom<NamedResource> content = new AxiomImpl<>(nodeUri,
-                                                                 Assertion.createObjectPropertyAssertion(
-                                                                         refListMock.getOWLPropertyHasContentsIRI()
-                                                                                    .toURI(), refListMock.isInferred()),
-                                                                 new Value<>(NamedResource.create(a.getUri())));
+                    Assertion.createObjectPropertyAssertion(
+                            refListMock.getOWLPropertyHasContentsIRI()
+                                       .toURI(), refListMock.isInferred()),
+                    new Value<>(NamedResource.create(a.getUri())));
             when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, a.getUri(),
-                                                         descriptor.getAttributeDescriptor(refListMock))).thenReturn(a);
+                    descriptor.getAttributeDescriptor(refListMock))).thenReturn(a);
             axioms.add(content);
             previous = nodeUri;
             i++;
@@ -149,7 +173,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         final ListAttributeImpl<OWLClassP, URI> listAtt = mocks.forOwlClassP().pReferencedListAttribute();
         final ReferencedListPropertyStrategy<OWLClassP> strategy =
                 new ReferencedListPropertyStrategy<>(mocks.forOwlClassP().entityType(), listAtt, descriptor,
-                                                     mapperMock);
+                        mapperMock);
         final List<Axiom<NamedResource>> axioms = initRefListAxioms(true);
         when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(axioms);
 
@@ -166,6 +190,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 
     @Test
     void extractsValuesIntoAxiomsForSave() throws Exception {
+        when(mapperMock.isManagedType(OWLClassA.class)).thenReturn(true);
         final OWLClassC c = new OWLClassC(PK);
         c.setReferencedList(list);
         strategy.buildAxiomValuesFromInstance(c, builder);
@@ -178,13 +203,13 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
                         URI.create(OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).iri()),
                         refListMock.isInferred()));
         assertEquals(res.getNextNode(), Assertion.createObjectPropertyAssertion(refListMock
-                                                                                        .getOWLObjectPropertyHasNextIRI()
-                                                                                        .toURI(),
-                                                                                refListMock.isInferred()));
+                        .getOWLObjectPropertyHasNextIRI()
+                        .toURI(),
+                refListMock.isInferred()));
         assertEquals(res.getNodeContent(), Assertion.createObjectPropertyAssertion(refListMock
-                                                                                           .getOWLPropertyHasContentsIRI()
-                                                                                           .toURI(),
-                                                                                   refListMock.isInferred()));
+                        .getOWLPropertyHasContentsIRI()
+                        .toURI(),
+                refListMock.isInferred()));
         final List<URI> expected = list.stream().map(OWLClassA::getUri).collect(Collectors.toList());
         verifyListItems(expected, res);
     }
@@ -233,7 +258,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         final ListAttributeImpl<OWLClassP, URI> listAtt = mocks.forOwlClassP().pReferencedListAttribute();
         final ReferencedListPropertyStrategy<OWLClassP> strategy =
                 new ReferencedListPropertyStrategy<>(mocks.forOwlClassP().entityType(), listAtt, descriptor,
-                                                     mapperMock);
+                        mapperMock);
         final OWLClassP p = new OWLClassP();
         p.setUri(PK);
         p.setReferencedList(list.stream().map(OWLClassA::getUri).collect(Collectors.toList()));
@@ -253,7 +278,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         final ListAttributeImpl<OWLClassP, URI> refList = mocks.forOwlClassP().pReferencedListAttribute();
         final ReferencedListPropertyStrategy<OWLClassP> strategy =
                 new ReferencedListPropertyStrategy<>(mocks.forOwlClassP().entityType(), refList, descriptor,
-                                                     mapperMock);
+                        mapperMock);
 
         strategy.buildAxiomValuesFromInstance(p, builder);
         final ReferencedListValueDescriptor valueDescriptor = listValueDescriptor();
@@ -290,5 +315,58 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         assertEquals(
                 Arrays.asList(NamedResource.create(OWL.DATATYPE_PROPERTY), NamedResource.create(OWL.OBJECT_PROPERTY)),
                 valueDescriptor.getValues());
+    }
+
+    @Test
+    void createListDescriptorUsesDataPropertyForNodeContentPropertyWhenAttributeTypeIsNotEntityOrUri() throws Exception {
+        final EntityType<DataPropertyReferencedList> et = mock(EntityType.class);
+        final Identifier id = mock(Identifier.class);
+        when(id.getJavaField()).thenReturn(DataPropertyReferencedList.class.getDeclaredField("uri"));
+        when(et.getIdentifier()).thenReturn(id);
+        final ListAttributeImpl<DataPropertyReferencedList, Integer> att = initDataListAttribute();
+        final ReferencedListPropertyStrategy<DataPropertyReferencedList> sut = new ReferencedListPropertyStrategy<>(et, att, descriptor, mapperMock);
+        final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(PK),
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.ATTRIBUTE_BASE + "hasDataList"), false),
+                new Value<>(NamedResource.create(Generators.createIndividualIdentifier())));
+        final ReferencedListDescriptor result = sut.createListDescriptor(ax);
+        final Assertion nodeContentAssertion = result.getNodeContent();
+        assertEquals(Assertion.AssertionType.DATA_PROPERTY, nodeContentAssertion.getType());
+    }
+
+    static class DataPropertyReferencedList {
+
+        @Id
+        private URI uri;
+
+        @Sequence(type = SequenceType.referenced)
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasDataList")
+        private List<Integer> list;
+    }
+
+    static ListAttributeImpl<DataPropertyReferencedList, Integer> initDataListAttribute() throws Exception {
+        final ListAttributeImpl<DataPropertyReferencedList, Integer> att = mock(ListAttributeImpl.class);
+        when(att.getBindableJavaType()).thenReturn(Integer.class);
+        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "hasDataList"));
+        when(att.getCollectionType()).thenReturn(CollectionType.LIST);
+        when(att.getJavaField()).thenReturn(DataPropertyReferencedList.class.getDeclaredField("list"));
+        when(att.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasNext));
+        when(att.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasContents));
+        return att;
+    }
+
+    @Test
+    void createListValueDescriptorUsesDataPropertyForNodeContentPropertyWhenAttributeTypeIsNotEntityOrUri() throws Exception {
+        final EntityType<DataPropertyReferencedList> et = mock(EntityType.class);
+        final Identifier id = mock(Identifier.class);
+        when(id.getJavaField()).thenReturn(DataPropertyReferencedList.class.getDeclaredField("uri"));
+        when(et.getIdentifier()).thenReturn(id);
+        final ListAttributeImpl<DataPropertyReferencedList, Integer> att = initDataListAttribute();
+        final ReferencedListPropertyStrategy<DataPropertyReferencedList> sut = new ReferencedListPropertyStrategy<>(et, att, descriptor, mapperMock);
+        final DataPropertyReferencedList owner = new DataPropertyReferencedList();
+        owner.uri = Generators.createIndividualIdentifier();
+        owner.list = List.of(Generators.randomInt(), Generators.randomInt());
+        final ReferencedListValueDescriptor<Integer> result = sut.createListValueDescriptor(owner);
+        final Assertion nodeContentAssertion = result.getNodeContent();
+        assertEquals(Assertion.AssertionType.DATA_PROPERTY, nodeContentAssertion.getType());
     }
 }
