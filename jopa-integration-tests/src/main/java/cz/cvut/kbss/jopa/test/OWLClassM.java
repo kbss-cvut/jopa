@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -89,6 +90,11 @@ public class OWLClassM {
 
     @OWLAnnotationProperty(iri = Vocabulary.p_m_annotationSimpleLiteral, simpleLiteral = true)
     private String annotationSimpleLiteral;
+
+    @Sequence(type = SequenceType.referenced)
+    @OWLDataProperty(iri = Vocabulary.p_m_literalReferencedList)
+    private List<LocalDate> literalReferencedList;
+
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -238,6 +244,14 @@ public class OWLClassM {
         this.annotationSimpleLiteral = annotationSimpleLiteral;
     }
 
+    public List<LocalDate> getLiteralReferencedList() {
+        return literalReferencedList;
+    }
+
+    public void setLiteralReferencedList(List<LocalDate> literalReferencedList) {
+        this.literalReferencedList = literalReferencedList;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -258,6 +272,7 @@ public class OWLClassM {
                 ", enumSimpleLiteral=" + enumSimpleLiteral +
                 ", withConverter=" + withConverter +
                 ", annotationSimpleLiteral=" + annotationSimpleLiteral +
+                ", literalReferencedList=" + literalReferencedList +
                 '}';
     }
 

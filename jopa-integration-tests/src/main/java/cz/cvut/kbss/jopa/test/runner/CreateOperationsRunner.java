@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.exception.IdentifierNotSetException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.*;
@@ -369,7 +370,8 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(entityP.getProperties(), res.getProperties());
         final List<Quad> expectedStatements = new ArrayList<>();
-        entityP.getProperties().forEach((k, vs) -> vs.forEach(v -> expectedStatements.add(new Quad(entityP.getUri(), k, v, (String) null))));
+        entityP.getProperties()
+               .forEach((k, vs) -> vs.forEach(v -> expectedStatements.add(new Quad(entityP.getUri(), k, v, (String) null))));
         verifyStatementsPresent(expectedStatements, em);
     }
 
@@ -788,5 +790,22 @@ public abstract class CreateOperationsRunner extends BaseRunner {
                         entityM.getAnnotationSimpleLiteral(), (String) null),
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral),
                         entityM.getSimpleLiteral(), (String) null)), em);
+    }
+
+    @Test
+    void persistSupportsReferencedListsContainingDataPropertyLiteralValues() {
+        this.em = getEntityManager("persistSupportsReferencedListsContainingDataPropertyLiteralValues", false);
+        entityM.setLiteralReferencedList(new ArrayList<>());
+        for (int i = 5; i >= 0; i--) {
+            entityM.getLiteralReferencedList().add(LocalDate.now().minusDays(i));
+        }
+        persist(entityM);
+
+        for (int i = 0; i < entityM.getLiteralReferencedList().size(); i++) {
+            assertTrue(em.createNativeQuery("ASK WHERE { ?prev ?hasNext ?node . ?node ?hasContent ?content . }", Boolean.class)
+                         .setParameter("hasNext", URI.create(i == 0 ? Vocabulary.p_m_literalReferencedList : SequencesVocabulary.s_p_hasNext))
+                         .setParameter("hasContent", URI.create(SequencesVocabulary.s_p_hasContents))
+                         .setParameter("content", entityM.getLiteralReferencedList().get(i)).getSingleResult());
+        }
     }
 }

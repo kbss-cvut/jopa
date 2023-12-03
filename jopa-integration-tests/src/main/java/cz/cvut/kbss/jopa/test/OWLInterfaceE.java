@@ -43,11 +43,11 @@ public interface OWLInterfaceE {
     ZoneOffset getWithConverter();
 
     @Enumerated(EnumType.ORDINAL)
-    @OWLDataProperty(iri = Vocabulary.p_m_enumeratedOrdinalColor)
+    @OWLDataProperty(iri = Vocabulary.p_e_enumeratedOrdinalColor)
     Color getOrdinalEnumAttribute();
 
     @Sequence(type = SequenceType.simple)
-    @OWLObjectProperty(iri = Vocabulary.p_m_simpleList)
+    @OWLObjectProperty(iri = Vocabulary.p_e_simpleList)
     List<URI> getSimpleList();
 
 }
