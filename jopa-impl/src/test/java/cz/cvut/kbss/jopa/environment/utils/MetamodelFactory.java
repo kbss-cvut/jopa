@@ -196,6 +196,7 @@ public class MetamodelFactory {
                 .thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(simpleListMock.isCollection()).thenReturn(Boolean.TRUE);
         when(simpleListMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(simpleListMock.isAssociation()).thenReturn(true);
         when(simpleListMock.getDeclaringType()).thenReturn(etMock);
         when(simpleListMock.getJavaType()).thenReturn(List.class);
         when(simpleListMock.getFetchType()).thenReturn(FetchType.LAZY);
@@ -220,6 +221,7 @@ public class MetamodelFactory {
         when(refListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(refListMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(refListMock.isCollection()).thenReturn(Boolean.TRUE);
+        when(refListMock.isAssociation()).thenReturn(true);
         when(refListMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(refListMock.getDeclaringType()).thenReturn(etMock);
         when(refListMock.getJavaType()).thenReturn(List.class);

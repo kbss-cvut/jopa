@@ -48,7 +48,7 @@ import static org.mockito.Mockito.when;
 
 class ListPropertyStrategyTestBase {
 
-    protected static final URI PK = Generators.createIndividualIdentifier();
+    protected static final URI IDENTIFIER = Generators.createIndividualIdentifier();
 
     @Mock
     protected ObjectOntologyMapperImpl mapperMock;
@@ -63,7 +63,7 @@ class ListPropertyStrategyTestBase {
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(mocks.forOwlClassA().entityType());
         this.descriptor = new EntityDescriptor();
         this.builder =
-                spy(new AxiomValueGatherer(NamedResource.create(PK), descriptor.getSingleContext().orElse(null)));
+                spy(new AxiomValueGatherer(NamedResource.create(IDENTIFIER), descriptor.getSingleContext().orElse(null)));
         when(mapperMock.containsEntity(any(), any(), any())).thenReturn(true);
     }
 

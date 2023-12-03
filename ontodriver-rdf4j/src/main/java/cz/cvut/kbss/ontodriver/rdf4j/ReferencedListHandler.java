@@ -198,10 +198,10 @@ public class ReferencedListHandler extends ListHandler {
         Resource node = null;
         while (it.hasNext() && i < listDescriptor.getValues().size()) {
             node = it.nextNode();
-            final Object content = it.currentContent();
-            final Object newNode = listDescriptor.getValues().get(i);
+            final V content = it.currentContent();
+            final V newNode = listDescriptor.getValues().get(i);
             if (!content.equals(newNode)) {
-                it.replaceCurrentWith((V) newNode);
+                it.replaceCurrentWith(newNode);
             }
             i++;
         }

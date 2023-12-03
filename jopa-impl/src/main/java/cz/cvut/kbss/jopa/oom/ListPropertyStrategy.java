@@ -20,6 +20,8 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
+import cz.cvut.kbss.jopa.oom.converter.DefaultConverterWrapper;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
@@ -57,10 +59,9 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
         if (IdentifierTransformer.isValidIdentifierType(elemType)) {
             list.stream().filter(Objects::nonNull)
                 .forEach(item -> listDescriptor.addValue(NamedResource.create(IdentifierTransformer.valueAsUri(item))));
-        } else if (elemType.isEnum()) {
-            assert attribute.getConverter() != null;
-            list.stream().filter(Objects::nonNull).forEach(item -> listDescriptor.addValue(
-                    (NamedResource) attribute.getConverter().convertToAxiomValue(item)));
+        } else if (elemType.isEnum() || !attribute.isAssociation()) {
+            final ConverterWrapper<Object, Object> converter = attribute.getConverter() != null ? attribute.getConverter() : DefaultConverterWrapper.INSTANCE;
+            list.stream().filter(Objects::nonNull).forEach(item -> listDescriptor.addValue(converter.convertToAxiomValue(item)));
         } else {
             final EntityType<?> valueType = mapper.getEntityType(elemType);
             addItemsToDescriptor(listDescriptor, list, valueType);
@@ -74,7 +75,7 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
 
     <K> List<K> resolveUnpersistedItems(List<K> list) {
         if (list == null || IdentifierTransformer.isValidIdentifierType(
-                attribute.getBindableJavaType()) || attribute.getBindableJavaType().isEnum()) {
+                attribute.getBindableJavaType()) || attribute.getBindableJavaType().isEnum() || !attribute.isAssociation()) {
             return Collections.emptyList();
         } else {
             return list.stream().filter(item -> item != null && !referenceSavingResolver

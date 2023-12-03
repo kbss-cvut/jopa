@@ -107,6 +107,9 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralDataPropertyStrategy(
             EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute, Descriptor descriptor,
             EntityMappingHelper mapper) {
+        if (attribute.getCollectionType() == CollectionType.LIST) {
+            return createListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor, mapper);
+        }
         if (MultilingualString.class.equals(attribute.getElementType().getJavaType())) {
             return new PluralMultilingualStringFieldStrategy<>(et,
                     (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute,
@@ -121,7 +124,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             EntityMappingHelper mapper) {
         switch (attribute.getCollectionType()) {
             case LIST:
-                return createOwlListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor,
+                return createListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor,
                         mapper);
             case COLLECTION:
             case SET:
@@ -132,7 +135,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         }
     }
 
-    private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createOwlListPropertyStrategy(
+    private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createListPropertyStrategy(
             EntityType<Y> et, ListAttributeImpl<? super Y, ?> attribute, Descriptor descriptor,
             EntityMappingHelper mapper) {
         switch (attribute.getSequenceType()) {
