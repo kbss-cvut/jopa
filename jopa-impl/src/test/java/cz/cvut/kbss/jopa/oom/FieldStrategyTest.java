@@ -113,7 +113,7 @@ class FieldStrategyTest {
     }
 
     @Test
-    void createFieldStrategyCreatesReferencedListPropertyStrategyForDataPropertyReferencedList() {
+    void createFieldStrategyCreatesReferencedListDataPropertyStrategyForDataPropertyReferencedList() {
         final EntityType et = mock(EntityType.class);
         final ListAttributeImpl att = mock(ListAttributeImpl.class);
         when(att.isCollection()).thenReturn(true);
@@ -123,6 +123,6 @@ class FieldStrategyTest {
         when(att.getElementType()).thenReturn(BasicTypeImpl.get(LocalDate.class));
 
         final FieldStrategy<?, ?> result = FieldStrategy.createFieldStrategy(et, att, descriptor, mapperMock);
-        assertThat(result, instanceOf(ReferencedListPropertyStrategy.class));
+        assertThat(result, instanceOf(ReferencedListDataPropertyStrategy.class));
     }
 }

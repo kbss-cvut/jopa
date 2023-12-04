@@ -1,20 +1,3 @@
-/*
- * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
- */
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -29,15 +12,22 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
-class ReferencedListPropertyStrategy<X> extends
-        ListPropertyStrategy<ReferencedListDescriptor, ReferencedListValueDescriptor<NamedResource>, X> {
+class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<ListAttributeImpl<? super X, ?>, X> {
 
-    ReferencedListPropertyStrategy(EntityType<X> et, ListAttributeImpl<? super X, ?> att, Descriptor descriptor,
-                                   EntityMappingHelper mapper) {
-        super(et, att, descriptor, mapper);
+    private final Class<?> elementType;
+
+    private final List<Object> values = new ArrayList<>();
+
+    ReferencedListDataPropertyStrategy(EntityType<X> et, ListAttributeImpl<? super X, ?> att,
+                                       Descriptor attributeDescriptor, EntityMappingHelper mapper) {
+        super(et, att, attributeDescriptor, mapper);
+        this.elementType = att.getElementType().getJavaType();
     }
 
     @Override
@@ -46,7 +36,12 @@ class ReferencedListPropertyStrategy<X> extends
         final Collection<Axiom<?>> sequence = mapper.loadReferencedList(listDescriptor);
         sequence.stream()
                 .filter(a -> a.getAssertion().getIdentifier().equals(attribute.getOWLPropertyHasContentsIRI().toURI()))
-                .forEach(super::addValueFromAxiom);
+                .forEach(a -> {
+                    final Object value = ax.getValue().getValue();
+                    if (isValidRange(value)) {
+                        values.add(toAttributeValue(value));
+                    }
+                });
     }
 
     ReferencedListDescriptor createListDescriptor(Axiom<?> ax) {
@@ -56,8 +51,8 @@ class ReferencedListPropertyStrategy<X> extends
         final Assertion listProperty = Assertion.createObjectPropertyAssertion(attribute.getIRI().toURI(), inferred);
         final Assertion nextNodeProperty = Assertion
                 .createObjectPropertyAssertion(attribute.getOWLObjectPropertyHasNextIRI().toURI(), inferred);
-        final Assertion nodeContentProperty = Assertion.createObjectPropertyAssertion(attribute.getOWLPropertyHasContentsIRI()
-                                                                                               .toURI(), inferred);
+        final Assertion nodeContentProperty = Assertion.createDataPropertyAssertion(attribute.getOWLPropertyHasContentsIRI()
+                                                                                             .toURI(), inferred);
         final ReferencedListDescriptor listDescriptor = new ReferencedListDescriptorImpl(owner, listProperty,
                 nextNodeProperty, nodeContentProperty);
         listDescriptor.setContext(getAttributeWriteContext());
@@ -65,29 +60,48 @@ class ReferencedListPropertyStrategy<X> extends
     }
 
     @Override
-    <K> void extractListValues(List<K> list, X instance, AxiomValueGatherer valueBuilder) {
-        final ReferencedListValueDescriptor<K> listDescriptor = createListValueDescriptor(instance);
-        final List<K> pendingItems = resolveUnpersistedItems(list);
-        if (!pendingItems.isEmpty()) {
-            pendingItems.forEach(item -> referenceSavingResolver.registerPendingReference(item, listDescriptor, list));
-            return;
+    boolean isValidRange(Object value) {
+        return elementType.isAssignableFrom(value.getClass()) || canBeConverted(value);
+    }
+
+    @Override
+    void buildInstanceFieldValue(Object instance) {
+        if (!values.isEmpty()) {
+            setValueOnInstance(instance, values);
         }
-        addListElementsToListValueDescriptor(listDescriptor, list);
+    }
+
+    @Override
+    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
+        final Object value = extractFieldValueFromInstance(instance);
+        assert value instanceof List || value == null;
+
+        final ReferencedListValueDescriptor<Object> listDescriptor = createListValueDescriptor(instance);
+        final List<?> list = (List<?>) value;
+        if (list != null) {
+            list.stream().filter(Objects::nonNull)
+                .forEach(v -> listDescriptor.addValue(converter.convertToAxiomValue(value)));
+        }
         valueBuilder.addReferencedListValues(listDescriptor);
     }
 
-    <V> ReferencedListValueDescriptor<V> createListValueDescriptor(X instance) {
+    private <V> ReferencedListValueDescriptor<V> createListValueDescriptor(X instance) {
         final URI owner = EntityPropertiesUtils.getIdentifier(instance, et);
         final boolean inferred = attribute.isInferred();
         final Assertion hasList = Assertion
                 .createObjectPropertyAssertion(attribute.getIRI().toURI(), inferred);
         final Assertion hasNext = Assertion.createObjectPropertyAssertion(attribute
                 .getOWLObjectPropertyHasNextIRI().toURI(), inferred);
-        final Assertion hasContent = Assertion.createObjectPropertyAssertion(attribute.getOWLPropertyHasContentsIRI()
-                                                                                      .toURI(), inferred);
+        final Assertion hasContent = Assertion.createDataPropertyAssertion(attribute.getOWLPropertyHasContentsIRI()
+                                                                                    .toURI(), inferred);
         final ReferencedListValueDescriptor<V> descriptor = new ReferencedListValueDescriptor<>(
                 NamedResource.create(owner), hasList, hasNext, hasContent);
         descriptor.setContext(getAttributeWriteContext());
         return descriptor;
+    }
+
+    @Override
+    Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
+        throw new UnsupportedOperationException("Method not supported for referenced lists.");
     }
 }

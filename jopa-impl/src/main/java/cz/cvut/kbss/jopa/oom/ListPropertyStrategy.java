@@ -59,9 +59,10 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
         if (IdentifierTransformer.isValidIdentifierType(elemType)) {
             list.stream().filter(Objects::nonNull)
                 .forEach(item -> listDescriptor.addValue(NamedResource.create(IdentifierTransformer.valueAsUri(item))));
-        } else if (elemType.isEnum() || !attribute.isAssociation()) {
-            final ConverterWrapper<Object, Object> converter = attribute.getConverter() != null ? attribute.getConverter() : DefaultConverterWrapper.INSTANCE;
-            list.stream().filter(Objects::nonNull).forEach(item -> listDescriptor.addValue(converter.convertToAxiomValue(item)));
+        } else if (elemType.isEnum()) {
+            assert attribute.getConverter() != null;
+            list.stream().filter(Objects::nonNull)
+                .forEach(item -> listDescriptor.addValue(attribute.getConverter().convertToAxiomValue(item)));
         } else {
             final EntityType<?> valueType = mapper.getEntityType(elemType);
             addIndividualsToDescriptor(listDescriptor, list, valueType);
@@ -74,8 +75,9 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
     }
 
     <K> List<K> resolveUnpersistedItems(List<K> list) {
-        if (list == null || IdentifierTransformer.isValidIdentifierType(
-                attribute.getBindableJavaType()) || attribute.getBindableJavaType().isEnum() || !attribute.isAssociation()) {
+        assert attribute.isAssociation();
+        if (list == null || IdentifierTransformer.isValidIdentifierType(attribute.getBindableJavaType()) || attribute.getBindableJavaType()
+                                                                                                                     .isEnum()) {
             return Collections.emptyList();
         } else {
             return list.stream().filter(item -> item != null && !referenceSavingResolver

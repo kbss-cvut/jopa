@@ -38,7 +38,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class ReferencedListHandler extends ListHandler {
+public class ReferencedListHandler extends ListHandler<ReferencedListValueDescriptor<?>> {
 
     private int sequenceCounter = 0;
 
@@ -64,25 +64,7 @@ public class ReferencedListHandler extends ListHandler {
         return axioms;
     }
 
-    /**
-     * Persists list values specified by the descriptor.
-     * <p>
-     * The values are saved in the order in which they appear in the descriptor.
-     *
-     * @param listValueDescriptor Describes values to persist
-     * @throws Rdf4jDriverException When storage access error occurs
-     */
-    <V> void persistList(ReferencedListValueDescriptor<V> listValueDescriptor) throws Rdf4jDriverException {
-        if (listValueDescriptor.getValues().isEmpty()) {
-            return;
-        }
-        final Collection<Statement> statements = new ArrayList<>(listValueDescriptor.getValues().size());
-        final IRI head = createListHead(listValueDescriptor, statements);
-        statements.addAll(createListRest(head, listValueDescriptor));
-        connector.addStatements(statements);
-    }
-
-    <V> IRI createListHead(ReferencedListValueDescriptor<V> listValueDescriptor,
+    protected IRI createListHead(ReferencedListValueDescriptor<?> listValueDescriptor,
                        Collection<Statement> statements) throws Rdf4jDriverException {
         final IRI owner = owner(listValueDescriptor);
         final IRI hasList = hasList(listValueDescriptor);
@@ -116,7 +98,7 @@ public class ReferencedListHandler extends ListHandler {
         return node;
     }
 
-    <V> List<Statement> createListRest(IRI headNode, ReferencedListValueDescriptor<V> listValueDescriptor)
+    protected List<Statement> createListRest(IRI headNode, ReferencedListValueDescriptor<?> listValueDescriptor)
             throws Rdf4jDriverException {
         final IRI owner = owner(listValueDescriptor);
         final IRI hasNext = hasNext(listValueDescriptor);
@@ -142,24 +124,8 @@ public class ReferencedListHandler extends ListHandler {
         return node;
     }
 
-    /**
-     * Updates list with values specified by the descriptor.
-     *
-     * @param listValueDescriptor Describes the updated values
-     * @throws Rdf4jDriverException When storage access error occurs
-     */
-    <V> void updateList(ReferencedListValueDescriptor<V> listValueDescriptor) throws Rdf4jDriverException {
-        if (listValueDescriptor.getValues().isEmpty()) {
-            clearList(listValueDescriptor);
-        } else if (isOldListEmpty(owner(listValueDescriptor), hasList(listValueDescriptor),
-                listValueDescriptor.getListProperty().isInferred(), contexts(listValueDescriptor))) {
-            persistList(listValueDescriptor);
-        } else {
-            mergeList(listValueDescriptor);
-        }
-    }
-
-    private <V> void clearList(ReferencedListValueDescriptor<V> listDescriptor) throws Rdf4jDriverException {
+    @Override
+    protected void clearList(ReferencedListValueDescriptor<?> listDescriptor) throws Rdf4jDriverException {
         final IRI hasNext = hasNext(listDescriptor);
         final IRI hasContent = hasContent(listDescriptor);
         final boolean includeInferred = listDescriptor.getListProperty().isInferred();
@@ -181,9 +147,9 @@ public class ReferencedListHandler extends ListHandler {
         connector.removeStatements(toRemove);
     }
 
-    private <V> void mergeList(ReferencedListValueDescriptor<V> listDescriptor) throws Rdf4jDriverException {
-        final ListIterator<V> it = new ReferencedListIterator<>(listDescriptor, connector, vf);
-        final ListHandler.MergeResult mergeResult = mergeWithOriginalList(listDescriptor, it);
+    protected void mergeList(ReferencedListValueDescriptor<?> listDescriptor) throws Rdf4jDriverException {
+        final ListIterator<Object> it = new ReferencedListIterator<>(listDescriptor, connector, vf);
+        final ListHandler.MergeResult mergeResult = mergeWithOriginalList((ReferencedListValueDescriptor<Object>) listDescriptor, it);
         removeObsoletes(it);
         assert mergeResult.i > 0;
         assert mergeResult.previous != null;

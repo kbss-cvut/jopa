@@ -140,7 +140,11 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             EntityMappingHelper mapper) {
         switch (attribute.getSequenceType()) {
             case referenced:
-                return new ReferencedListPropertyStrategy<>(et, attribute, descriptor, mapper);
+                if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT) {
+                    return new ReferencedListPropertyStrategy<>(et, attribute, descriptor, mapper);
+                } else {
+                    return new ReferencedListDataPropertyStrategy<>(et, attribute, descriptor, mapper);
+                }
             case simple:
                 return new SimpleListPropertyStrategy<>(et, attribute, descriptor, mapper);
             default:

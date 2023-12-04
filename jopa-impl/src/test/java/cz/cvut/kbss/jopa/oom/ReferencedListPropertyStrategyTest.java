@@ -100,7 +100,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
     @Test
     void buildsInstanceFieldFromAxiomsIncludingNodes() throws Exception {
         final OWLClassC c = new OWLClassC(IDENTIFIER);
-        final List<Axiom<NamedResource>> axioms = initRefListAxioms(true);
+        final List<Axiom<?>> axioms = initRefListAxioms(true);
         when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(axioms);
         strategy.addValueFromAxiom(axioms.iterator().next());
         assertNull(c.getReferencedList());
@@ -119,8 +119,8 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
                 .getNodeContent().getIdentifier());
     }
 
-    private List<Axiom<NamedResource>> initRefListAxioms(boolean includeNodes) throws Exception {
-        final List<Axiom<NamedResource>> axioms = new ArrayList<>();
+    private List<Axiom<?>> initRefListAxioms(boolean includeNodes) throws Exception {
+        final List<Axiom<?>> axioms = new ArrayList<>();
         NamedResource previous = NamedResource.create(IDENTIFIER);
         int i = 0;
         for (OWLClassA a : list) {
@@ -162,7 +162,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
     @Test
     void buildsInstanceFieldFromAxiomsWithoutNodes() throws Exception {
         final OWLClassC c = new OWLClassC(IDENTIFIER);
-        final List<Axiom<NamedResource>> axioms = initRefListAxioms(false);
+        final List<Axiom<?>> axioms = initRefListAxioms(false);
         when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(axioms);
         strategy.addValueFromAxiom(axioms.iterator().next());
         assertNull(c.getReferencedList());
@@ -178,7 +178,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         final ReferencedListPropertyStrategy<OWLClassP> strategy =
                 new ReferencedListPropertyStrategy<>(mocks.forOwlClassP().entityType(), listAtt, descriptor,
                         mapperMock);
-        final List<Axiom<NamedResource>> axioms = initRefListAxioms(true);
+        final List<Axiom<?>> axioms = initRefListAxioms(true);
         when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(axioms);
 
         strategy.addValueFromAxiom(axioms.iterator().next());
@@ -199,7 +199,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         c.setReferencedList(list);
         strategy.buildAxiomValuesFromInstance(c, builder);
 
-        final ReferencedListValueDescriptor res = listValueDescriptor();
+        final ReferencedListValueDescriptor<NamedResource> res = listValueDescriptor();
         assertEquals(res.getListOwner(), NamedResource.create(IDENTIFIER));
         assertEquals(
                 res.getListProperty(),
@@ -218,7 +218,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         verifyListItems(expected, res);
     }
 
-    private ReferencedListValueDescriptor listValueDescriptor() throws Exception {
+    private ReferencedListValueDescriptor<NamedResource> listValueDescriptor() throws Exception {
         final List<ReferencedListValueDescriptor> descriptors = OOMTestUtils.getReferencedListValueDescriptors(builder);
         assertEquals(1, descriptors.size());
         return descriptors.get(0);
@@ -231,7 +231,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         setRandomListItemsToNull(c.getReferencedList());
 
         strategy.buildAxiomValuesFromInstance(c, builder);
-        final ReferencedListValueDescriptor res = listValueDescriptor();
+        final ReferencedListValueDescriptor<NamedResource> res = listValueDescriptor();
         final List<URI> expected = c.getReferencedList().stream().filter(Objects::nonNull).map(OWLClassA::getUri)
                                     .collect(Collectors.toList());
         verifyListItems(expected, res);
@@ -243,7 +243,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         c.setReferencedList(Collections.emptyList());
         strategy.buildAxiomValuesFromInstance(c, builder);
 
-        final ReferencedListValueDescriptor res = listValueDescriptor();
+        final ReferencedListValueDescriptor<NamedResource> res = listValueDescriptor();
         assertTrue(res.getValues().isEmpty());
     }
 
@@ -253,7 +253,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         c.setReferencedList(null);
         strategy.buildAxiomValuesFromInstance(c, builder);
 
-        final ReferencedListValueDescriptor res = listValueDescriptor();
+        final ReferencedListValueDescriptor<NamedResource> res = listValueDescriptor();
         assertTrue(res.getValues().isEmpty());
     }
 
@@ -268,7 +268,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         p.setReferencedList(list.stream().map(OWLClassA::getUri).collect(Collectors.toList()));
         strategy.buildAxiomValuesFromInstance(p, builder);
 
-        final ReferencedListValueDescriptor res = listValueDescriptor();
+        final ReferencedListValueDescriptor<NamedResource> res = listValueDescriptor();
         p.getReferencedList().forEach(uri -> assertTrue(res.getValues().contains(NamedResource.create(uri))));
     }
 
@@ -285,7 +285,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
                         mapperMock);
 
         strategy.buildAxiomValuesFromInstance(p, builder);
-        final ReferencedListValueDescriptor valueDescriptor = listValueDescriptor();
+        final ReferencedListValueDescriptor<NamedResource> valueDescriptor = listValueDescriptor();
         verifyListItems(nonNulls, valueDescriptor);
     }
 
@@ -315,88 +315,9 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         instance.enumList = Arrays.asList(OneOfEnum.DATATYPE_PROPERTY, OneOfEnum.OBJECT_PROPERTY);
 
         sut.buildAxiomValuesFromInstance(instance, builder);
-        final ReferencedListValueDescriptor valueDescriptor = listValueDescriptor();
+        final ReferencedListValueDescriptor<NamedResource> valueDescriptor = listValueDescriptor();
         assertEquals(
                 Arrays.asList(NamedResource.create(OWL.DATATYPE_PROPERTY), NamedResource.create(OWL.OBJECT_PROPERTY)),
                 valueDescriptor.getValues());
-    }
-
-    @Test
-    void createListDescriptorUsesDataPropertyForNodeContentPropertyWhenAttributeTypeIsNotEntityOrUri() throws Exception {
-        final EntityType<DataPropertyReferencedList> et = mock(EntityType.class);
-        final Identifier id = mock(Identifier.class);
-        when(id.getJavaField()).thenReturn(DataPropertyReferencedList.class.getDeclaredField("uri"));
-        when(et.getIdentifier()).thenReturn(id);
-        final ListAttributeImpl<DataPropertyReferencedList, Integer> att = initDataListAttribute();
-        final ReferencedListPropertyStrategy<DataPropertyReferencedList> sut = new ReferencedListPropertyStrategy<>(et, att, descriptor, mapperMock);
-        final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(IDENTIFIER),
-                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.ATTRIBUTE_BASE + "hasDataList"), false),
-                new Value<>(NamedResource.create(Generators.createIndividualIdentifier())));
-        final ReferencedListDescriptor result = sut.createListDescriptor(ax);
-        final Assertion nodeContentAssertion = result.getNodeContent();
-        assertEquals(Assertion.AssertionType.DATA_PROPERTY, nodeContentAssertion.getType());
-    }
-
-    static class DataPropertyReferencedList {
-
-        @Id
-        private URI uri;
-
-        @Sequence(type = SequenceType.referenced)
-        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasDataList")
-        private List<Integer> list;
-    }
-
-    static ListAttributeImpl<DataPropertyReferencedList, Integer> initDataListAttribute() throws Exception {
-        final ListAttributeImpl<DataPropertyReferencedList, Integer> att = mock(ListAttributeImpl.class);
-        when(att.getBindableJavaType()).thenReturn(Integer.class);
-        when(att.isAssociation()).thenReturn(false);
-        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "hasDataList"));
-        when(att.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(att.getJavaField()).thenReturn(DataPropertyReferencedList.class.getDeclaredField("list"));
-        when(att.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasNext));
-        when(att.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasContents));
-        when(att.getConverter()).thenReturn(Converters.getDefaultConverter(Integer.class).get());
-        return att;
-    }
-
-    @Test
-    void createListValueDescriptorUsesDataPropertyForNodeContentPropertyWhenAttributeTypeIsNotEntityOrUri() throws Exception {
-        final EntityType<DataPropertyReferencedList> et = mock(EntityType.class);
-        final Identifier id = mock(Identifier.class);
-        when(id.getJavaField()).thenReturn(DataPropertyReferencedList.class.getDeclaredField("uri"));
-        when(et.getIdentifier()).thenReturn(id);
-        final ListAttributeImpl<DataPropertyReferencedList, Integer> att = initDataListAttribute();
-        final ReferencedListPropertyStrategy<DataPropertyReferencedList> sut = new ReferencedListPropertyStrategy<>(et, att, descriptor, mapperMock);
-        final DataPropertyReferencedList owner = new DataPropertyReferencedList();
-        owner.uri = Generators.createIndividualIdentifier();
-        owner.list = List.of(Generators.randomInt(), Generators.randomInt());
-        final ReferencedListValueDescriptor<Integer> result = sut.createListValueDescriptor(owner);
-        final Assertion nodeContentAssertion = result.getNodeContent();
-        assertEquals(Assertion.AssertionType.DATA_PROPERTY, nodeContentAssertion.getType());
-    }
-
-    @Test
-    void buildAxiomValuesFromInstanceHandlesDataPropertyValues() throws Exception {
-        when(mapperMock.getEntityType(any(Class.class))).thenThrow(IllegalArgumentException.class);
-        final EntityType<DataPropertyReferencedList> et = mock(EntityType.class);
-        final Identifier id = mock(Identifier.class);
-        when(id.getJavaField()).thenReturn(DataPropertyReferencedList.class.getDeclaredField("uri"));
-        when(et.getIdentifier()).thenReturn(id);
-        final DataPropertyReferencedList instance = new DataPropertyReferencedList();
-        instance.uri = IDENTIFIER;
-        instance.list = IntStream.range(0, 10).boxed().collect(Collectors.toList());
-        final ListAttributeImpl<DataPropertyReferencedList, Integer> att = initDataListAttribute();
-        final ReferencedListPropertyStrategy<DataPropertyReferencedList> sut = new ReferencedListPropertyStrategy<>(et, att, descriptor, mapperMock);
-        sut.setReferenceSavingResolver(new ReferenceSavingResolver(mapperMock));
-
-        sut.buildAxiomValuesFromInstance(instance, builder);
-        final Connection conn = mock(Connection.class);
-        final Lists lists = mock(Lists.class);
-        when(conn.lists()).thenReturn(lists);
-        builder.persist(conn);
-        final ArgumentCaptor<ReferencedListValueDescriptor<Integer>> captor = ArgumentCaptor.forClass(ReferencedListValueDescriptor.class);
-        verify(lists).persistReferencedList(captor.capture());
-        assertEquals(instance.list, captor.getValue().getValues());
     }
 }

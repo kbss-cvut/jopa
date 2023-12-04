@@ -211,7 +211,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             final EntityType<?> et = getEntityType(instance.getClass());
             for (PendingReferenceRegistry.PendingListReference list : pLists) {
                 final ListValueDescriptor desc = list.getDescriptor();
-                ListPropertyStrategy.addItemsToDescriptor(desc, list.getValues(), et);
+                ListPropertyStrategy.addIndividualsToDescriptor(desc, list.getValues(), et);
                 if (desc instanceof SimpleListValueDescriptor) {
                     // TODO This can be an update or a persist
                     storageConnection.lists().updateSimpleList((SimpleListValueDescriptor) desc);
@@ -321,7 +321,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public Collection<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor listDescriptor) {
+    public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor listDescriptor) {
         try {
             return storageConnection.lists().loadReferencedList(listDescriptor);
         } catch (OntoDriverException e) {

@@ -85,7 +85,7 @@ public interface Lists {
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    List<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor descriptor) throws OntoDriverException;
+    List<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor) throws OntoDriverException;
 
     /**
      * Persists referenced list values specified by the descriptor.
