@@ -74,7 +74,7 @@ public class OwlapiLists implements Lists {
     }
 
     @Override
-    public List<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor descriptor)
+    public List<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
             throws OntoDriverException {
         ensureStateAndArgumentValid(descriptor);
         return adapter.getReferencedListHandler().loadList(descriptor);

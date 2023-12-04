@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 abstract class ListTestHelper {
 
@@ -60,7 +61,7 @@ abstract class ListTestHelper {
         this.individual = individual;
     }
 
-    abstract void persistList(List<URI> items);
+    abstract void persistList(List<?> items);
 
     private static List<URI> initListItems() {
         final List<URI> lst = new ArrayList<>(10);
@@ -70,10 +71,13 @@ abstract class ListTestHelper {
         return lst;
     }
 
-    static void verifyListContent(List<URI> expected, List<Axiom<NamedResource>> actual) {
+    static void verifyListContent(List<URI> expected, List actual) {
         assertEquals(expected.size(), actual.size());
         for (int i = 0; i < expected.size(); i++) {
-            assertEquals(expected.get(i), actual.get(i).getValue().getValue().getIdentifier());
+            assertInstanceOf(Axiom.class, actual.get(i));
+            final Object element = ((Axiom) actual.get(i)).getValue().getValue();
+            assertInstanceOf(NamedResource.class, element);
+            assertEquals(expected.get(i), ((NamedResource) element).getIdentifier());
         }
     }
 }

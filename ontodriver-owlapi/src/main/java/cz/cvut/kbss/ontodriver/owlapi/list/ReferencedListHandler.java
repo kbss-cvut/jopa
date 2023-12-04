@@ -56,9 +56,9 @@ public class ReferencedListHandler {
         this.ontology = snapshot.getOntology();
     }
 
-    public List<Axiom<NamedResource>> loadList(ReferencedListDescriptor descriptor) {
-        final List<Axiom<NamedResource>> list = new ArrayList<>();
-        final ReferencedListIterator<NamedResource> iterator = iterator(descriptor);
+    public List<Axiom<?>> loadList(ReferencedListDescriptor descriptor) {
+        final List<Axiom<?>> list = new ArrayList<>();
+        final ReferencedListIterator<?> iterator = iterator(descriptor);
         while (iterator.hasNext()) {
             list.add(iterator.next());
         }

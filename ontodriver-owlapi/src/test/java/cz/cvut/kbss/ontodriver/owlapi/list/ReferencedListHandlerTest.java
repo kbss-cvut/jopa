@@ -57,14 +57,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -117,7 +115,7 @@ public class ReferencedListHandlerTest {
 
     @Test
     public void loadListReturnsEmptyListWhenNoHeadIsFound() {
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
@@ -126,18 +124,22 @@ public class ReferencedListHandlerTest {
     public void loadListLoadsSingleElementListWithHeadOnly() {
         final List<URI> headOnly = ListTestHelper.LIST_ITEMS.subList(0, 1);
         testHelper.persistList(headOnly);
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         assertEquals(1, result.size());
-        assertEquals(headOnly.get(0), result.get(0).getValue().getValue().getIdentifier());
+        final Object value = result.get(0).getValue().getValue();
+        assertInstanceOf(NamedResource.class, value);
+        assertEquals(headOnly.get(0), ((NamedResource) value).getIdentifier());
     }
 
     @Test
     public void loadListWithMultipleItems() {
         testHelper.persistList(ListTestHelper.LIST_ITEMS);
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         assertEquals(ListTestHelper.LIST_ITEMS.size(), result.size());
         for (int i = 0; i < ListTestHelper.LIST_ITEMS.size(); i++) {
-            assertEquals(ListTestHelper.LIST_ITEMS.get(i), result.get(i).getValue().getValue().getIdentifier());
+            final Object value = result.get(i).getValue().getValue();
+            assertInstanceOf(NamedResource.class, value);
+            assertEquals(ListTestHelper.LIST_ITEMS.get(i), ((NamedResource) value).getIdentifier());
         }
     }
 
@@ -171,9 +173,11 @@ public class ReferencedListHandlerTest {
         initReasoner();
         final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT,
                 ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, Assertion.createObjectPropertyAssertion(ListTestHelper.HAS_CONTENT.getIdentifier(), true));
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         assertEquals(1, result.size());
-        assertEquals(ListTestHelper.LIST_ITEMS.get(0), result.get(0).getValue().getValue().getIdentifier());
+        final Object value = result.get(0).getValue().getValue();
+        assertInstanceOf(NamedResource.class, value);
+        assertEquals(ListTestHelper.LIST_ITEMS.get(0), ((NamedResource) value).getIdentifier());
     }
 
     private void initReasoner() {
@@ -193,9 +197,11 @@ public class ReferencedListHandlerTest {
         initReasoner();
         final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT,
                 Assertion.createObjectPropertyAssertion(ListTestHelper.HAS_LIST.getIdentifier(), true), ListTestHelper.HAS_NEXT, ListTestHelper.HAS_CONTENT);
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         assertEquals(1, result.size());
-        assertEquals(ListTestHelper.LIST_ITEMS.get(0), result.get(0).getValue().getValue().getIdentifier());
+        final Object value = result.get(0).getValue().getValue();
+        assertInstanceOf(NamedResource.class, value);
+        assertEquals(ListTestHelper.LIST_ITEMS.get(0), ((NamedResource) value).getIdentifier());
     }
 
     @Test
@@ -261,7 +267,7 @@ public class ReferencedListHandlerTest {
         final ReferencedListValueDescriptor<NamedResource> updatedDescriptor = createDescriptor();
         listHandler.updateList(updatedDescriptor);
 
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         assertTrue(result.isEmpty());
     }
 
@@ -272,7 +278,7 @@ public class ReferencedListHandlerTest {
 
         listHandler.updateList(valueDescriptor);
 
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         ListTestHelper.verifyListContent(updated, result);
     }
 
@@ -283,7 +289,7 @@ public class ReferencedListHandlerTest {
         subList.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
 
         listHandler.updateList(valueDescriptor);
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         ListTestHelper.verifyListContent(subList, result);
     }
 
@@ -298,7 +304,7 @@ public class ReferencedListHandlerTest {
         updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
 
         listHandler.updateList(valueDescriptor);
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         ListTestHelper.verifyListContent(updated, result);
     }
 
@@ -313,7 +319,7 @@ public class ReferencedListHandlerTest {
         updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
 
         listHandler.updateList(valueDescriptor);
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         ListTestHelper.verifyListContent(updated, result);
     }
 
@@ -329,7 +335,7 @@ public class ReferencedListHandlerTest {
         updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
 
         listHandler.updateList(valueDescriptor);
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         ListTestHelper.verifyListContent(updated, result);
     }
 
@@ -348,9 +354,26 @@ public class ReferencedListHandlerTest {
             final OWLAxiom ax = change.getAxiom();
             if (ax.isOfType(AxiomType.DATA_PROPERTY_ASSERTION)) {
                 final OWLDataPropertyAssertionAxiom dpaAx = (OWLDataPropertyAssertionAxiom) ax;
-                assertEquals(ListTestHelper.HAS_CONTENT_PROPERTY, dpaAx.getProperty().asOWLDataProperty().getIRI().toString());
+                assertEquals(ListTestHelper.HAS_CONTENT_PROPERTY, dpaAx.getProperty().asOWLDataProperty().getIRI()
+                                                                       .toString());
                 assertThat(values, hasItem((Integer) OwlapiUtils.owlLiteralToValue(dpaAx.getObject())));
             }
+        }
+    }
+
+    @Test
+    public void loadListLoadsListWithDataPropertyValues() {
+        final List<Integer> values = IntStream.range(0, 10).boxed().collect(Collectors.toList());
+        testHelper.persistList(values);
+        final ReferencedListDescriptor desc = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST,
+                ListTestHelper.HAS_NEXT,
+                Assertion.createDataPropertyAssertion(URI.create(ListTestHelper.HAS_CONTENT_PROPERTY), false));
+        final List<Axiom<?>> result = listHandler.loadList(desc);
+        assertEquals(values.size(), result.size());
+        for (int i = 0; i < values.size(); i++) {
+            final Object value = result.get(i).getValue().getValue();
+            assertInstanceOf(Integer.class, value);
+            assertEquals(values.get(i), value);
         }
     }
 }
