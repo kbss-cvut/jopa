@@ -17,8 +17,6 @@
  */
 package cz.cvut.kbss.ontodriver.rdf4j;
 
-import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
@@ -28,6 +26,7 @@ import org.junit.jupiter.api.AfterEach;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -48,11 +47,11 @@ abstract class ListHandlerWithStorageTestBase {
         repositoryProvider.close();
     }
 
-    void verifyListContent(Collection<Axiom<NamedResource>> expected, Collection<Axiom<NamedResource>> actual) {
+    void verifyListContent(Collection<Axiom<NamedResource>> expected, List<?> actual) {
         assertEquals(expected.size(), actual.size());
         // This is more explicit on failure than just containsAll
         final Iterator<Axiom<NamedResource>> itExp = expected.iterator();
-        final Iterator<Axiom<NamedResource>> itAct = actual.iterator();
+        final Iterator<?> itAct = actual.iterator();
         while (itExp.hasNext()) {
             assertEquals(itExp.next(), itAct.next());
         }

@@ -20,7 +20,9 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.model.IRI;
@@ -62,7 +64,7 @@ class SimpleListIterator extends AbstractListIterator<NamedResource> {
     @Override
     public Resource nextNode() throws Rdf4jDriverException {
         nextInternal();
-        assert current.getObject() instanceof Resource;
+        assert current.getObject().isResource();
 
         return (Resource) current.getObject();
     }
@@ -74,14 +76,14 @@ class SimpleListIterator extends AbstractListIterator<NamedResource> {
         checkSuccessorMax(next, currentProperty);
         this.current = next.iterator().next();
         this.currentProperty = current.getPredicate();
-        checkNodeIsResource(current);
+        checkObjectIsResource(current);
         final Resource elem = (Resource) current.getObject();
         this.next = connector.findStatements(elem, hasNextProperty, null, includeInferred, contexts());
     }
 
     @Override
     public NamedResource currentContent() {
-        assert current.getObject() instanceof Resource;
+        assert current.getObject().isResource();
 
         return NamedResource.create(current.getObject().stringValue());
     }
@@ -89,11 +91,15 @@ class SimpleListIterator extends AbstractListIterator<NamedResource> {
     @Override
     public Axiom<NamedResource> nextAxiom() throws Rdf4jDriverException {
         nextInternal();
-        assert current.getObject() instanceof Resource;
+        assert current.getObject().isResource();
 
         final Assertion assertion = current.getPredicate() == hasListProperty ? listDescriptor
                 .getListProperty() : listDescriptor.getNextNode();
         return createAxiom(current.getSubject(), assertion, (Resource) current.getObject());
+    }
+
+    private Axiom<NamedResource> createAxiom(Resource subject, Assertion assertion, Resource value) {
+        return new AxiomImpl<>(NamedResource.create(subject.stringValue()), assertion, new Value<>(NamedResource.create(value.stringValue())));
     }
 
     @Override
@@ -110,7 +116,7 @@ class SimpleListIterator extends AbstractListIterator<NamedResource> {
         if (hasNext()) {
             toRemove.addAll(next);
             final Statement stmt = next.iterator().next();
-            checkNodeIsResource(stmt);
+            checkObjectIsResource(stmt);
             final Resource nextNode = (Resource) stmt.getObject();
             if (!newNodeRdf4j.equals(nextNode)) {
                 // From the new node to the next node
@@ -132,13 +138,13 @@ class SimpleListIterator extends AbstractListIterator<NamedResource> {
 
     @Override
     public void remove() throws Rdf4jDriverException {
-        assert current.getObject() instanceof Resource;
+        assert current.getObject().isResource();
         final Collection<Statement> toRemove = new ArrayList<>(next.size() + 1);
         toRemove.add(current);
         if (hasNext()) {
             toRemove.addAll(next);
             final Statement stmt = next.iterator().next();
-            checkNodeIsResource(stmt);
+            checkObjectIsResource(stmt);
             final Resource nextNode = (Resource) stmt.getObject();
             // Here we use the current property, so that it can also be the
             // hasList property

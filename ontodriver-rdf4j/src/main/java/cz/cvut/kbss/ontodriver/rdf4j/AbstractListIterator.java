@@ -19,7 +19,6 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
-import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
@@ -71,15 +70,10 @@ abstract class AbstractListIterator<JT> implements ListIterator<JT> {
         }
     }
 
-    protected void checkNodeIsResource(Statement stmt) {
-        if (!(stmt.getObject() instanceof Resource)) {
+    protected void checkObjectIsResource(Statement stmt) {
+        if (!stmt.getObject().isResource()) {
             throw new IntegrityConstraintViolatedException(
                     "Invalid property value. Expected object property value, got literal.");
         }
-    }
-
-    protected Axiom<NamedResource> createAxiom(Resource subject, Assertion assertion, Resource value) {
-        final NamedResource subjectRes = NamedResource.create(subject.stringValue());
-        return new AxiomImpl<>(subjectRes, assertion, new Value<>(NamedResource.create(value.stringValue())));
     }
 }

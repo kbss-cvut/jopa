@@ -19,13 +19,17 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
+import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -77,7 +81,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         checkSuccessorMax(next, currentProperty);
         this.currentNode = next.iterator().next();
         this.currentProperty = currentNode.getPredicate();
-        checkNodeIsResource(currentNode);
+        checkObjectIsResource(currentNode);
         final Resource elem = (Resource) currentNode.getObject();
         this.currentContent = getNodeContent(elem);
         this.next = connector.findStatements(elem, hasNextProperty, null, includeInferred, contexts());
@@ -90,23 +94,24 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         if (elements.isEmpty()) {
             throw new IntegrityConstraintViolatedException("Node " + node + " has no content.");
         }
-        final Statement elem = elements.iterator().next();
-        checkNodeIsResource(elem);
-        return elem;
+        return elements.iterator().next();
     }
 
     @Override
     public T currentContent() {
-        return (T) ValueConverter.fromRdf4jValue(listDescriptor.getListProperty(), currentContent.getObject()).orElse(null);
+        return (T) ValueConverter.fromRdf4jValue(listDescriptor.getListProperty(), currentContent.getObject())
+                                 .orElse(null);
     }
 
     @Override
-    public Axiom<NamedResource> nextAxiom() throws Rdf4jDriverException {
+    public Axiom<T> nextAxiom() throws Rdf4jDriverException {
         nextInternal();
-        assert currentContent.getObject() instanceof Resource;
 
-        return createAxiom(currentContent.getSubject(), listDescriptor.getNodeContent(),
-                (Resource) currentContent.getObject());
+        return new AxiomImpl(NamedResource.create(currentContent.getSubject().stringValue()),
+                listDescriptor.getNodeContent(),
+                new Value<>(currentContent.getObject()
+                                          .isLiteral() ? Rdf4jUtils.getLiteralValue((Literal) currentContent.getObject()) : NamedResource.create(currentContent.getObject()
+                                                                                                                                                               .stringValue())));
     }
 
     @Override
@@ -118,7 +123,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         if (!next.isEmpty()) {
             toRemove.addAll(next);
             final Statement stmt = next.iterator().next();
-            checkNodeIsResource(stmt);
+            checkObjectIsResource(stmt);
             final Resource nextNode = (Resource) stmt.getObject();
             final Statement connectNext = vf
                     .createStatement(currentNode.getSubject(), currentProperty, nextNode, context);
@@ -141,7 +146,12 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         final Resource node = (Resource) currentNode.getObject();
         final Statement stmt = vf
                 .createStatement(node, hasContentProperty, valueConverter.toRdf4jValue(listDescriptor.getListProperty(), newContent),
-                                 context);
+                        context);
         connector.addStatements(Collections.singleton(stmt));
+    }
+
+    protected Axiom<NamedResource> createAxiom(Resource subject, Assertion assertion, Resource value) {
+        final NamedResource subjectRes = NamedResource.create(subject.stringValue());
+        return new AxiomImpl<>(subjectRes, assertion, new Value<>(NamedResource.create(value.stringValue())));
     }
 }

@@ -48,7 +48,7 @@ class SimpleListHandler extends ListHandler<SimpleListValueDescriptor> {
      */
     List<Axiom<NamedResource>> loadList(SimpleListDescriptor listDescriptor) throws Rdf4jDriverException {
         final List<Axiom<NamedResource>> axioms = new ArrayList<>();
-        final ListIterator<?> it = new SimpleListIterator(listDescriptor, connector, vf);
+        final ListIterator<NamedResource> it = new SimpleListIterator(listDescriptor, connector, vf);
         while (it.hasNext()) {
             axioms.add(it.nextAxiom());
         }

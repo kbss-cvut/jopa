@@ -26,6 +26,7 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
+import cz.cvut.kbss.ontodriver.rdf4j.environment.Vocabulary;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -50,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestHelper.LIST_PROPERTY;
@@ -58,6 +60,7 @@ import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestHelper.OWNER;
 import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestHelper.generateList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
@@ -121,10 +124,11 @@ public class ReferencedListHandlerTest {
         final List<NamedResource> refList = generateList();
         final List<URI> listNodes = initListNodes(refList);
         initStatementsForList(listNodes, refList);
-        final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
+        final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
         assertEquals(refList.size(), res.size());
-        for (Axiom<NamedResource> a : res) {
-            assertTrue(refList.contains(a.getValue().getValue()));
+        for (Axiom<?> a : res) {
+            assertInstanceOf(NamedResource.class, a.getValue().getValue());
+            assertTrue(refList.contains((NamedResource) a.getValue().getValue()));
         }
     }
 
@@ -137,7 +141,7 @@ public class ReferencedListHandlerTest {
     }
 
     private List<Statement> initStatementsForList(List<URI> nodes,
-                                                  List<NamedResource> values) throws Exception {
+                                                  List<?> values) throws Exception {
         int i = 0;
         Resource prev = owner;
         final List<Statement> stmts = new ArrayList<>();
@@ -156,8 +160,9 @@ public class ReferencedListHandlerTest {
                         Collections.singleton(node));
             }
             stmts.add(node);
+            final Object v = values.get(i);
             final Statement content = vf.createStatement(itemUri, nodeContentProperty,
-                    vf.createIRI(values.get(i).toString()));
+                    v instanceof NamedResource ? vf.createIRI(v.toString()) : Rdf4jUtils.createLiteral(v, null, vf));
             when(connector.findStatements(eq(itemUri), eq(nodeContentProperty),
                     eq(null), anyBoolean(), eq(Collections.emptySet()))).thenReturn(
                     Collections.singleton(content));
@@ -277,7 +282,7 @@ public class ReferencedListHandlerTest {
                         false), Assertion.createObjectPropertyAssertion(
                 URI.create(ListHandlerTestHelper.NODE_CONTENT_PROPERTY), false));
         for (int i = 0; i < count; i++) {
-            desc.addValue(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA_" + i));
+            desc.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + i));
         }
         return desc;
     }
@@ -356,6 +361,19 @@ public class ReferencedListHandlerTest {
                 assertEquals(nextNodeProperty, stmt.getPredicate());
             }
             i++;
+        }
+    }
+
+    @Test
+    public void loadsReferencedListConsistingOfLiterals() throws Exception {
+        final List<Integer> refList = IntStream.range(0, 5).boxed().collect(Collectors.toList());
+        final List<URI> listNodes = initListNodes(refList);
+        initStatementsForList(listNodes, refList);
+        final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
+        assertEquals(refList.size(), res.size());
+        for (Axiom<?> a : res) {
+            assertInstanceOf(Integer.class, a.getValue().getValue());
+            assertTrue(refList.contains((Integer) a.getValue().getValue()));
         }
     }
 }

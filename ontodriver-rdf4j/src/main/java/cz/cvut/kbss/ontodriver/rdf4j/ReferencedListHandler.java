@@ -55,8 +55,8 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
      * @return Collection of axioms representing sequence values
      * @throws Rdf4jDriverException When storage access error occurs
      */
-    List<Axiom<NamedResource>> loadList(ReferencedListDescriptor listDescriptor) throws Rdf4jDriverException {
-        final List<Axiom<NamedResource>> axioms = new ArrayList<>();
+    List<Axiom<?>> loadList(ReferencedListDescriptor listDescriptor) throws Rdf4jDriverException {
+        final List<Axiom<?>> axioms = new ArrayList<>();
         final ListIterator<?> it = new ReferencedListIterator<>(listDescriptor, connector, vf);
         while (it.hasNext()) {
             axioms.add(it.nextAxiom());

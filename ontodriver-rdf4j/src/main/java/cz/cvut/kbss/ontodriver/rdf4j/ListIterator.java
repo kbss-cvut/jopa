@@ -30,8 +30,7 @@ interface ListIterator<JT> {
 
     JT currentContent() throws Rdf4jDriverException;
 
-    // Change to JT
-    Axiom<NamedResource> nextAxiom() throws Rdf4jDriverException;
+    Axiom<JT> nextAxiom() throws Rdf4jDriverException;
 
     void remove() throws Rdf4jDriverException;
 
