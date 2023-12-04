@@ -20,6 +20,7 @@ package cz.cvut.kbss.ontodriver.jena.list;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 
 import java.net.URI;
@@ -32,6 +33,7 @@ import java.util.stream.IntStream;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
+import static org.apache.jena.rdf.model.ResourceFactory.createTypedLiteral;
 import static org.mockito.Mockito.when;
 
 public class ListTestUtil {
@@ -96,18 +98,24 @@ public class ListTestUtil {
 
     List<URI> generateReferencedList() {
         final List<URI> list = generateList();
-        this.referencedListNodes = new ArrayList<>(list.size());
+        initReferencedListStatements(list);
+        return list;
+    }
+
+    void initReferencedListStatements(List<?> items) {
+        this.referencedListNodes = new ArrayList<>(items.size());
         Resource firstNode = null;
         Resource previous = null;
-        for (final URI content : list) {
+        for (final Object content : items) {
             final Resource node = createResource(Generator.generateUri().toString());
             if (previous != null) {
                 final Resource prevResource = createResource(previous.toString());
                 when(connectorMock.find(prevResource, hasNext, null, Collections.emptySet())).thenReturn(Collections
                         .singletonList(createStatement(prevResource, hasNext, node)));
             }
+            final RDFNode value = content instanceof URI ? createResource(content.toString()) : createTypedLiteral(content);
             when(connectorMock.find(node, hasContent, null, Collections.emptySet())).thenReturn(
-                    Collections.singletonList(createStatement(node, hasContent, createResource(content.toString()))));
+                    Collections.singletonList(createStatement(node, hasContent, value)));
             if (firstNode == null) {
                 firstNode = node;
             }
@@ -116,7 +124,6 @@ public class ListTestUtil {
         }
         when(connectorMock.find(owner, hasList, null, Collections.emptySet()))
                 .thenReturn(Collections.singletonList(createStatement(owner, hasList, firstNode)));
-        return list;
     }
 
     List<URI> generateReferencedList(String context) {

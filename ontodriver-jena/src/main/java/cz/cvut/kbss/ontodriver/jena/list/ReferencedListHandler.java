@@ -22,7 +22,6 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -46,9 +45,9 @@ public class ReferencedListHandler {
         this.connector = connector;
     }
 
-    List<Axiom<NamedResource>> loadList(ReferencedListDescriptor descriptor) {
-        final List<Axiom<NamedResource>> result = new ArrayList<>();
-        final ReferencedListIterator<NamedResource> it = new ReferencedListIterator<>(descriptor, connector);
+    List<Axiom<?>> loadList(ReferencedListDescriptor descriptor) {
+        final List<Axiom<?>> result = new ArrayList<>();
+        final ReferencedListIterator<?> it = new ReferencedListIterator<>(descriptor, connector);
         while (it.hasNext()) {
             result.add(it.nextAxiom());
         }

@@ -48,6 +48,7 @@ import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -93,9 +94,9 @@ public class ReferencedListHandlerTest extends ListHandlerTestHelper {
     @Test
     public void loadListRetrievesAllListElements() {
         final List<URI> expected = generateList(null);
-        final List<Axiom<NamedResource>> result = handler.loadList(listDescriptor());
+        final List<Axiom<?>> result = handler.loadList(listDescriptor());
         assertNotNull(result);
-        final List<URI> actual = result.stream().map(ax -> ax.getValue().getValue().getIdentifier())
+        final List<URI> actual = result.stream().map(ax -> URI.create(ax.getValue().getValue().toString()))
                                        .collect(Collectors.toList());
         assertEquals(expected, actual);
     }
@@ -106,8 +107,8 @@ public class ReferencedListHandlerTest extends ListHandlerTestHelper {
         final List<URI> expected = generateList(context.toString());
         final ReferencedListDescriptor descriptor = listDescriptor();
         descriptor.setContext(context);
-        final List<Axiom<NamedResource>> result = handler.loadList(descriptor);
-        final List<URI> actual = result.stream().map(ax -> ax.getValue().getValue().getIdentifier())
+        final List<Axiom<?>> result = handler.loadList(descriptor);
+        final List<URI> actual = result.stream().map(ax -> URI.create(ax.getValue().getValue().toString()))
                                        .collect(Collectors.toList());
         assertEquals(expected, actual);
     }
@@ -298,5 +299,19 @@ public class ReferencedListHandlerTest extends ListHandlerTestHelper {
             }
             i++;
         }
+    }
+
+    @Test
+    public void loadListRetrievesAllDataPropertyListElements() {
+        final List<Integer> values = IntStream.range(0, 10).boxed().collect(Collectors.toList());
+        listUtil.initReferencedListStatements(values);
+        final List<Axiom<?>> result = handler.loadList(listDescriptor());
+        assertNotNull(result);
+        final List<Integer> actual = result.stream().map(ax -> {
+                                               assertInstanceOf(Integer.class, ax.getValue().getValue());
+                                               return (Integer) ax.getValue().getValue();
+                                           })
+                                           .collect(Collectors.toList());
+        assertEquals(values, actual);
     }
 }
