@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -528,7 +529,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     @Test
     void retrieveSupportsMappingEnumsToSimpleLiterals() throws Exception {
         this.em = getEntityManager("retrieveSupportsMappingEnumsToSimpleLiterals", false);
-        persistTestData(Arrays.asList(
+        persistTestData(List.of(
                 new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_enumSimpleLiteralAttribute),
                          entityM.getEnumSimpleLiteral().name(), (String) null)
@@ -536,5 +537,23 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getEnumSimpleLiteral(), result.getEnumSimpleLiteral());
+    }
+
+    @Test
+    void retrieveSupportsDataPropertyReferencedLists() throws Exception {
+        this.em = getEntityManager("retrieveSupportsDataPropertyReferencedLists", false);
+        final List<Quad> data = new ArrayList<>(List.of(new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M))));
+        final List<LocalDate> dates = new ArrayList<>();
+        for (int i = 5; i >= 0; i--) {
+            final LocalDate d = LocalDate.now().minusDays(i);
+            dates.add(d);
+            final URI node = URI.create(entityM.getKey() + "-SEQ" + (5-i));
+            data.add(new Quad(URI.create(entityM.getKey()), URI.create(i == 5 ? Vocabulary.p_m_literalReferencedList : SequencesVocabulary.s_p_hasNext), node));
+            data.add(new Quad(node, SequencesVocabulary.p_hasContents, d));
+        }
+        persistTestData(data, em);
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(dates, result.getLiteralReferencedList());
     }
 }
