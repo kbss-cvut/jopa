@@ -18,6 +18,9 @@
 package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
@@ -28,8 +31,10 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -37,7 +42,7 @@ import java.util.Set;
  * <p>
  * List handlers are responsible for loading and persisting lists.
  */
-abstract class ListHandler {
+abstract class ListHandler<VD extends ListValueDescriptor<?>> {
 
     final Connector connector;
     final ValueFactory vf;
@@ -46,6 +51,49 @@ abstract class ListHandler {
         this.connector = connector;
         this.vf = vf;
     }
+
+    /**
+     * Persists list values specified by the descriptor.
+     * <p>
+     * The values are saved in the order in which they appear in the descriptor.
+     *
+     * @param listValueDescriptor Describes values to persist
+     * @throws Rdf4jDriverException When storage access error occurs
+     */
+    void persistList(VD listValueDescriptor) throws Rdf4jDriverException {
+        if (listValueDescriptor.getValues().isEmpty()) {
+            return;
+        }
+        final Collection<Statement> statements = new ArrayList<>(listValueDescriptor.getValues().size());
+        final IRI head = createListHead(listValueDescriptor, statements);
+        statements.addAll(createListRest(head, listValueDescriptor));
+        connector.addStatements(statements);
+    }
+
+    protected abstract IRI createListHead(VD listValueDescriptor, Collection<Statement> listStatements) throws Rdf4jDriverException;
+
+    protected abstract List<Statement> createListRest(IRI head, VD listValueDescriptor)throws Rdf4jDriverException;
+
+    /**
+     * Updates list with values specified by the descriptor.
+     *
+     * @param listValueDescriptor Describes the updated values
+     * @throws Rdf4jDriverException When storage access error occurs
+     */
+    void updateList(VD listValueDescriptor) throws Rdf4jDriverException {
+        if (listValueDescriptor.getValues().isEmpty()) {
+            clearList(listValueDescriptor);
+        } else if (isOldListEmpty(owner(listValueDescriptor), hasList(listValueDescriptor),
+                listValueDescriptor.getListProperty().isInferred(), contexts(listValueDescriptor))) {
+            persistList(listValueDescriptor);
+        } else {
+            mergeList(listValueDescriptor);
+        }
+    }
+
+    protected abstract void clearList(VD listDescriptor) throws Rdf4jDriverException;
+
+    protected abstract void mergeList(VD listDescriptor) throws Rdf4jDriverException;
 
     boolean isOldListEmpty(Resource owner, IRI hasListProperty, boolean includeInferred,
                                    Set<IRI> contexts) throws Rdf4jDriverException {

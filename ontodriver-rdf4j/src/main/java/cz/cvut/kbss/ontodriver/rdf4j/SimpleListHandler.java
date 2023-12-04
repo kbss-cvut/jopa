@@ -34,7 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-class SimpleListHandler extends ListHandler {
+class SimpleListHandler extends ListHandler<SimpleListValueDescriptor> {
 
     SimpleListHandler(Connector connector, ValueFactory vf) {
         super(connector, vf);
@@ -55,32 +55,16 @@ class SimpleListHandler extends ListHandler {
         return axioms;
     }
 
-    /**
-     * Persists list values specified by the descriptor.
-     * <p>
-     * The values are saved in the order in which they appear in the descriptor.
-     *
-     * @param listValueDescriptor Describes values to persist
-     * @throws Rdf4jDriverException When storage access error occurs
-     */
-    void persistList(SimpleListValueDescriptor listValueDescriptor) throws Rdf4jDriverException {
-        if (listValueDescriptor.getValues().isEmpty()) {
-            return;
-        }
-        final Collection<Statement> statements = new ArrayList<>(listValueDescriptor.getValues().size());
-        final IRI head = createListHead(listValueDescriptor, statements);
-        statements.addAll(createListRest(head, listValueDescriptor));
-        connector.addStatements(statements);
-    }
-
-    IRI createListHead(SimpleListValueDescriptor listValueDescriptor, Collection<Statement> listStatements) {
+    @Override
+    protected IRI createListHead(SimpleListValueDescriptor listValueDescriptor, Collection<Statement> listStatements) {
         final IRI firstNode = toRdf4jIri(listValueDescriptor.getValues().get(0).getIdentifier());
         listStatements.add(vf.createStatement(owner(listValueDescriptor), hasList(listValueDescriptor),
                 firstNode, context(listValueDescriptor)));
         return firstNode;
     }
 
-    List<Statement> createListRest(IRI head, SimpleListValueDescriptor listValueDescriptor) {
+    @Override
+    protected List<Statement> createListRest(IRI head, SimpleListValueDescriptor listValueDescriptor) {
         final List<Statement> statements = new ArrayList<>(listValueDescriptor.getValues().size());
         IRI previous = head;
         final IRI nextNodeProp = hasNext(listValueDescriptor);
@@ -96,27 +80,10 @@ class SimpleListHandler extends ListHandler {
     }
 
     /**
-     * Updates list with values specified by the descriptor.
-     *
-     * @param listValueDescriptor Describes the updated values
-     * @throws Rdf4jDriverException When storage access error occurs
-     */
-    void updateList(SimpleListValueDescriptor listValueDescriptor) throws Rdf4jDriverException {
-        if (listValueDescriptor.getValues().isEmpty()) {
-            clearList(listValueDescriptor);
-        } else if (isOldListEmpty(owner(listValueDescriptor), hasList(listValueDescriptor),
-                listValueDescriptor.getListProperty().isInferred(), contexts(listValueDescriptor))) {
-            persistList(listValueDescriptor);
-        } else {
-            mergeList(listValueDescriptor);
-        }
-    }
-
-    /**
      * We are using this code instead of iterator.remove for performance reasons. The iterator has to reconnect the list
      * for each removed node, which takes a lot of time.
      */
-    private void clearList(SimpleListValueDescriptor listValueDescriptor) throws Rdf4jDriverException {
+    protected void clearList(SimpleListValueDescriptor listValueDescriptor) throws Rdf4jDriverException {
         final Set<IRI> contexts = contexts(listValueDescriptor);
         final Collection<Statement> toRemove = new ArrayList<>();
         IRI currentProperty = hasList(listValueDescriptor);
@@ -135,7 +102,7 @@ class SimpleListHandler extends ListHandler {
         connector.removeStatements(toRemove);
     }
 
-    private void mergeList(SimpleListValueDescriptor listDescriptor) throws Rdf4jDriverException {
+    protected void mergeList(SimpleListValueDescriptor listDescriptor) throws Rdf4jDriverException {
         final ListIterator<NamedResource> it = iterator(listDescriptor);
         final ListHandler.MergeResult mergeResult = mergeWithOriginalList(listDescriptor, it);
         removeObsoletes(it);

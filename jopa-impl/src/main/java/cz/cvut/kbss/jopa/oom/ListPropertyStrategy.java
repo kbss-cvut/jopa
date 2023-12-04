@@ -64,11 +64,11 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
             list.stream().filter(Objects::nonNull).forEach(item -> listDescriptor.addValue(converter.convertToAxiomValue(item)));
         } else {
             final EntityType<?> valueType = mapper.getEntityType(elemType);
-            addItemsToDescriptor(listDescriptor, list, valueType);
+            addIndividualsToDescriptor(listDescriptor, list, valueType);
         }
     }
 
-    static void addItemsToDescriptor(ListValueDescriptor listDescriptor, List<?> list, EntityType<?> valueType) {
+    static void addIndividualsToDescriptor(ListValueDescriptor listDescriptor, List<?> list, EntityType<?> valueType) {
         list.stream().filter(Objects::nonNull).forEach(item -> listDescriptor
                 .addValue(NamedResource.create(EntityPropertiesUtils.getIdentifier(item, valueType))));
     }
