@@ -31,13 +31,14 @@ class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Li
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
-        final ReferencedListDescriptor listDescriptor = createListDescriptor(ax);
+    void addValueFromAxiom(Axiom<?> head) {
+        final ReferencedListDescriptor listDescriptor = createListDescriptor(head);
         final Collection<Axiom<?>> sequence = mapper.loadReferencedList(listDescriptor);
         sequence.stream()
-                .filter(a -> a.getAssertion().getIdentifier().equals(attribute.getOWLPropertyHasContentsIRI().toURI()))
-                .forEach(a -> {
-                    final Object value = ax.getValue().getValue();
+                .filter(item -> item.getAssertion().getIdentifier()
+                                    .equals(attribute.getOWLPropertyHasContentsIRI().toURI()))
+                .forEach(item -> {
+                    final Object value = item.getValue().getValue();
                     if (isValidRange(value)) {
                         values.add(toAttributeValue(value));
                     }
@@ -80,7 +81,7 @@ class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Li
         final List<?> list = (List<?>) value;
         if (list != null) {
             list.stream().filter(Objects::nonNull)
-                .forEach(v -> listDescriptor.addValue(converter.convertToAxiomValue(value)));
+                .forEach(v -> listDescriptor.addValue(converter.convertToAxiomValue(v)));
         }
         valueBuilder.addReferencedListValues(listDescriptor);
     }

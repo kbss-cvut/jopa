@@ -99,6 +99,7 @@ class ListPropertyStrategyTestBase {
     static ListAttributeImpl<WithEnumList, OneOfEnum> initEnumListAttribute() throws Exception {
         final ListAttributeImpl<WithEnumList, OneOfEnum> att = mock(ListAttributeImpl.class);
         when(att.getBindableJavaType()).thenReturn(OneOfEnum.class);
+        when(att.isAssociation()).thenReturn(true);
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_objectOneOfEnumAttribute));
         when(att.getConverter()).thenReturn(new ObjectOneOfEnumConverter<>(OneOfEnum.class));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);

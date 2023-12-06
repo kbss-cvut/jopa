@@ -937,6 +937,7 @@ public class MetamodelFactory {
         when(simpleListAtt.getJavaField()).thenReturn(OWLClassP.getSimpleListField());
         when(et.getFieldSpecification(OWLClassP.getSimpleListField().getName())).thenReturn(simpleListAtt);
         when(simpleListAtt.isCollection()).thenReturn(true);
+        when(simpleListAtt.isAssociation()).thenReturn(true);
         when(simpleListAtt.getDeclaringType()).thenReturn(et);
         when(simpleListAtt.getCollectionType()).thenReturn(CollectionType.LIST);
         when(simpleListAtt.getBindableJavaType()).thenReturn(URI.class);
@@ -954,6 +955,7 @@ public class MetamodelFactory {
         when(refListAtt.getJavaField()).thenReturn(OWLClassP.getReferencedListField());
         when(et.getFieldSpecification(OWLClassP.getReferencedListField().getName())).thenReturn(refListAtt);
         when(refListAtt.isCollection()).thenReturn(true);
+        when(refListAtt.isAssociation()).thenReturn(true);
         when(refListAtt.getDeclaringType()).thenReturn(et);
         when(refListAtt.getCollectionType()).thenReturn(CollectionType.LIST);
         when(refListAtt.getBindableJavaType()).thenReturn(URI.class);

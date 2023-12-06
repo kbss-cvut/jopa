@@ -8,6 +8,7 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
+import cz.cvut.kbss.jopa.model.metamodel.BasicTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.Converters;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -57,7 +58,7 @@ class ReferencedListDataPropertyStrategyTest extends ListPropertyStrategyTestBas
         when(id.getJavaField()).thenReturn(DataPropertyReferencedList.class.getDeclaredField("uri"));
         when(et.getIdentifier()).thenReturn(id);
         final ListAttributeImpl<DataPropertyReferencedList, Integer> att = initDataListAttribute();
-        final ReferencedListPropertyStrategy<DataPropertyReferencedList> sut = new ReferencedListPropertyStrategy<>(et, att, descriptor, mapperMock);
+        final ReferencedListDataPropertyStrategy<DataPropertyReferencedList> sut = new ReferencedListDataPropertyStrategy<>(et, att, descriptor, mapperMock);
         final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(IDENTIFIER),
                 Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.ATTRIBUTE_BASE + "hasDataList"), false),
                 new Value<>(NamedResource.create(Generators.createIndividualIdentifier())));
@@ -78,7 +79,7 @@ class ReferencedListDataPropertyStrategyTest extends ListPropertyStrategyTestBas
 
     static ListAttributeImpl<DataPropertyReferencedList, Integer> initDataListAttribute() throws Exception {
         final ListAttributeImpl<DataPropertyReferencedList, Integer> att = mock(ListAttributeImpl.class);
-        when(att.getBindableJavaType()).thenReturn(Integer.class);
+        when(att.getElementType()).thenReturn(BasicTypeImpl.get(Integer.class));
         when(att.isAssociation()).thenReturn(false);
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "hasDataList"));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);
@@ -87,22 +88,6 @@ class ReferencedListDataPropertyStrategyTest extends ListPropertyStrategyTestBas
         when(att.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasContents));
         when(att.getConverter()).thenReturn(Converters.getDefaultConverter(Integer.class).get());
         return att;
-    }
-
-    @Test
-    void createListValueDescriptorUsesDataPropertyForNodeContentPropertyWhenAttributeTypeIsNotEntityOrUri() throws Exception {
-        final EntityType<DataPropertyReferencedList> et = mock(EntityType.class);
-        final Identifier id = mock(Identifier.class);
-        when(id.getJavaField()).thenReturn(DataPropertyReferencedList.class.getDeclaredField("uri"));
-        when(et.getIdentifier()).thenReturn(id);
-        final ListAttributeImpl<DataPropertyReferencedList, Integer> att = initDataListAttribute();
-        final ReferencedListPropertyStrategy<DataPropertyReferencedList> sut = new ReferencedListPropertyStrategy<>(et, att, descriptor, mapperMock);
-        final DataPropertyReferencedList owner = new DataPropertyReferencedList();
-        owner.uri = Generators.createIndividualIdentifier();
-        owner.list = List.of(Generators.randomInt(), Generators.randomInt());
-        final ReferencedListValueDescriptor<Integer> result = sut.createListValueDescriptor(owner);
-        final Assertion nodeContentAssertion = result.getNodeContent();
-        assertEquals(Assertion.AssertionType.DATA_PROPERTY, nodeContentAssertion.getType());
     }
 
     @Test
@@ -116,7 +101,7 @@ class ReferencedListDataPropertyStrategyTest extends ListPropertyStrategyTestBas
         instance.uri = IDENTIFIER;
         instance.list = IntStream.range(0, 10).boxed().collect(Collectors.toList());
         final ListAttributeImpl<DataPropertyReferencedList, Integer> att = initDataListAttribute();
-        final ReferencedListPropertyStrategy<DataPropertyReferencedList> sut = new ReferencedListPropertyStrategy<>(et, att, descriptor, mapperMock);
+        final ReferencedListDataPropertyStrategy<DataPropertyReferencedList> sut = new ReferencedListDataPropertyStrategy<>(et, att, descriptor, mapperMock);
         sut.setReferenceSavingResolver(new ReferenceSavingResolver(mapperMock));
 
         sut.buildAxiomValuesFromInstance(instance, builder);
@@ -127,6 +112,8 @@ class ReferencedListDataPropertyStrategyTest extends ListPropertyStrategyTestBas
         final ArgumentCaptor<ReferencedListValueDescriptor<Integer>> captor = ArgumentCaptor.forClass(ReferencedListValueDescriptor.class);
         verify(lists).persistReferencedList(captor.capture());
         assertEquals(instance.list, captor.getValue().getValues());
+        final Assertion nodeContentAssertion = captor.getValue().getNodeContent();
+        assertEquals(Assertion.AssertionType.DATA_PROPERTY, nodeContentAssertion.getType());
     }
 
 }
