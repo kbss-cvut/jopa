@@ -19,7 +19,6 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
-import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -99,7 +98,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
 
     @Override
     public T currentContent() {
-        return (T) ValueConverter.fromRdf4jValue(listDescriptor.getListProperty(), currentContent.getObject())
+        return (T) ValueConverter.fromRdf4jValue(listDescriptor.getNodeContent(), currentContent.getObject())
                                  .orElse(null);
     }
 
@@ -145,13 +144,8 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         connector.removeStatements(Collections.singleton(currentContent));
         final Resource node = (Resource) currentNode.getObject();
         final Statement stmt = vf
-                .createStatement(node, hasContentProperty, valueConverter.toRdf4jValue(listDescriptor.getListProperty(), newContent),
+                .createStatement(node, hasContentProperty, valueConverter.toRdf4jValue(listDescriptor.getNodeContent(), newContent),
                         context);
         connector.addStatements(Collections.singleton(stmt));
-    }
-
-    protected Axiom<NamedResource> createAxiom(Resource subject, Assertion assertion, Resource value) {
-        final NamedResource subjectRes = NamedResource.create(subject.stringValue());
-        return new AxiomImpl<>(subjectRes, assertion, new Value<>(NamedResource.create(value.stringValue())));
     }
 }

@@ -21,7 +21,6 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
@@ -185,7 +184,7 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
         assert i > 0;
         final Collection<Statement> toAdd = new ArrayList<>((listDescriptor.getValues().size() - i) * 2);
         while (i < listDescriptor.getValues().size()) {
-            final Value content = toRdf4jValue(listDescriptor.getListProperty(), listDescriptor.getValues().get(i));
+            final Value content = toRdf4jValue(listDescriptor.getNodeContent(), listDescriptor.getValues().get(i));
             previous = createListNode(owner, hasNext, hasContent, content, context, previous, toAdd);
             i++;
         }

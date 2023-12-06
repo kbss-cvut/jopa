@@ -34,6 +34,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -1404,5 +1405,21 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
         assertEquals(a2String, result.getStringAttribute());
+    }
+
+    @Test
+    void updateSupportsChangesInDataPropertyReferencedLists() {
+        this.em = getEntityManager("updateSupportsChangesInDataPropertyReferencedLists", false);
+        entityM.setLiteralReferencedList(Generators.createDataPropertyList());
+        persist(entityM);
+
+        final List<LocalDate> updatedList = new ArrayList<>(entityM.getLiteralReferencedList());
+        updatedList.set(Generators.randomPositiveInt(0, updatedList.size()), LocalDate.now().minusDays(365));
+        updatedList.add(LocalDate.now().plusDays(365));
+        entityM.setLiteralReferencedList(updatedList);
+        transactional(() -> em.merge(entityM));
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(updatedList, result.getLiteralReferencedList());
     }
 }

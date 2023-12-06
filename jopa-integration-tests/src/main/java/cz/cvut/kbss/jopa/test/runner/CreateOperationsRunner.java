@@ -795,10 +795,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     @Test
     void persistSupportsReferencedListsContainingDataPropertyLiteralValues() {
         this.em = getEntityManager("persistSupportsReferencedListsContainingDataPropertyLiteralValues", false);
-        entityM.setLiteralReferencedList(new ArrayList<>());
-        for (int i = 5; i >= 0; i--) {
-            entityM.getLiteralReferencedList().add(LocalDate.now().minusDays(i));
-        }
+        entityM.setLiteralReferencedList(Generators.createDataPropertyList());
         persist(entityM);
 
         for (int i = 0; i < entityM.getLiteralReferencedList().size(); i++) {
