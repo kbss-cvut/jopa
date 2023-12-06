@@ -23,8 +23,29 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
-import cz.cvut.kbss.jopa.test.*;
-import cz.cvut.kbss.jopa.test.environment.*;
+import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.OWLClassG;
+import cz.cvut.kbss.jopa.test.OWLClassH;
+import cz.cvut.kbss.jopa.test.OWLClassI;
+import cz.cvut.kbss.jopa.test.OWLClassJ;
+import cz.cvut.kbss.jopa.test.OWLClassL;
+import cz.cvut.kbss.jopa.test.OWLClassM;
+import cz.cvut.kbss.jopa.test.OWLClassN;
+import cz.cvut.kbss.jopa.test.OWLClassO;
+import cz.cvut.kbss.jopa.test.OWLClassP;
+import cz.cvut.kbss.jopa.test.OWLClassU;
+import cz.cvut.kbss.jopa.test.OWLClassX;
+import cz.cvut.kbss.jopa.test.OWLClassZ;
+import cz.cvut.kbss.jopa.test.OWLClassZChild;
+import cz.cvut.kbss.jopa.test.Vocabulary;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
+import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
+import cz.cvut.kbss.jopa.test.environment.Quad;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -34,17 +55,31 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class UpdateOperationsRunner extends BaseRunner {
 
@@ -222,193 +257,6 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassA resA = findRequired(OWLClassA.class, entityA.getUri());
         assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
         assertEquals(entityA.getTypes(), resA.getTypes());
-    }
-
-    @Test
-    void testRemoveFromSimpleList() {
-        this.em = getEntityManager("UpdateRemoveFromSimpleList", true);
-        entityC.setSimpleList(Generators.createSimpleList());
-        persistCWithLists(entityC);
-
-        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
-        em.getTransaction().begin();
-        final OWLClassA a = c.getSimpleList().get(1);
-        c.getSimpleList().remove(a);
-        em.getTransaction().commit();
-
-        final OWLClassA resA = findRequired(OWLClassA.class, a.getUri());
-        final OWLClassC resC = findRequired(OWLClassC.class, c.getUri());
-        assertEquals(c.getSimpleList().size(), resC.getSimpleList().size());
-        assertEquals(entityC.getSimpleList().size() - 1, resC.getSimpleList().size());
-        for (OWLClassA aa : resC.getSimpleList()) {
-            assertNotEquals(resA.getUri(), aa.getUri());
-        }
-    }
-
-    @Test
-    void testAddToSimpleList() {
-        this.em = getEntityManager("UpdateAddToSimpleList", true);
-        entityC.setSimpleList(Generators.createSimpleList());
-        em.getTransaction().begin();
-        em.persist(entityC);
-        entityC.getSimpleList().forEach(em::persist);
-        em.persist(entityA);
-        em.getTransaction().commit();
-
-        em.getTransaction().begin();
-        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
-        final OWLClassA a = findRequired(OWLClassA.class, entityA.getUri());
-        assertFalse(c.getSimpleList().contains(a));
-        c.getSimpleList().add(a);
-        em.getTransaction().commit();
-
-        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
-        assertEquals(c.getSimpleList().size(), resC.getSimpleList().size());
-        assertEquals(entityC.getSimpleList().size() + 1, resC.getSimpleList().size());
-        final OWLClassA resA = findRequired(OWLClassA.class, entityA.getUri());
-        assertTrue(resC.getSimpleList().contains(resA));
-    }
-
-    @Test
-    void testClearSimpleList() {
-        this.em = getEntityManager("UpdateClearSimpleList", true);
-        entityC.setSimpleList(Generators.createSimpleList());
-        persistCWithLists(entityC);
-
-        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
-        assertFalse(c.getSimpleList().isEmpty());
-        em.getTransaction().begin();
-        c.getSimpleList().clear();
-        em.getTransaction().commit();
-
-        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
-        assertTrue(resC.getSimpleList() == null || resC.getSimpleList().isEmpty());
-        for (OWLClassA a : entityC.getSimpleList()) {
-            verifyExists(OWLClassA.class, a.getUri());
-        }
-    }
-
-    @Test
-    void testReplaceSimpleList() {
-        this.em = getEntityManager("UpdateReplaceSimpleList", true);
-        entityC.setSimpleList(Generators.createSimpleList());
-        persistCWithLists(entityC);
-
-        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
-        final List<OWLClassA> newList = new ArrayList<>(1);
-        newList.add(entityA);
-        em.getTransaction().begin();
-        em.persist(entityA);
-        c.setSimpleList(newList);
-        em.getTransaction().commit();
-
-        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
-        assertEquals(newList.size(), resC.getSimpleList().size());
-        boolean found;
-        for (OWLClassA a : newList) {
-            found = false;
-            for (OWLClassA aa : resC.getSimpleList()) {
-                if (a.getUri().equals(aa.getUri())) {
-                    found = true;
-                    break;
-                }
-            }
-            assertTrue(found);
-        }
-        for (OWLClassA a : entityC.getSimpleList()) {
-            assertNotNull(em.find(OWLClassA.class, a.getUri()));
-        }
-    }
-
-    @Test
-    void testRemoveFromReferencedList() {
-        this.em = getEntityManager("UpdateRemoveFromReferencedList", true);
-        entityC.setReferencedList(Generators.createReferencedList());
-        persistCWithLists(entityC);
-
-        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
-        em.getTransaction().begin();
-        final OWLClassA a = c.getReferencedList().get(Generators.randomInt(c.getReferencedList().size()));
-        c.getReferencedList().remove(a);
-        em.getTransaction().commit();
-
-        final OWLClassA resA = findRequired(OWLClassA.class, a.getUri());
-        final OWLClassC resC = findRequired(OWLClassC.class, c.getUri());
-        assertEquals(c.getReferencedList().size(), resC.getReferencedList().size());
-        assertEquals(entityC.getReferencedList().size() - 1, resC.getReferencedList().size());
-        for (OWLClassA aa : resC.getReferencedList()) {
-            assertNotEquals(resA.getUri(), aa.getUri());
-        }
-    }
-
-    @Test
-    void testAddToReferencedList() {
-        this.em = getEntityManager("UpdateAddToReferencedList", true);
-        entityC.setReferencedList(Generators.createReferencedList());
-        persistCWithLists(entityC);
-
-        em.getTransaction().begin();
-        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
-        em.persist(entityA);
-        c.getReferencedList().add(entityA);
-        em.getTransaction().commit();
-
-        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
-        assertEquals(c.getReferencedList().size(), resC.getReferencedList().size());
-        assertEquals(entityC.getReferencedList().size() + 1, resC.getReferencedList().size());
-        final OWLClassA resA = findRequired(OWLClassA.class, entityA.getUri());
-        assertTrue(resC.getReferencedList().contains(resA));
-    }
-
-    @Test
-    void testClearReferencedList() {
-        this.em = getEntityManager("UpdateClearReferencedList", true);
-        entityC.setReferencedList(Generators.createReferencedList());
-        persistCWithLists(entityC);
-
-        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
-        assertFalse(c.getReferencedList().isEmpty());
-        em.getTransaction().begin();
-        c.setReferencedList(null);
-        em.getTransaction().commit();
-
-        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
-        assertNull(resC.getReferencedList());
-        for (OWLClassA a : entityC.getReferencedList()) {
-            verifyExists(OWLClassA.class, a.getUri());
-        }
-    }
-
-    @Test
-    void testReplaceReferencedList() {
-        this.em = getEntityManager("UpdateReplaceReferencedList", true);
-        entityC.setReferencedList(Generators.createReferencedList());
-        persistCWithLists(entityC);
-
-        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
-        final List<OWLClassA> newList = new ArrayList<>(1);
-        newList.add(entityA);
-        em.getTransaction().begin();
-        em.persist(entityA);
-        c.setReferencedList(newList);
-        em.getTransaction().commit();
-
-        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
-        assertEquals(newList.size(), resC.getReferencedList().size());
-        boolean found;
-        for (OWLClassA a : newList) {
-            found = false;
-            for (OWLClassA aa : resC.getReferencedList()) {
-                if (a.getUri().equals(aa.getUri())) {
-                    found = true;
-                    break;
-                }
-            }
-            assertTrue(found);
-        }
-        for (OWLClassA a : entityC.getReferencedList()) {
-            verifyExists(OWLClassA.class, a.getUri());
-        }
     }
 
     @Test
@@ -706,44 +554,6 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
         assertEquals(update.getIndividuals(), res.getIndividuals());
-    }
-
-    @Test
-    void testUpdateSimpleListOfIdentifiersByAddingNewItems() {
-        this.em = getEntityManager("UpdateSimpleListOfIdentifiersByAddingItems", true);
-        entityP.setSimpleList(Generators.createListOfIdentifiers());
-        persist(entityP);
-
-        final OWLClassP update = findRequired(OWLClassP.class, entityP.getUri());
-        em.getTransaction().begin();
-        for (int i = 0; i < Generators.randomPositiveInt(5, 10); i++) {
-            final URI u = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Added-" + i);
-            // Insert at random position
-            update.getSimpleList().add(Generators.randomInt(update.getSimpleList().size()), u);
-        }
-        em.getTransaction().commit();
-
-        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
-        assertEquals(update.getSimpleList(), res.getSimpleList());
-    }
-
-    @Test
-    void testUpdateReferencedListByRemovingAndAddingItems() {
-        this.em = getEntityManager("UpdateReferencedListByRemovingAndAddingItems", true);
-        entityP.setReferencedList(Generators.createListOfIdentifiers());
-        persist(entityP);
-
-        final OWLClassP update = findRequired(OWLClassP.class, entityP.getUri());
-        em.getTransaction().begin();
-        for (int i = 0; i < Generators.randomPositiveInt(5, 10); i++) {
-            final URI u = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Added-" + i);
-            // We might even overwrite items set in previous iterations, but it does not matter. JOPA should handle it
-            update.getReferencedList().set(Generators.randomInt(update.getReferencedList().size()), u);
-        }
-        em.getTransaction().commit();
-
-        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
-        assertEquals(update.getReferencedList(), res.getReferencedList());
     }
 
     @Test
@@ -1079,52 +889,6 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void updateKeepsPendingListReferenceWhenItemIsAddedToIt() {
-        this.em = getEntityManager("updateKeepsPendingListReferenceWhenItemIsAddedToIt", true);
-        final OWLClassK entityK = new OWLClassK();
-        entityK.setSimpleList(generateEInstances(5));
-        entityK.setReferencedList(generateEInstances(6));
-        em.getTransaction().begin();
-        em.persist(entityK);
-        entityK.getSimpleList().forEach(e -> {
-            assertNull(e.getUri());
-            em.persist(e);
-        });
-        entityK.getReferencedList().forEach(e -> {
-            assertNull(e.getUri());
-            em.persist(e);
-        });
-        em.getTransaction().commit();
-
-        final OWLClassE addedSimple = new OWLClassE();
-        addedSimple.setStringAttribute("addedSimple");
-        final OWLClassE addedReferenced = new OWLClassE();
-        addedReferenced.setStringAttribute("addedReferenced");
-        em.getTransaction().begin();
-        final OWLClassK update = em.find(OWLClassK.class, entityK.getUri());
-        update.getSimpleList().add(addedSimple);
-        update.getReferencedList().add(addedReferenced);
-        assertNull(addedSimple.getUri());
-        assertNull(addedReferenced.getUri());
-        em.persist(addedSimple);
-        em.persist(addedReferenced);
-        em.getTransaction().commit();
-
-        final OWLClassK result = findRequired(OWLClassK.class, entityK.getUri());
-        assertEquals(addedSimple.getUri(), result.getSimpleList().get(result.getSimpleList().size() - 1).getUri());
-        assertEquals(addedReferenced.getUri(),
-                result.getReferencedList().get(result.getReferencedList().size() - 1).getUri());
-    }
-
-    private static List<OWLClassE> generateEInstances(int count) {
-        return IntStream.range(0, count).mapToObj(i -> {
-            final OWLClassE e = new OWLClassE();
-            e.setStringAttribute("instance" + i);
-            return e;
-        }).collect(Collectors.toList());
-    }
-
-    @Test
     void mergeRemovedThrowsIllegalArgumentException() {
         this.em = getEntityManager("mergeRemovedThrowsIllegalArgument", true);
         persist(entityA);
@@ -1405,21 +1169,5 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
         assertEquals(a2String, result.getStringAttribute());
-    }
-
-    @Test
-    void updateSupportsChangesInDataPropertyReferencedLists() {
-        this.em = getEntityManager("updateSupportsChangesInDataPropertyReferencedLists", false);
-        entityM.setLiteralReferencedList(Generators.createDataPropertyList());
-        persist(entityM);
-
-        final List<LocalDate> updatedList = new ArrayList<>(entityM.getLiteralReferencedList());
-        updatedList.set(Generators.randomPositiveInt(0, updatedList.size()), LocalDate.now().minusDays(365));
-        updatedList.add(LocalDate.now().plusDays(365));
-        entityM.setLiteralReferencedList(updatedList);
-        transactional(() -> em.merge(entityM));
-
-        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
-        assertEquals(updatedList, result.getLiteralReferencedList());
     }
 }

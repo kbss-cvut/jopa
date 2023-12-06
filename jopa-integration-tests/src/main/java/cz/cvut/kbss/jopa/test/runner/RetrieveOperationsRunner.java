@@ -538,24 +538,4 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getEnumSimpleLiteral(), result.getEnumSimpleLiteral());
     }
-
-    @Test
-    void retrieveSupportsDataPropertyReferencedLists() throws Exception {
-        this.em = getEntityManager("retrieveSupportsDataPropertyReferencedLists", false);
-        final List<Quad> data = new ArrayList<>(List.of(new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M))));
-        final List<LocalDate> dates = new ArrayList<>();
-        URI previous = URI.create(entityM.getKey());
-        for (int i = 5; i >= 0; i--) {
-            final LocalDate d = LocalDate.now().minusDays(i);
-            dates.add(d);
-            final URI node = URI.create(entityM.getKey() + "-SEQ" + (5-i));
-            data.add(new Quad(previous, URI.create(i == 5 ? Vocabulary.p_m_literalReferencedList : SequencesVocabulary.s_p_hasNext), node));
-            data.add(new Quad(node, SequencesVocabulary.p_hasContents, d));
-            previous = node;
-        }
-        persistTestData(data, em);
-
-        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
-        assertEquals(dates, result.getLiteralReferencedList());
-    }
 }
