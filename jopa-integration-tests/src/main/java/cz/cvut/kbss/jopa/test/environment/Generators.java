@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.Vocabulary;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -188,9 +189,9 @@ public abstract class Generators {
 
     private static Set<String> getTypes() {
         final Set<String> types = new HashSet<>(3);
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassDF");
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassDFF");
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassDFFF");
+        types.add(Vocabulary.CLASS_IRI_BASE + "OWLClassDF");
+        types.add(Vocabulary.CLASS_IRI_BASE + "OWLClassDFF");
+        types.add(Vocabulary.CLASS_IRI_BASE + "OWLClassDFFF");
         return types;
     }
 
@@ -251,8 +252,7 @@ public abstract class Generators {
      * @return Random URI
      */
     public static URI generateUri() {
-        return URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/individuals#instance" +
-                randomInt(Integer.MAX_VALUE));
+        return URI.create(Vocabulary.INDIVIDUAL_IRI_BASE + randomInt(Integer.MAX_VALUE));
     }
 
     /**

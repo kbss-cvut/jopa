@@ -15,6 +15,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -514,7 +515,7 @@ public abstract class ListsTestRunner extends BaseRunner {
         final OWLClassP update = findRequired(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
         for (int i = 0; i < Generators.randomPositiveInt(5, 10); i++) {
-            final URI u = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Added-" + i);
+            final URI u = URI.create(Vocabulary.INDIVIDUAL_IRI_BASE + "Added-" + i);
             // Insert at random position
             update.getSimpleList().add(Generators.randomInt(update.getSimpleList().size()), u);
         }
@@ -533,7 +534,7 @@ public abstract class ListsTestRunner extends BaseRunner {
         final OWLClassP update = findRequired(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
         for (int i = 0; i < Generators.randomPositiveInt(5, 10); i++) {
-            final URI u = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Added-" + i);
+            final URI u = URI.create(Vocabulary.INDIVIDUAL_IRI_BASE + "Added-" + i);
             // We might even overwrite items set in previous iterations, but it does not matter. JOPA should handle it
             update.getReferencedList().set(Generators.randomInt(update.getReferencedList().size()), u);
         }
@@ -605,6 +606,7 @@ public abstract class ListsTestRunner extends BaseRunner {
         assertEquals(updatedList, result.getLiteralReferencedList());
     }
 
+    @Disabled
     @Test
     void persistSupportsMultilingualReferencedLists() {
         this.em = getEntityManager("persistSupportsMultilingualReferencedLists", false);

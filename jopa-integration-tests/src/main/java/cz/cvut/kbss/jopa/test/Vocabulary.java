@@ -19,8 +19,9 @@ package cz.cvut.kbss.jopa.test;
 
 public class Vocabulary {
 
-    public static final String CLASS_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
-    public static final String ATTRIBUTE_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
+    public static final String CLASS_IRI_BASE = "https://onto.fel.cvut.cz/ontologies/jopa/types#";
+    public static final String ATTRIBUTE_IRI_BASE = "https://onto.fel.cvut.cz/ontologies/jopa/attributes#";
+    public static final String INDIVIDUAL_IRI_BASE = "https://onto.fel.cvut.cz/ontologies/jopa/entities#";
 
     public static final String C_OWL_CLASS_A = CLASS_IRI_BASE + "OWLClassA";
     public static final String C_OWL_CLASS_B = CLASS_IRI_BASE + "OWLClassB";

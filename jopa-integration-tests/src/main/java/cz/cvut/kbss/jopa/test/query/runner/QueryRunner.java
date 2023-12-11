@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public abstract class QueryRunner extends BaseQueryRunner {
 
     private static final String SELECT_E_BY_TYPE =
-            "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
+            "SELECT ?x WHERE { ?x a <" + Vocabulary.C_OWL_CLASS_E + "> . }";
 
     protected QueryRunner(Logger logger, DataAccessor dataAccessor) {
         super(logger, dataAccessor);
@@ -165,7 +165,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
     void testGetSingleResult() {
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
-                "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?y .}";
+                "SELECT ?x WHERE { ?x <" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y .}";
         final Query q = getEntityManager().createNativeQuery(query);
         q.setParameter("y", a.getStringAttribute(), "en");
 
@@ -183,7 +183,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     void testGetSingleResultNoResult() {
         final String query =
-                "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX> . }";
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.CLASS_IRI_BASE + "OWLClassX> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         assertThrows(NoResultException.class, q::getSingleResult);
     }
@@ -192,7 +192,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
     void testSelectQueryWithPositionalParameters() {
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
-                "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> $ .}";
+                "SELECT ?x WHERE { ?x <" + Vocabulary.P_A_STRING_ATTRIBUTE + "> $ .}";
         final Query q = getEntityManager().createNativeQuery(query);
         q.setParameter(1, a.getStringAttribute(), "en");
 
@@ -204,8 +204,8 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     public void selectWithOptionalReturnsNullInUnfilledColumns() {
         final String query =
-                "SELECT ?x ?s WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> ." +
-                        " OPTIONAL {?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute> ?s . } }";
+                "SELECT ?x ?s WHERE { ?x a <" + Vocabulary.C_OWL_CLASS_E + "> ." +
+                        " OPTIONAL {?x <" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?s . } }";
         final OWLClassE e = new OWLClassE();
         final EntityManager em = getEntityManager();
         em.getTransaction().begin();
