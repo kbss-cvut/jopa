@@ -20,9 +20,14 @@ package cz.cvut.kbss.ontodriver.jena.list;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Statement;
 
 import java.util.Collection;
@@ -31,7 +36,7 @@ import java.util.Collections;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 
-class ReferencedListIterator extends AbstractListIterator {
+class ReferencedListIterator<T> extends AbstractListIterator<T, RDFNode> {
 
     private final Property hasContent;
     private final Assertion hasContentAssertion;
@@ -43,25 +48,25 @@ class ReferencedListIterator extends AbstractListIterator {
     }
 
     @Override
-    Axiom<NamedResource> nextAxiom() {
-        final NamedResource value = nextValue();
+    Axiom<T> nextAxiom() {
+        final T value = nextValue();
         final NamedResource node = NamedResource.create(currentNode.getURI());
         return new AxiomImpl<>(node, hasContentAssertion, new Value<>(value));
     }
 
     @Override
-    NamedResource nextValue() {
+    T nextValue() {
         resolveNextListNode();
-        return NamedResource.create(resolveNodeContent().getURI());
+        final RDFNode content = resolveNodeContent();
+        return (T) (content.isResource() ? NamedResource.create(content.asResource().getURI()) : JenaUtils.literalToValue(content.asLiteral()));
     }
 
-    private Resource resolveNodeContent() {
+    private RDFNode resolveNodeContent() {
         final Collection<Statement> contentStatements;
         contentStatements = connector.find(currentNode, hasContent, null, contexts());
         verifyContentValueCount(contentStatements);
         final Statement statement = contentStatements.iterator().next();
-        assert statement.getObject().isResource();
-        return statement.getObject().asResource();
+        return statement.getObject();
     }
 
     private void verifyContentValueCount(Collection<Statement> contentStatements) {
@@ -81,7 +86,7 @@ class ReferencedListIterator extends AbstractListIterator {
     }
 
     @Override
-    void replace(Resource replacement) {
+    void replace(RDFNode replacement) {
         remove(currentNode, hasContent, null);
         final Statement toAdd = createStatement(currentNode, hasContent, replacement);
         connector.add(Collections.singletonList(toAdd), context);

@@ -68,21 +68,21 @@ public class JenaLists implements Lists {
     }
 
     @Override
-    public List<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor descriptor)
+    public List<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
             throws OntoDriverException {
         executeBeforeCallbackAndVerifyArgument(descriptor);
         return adapter.referencedListHandler().loadList(descriptor);
     }
 
     @Override
-    public void persistReferencedList(ReferencedListValueDescriptor descriptor) throws OntoDriverException {
+    public <V> void persistReferencedList(ReferencedListValueDescriptor<V> descriptor) throws OntoDriverException {
         executeBeforeCallbackAndVerifyArgument(descriptor);
         adapter.referencedListHandler().persistList(descriptor);
         afterChangeCallback.execute();
     }
 
     @Override
-    public void updateReferencedList(ReferencedListValueDescriptor descriptor) throws OntoDriverException {
+    public <V> void updateReferencedList(ReferencedListValueDescriptor<V> descriptor) throws OntoDriverException {
         executeBeforeCallbackAndVerifyArgument(descriptor);
         adapter.referencedListHandler().updateList(descriptor);
         afterChangeCallback.execute();

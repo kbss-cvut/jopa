@@ -46,7 +46,7 @@ public class AxiomAdapter {
                 objectValue);
     }
 
-    OWLAxiom toOwlDataPropertyAssertionAxiom(Axiom<?> axiom) {
+    public OWLAxiom toOwlDataPropertyAssertionAxiom(Axiom<?> axiom) {
         final OWLDataProperty dataProperty = dataFactory
                 .getOWLDataProperty(IRI.create(axiom.getAssertion().getIdentifier()));
         final OWLLiteral dataValue = OwlapiUtils.createOWLLiteralFromValue(axiom.getValue().getValue(),

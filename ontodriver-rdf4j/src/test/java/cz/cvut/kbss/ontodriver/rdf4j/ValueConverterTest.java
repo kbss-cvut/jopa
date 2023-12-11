@@ -21,6 +21,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;

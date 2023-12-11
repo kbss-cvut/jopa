@@ -549,7 +549,7 @@ class EntityConstructorTest {
     }
 
     private Set<Axiom<?>> initInvalidFieldValuesForICValidation() throws NoSuchFieldException {
-        final Set<Axiom<NamedResource>> listAxioms = new HashSet<>();
+        final Set<Axiom<?>> listAxioms = new HashSet<>();
         when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(listAxioms);
         final Descriptor attDescriptor = new EntityDescriptor();
         descriptor.addAttributeDescriptor(mocks.forOwlClassL().referencedListAtt(), attDescriptor);

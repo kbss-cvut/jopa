@@ -18,9 +18,12 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLPropertyAssertionAxiom;
 
 import java.net.URI;
 import java.util.List;
@@ -37,28 +40,34 @@ public class ReferencedListTestHelper extends ListTestHelper {
     }
 
     @Override
-    public void persistList(List<URI> items) {
+    public void persistList(List<?> items) {
         assert items.size() > 0;
         final OWLObjectProperty hasList = dataFactory.getOWLObjectProperty(
                 IRI.create(HAS_LIST_PROPERTY));
         final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(HAS_NEXT_PROPERTY));
-        final OWLObjectProperty hasContent = dataFactory.getOWLObjectProperty(
-                IRI.create(HAS_CONTENT_PROPERTY));
         int i = 0;
         final String sequenceNodeBase = baseUri + SEQUENCE_NODE_SUFFIX;
         OWLNamedIndividual node = dataFactory.getOWLNamedIndividual(IRI.create(sequenceNodeBase + i));
         manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasList, individual, node));
-        manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasContent, node,
-                dataFactory.getOWLNamedIndividual(IRI.create(items.get(i)))));
+        manager.addAxiom(ontology, createAssertion(node, HAS_CONTENT_PROPERTY, items.get(i)));
         OWLNamedIndividual previousNode;
         for (i = 1; i < items.size(); i++) {
             previousNode = node;
             node = dataFactory.getOWLNamedIndividual(IRI.create(sequenceNodeBase + i));
             manager.addAxiom(ontology,
                     dataFactory.getOWLObjectPropertyAssertionAxiom(hasNext, previousNode, node));
-            manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasContent, node,
-                    dataFactory.getOWLNamedIndividual(IRI.create(items.get(i)))));
+            manager.addAxiom(ontology, createAssertion(node, HAS_CONTENT_PROPERTY, items.get(i)));
+        }
+    }
 
+    private OWLPropertyAssertionAxiom<?, ?> createAssertion(OWLNamedIndividual node, String property, Object object) {
+        if (object instanceof URI) {
+            final OWLObjectProperty hasContent = dataFactory.getOWLObjectProperty(IRI.create(property));
+            return dataFactory.getOWLObjectPropertyAssertionAxiom(hasContent, node,
+                    dataFactory.getOWLNamedIndividual(IRI.create(object.toString())));
+        } else {
+            final OWLDataProperty hasContent = dataFactory.getOWLDataProperty(IRI.create(property));
+            return dataFactory.getOWLDataPropertyAssertionAxiom(hasContent, node, OwlapiUtils.createOWLLiteralFromValue(object, null));
         }
     }
 }

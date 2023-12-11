@@ -32,18 +32,19 @@ class SimpleListTestHelper extends ListTestHelper {
     }
 
     @Override
-    void persistList(List<URI> items) {
+    void persistList(List<?> items) {
         assert items.size() > 0;
         final OWLObjectProperty hasList = dataFactory
                 .getOWLObjectProperty(IRI.create(HAS_LIST_PROPERTY));
         final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(HAS_NEXT_PROPERTY));
         manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasList, individual,
-                dataFactory.getOWLNamedIndividual(IRI.create(items.get(0)))));
+                dataFactory.getOWLNamedIndividual(IRI.create(items.get(0).toString()))));
         for (int i = 1; i < items.size(); i++) {
+            assert items.get(i) instanceof URI;
             manager.addAxiom(ontology,
                     dataFactory.getOWLObjectPropertyAssertionAxiom(hasNext, dataFactory.getOWLNamedIndividual(
-                            IRI.create(items.get(i - 1))),
-                            dataFactory.getOWLNamedIndividual(IRI.create(items.get(i)))));
+                            IRI.create(items.get(i - 1).toString())),
+                            dataFactory.getOWLNamedIndividual(IRI.create(items.get(i).toString()))));
 
         }
     }

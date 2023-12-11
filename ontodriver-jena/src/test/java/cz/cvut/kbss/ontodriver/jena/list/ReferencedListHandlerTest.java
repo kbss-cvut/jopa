@@ -21,9 +21,12 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,22 +41,32 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static org.apache.jena.rdf.model.ResourceFactory.*;
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class ReferencedListHandlerTest
-        extends ListHandlerTestBase<ReferencedListDescriptor, ReferencedListValueDescriptor> {
+public class ReferencedListHandlerTest extends ListHandlerTestHelper {
 
     private static final Assertion HAS_CONTENT = Assertion
             .createObjectPropertyAssertion(Generator.generateUri(), false);
     private static final Property HAS_CONTENT_PROPERTY = createProperty(HAS_CONTENT.getIdentifier().toString());
+
+    private ReferencedListHandler handler;
 
     @BeforeEach
     public void setUp() {
@@ -62,7 +75,6 @@ public class ReferencedListHandlerTest
         listUtil.setHasContent(HAS_CONTENT_PROPERTY);
     }
 
-    @Override
     List<URI> generateList(String context) {
         if (context != null) {
             return listUtil.generateReferencedList(context);
@@ -71,20 +83,47 @@ public class ReferencedListHandlerTest
         }
     }
 
-    @Override
     ReferencedListDescriptor listDescriptor() {
         return new ReferencedListDescriptorImpl(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
     }
 
-    @Override
-    ReferencedListValueDescriptor listValueDescriptor() {
-        return new ReferencedListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+    ReferencedListValueDescriptor<NamedResource> listValueDescriptor() {
+        return new ReferencedListValueDescriptor<>(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+    }
+
+    @Test
+    public void loadListRetrievesAllListElements() {
+        final List<URI> expected = generateList(null);
+        final List<Axiom<?>> result = handler.loadList(listDescriptor());
+        assertNotNull(result);
+        final List<URI> actual = result.stream().map(ax -> URI.create(ax.getValue().getValue().toString()))
+                                       .collect(Collectors.toList());
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void loadListFromContextRetrievesAllListElements() {
+        final URI context = Generator.generateUri();
+        final List<URI> expected = generateList(context.toString());
+        final ReferencedListDescriptor descriptor = listDescriptor();
+        descriptor.setContext(context);
+        final List<Axiom<?>> result = handler.loadList(descriptor);
+        final List<URI> actual = result.stream().map(ax -> URI.create(ax.getValue().getValue().toString()))
+                                       .collect(Collectors.toList());
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void persistListDoesNothingForEmptyDescriptor() {
+        final ReferencedListValueDescriptor<NamedResource> descriptor = listValueDescriptor();
+        handler.persistList(descriptor);
+        verify(connectorMock, never()).add(anyList(), anyString());
     }
 
     @Test
     public void persistListInsertsStatementsCorrespondingToList() {
         final List<URI> list = listUtil.generateList();
-        final ReferencedListValueDescriptor descriptor = listValueDescriptor();
+        final ReferencedListValueDescriptor<NamedResource> descriptor = listValueDescriptor();
         list.forEach(item -> descriptor.addValue(NamedResource.create(item)));
         handler.persistList(descriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
@@ -103,7 +142,7 @@ public class ReferencedListHandlerTest
     @Test
     public void persistListWithContextInsertsStatementsCorrespondingToListIntoContext() {
         final List<URI> list = listUtil.generateList();
-        final ReferencedListValueDescriptor descriptor = listValueDescriptor();
+        final ReferencedListValueDescriptor<NamedResource> descriptor = listValueDescriptor();
         list.forEach(item -> descriptor.addValue(NamedResource.create(item)));
         final URI context = Generator.generateUri();
         descriptor.setContext(context);
@@ -118,7 +157,7 @@ public class ReferencedListHandlerTest
     public void updateListAddsNodeWithContentToEnd() {
         final List<URI> list = generateList(null);
         final URI newItem = Generator.generateUri();
-        final ReferencedListValueDescriptor descriptor = listValueDescriptor();
+        final ReferencedListValueDescriptor<NamedResource> descriptor = listValueDescriptor();
         list.forEach(item -> descriptor.addValue(NamedResource.create(item)));
         descriptor.addValue(NamedResource.create(newItem));
         handler.updateList(descriptor);
@@ -136,8 +175,8 @@ public class ReferencedListHandlerTest
     @Test
     public void updateListRemovesRemainingExistingNodes() {
         final List<URI> list = generateList(null);
-        final ReferencedListValueDescriptor descriptor =
-                new ReferencedListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+        final ReferencedListValueDescriptor<NamedResource> descriptor =
+                new ReferencedListValueDescriptor<>(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
         final List<URI> update = list.subList(0, list.size() / 2);
         update.forEach(item -> descriptor.addValue(NamedResource.create(item)));
         handler.updateList(descriptor);
@@ -152,8 +191,8 @@ public class ReferencedListHandlerTest
     @Test
     public void updateReplacesModifiedNodeContent() {
         final List<URI> list = generateList(null);
-        final ReferencedListValueDescriptor descriptor =
-                new ReferencedListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+        final ReferencedListValueDescriptor<NamedResource> descriptor =
+                new ReferencedListValueDescriptor<>(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
         final List<URI> update = new ArrayList<>(list);
         final URI replace = Generator.generateUri();
         final int index = Generator.randomInt(list.size());
@@ -170,8 +209,8 @@ public class ReferencedListHandlerTest
     @Test
     public void updateClearsOriginalListWhenUpdateIsEmpty() {
         final List<URI> list = generateList(null);
-        final ReferencedListValueDescriptor descriptor =
-                new ReferencedListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+        final ReferencedListValueDescriptor<NamedResource> descriptor =
+                new ReferencedListValueDescriptor<>(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
         handler.updateList(descriptor);
 
         for (int i = 0; i < list.size(); i++) {
@@ -189,8 +228,8 @@ public class ReferencedListHandlerTest
 
     @Test
     public void updatePersistsListWhenOriginalWasEmpty() {
-        final ReferencedListValueDescriptor descriptor =
-                new ReferencedListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+        final ReferencedListValueDescriptor<NamedResource> descriptor =
+                new ReferencedListValueDescriptor<>(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
         final List<URI> list = listUtil.generateList();
         list.forEach(u -> descriptor.addValue(NamedResource.create(u)));
         handler.updateList(descriptor);
@@ -205,8 +244,8 @@ public class ReferencedListHandlerTest
     public void updateListWorksInContext() {
         final URI context = Generator.generateUri();
         final List<URI> list = generateList(context.toString());
-        final ReferencedListValueDescriptor descriptor =
-                new ReferencedListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+        final ReferencedListValueDescriptor<NamedResource> descriptor =
+                new ReferencedListValueDescriptor<>(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT);
         descriptor.setContext(context);
         final URI firstReplaced = Generator.generateUri();
         descriptor.addValue(NamedResource.create(firstReplaced));
@@ -230,5 +269,49 @@ public class ReferencedListHandlerTest
         assertEquals(statementsInserted.get(0).getObject(), statementsInserted.get(1).getSubject());
         assertEquals(HAS_CONTENT_PROPERTY, statementsInserted.get(1).getPredicate());
         assertEquals(added.toString(), statementsInserted.get(1).getObject().asResource().getURI());
+    }
+
+    @Test
+    void persistListSupportsSavingDataPropertyValuesAsListElements() {
+        final ReferencedListValueDescriptor<Integer> desc = new ReferencedListValueDescriptor<>(OWNER,
+                HAS_LIST,
+                HAS_NEXT, Assertion.createDataPropertyAssertion(HAS_CONTENT.getIdentifier(), false));
+        IntStream.range(0, 5).mapToObj(i -> Generator.randomInt()).forEach(desc::addValue);
+
+        final ReferencedListHandler sut = new ReferencedListHandler(connectorMock);
+        sut.persistList(desc);
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock).add(captor.capture(), eq(null));
+        final List<Statement> stmts = captor.getValue();
+        assertEquals(desc.getValues().size() * 2, stmts.size());
+        int i = 0;
+        for (Statement stmt : stmts) {
+            if (i == 0) {
+                assertEquals(HAS_LIST_PROPERTY, stmt.getPredicate());
+            } else if (i % 2 == 1) {
+                assertEquals(HAS_CONTENT_PROPERTY, stmt.getPredicate());
+                final RDFNode nodeContent = stmt.getObject();
+                assertTrue(nodeContent.isLiteral());
+                final Integer nodeContentLit = (Integer) JenaUtils.literalToValue(nodeContent.asLiteral());
+                assertTrue(desc.getValues().contains(nodeContentLit));
+            } else {
+                assertEquals(HAS_NEXT_PROPERTY, stmt.getPredicate());
+            }
+            i++;
+        }
+    }
+
+    @Test
+    public void loadListRetrievesAllDataPropertyListElements() {
+        final List<Integer> values = IntStream.range(0, 10).boxed().collect(Collectors.toList());
+        listUtil.initReferencedListStatements(values);
+        final List<Axiom<?>> result = handler.loadList(listDescriptor());
+        assertNotNull(result);
+        final List<Integer> actual = result.stream().map(ax -> {
+                                               assertInstanceOf(Integer.class, ax.getValue().getValue());
+                                               return (Integer) ax.getValue().getValue();
+                                           })
+                                           .collect(Collectors.toList());
+        assertEquals(values, actual);
     }
 }

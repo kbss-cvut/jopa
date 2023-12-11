@@ -18,12 +18,14 @@
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.Wrapper;
-import cz.cvut.kbss.ontodriver.descriptor.*;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.connector.InferredStorageConnector;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
-import cz.cvut.kbss.ontodriver.jena.list.ListHandler;
+import cz.cvut.kbss.ontodriver.jena.list.ReferencedListHandler;
+import cz.cvut.kbss.ontodriver.jena.list.SimpleListHandler;
 import cz.cvut.kbss.ontodriver.jena.query.JenaPreparedStatement;
 import cz.cvut.kbss.ontodriver.jena.query.JenaStatement;
 import cz.cvut.kbss.ontodriver.jena.util.IdentifierGenerator;
@@ -136,14 +138,14 @@ public class JenaAdapter implements Wrapper {
         return new PropertiesHandler(connector);
     }
 
-    public ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> simpleListHandler() {
+    public SimpleListHandler simpleListHandler() {
         beginTransactionIfNotActive();
-        return ListHandler.simpleListHandler(connector);
+        return new SimpleListHandler(connector);
     }
 
-    public ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> referencedListHandler() {
+    public ReferencedListHandler referencedListHandler() {
         beginTransactionIfNotActive();
-        return ListHandler.referencedListHandler(connector);
+        return new ReferencedListHandler(connector);
     }
 
     JenaStatement createStatement() {

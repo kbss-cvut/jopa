@@ -17,6 +17,8 @@
  */
 package cz.cvut.kbss.jopa.exception;
 
+import java.lang.reflect.Field;
+
 /**
  * Signals that an entity field mapping is not valid.
  * <p>
@@ -27,5 +29,9 @@ public class InvalidFieldMappingException extends MetamodelInitializationExcepti
 
     public InvalidFieldMappingException(String message) {
         super(message);
+    }
+
+    public InvalidFieldMappingException(Field field, String reason) {
+        super("Invalid mapping of field " + field + ", reason: " + reason);
     }
 }

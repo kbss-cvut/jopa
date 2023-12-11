@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static cz.cvut.kbss.ontodriver.owlapi.list.ListHandlerTestBase.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -55,7 +54,7 @@ public class OwlapiListsTest {
 
     @Test
     public void testLoadSimpleList() throws Exception {
-        final SimpleListDescriptor descriptor = new SimpleListDescriptorImpl(SUBJECT, HAS_LIST, HAS_NEXT);
+        final SimpleListDescriptor descriptor = new SimpleListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT);
         lists.loadSimpleList(descriptor);
         verify(adapterMock).getSimpleListHandler();
         verify(simpleListHandlerMock).loadList(descriptor);
@@ -63,7 +62,7 @@ public class OwlapiListsTest {
 
     @Test
     public void testPersistSimpleList() throws Exception {
-        final SimpleListValueDescriptor descriptor = new SimpleListValueDescriptor(SUBJECT, HAS_LIST, HAS_NEXT);
+        final SimpleListValueDescriptor descriptor = new SimpleListValueDescriptor(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT);
         descriptor.addValue(NamedResource.create("http://test"));
         lists.persistSimpleList(descriptor);
         verify(simpleListHandlerMock).persistList(descriptor);
@@ -72,7 +71,7 @@ public class OwlapiListsTest {
 
     @Test
     public void testUpdateSimpleList() throws Exception {
-        final SimpleListValueDescriptor descriptor = new SimpleListValueDescriptor(SUBJECT, HAS_LIST, HAS_NEXT);
+        final SimpleListValueDescriptor descriptor = new SimpleListValueDescriptor(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT);
         descriptor.addValue(NamedResource.create("http://test"));
         lists.updateSimpleList(descriptor);
         verify(simpleListHandlerMock).updateList(descriptor);
@@ -81,16 +80,16 @@ public class OwlapiListsTest {
 
     @Test
     public void testLoadReferencedList() throws Exception {
-        final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(SUBJECT, HAS_LIST, HAS_NEXT,
-                HAS_CONTENT);
+        final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT,
+                ListTestHelper.HAS_CONTENT);
         lists.loadReferencedList(descriptor);
         verify(refListHandlerMock).loadList(descriptor);
     }
 
     @Test
     public void testPersistReferencedList() throws Exception {
-        final ReferencedListValueDescriptor descriptor = new ReferencedListValueDescriptor(SUBJECT, HAS_LIST, HAS_NEXT,
-                HAS_CONTENT);
+        final ReferencedListValueDescriptor<NamedResource> descriptor = new ReferencedListValueDescriptor<>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT,
+                ListTestHelper.HAS_CONTENT);
         descriptor.addValue(NamedResource.create("http://test"));
         lists.persistReferencedList(descriptor);
         verify(refListHandlerMock).persistList(descriptor);
@@ -99,8 +98,8 @@ public class OwlapiListsTest {
 
     @Test
     public void testUpdateReferencedList() throws Exception {
-        final ReferencedListValueDescriptor descriptor = new ReferencedListValueDescriptor(SUBJECT, HAS_LIST, HAS_NEXT,
-                HAS_CONTENT);
+        final ReferencedListValueDescriptor<NamedResource> descriptor = new ReferencedListValueDescriptor<NamedResource>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT,
+                ListTestHelper.HAS_CONTENT);
         descriptor.addValue(NamedResource.create("http://test"));
         lists.updateReferencedList(descriptor);
         verify(refListHandlerMock).updateList(descriptor);

@@ -196,6 +196,7 @@ public class MetamodelFactory {
                 .thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(simpleListMock.isCollection()).thenReturn(Boolean.TRUE);
         when(simpleListMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(simpleListMock.isAssociation()).thenReturn(true);
         when(simpleListMock.getDeclaringType()).thenReturn(etMock);
         when(simpleListMock.getJavaType()).thenReturn(List.class);
         when(simpleListMock.getFetchType()).thenReturn(FetchType.LAZY);
@@ -220,6 +221,7 @@ public class MetamodelFactory {
         when(refListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(refListMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(refListMock.isCollection()).thenReturn(Boolean.TRUE);
+        when(refListMock.isAssociation()).thenReturn(true);
         when(refListMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(refListMock.getDeclaringType()).thenReturn(etMock);
         when(refListMock.getJavaType()).thenReturn(List.class);
@@ -935,6 +937,7 @@ public class MetamodelFactory {
         when(simpleListAtt.getJavaField()).thenReturn(OWLClassP.getSimpleListField());
         when(et.getFieldSpecification(OWLClassP.getSimpleListField().getName())).thenReturn(simpleListAtt);
         when(simpleListAtt.isCollection()).thenReturn(true);
+        when(simpleListAtt.isAssociation()).thenReturn(true);
         when(simpleListAtt.getDeclaringType()).thenReturn(et);
         when(simpleListAtt.getCollectionType()).thenReturn(CollectionType.LIST);
         when(simpleListAtt.getBindableJavaType()).thenReturn(URI.class);
@@ -952,6 +955,7 @@ public class MetamodelFactory {
         when(refListAtt.getJavaField()).thenReturn(OWLClassP.getReferencedListField());
         when(et.getFieldSpecification(OWLClassP.getReferencedListField().getName())).thenReturn(refListAtt);
         when(refListAtt.isCollection()).thenReturn(true);
+        when(refListAtt.isAssociation()).thenReturn(true);
         when(refListAtt.getDeclaringType()).thenReturn(et);
         when(refListAtt.getCollectionType()).thenReturn(CollectionType.LIST);
         when(refListAtt.getBindableJavaType()).thenReturn(URI.class);

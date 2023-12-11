@@ -19,7 +19,8 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.Wrapper;
-import cz.cvut.kbss.ontodriver.descriptor.*;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -38,7 +39,11 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 class Rdf4jAdapter implements Closeable, Wrapper {
@@ -209,15 +214,15 @@ class Rdf4jAdapter implements Closeable, Wrapper {
         return connector;
     }
 
-    ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler() throws Rdf4jDriverException {
+    SimpleListHandler getSimpleListHandler() throws Rdf4jDriverException {
         startTransactionIfNotActive();
-        return ListHandler.createForSimpleList(connector, valueFactory);
+        return new SimpleListHandler(connector, valueFactory);
     }
 
-    ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler() throws
+    ReferencedListHandler getReferencedListHandler() throws
             Rdf4jDriverException {
         startTransactionIfNotActive();
-        return ListHandler.createForReferencedList(connector, valueFactory);
+        return new ReferencedListHandler(connector, valueFactory);
     }
 
     TypesHandler getTypesHandler() throws Rdf4jDriverException {

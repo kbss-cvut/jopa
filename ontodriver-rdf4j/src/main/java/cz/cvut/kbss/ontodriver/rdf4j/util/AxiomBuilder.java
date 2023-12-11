@@ -19,8 +19,6 @@ package cz.cvut.kbss.ontodriver.rdf4j.util;
 
 import cz.cvut.kbss.ontodriver.model.*;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 
 import java.util.Map;
@@ -72,38 +70,6 @@ public class AxiomBuilder {
     }
 
     private static Optional<Value<?>> createValue(Assertion assertion, org.eclipse.rdf4j.model.Value value) {
-        final Assertion.AssertionType assertionType = assertion.getType();
-        switch (assertionType) {
-            case DATA_PROPERTY:
-                if (!(value instanceof Literal) || !Rdf4jUtils.doesLanguageMatch((Literal) value, assertion)) {
-                    return Optional.empty();
-                }
-                return Optional.of(new Value<>(Rdf4jUtils.getLiteralValue((Literal) value)));
-            case CLASS:
-                if (!(value instanceof Resource)) {
-                    return Optional.empty();
-                }
-                return Optional.of(new Value<>(Rdf4jUtils.toJavaUri((Resource) value)));
-            case OBJECT_PROPERTY:
-                if (!(value instanceof Resource)) {
-                    return Optional.empty();
-                }
-                return Optional.of(new Value<>(NamedResource.create(value.stringValue())));
-            case ANNOTATION_PROPERTY:   // Intentional fall-through
-            case PROPERTY:
-                return resolveValue(assertion, value);
-        }
-        return Optional.empty();
-    }
-
-    private static Optional<Value<?>> resolveValue(Assertion assertion, org.eclipse.rdf4j.model.Value value) {
-        if (value instanceof Literal) {
-            if (!Rdf4jUtils.doesLanguageMatch((Literal) value, assertion)) {
-                return Optional.empty();
-            }
-            return Optional.of(new Value<>(Rdf4jUtils.getLiteralValue((Literal) value)));
-        } else {
-            return Optional.of(new Value<>(NamedResource.create(value.stringValue())));
-        }
+        return ValueConverter.fromRdf4jValue(assertion, value).map(Value::new);
     }
 }

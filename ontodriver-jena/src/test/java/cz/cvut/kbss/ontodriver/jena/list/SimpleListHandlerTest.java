@@ -21,6 +21,7 @@ import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -38,11 +39,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.apache.jena.rdf.model.ResourceFactory.*;
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescriptor, SimpleListValueDescriptor> {
+public class SimpleListHandlerTest extends ListHandlerTestHelper {
+
+    private SimpleListHandler handler;
 
     @BeforeEach
     public void setUp() {
@@ -50,7 +60,6 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         super.setUp();
     }
 
-    @Override
     List<URI> generateList(String context) {
         if (context != null) {
             return listUtil.generateSimpleList(context);
@@ -59,14 +68,41 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         }
     }
 
-    @Override
     SimpleListDescriptor listDescriptor() {
         return new SimpleListDescriptorImpl(OWNER, HAS_LIST, HAS_NEXT);
     }
 
-    @Override
     SimpleListValueDescriptor listValueDescriptor() {
         return new SimpleListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT);
+    }
+
+    @Test
+    public void loadListRetrievesAllListElements() {
+        final List<URI> expected = generateList(null);
+        final List<Axiom<NamedResource>> result = handler.loadList(listDescriptor());
+        assertNotNull(result);
+        final List<URI> actual = result.stream().map(ax -> ax.getValue().getValue().getIdentifier())
+                                       .collect(Collectors.toList());
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void loadListFromContextRetrievesAllListElements() {
+        final URI context = Generator.generateUri();
+        final List<URI> expected = generateList(context.toString());
+        final SimpleListDescriptor descriptor = listDescriptor();
+        descriptor.setContext(context);
+        final List<Axiom<NamedResource>> result = handler.loadList(descriptor);
+        final List<URI> actual = result.stream().map(ax -> ax.getValue().getValue().getIdentifier())
+                                       .collect(Collectors.toList());
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void persistListDoesNothingForEmptyDescriptor() {
+        final SimpleListValueDescriptor descriptor = listValueDescriptor();
+        handler.persistList(descriptor);
+        verify(connectorMock, never()).add(anyList(), anyString());
     }
 
     @Test

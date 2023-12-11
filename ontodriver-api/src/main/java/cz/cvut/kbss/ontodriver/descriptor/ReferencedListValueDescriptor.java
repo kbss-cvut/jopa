@@ -25,10 +25,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class ReferencedListValueDescriptor extends ReferencedListDescriptorImpl implements
-                                                                                ListValueDescriptor {
+public class ReferencedListValueDescriptor<T> extends ReferencedListDescriptorImpl implements ListValueDescriptor<T> {
 
-    private final List<NamedResource> values;
+    private final List<T> values;
 
     public ReferencedListValueDescriptor(NamedResource listOwner, Assertion listProperty,
                                          Assertion nextNode, Assertion nodeContent) {
@@ -37,12 +36,12 @@ public class ReferencedListValueDescriptor extends ReferencedListDescriptorImpl 
     }
 
     @Override
-    public List<NamedResource> getValues() {
+    public List<T> getValues() {
         return Collections.unmodifiableList(values);
     }
 
     @Override
-    public void addValue(NamedResource value) {
+    public void addValue(T value) {
         Objects.requireNonNull(value);
         values.add(value);
     }
@@ -61,7 +60,7 @@ public class ReferencedListValueDescriptor extends ReferencedListDescriptorImpl 
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-        ReferencedListValueDescriptor other = (ReferencedListValueDescriptor) obj;
+        ReferencedListValueDescriptor<?> other = (ReferencedListValueDescriptor<?>) obj;
         if (!descriptor.equals(other.descriptor))
             return false;
         if (!getNodeContent().equals(other.getNodeContent()))

@@ -132,7 +132,7 @@ public abstract class AnnotatedMethodsTestRunner extends BaseRunner {
             persist(classWithAnnotatedMethodsInInterfaceParent);
 
             verifyStatementsPresent(Collections.singletonList(
-                    new Quad(classWithAnnotatedMethodsInInterfaceParent.getUri(), URI.create(Vocabulary.p_m_enumeratedOrdinalColor),
+                    new Quad(classWithAnnotatedMethodsInInterfaceParent.getUri(), URI.create(Vocabulary.p_e_enumeratedOrdinalColor),
                             classWithAnnotatedMethodsInInterfaceParent.getOrdinalEnumAttribute().ordinal())), em);
         }
 

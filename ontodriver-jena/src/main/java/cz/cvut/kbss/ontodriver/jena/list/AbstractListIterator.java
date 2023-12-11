@@ -22,7 +22,6 @@ import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.exception.ListProcessingException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -36,7 +35,7 @@ import java.util.Set;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
-abstract class AbstractListIterator {
+abstract class AbstractListIterator<T, JT extends RDFNode> {
 
     final StorageConnector connector;
 
@@ -106,9 +105,9 @@ abstract class AbstractListIterator {
         connector.remove(subject, property, object, context);
     }
 
-    abstract Axiom<NamedResource> nextAxiom();
+    abstract Axiom<T> nextAxiom();
 
-    abstract NamedResource nextValue();
+    abstract T nextValue();
 
     /**
      * Only returns current node.
@@ -137,5 +136,5 @@ abstract class AbstractListIterator {
         this.removed = true;
     }
 
-    abstract void replace(Resource replacement);
+    abstract void replace(JT replacement);
 }

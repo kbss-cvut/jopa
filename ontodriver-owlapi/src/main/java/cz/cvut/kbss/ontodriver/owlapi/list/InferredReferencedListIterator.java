@@ -25,7 +25,9 @@ import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.semanticweb.owlapi.model.OWLIndividual;
+import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.util.Collection;
@@ -34,7 +36,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-class InferredReferencedListIterator extends ReferencedListIterator {
+class InferredReferencedListIterator<T> extends ReferencedListIterator<T> {
 
     private OWLNamedIndividual currentNode;
     private final OWLReasoner reasoner;
@@ -69,20 +71,28 @@ class InferredReferencedListIterator extends ReferencedListIterator {
         checkMaxSuccessors(currentNextNodeProperty, nextNodes);
         this.currentNextNodeProperty = hasNextProperty;
         this.currentNode = nextNodes.iterator().next();
-        this.nextItem = reasoner.getObjectPropertyValues(currentNode, hasContentProperty).entities()
-                                .collect(Collectors.toSet());
+        this.nextItem = hasContentProperty.isOWLObjectProperty() ? reasoner.getObjectPropertyValues(currentNode, hasContentProperty.asOWLObjectProperty())
+                                                                           .entities()
+                                                                           .collect(Collectors.toSet())
+                : reasoner.getDataPropertyValues(currentNode, hasContentProperty.asOWLDataProperty());
     }
 
     @Override
-    NamedResource nextValue() {
+    T nextValue() {
         if (!hasNext()) {
             throw new NoSuchElementException("There are no more elements.");
         }
         checkMaxSuccessors(hasContentProperty, nextItem);
-        final OWLIndividual value = nextItem.iterator().next();
-        checkIsNamed(value);
+        final OWLObject value = nextItem.iterator().next();
         doStep();
-        return NamedResource.create(value.asOWLNamedIndividual().getIRI().toURI());
+        if (value.isIndividual()) {
+            final OWLIndividual individual = (OWLIndividual) value;
+            checkIsNamed(individual);
+            return (T) NamedResource.create(individual.asOWLNamedIndividual().getIRI().toURI());
+        } else {
+            final OWLLiteral literal = (OWLLiteral) value;
+            return (T) OwlapiUtils.owlLiteralToValue(literal);
+        }
     }
 
     @Override
@@ -91,7 +101,7 @@ class InferredReferencedListIterator extends ReferencedListIterator {
     }
 
     @Override
-    List<TransactionalChange> replaceNode(NamedResource newValue) {
+    List<TransactionalChange> replaceNode(T newValue) {
         throw new UnsupportedOperationException();
     }
 }

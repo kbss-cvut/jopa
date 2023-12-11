@@ -72,6 +72,9 @@ public class Vocabulary {
     public static final String C_OwlClassWithUnProperties = CLASS_IRI_BASE + "OWLClassWithUnProperties";
     public static final String C_ChildOfMappedSuperClass = CLASS_IRI_BASE + "ChildOfMappedSuperClass";
 
+    public static final String p_e_simpleList = ATTRIBUTE_IRI_BASE + "simpleList";
+    public static final String p_e_enumeratedOrdinalColor = ATTRIBUTE_IRI_BASE + "enumeratedOrdinalColor";
+
     public static final String p_m_booleanAttribute = ATTRIBUTE_IRI_BASE + "m-booleanAttribute";
     public static final String p_m_intAttribute = ATTRIBUTE_IRI_BASE + "m-intAttribute";
     public static final String p_m_longAttribute = ATTRIBUTE_IRI_BASE + "m-longAttribute";
@@ -93,9 +96,8 @@ public class Vocabulary {
     public static final String p_m_attributeB = ATTRIBUTE_IRI_BASE + "attributeB";
     public static final String p_m_data = ATTRIBUTE_IRI_BASE + "data";
     public static final String p_m_multiple_data = ATTRIBUTE_IRI_BASE + "multipleData";
-    public static final String p_m_enumeratedOrdinalColor = ATTRIBUTE_IRI_BASE + "enumeratedOrdinalColor";
-    public static final String p_m_simpleList = ATTRIBUTE_IRI_BASE + "simpleList";
     public static final String p_m_annotationSimpleLiteral = ATTRIBUTE_IRI_BASE + "m-annotationSimpleLiteral";
+    public static final String p_m_literalReferencedList = ATTRIBUTE_IRI_BASE + "m-literalReferencedList";
 
     public static final String P_N_STR_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationProperty";
     public static final String P_N_URI_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationUri";

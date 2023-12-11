@@ -69,14 +69,14 @@ class Rdf4jLists implements Lists {
     }
 
     @Override
-    public List<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor descriptor)
+    public List<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
             throws OntoDriverException {
         verifyArgs(descriptor);
         return adapter.getReferencedListHandler().loadList(descriptor);
     }
 
     @Override
-    public void persistReferencedList(ReferencedListValueDescriptor descriptor)
+    public <T> void persistReferencedList(ReferencedListValueDescriptor<T> descriptor)
             throws OntoDriverException {
         verifyArgs(descriptor);
         adapter.getReferencedListHandler().persistList(descriptor);
@@ -84,7 +84,7 @@ class Rdf4jLists implements Lists {
     }
 
     @Override
-    public void updateReferencedList(ReferencedListValueDescriptor descriptor)
+    public <T> void updateReferencedList(ReferencedListValueDescriptor<T> descriptor)
             throws OntoDriverException {
         verifyArgs(descriptor);
         adapter.getReferencedListHandler().updateList(descriptor);

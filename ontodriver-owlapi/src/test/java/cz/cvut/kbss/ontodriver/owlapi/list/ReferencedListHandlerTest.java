@@ -24,23 +24,69 @@ import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
+import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockitoAnnotations;
-import org.semanticweb.owlapi.model.*;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.semanticweb.owlapi.model.AddAxiom;
+import org.semanticweb.owlapi.model.AxiomType;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLIndividual;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.reasoner.NodeSet;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNodeSet;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class ReferencedListHandlerTest
-        extends ListHandlerTestBase<ReferencedListDescriptor, ReferencedListValueDescriptor> {
+@ExtendWith(MockitoExtension.class)
+public class ReferencedListHandlerTest {
+
+    OWLOntology ontology;
+    OWLOntologyManager manager;
+    OWLDataFactory dataFactory;
+    OWLNamedIndividual individual;
+
+    @Mock
+    OWLReasoner reasonerMock;
+
+    @Mock
+    OwlapiAdapter adapterMock;
+
+    ReferencedListDescriptor descriptor;
+    ReferencedListValueDescriptor<NamedResource> valueDescriptor;
+    ListTestHelper testHelper;
+    ReferencedListHandler listHandler;
 
     private OWLObjectProperty hasListProperty;
     private OWLObjectProperty hasNextProperty;
@@ -48,60 +94,67 @@ public class ReferencedListHandlerTest
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
-        super.setUp();
-        this.descriptor = new ReferencedListDescriptorImpl(SUBJECT, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+        final OntologySnapshot realSnapshot = TestUtils.initRealOntology(reasonerMock);
+        this.ontology = spy(realSnapshot.getOntology());
+        this.manager = spy(realSnapshot.getOntologyManager());
+        this.dataFactory = realSnapshot.getDataFactory();
+        this.individual = dataFactory.getOWLNamedIndividual(IRI.create(ListTestHelper.SUBJECT.getIdentifier()));
+        this.descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, ListTestHelper.HAS_CONTENT);
         this.valueDescriptor = createDescriptor();
         final OntologySnapshot snapshotToUse = new OntologySnapshot(ontology, manager, dataFactory, reasonerMock);
-        this.testHelper = new ReferencedListTestHelper(snapshotToUse, individual, SUBJECT.toString());
+        this.testHelper = new ReferencedListTestHelper(snapshotToUse, individual, ListTestHelper.SUBJECT.toString());
         this.listHandler = new ReferencedListHandler(adapterMock, snapshotToUse);
-        this.hasListProperty = dataFactory.getOWLObjectProperty(IRI.create(HAS_LIST.getIdentifier()));
-        this.hasNextProperty = dataFactory.getOWLObjectProperty(IRI.create(HAS_NEXT.getIdentifier()));
-        this.hasContentProperty = dataFactory.getOWLObjectProperty(IRI.create(HAS_CONTENT.getIdentifier()));
+        this.hasListProperty = dataFactory.getOWLObjectProperty(IRI.create(ListTestHelper.HAS_LIST.getIdentifier()));
+        this.hasNextProperty = dataFactory.getOWLObjectProperty(IRI.create(ListTestHelper.HAS_NEXT.getIdentifier()));
+        this.hasContentProperty = dataFactory.getOWLObjectProperty(IRI.create(ListTestHelper.HAS_CONTENT.getIdentifier()));
     }
 
-    @Override
-    ReferencedListValueDescriptor createDescriptor() {
-        return new ReferencedListValueDescriptor(SUBJECT, HAS_LIST, HAS_NEXT, HAS_CONTENT);
+    ReferencedListValueDescriptor<NamedResource> createDescriptor() {
+        return new ReferencedListValueDescriptor<>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, ListTestHelper.HAS_CONTENT);
     }
 
     @Test
     public void loadListReturnsEmptyListWhenNoHeadIsFound() {
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
 
     @Test
     public void loadListLoadsSingleElementListWithHeadOnly() {
-        final List<URI> headOnly = LIST_ITEMS.subList(0, 1);
+        final List<URI> headOnly = ListTestHelper.LIST_ITEMS.subList(0, 1);
         testHelper.persistList(headOnly);
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         assertEquals(1, result.size());
-        assertEquals(headOnly.get(0), result.get(0).getValue().getValue().getIdentifier());
+        final Object value = result.get(0).getValue().getValue();
+        assertInstanceOf(NamedResource.class, value);
+        assertEquals(headOnly.get(0), ((NamedResource) value).getIdentifier());
     }
 
     @Test
     public void loadListWithMultipleItems() {
-        testHelper.persistList(LIST_ITEMS);
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
-        assertEquals(LIST_ITEMS.size(), result.size());
-        for (int i = 0; i < LIST_ITEMS.size(); i++) {
-            assertEquals(LIST_ITEMS.get(i), result.get(i).getValue().getValue().getIdentifier());
+        testHelper.persistList(ListTestHelper.LIST_ITEMS);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        assertEquals(ListTestHelper.LIST_ITEMS.size(), result.size());
+        for (int i = 0; i < ListTestHelper.LIST_ITEMS.size(); i++) {
+            final Object value = result.get(i).getValue().getValue();
+            assertInstanceOf(NamedResource.class, value);
+            assertEquals(ListTestHelper.LIST_ITEMS.get(i), ((NamedResource) value).getIdentifier());
         }
     }
 
     @Test
     public void loadingListWithItemWithMultipleSuccessorsThrowsException() {
-        testHelper.persistList(LIST_ITEMS.subList(0, 5));
-        addExtraPropertyValue(ListTestHelper.HAS_NEXT_PROPERTY, LIST_ITEMS.get(8));
+        testHelper.persistList(ListTestHelper.LIST_ITEMS.subList(0, 5));
+        addExtraPropertyValue(ListTestHelper.HAS_NEXT_PROPERTY, ListTestHelper.LIST_ITEMS.get(8));
         assertThrows(IntegrityConstraintViolatedException.class, () -> listHandler.loadList(descriptor));
     }
 
     private void addExtraPropertyValue(String property, URI value) {
         final OWLNamedIndividual node = dataFactory
                 .getOWLNamedIndividual(IRI.create(
-                        SUBJECT.getIdentifier().toString() + ReferencedListTestHelper.SEQUENCE_NODE_SUFFIX + "2"));
+                        ListTestHelper.SUBJECT.getIdentifier()
+                                              .toString() + ReferencedListTestHelper.SEQUENCE_NODE_SUFFIX + "2"));
         final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(property));
         manager.addAxiom(ontology,
                 dataFactory.getOWLObjectPropertyAssertionAxiom(hasNext, node,
@@ -110,28 +163,30 @@ public class ReferencedListHandlerTest
 
     @Test
     public void loadingListWithNodeWithMultipleContentElementsThrowsException() {
-        testHelper.persistList(LIST_ITEMS.subList(0, 8));
-        addExtraPropertyValue(ListTestHelper.HAS_CONTENT_PROPERTY, LIST_ITEMS.get(0));
+        testHelper.persistList(ListTestHelper.LIST_ITEMS.subList(0, 8));
+        addExtraPropertyValue(ListTestHelper.HAS_CONTENT_PROPERTY, ListTestHelper.LIST_ITEMS.get(0));
         assertThrows(IntegrityConstraintViolatedException.class, () -> listHandler.loadList(descriptor));
     }
 
     @Test
     public void loadListWithInferredNodeContent() {
         initReasoner();
-        final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(SUBJECT,
-                HAS_LIST, HAS_NEXT, Assertion.createObjectPropertyAssertion(HAS_CONTENT.getIdentifier(), true));
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT,
+                ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, Assertion.createObjectPropertyAssertion(ListTestHelper.HAS_CONTENT.getIdentifier(), true));
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         assertEquals(1, result.size());
-        assertEquals(LIST_ITEMS.get(0), result.get(0).getValue().getValue().getIdentifier());
+        final Object value = result.get(0).getValue().getValue();
+        assertInstanceOf(NamedResource.class, value);
+        assertEquals(ListTestHelper.LIST_ITEMS.get(0), ((NamedResource) value).getIdentifier());
     }
 
     private void initReasoner() {
         final OWLNamedIndividual node = dataFactory.getOWLNamedIndividual(
-                IRI.create(SUBJECT + ReferencedListTestHelper.SEQUENCE_NODE_SUFFIX + "0"));
-        final OWLNamedIndividual owner = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
+                IRI.create(ListTestHelper.SUBJECT + ReferencedListTestHelper.SEQUENCE_NODE_SUFFIX + "0"));
+        final OWLNamedIndividual owner = dataFactory.getOWLNamedIndividual(IRI.create(ListTestHelper.SUBJECT.getIdentifier()));
         final NodeSet<OWLNamedIndividual> nodeSet = new OWLNamedIndividualNodeSet(node);
         when(reasonerMock.getObjectPropertyValues(owner, hasListProperty)).thenReturn(nodeSet);
-        final OWLNamedIndividual content = dataFactory.getOWLNamedIndividual(IRI.create(LIST_ITEMS.get(0)));
+        final OWLNamedIndividual content = dataFactory.getOWLNamedIndividual(IRI.create(ListTestHelper.LIST_ITEMS.get(0)));
         final NodeSet<OWLNamedIndividual> valueSet = new OWLNamedIndividualNodeSet(content);
         when(reasonerMock.getObjectPropertyValues(node, hasContentProperty)).thenReturn(valueSet);
         when(reasonerMock.getObjectPropertyValues(node, hasNextProperty)).thenReturn(new OWLNamedIndividualNodeSet());
@@ -140,11 +195,13 @@ public class ReferencedListHandlerTest
     @Test
     public void loadListWithInferredHead() {
         initReasoner();
-        final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(SUBJECT,
-                Assertion.createObjectPropertyAssertion(HAS_LIST.getIdentifier(), true), HAS_NEXT, HAS_CONTENT);
-        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT,
+                Assertion.createObjectPropertyAssertion(ListTestHelper.HAS_LIST.getIdentifier(), true), ListTestHelper.HAS_NEXT, ListTestHelper.HAS_CONTENT);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
         assertEquals(1, result.size());
-        assertEquals(LIST_ITEMS.get(0), result.get(0).getValue().getValue().getIdentifier());
+        final Object value = result.get(0).getValue().getValue();
+        assertInstanceOf(NamedResource.class, value);
+        assertEquals(ListTestHelper.LIST_ITEMS.get(0), ((NamedResource) value).getIdentifier());
     }
 
     @Test
@@ -155,12 +212,12 @@ public class ReferencedListHandlerTest
 
     @Test
     public void persistListWithHeadOnly() {
-        valueDescriptor.addValue(NamedResource.create(LIST_ITEMS.get(0)));
+        valueDescriptor.addValue(NamedResource.create(ListTestHelper.LIST_ITEMS.get(0)));
         listHandler.persistList(valueDescriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(manager).applyChanges(captor.capture());
         final List<?> changes = captor.getValue();
-        verifyAddedChanges(changes, LIST_ITEMS.subList(0, 1));
+        verifyAddedChanges(changes, ListTestHelper.LIST_ITEMS.subList(0, 1));
         verify(adapterMock).addTransactionalChanges(anyList());
     }
 
@@ -192,12 +249,131 @@ public class ReferencedListHandlerTest
 
     @Test
     public void persistListWithMultipleElementsSavesTheList() {
-        LIST_ITEMS.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+        ListTestHelper.LIST_ITEMS.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
         listHandler.persistList(valueDescriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(manager).applyChanges(captor.capture());
         final List<?> changes = captor.getValue();
-        verifyAddedChanges(changes, LIST_ITEMS);
+        verifyAddedChanges(changes, ListTestHelper.LIST_ITEMS);
         verify(adapterMock).addTransactionalChanges(anyList());
+    }
+
+    @Test
+    public void updateListToEmptyClearsList() {
+        final List<URI> origList = ListTestHelper.LIST_ITEMS.subList(0, 5);
+        origList.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+        listHandler.persistList(valueDescriptor);
+
+        final ReferencedListValueDescriptor<NamedResource> updatedDescriptor = createDescriptor();
+        listHandler.updateList(updatedDescriptor);
+
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void updateEmptyListWithNonEmptyPersistsNewOne() {
+        final List<URI> updated = ListTestHelper.LIST_ITEMS.subList(0, 5);
+        updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+
+        listHandler.updateList(valueDescriptor);
+
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        ListTestHelper.verifyListContent(updated, result);
+    }
+
+    @Test
+    public void updateListByRemovingElementsFromTheEnd() {
+        testHelper.persistList(ListTestHelper.LIST_ITEMS);
+        final List<URI> subList = ListTestHelper.LIST_ITEMS.subList(0, 5);
+        subList.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+
+        listHandler.updateList(valueDescriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        ListTestHelper.verifyListContent(subList, result);
+    }
+
+    @Test
+    public void updateListByReplacingSomeElementsButKeepingSize() {
+        final List<URI> origList = ListTestHelper.LIST_ITEMS.subList(0, 6);
+        testHelper.persistList(origList);
+
+        final List<URI> updated = new ArrayList<>(origList);
+        updated.set(2, ListTestHelper.LIST_ITEMS.get(7));
+        updated.set(4, ListTestHelper.LIST_ITEMS.get(9));
+        updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+
+        listHandler.updateList(valueDescriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        ListTestHelper.verifyListContent(updated, result);
+    }
+
+    @Test
+    public void updateListByReplacingSomeElementsAndAddingNewOnes() {
+        final List<URI> origList = ListTestHelper.LIST_ITEMS.subList(0, 6);
+        testHelper.persistList(origList);
+        final List<URI> updated = new ArrayList<>(origList);
+        updated.set(2, ListTestHelper.LIST_ITEMS.get(7));
+        updated.set(3, ListTestHelper.LIST_ITEMS.get(8));
+        updated.add(ListTestHelper.LIST_ITEMS.get(9));
+        updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+
+        listHandler.updateList(valueDescriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        ListTestHelper.verifyListContent(updated, result);
+    }
+
+    @Test
+    public void updateListByReplacingSomeElementsAndRemovingSome() {
+        final List<URI> origList = ListTestHelper.LIST_ITEMS.subList(0, 6);
+        testHelper.persistList(origList);
+        final List<URI> updated = new ArrayList<>(origList);
+        updated.set(0, ListTestHelper.LIST_ITEMS.get(7));
+        updated.set(1, ListTestHelper.LIST_ITEMS.get(8));
+        updated.remove(updated.size() - 1);
+        updated.remove(updated.size() - 2);
+        updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+
+        listHandler.updateList(valueDescriptor);
+        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        ListTestHelper.verifyListContent(updated, result);
+    }
+
+    @Test
+    void persistListSupportsPersistingListWithDataPropertyContent() {
+        final List<Integer> values = IntStream.range(0, 5).boxed().collect(Collectors.toList());
+        final ReferencedListValueDescriptor<Integer> valueDescriptor = new ReferencedListValueDescriptor<>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, Assertion.createDataPropertyAssertion(URI.create(ListTestHelper.HAS_CONTENT_PROPERTY), false));
+        values.forEach(valueDescriptor::addValue);
+
+        listHandler.persistList(valueDescriptor);
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(manager).applyChanges(captor.capture());
+        final List<AddAxiom> changes = captor.getValue();
+        assertEquals(values.size() * 2, changes.size());
+        for (AddAxiom change : changes) {
+            final OWLAxiom ax = change.getAxiom();
+            if (ax.isOfType(AxiomType.DATA_PROPERTY_ASSERTION)) {
+                final OWLDataPropertyAssertionAxiom dpaAx = (OWLDataPropertyAssertionAxiom) ax;
+                assertEquals(ListTestHelper.HAS_CONTENT_PROPERTY, dpaAx.getProperty().asOWLDataProperty().getIRI()
+                                                                       .toString());
+                assertThat(values, hasItem((Integer) OwlapiUtils.owlLiteralToValue(dpaAx.getObject())));
+            }
+        }
+    }
+
+    @Test
+    public void loadListLoadsListWithDataPropertyValues() {
+        final List<Integer> values = IntStream.range(0, 10).boxed().collect(Collectors.toList());
+        testHelper.persistList(values);
+        final ReferencedListDescriptor desc = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST,
+                ListTestHelper.HAS_NEXT,
+                Assertion.createDataPropertyAssertion(URI.create(ListTestHelper.HAS_CONTENT_PROPERTY), false));
+        final List<Axiom<?>> result = listHandler.loadList(desc);
+        assertEquals(values.size(), result.size());
+        for (int i = 0; i < values.size(); i++) {
+            final Object value = result.get(i).getValue().getValue();
+            assertInstanceOf(Integer.class, value);
+            assertEquals(values.get(i), value);
+        }
     }
 }

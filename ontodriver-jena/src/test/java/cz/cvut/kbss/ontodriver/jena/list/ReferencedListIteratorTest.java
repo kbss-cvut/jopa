@@ -29,7 +29,11 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -45,18 +49,19 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedListIterator, ReferencedListDescriptor> {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedListIterator<NamedResource>, ReferencedListDescriptor> {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         super.setUp();
         testUtil.setHasContent(HAS_CONTENT);
     }
 
     @Override
-    ReferencedListIterator iterator() {
-        return new ReferencedListIterator(descriptor(null), connectorMock);
+    ReferencedListIterator<NamedResource> iterator() {
+        return new ReferencedListIterator<>(descriptor(null), connectorMock);
     }
 
     @Override
@@ -81,7 +86,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
     @Test
     public void nextReturnsFirstListElement() {
         final List<URI> list = generateList();
-        final AbstractListIterator iterator = iterator();
+        final ReferencedListIterator<NamedResource> iterator = iterator();
         assertTrue(iterator.hasNext());
         final Axiom<NamedResource> head = iterator.nextAxiom();
         assertNotNull(head);
@@ -94,7 +99,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         generateList();
         when(connectorMock.find(RESOURCE, HAS_LIST, null, Collections.emptySet())).thenReturn(
                 Collections.singletonList(createStatement(RESOURCE, HAS_LIST, createTypedLiteral(117))));
-        final ReferencedListIterator iterator = iterator();
+        final ReferencedListIterator<NamedResource> iterator = iterator();
         final ListProcessingException ex = assertThrows(ListProcessingException.class, () -> {
             while (iterator.hasNext()) {
                 iterator.nextAxiom();
@@ -113,7 +118,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
                 createStatement(node, HAS_CONTENT, createResource(Generator.generateUri().toString())),
                 createStatement(node, HAS_CONTENT, createResource(list.get(index).toString()))
         ));
-        final ReferencedListIterator iterator = iterator();
+        final ReferencedListIterator<NamedResource> iterator = iterator();
         final IntegrityConstraintViolatedException ex = assertThrows(IntegrityConstraintViolatedException.class, () -> {
             while (iterator.hasNext()) {
                 iterator.nextAxiom();
@@ -129,7 +134,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         final int index = Generator.randomInt(list.size());
         final Resource node = testUtil.getReferencedListNodes().get(index);
         when(connectorMock.find(node, HAS_CONTENT, null, Collections.emptySet())).thenReturn(Collections.emptyList());
-        final ReferencedListIterator iterator = iterator();
+        final ReferencedListIterator<NamedResource> iterator = iterator();
         final IntegrityConstraintViolatedException ex = assertThrows(IntegrityConstraintViolatedException.class, () -> {
             while (iterator.hasNext()) {
                 iterator.nextAxiom();
@@ -141,7 +146,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
     @Test
     public void removeWithoutReconnectRemovesLastElementInList() {
         generateList();
-        final ReferencedListIterator iterator = iterator();
+        final ReferencedListIterator<NamedResource> iterator = iterator();
         while (iterator.hasNext()) {
             iterator.nextAxiom();
         }
@@ -154,7 +159,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
     @Test
     public void removeWithoutReconnectRemovesFirstElementInList() {
         generateList();
-        final ReferencedListIterator iterator = iterator();
+        final ReferencedListIterator<NamedResource> iterator = iterator();
         iterator.nextValue();
         iterator.removeWithoutReconnect();
         final List<Resource> nodes = testUtil.getReferencedListNodes();
@@ -165,7 +170,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
     @Test
     public void replaceReplacesNodeContent() {
         generateList();
-        final ReferencedListIterator iterator = iterator();
+        final ReferencedListIterator<NamedResource> iterator = iterator();
         iterator.nextValue();
         final Resource replacement = createResource(Generator.generateUri().toString());
         iterator.replace(replacement);
@@ -180,7 +185,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
     public void replaceReplacesNodeContentInContext() {
         final String context = Generator.generateUri().toString();
         testUtil.generateReferencedList(context);
-        final ReferencedListIterator iterator = new ReferencedListIterator(descriptor(context), connectorMock);
+        final ReferencedListIterator <NamedResource>iterator = new ReferencedListIterator<>(descriptor(context), connectorMock);
         iterator.nextValue();
         final Resource replacement = createResource(Generator.generateUri().toString());
         iterator.replace(replacement);

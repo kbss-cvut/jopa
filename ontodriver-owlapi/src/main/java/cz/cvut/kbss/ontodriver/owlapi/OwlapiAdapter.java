@@ -19,16 +19,13 @@ package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
-import cz.cvut.kbss.ontodriver.owlapi.list.ListHandler;
+import cz.cvut.kbss.ontodriver.owlapi.list.ReferencedListHandler;
+import cz.cvut.kbss.ontodriver.owlapi.list.SimpleListHandler;
 import cz.cvut.kbss.ontodriver.owlapi.query.OwlapiPreparedStatement;
 import cz.cvut.kbss.ontodriver.owlapi.query.OwlapiStatement;
 import cz.cvut.kbss.ontodriver.owlapi.query.StatementExecutorFactory;
@@ -215,14 +212,14 @@ public class OwlapiAdapter {
         pendingChanges.addAll(changes);
     }
 
-    public ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler() {
+    public SimpleListHandler getSimpleListHandler() {
         startTransactionIfNotActive();
-        return ListHandler.getSimpleListHandler(this, ontologySnapshot);
+        return new SimpleListHandler(this, ontologySnapshot);
     }
 
-    public ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler() {
+    public ReferencedListHandler getReferencedListHandler() {
         startTransactionIfNotActive();
-        return ListHandler.getReferencedListHandler(this, ontologySnapshot);
+        return new ReferencedListHandler(this, ontologySnapshot);
     }
 
     public OwlapiStatement createStatement(OwlapiConnection connection) {

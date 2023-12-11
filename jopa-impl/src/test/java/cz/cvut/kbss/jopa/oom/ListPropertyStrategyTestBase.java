@@ -48,7 +48,7 @@ import static org.mockito.Mockito.when;
 
 class ListPropertyStrategyTestBase {
 
-    protected static final URI PK = Generators.createIndividualIdentifier();
+    protected static final URI IDENTIFIER = Generators.createIndividualIdentifier();
 
     @Mock
     protected ObjectOntologyMapperImpl mapperMock;
@@ -63,7 +63,7 @@ class ListPropertyStrategyTestBase {
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(mocks.forOwlClassA().entityType());
         this.descriptor = new EntityDescriptor();
         this.builder =
-                spy(new AxiomValueGatherer(NamedResource.create(PK), descriptor.getSingleContext().orElse(null)));
+                spy(new AxiomValueGatherer(NamedResource.create(IDENTIFIER), descriptor.getSingleContext().orElse(null)));
         when(mapperMock.containsEntity(any(), any(), any())).thenReturn(true);
     }
 
@@ -89,7 +89,7 @@ class ListPropertyStrategyTestBase {
         }
     }
 
-    void verifyListItems(List<URI> expected, ListValueDescriptor actual) {
+    void verifyListItems(List<URI> expected, ListValueDescriptor<NamedResource> actual) {
         assertEquals(expected.size(), actual.getValues().size());
         for (int i = 0; i < expected.size(); i++) {
             assertEquals(expected.get(i), actual.getValues().get(i).getIdentifier());
@@ -99,6 +99,7 @@ class ListPropertyStrategyTestBase {
     static ListAttributeImpl<WithEnumList, OneOfEnum> initEnumListAttribute() throws Exception {
         final ListAttributeImpl<WithEnumList, OneOfEnum> att = mock(ListAttributeImpl.class);
         when(att.getBindableJavaType()).thenReturn(OneOfEnum.class);
+        when(att.isAssociation()).thenReturn(true);
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_objectOneOfEnumAttribute));
         when(att.getConverter()).thenReturn(new ObjectOneOfEnumConverter<>(OneOfEnum.class));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);

@@ -22,23 +22,23 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import java.util.List;
 
 /**
- * Descriptor for list values.
+ * Descriptor of list values.
  *
+ * @param <T> Value type
  */
-public interface ListValueDescriptor extends ListDescriptor {
+public interface ListValueDescriptor<T> extends ListDescriptor {
 
     /**
      * Gets values from the list described by this descriptor.
      *
      * @return List of value identifiers
      */
-    List<NamedResource> getValues();
+    List<T> getValues();
 
     /**
      * Adds value to this list descriptor.
      *
-     * @param elem
-     *            The value to add, i. e. identifier of the list element
+     * @param elem The value to add, i.e. identifier of the list element
      */
-    void addValue(NamedResource elem);
+    void addValue(T elem);
 }

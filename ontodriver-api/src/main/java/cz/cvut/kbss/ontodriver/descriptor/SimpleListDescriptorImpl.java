@@ -25,7 +25,7 @@ import java.net.URI;
 /**
  * Describes a simple sequence.
  * <p>
- * Simple lists are classic Lips-style lists (singly-linked lists), where each node is a subject for axiom referencing
+ * Simple lists are classic Lisp-style lists (singly-linked lists), where each node is a subject for axiom referencing
  * the next node.
  */
 public class SimpleListDescriptorImpl implements SimpleListDescriptor {

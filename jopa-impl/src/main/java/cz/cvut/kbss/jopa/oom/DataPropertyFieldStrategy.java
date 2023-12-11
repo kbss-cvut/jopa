@@ -30,7 +30,7 @@ import java.util.Collections;
 
 abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, ?>, X> extends FieldStrategy<A, X> {
 
-    private final ConverterWrapper<Object, Object> converter;
+    protected final ConverterWrapper<Object, Object> converter;
 
     DataPropertyFieldStrategy(EntityType<X> et, A att, Descriptor entityDescriptor,
                               EntityMappingHelper mapper) {

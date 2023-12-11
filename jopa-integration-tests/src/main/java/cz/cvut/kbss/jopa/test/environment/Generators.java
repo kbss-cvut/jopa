@@ -73,6 +73,14 @@ public abstract class Generators {
         return lst;
     }
 
+    public static List<LocalDate> createDataPropertyList() {
+        final List<LocalDate> list = new ArrayList<>(DEFAULT_SIZE);
+        for (int i = DEFAULT_SIZE; i >= 0; i--) {
+            list.add(LocalDate.now().minusDays(i));
+        }
+        return list;
+    }
+
     public static List<URI> createListOfIdentifiers() {
         return createSimpleList().stream().map(OWLClassA::getUri).collect(Collectors.toList());
     }

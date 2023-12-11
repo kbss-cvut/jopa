@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -528,7 +529,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     @Test
     void retrieveSupportsMappingEnumsToSimpleLiterals() throws Exception {
         this.em = getEntityManager("retrieveSupportsMappingEnumsToSimpleLiterals", false);
-        persistTestData(Arrays.asList(
+        persistTestData(List.of(
                 new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_enumSimpleLiteralAttribute),
                          entityM.getEnumSimpleLiteral().name(), (String) null)

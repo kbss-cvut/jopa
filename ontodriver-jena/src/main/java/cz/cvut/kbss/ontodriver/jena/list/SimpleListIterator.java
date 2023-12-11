@@ -31,7 +31,7 @@ import java.util.List;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 
-class SimpleListIterator extends AbstractListIterator {
+class SimpleListIterator extends AbstractListIterator<NamedResource, Resource> {
 
     SimpleListIterator(SimpleListDescriptor descriptor, StorageConnector connector) {
         super(descriptor, connector);

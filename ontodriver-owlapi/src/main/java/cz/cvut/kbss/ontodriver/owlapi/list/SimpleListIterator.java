@@ -33,7 +33,7 @@ import org.semanticweb.owlapi.search.EntitySearcher;
 import java.util.*;
 import java.util.stream.Collectors;
 
-class SimpleListIterator extends OwlapiListIterator {
+class SimpleListIterator extends OwlapiListIterator<NamedResource> {
 
     final OWLObjectProperty hasNextProperty;
 

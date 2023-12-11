@@ -20,11 +20,15 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
+import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -33,7 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-class ReferencedListIterator extends AbstractListIterator {
+class ReferencedListIterator<T> extends AbstractListIterator<T> {
 
     private final ReferencedListDescriptor listDescriptor;
 
@@ -76,7 +80,7 @@ class ReferencedListIterator extends AbstractListIterator {
         checkSuccessorMax(next, currentProperty);
         this.currentNode = next.iterator().next();
         this.currentProperty = currentNode.getPredicate();
-        checkNodeIsResource(currentNode);
+        checkObjectIsResource(currentNode);
         final Resource elem = (Resource) currentNode.getObject();
         this.currentContent = getNodeContent(elem);
         this.next = connector.findStatements(elem, hasNextProperty, null, includeInferred, contexts());
@@ -89,24 +93,24 @@ class ReferencedListIterator extends AbstractListIterator {
         if (elements.isEmpty()) {
             throw new IntegrityConstraintViolatedException("Node " + node + " has no content.");
         }
-        final Statement elem = elements.iterator().next();
-        checkNodeIsResource(elem);
-        return elem;
+        return elements.iterator().next();
     }
 
     @Override
-    public Resource currentContent() {
-        assert currentContent.getObject() instanceof Resource;
-        return (Resource) currentContent.getObject();
+    public T currentContent() {
+        return (T) ValueConverter.fromRdf4jValue(listDescriptor.getNodeContent(), currentContent.getObject())
+                                 .orElse(null);
     }
 
     @Override
-    public Axiom<NamedResource> nextAxiom() throws Rdf4jDriverException {
+    public Axiom<T> nextAxiom() throws Rdf4jDriverException {
         nextInternal();
-        assert currentContent.getObject() instanceof Resource;
 
-        return createAxiom(currentContent.getSubject(), listDescriptor.getNodeContent(),
-                (Resource) currentContent.getObject());
+        return new AxiomImpl(NamedResource.create(currentContent.getSubject().stringValue()),
+                listDescriptor.getNodeContent(),
+                new Value<>(currentContent.getObject()
+                                          .isLiteral() ? Rdf4jUtils.getLiteralValue((Literal) currentContent.getObject()) : NamedResource.create(currentContent.getObject()
+                                                                                                                                                               .stringValue())));
     }
 
     @Override
@@ -118,7 +122,7 @@ class ReferencedListIterator extends AbstractListIterator {
         if (!next.isEmpty()) {
             toRemove.addAll(next);
             final Statement stmt = next.iterator().next();
-            checkNodeIsResource(stmt);
+            checkObjectIsResource(stmt);
             final Resource nextNode = (Resource) stmt.getObject();
             final Statement connectNext = vf
                     .createStatement(currentNode.getSubject(), currentProperty, nextNode, context);
@@ -134,15 +138,14 @@ class ReferencedListIterator extends AbstractListIterator {
     }
 
     @Override
-    public void replaceCurrentWith(NamedResource newContent) throws Rdf4jDriverException {
+    public void replaceCurrentWith(T newContent) throws Rdf4jDriverException {
         assert currentNode.getObject() instanceof Resource;
         // We just replace the original content statement with new one
         connector.removeStatements(Collections.singleton(currentContent));
         final Resource node = (Resource) currentNode.getObject();
         final Statement stmt = vf
-                .createStatement(node, hasContentProperty, Rdf4jUtils.toRdf4jIri(newContent.getIdentifier(), vf),
-                                 context);
+                .createStatement(node, hasContentProperty, valueConverter.toRdf4jValue(listDescriptor.getNodeContent(), newContent),
+                        context);
         connector.addStatements(Collections.singleton(stmt));
     }
-
 }

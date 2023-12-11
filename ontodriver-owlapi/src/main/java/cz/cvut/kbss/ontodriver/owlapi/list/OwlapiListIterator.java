@@ -22,18 +22,19 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import org.semanticweb.owlapi.model.OWLIndividual;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObject;
+import org.semanticweb.owlapi.model.OWLProperty;
 
 import java.util.Collection;
 import java.util.List;
 
-abstract class OwlapiListIterator {
+abstract class OwlapiListIterator<T> {
 
     abstract boolean hasNext();
 
-    abstract Axiom<NamedResource> next();
+    abstract Axiom<T> next();
 
-    abstract NamedResource nextValue();
+    abstract T nextValue();
 
     /**
      * Gets the current list node.
@@ -64,9 +65,9 @@ abstract class OwlapiListIterator {
      * @param newValue The new value to use
      * @return List of changes to apply
      */
-    abstract List<TransactionalChange> replaceNode(NamedResource newValue);
+    abstract List<TransactionalChange> replaceNode(T newValue);
 
-    static void checkMaxSuccessors(OWLObjectProperty property, Collection<? extends OWLIndividual> successors) {
+    static void checkMaxSuccessors(OWLProperty property, Collection<? extends OWLObject> successors) {
         if (successors.size() > 1) {
             throw new IntegrityConstraintViolatedException(
                     "Invalid number of successors. Expected only 1 value of property " + property + ", but got " +

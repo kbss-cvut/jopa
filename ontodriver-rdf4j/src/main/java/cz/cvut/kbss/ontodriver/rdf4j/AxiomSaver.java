@@ -24,6 +24,7 @@ import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
+import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
