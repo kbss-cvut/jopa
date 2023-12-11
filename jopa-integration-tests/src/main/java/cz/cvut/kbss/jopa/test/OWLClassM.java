@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.test;
 
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
@@ -95,6 +96,9 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_literalReferencedList)
     private List<LocalDate> literalReferencedList;
 
+    @Sequence(type = SequenceType.referenced)
+    @OWLDataProperty(iri = Vocabulary.p_m_multilingualReferencedList)
+    private List<MultilingualString> multilingualReferencedList;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -252,6 +256,15 @@ public class OWLClassM {
         this.literalReferencedList = literalReferencedList;
     }
 
+    public List<MultilingualString> getMultilingualReferencedList() {
+        return multilingualReferencedList;
+    }
+
+    public void setMultilingualReferencedList(
+            List<MultilingualString> multilingualReferencedList) {
+        this.multilingualReferencedList = multilingualReferencedList;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -273,6 +286,7 @@ public class OWLClassM {
                 ", withConverter=" + withConverter +
                 ", annotationSimpleLiteral=" + annotationSimpleLiteral +
                 ", literalReferencedList=" + literalReferencedList +
+                ", multilingualReferencedList=" + multilingualReferencedList +
                 '}';
     }
 

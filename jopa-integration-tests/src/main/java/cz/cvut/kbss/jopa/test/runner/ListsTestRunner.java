@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassC;
@@ -21,6 +22,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class ListsTestRunner extends BaseRunner {
 
-    protected ListsTestRunner(Logger logger,PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
+    protected ListsTestRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);
     }
 
@@ -305,7 +307,7 @@ public abstract class ListsTestRunner extends BaseRunner {
         for (int i = 5; i >= 0; i--) {
             final LocalDate d = LocalDate.now().minusDays(i);
             dates.add(d);
-            final URI node = URI.create(entityM.getKey() + "-SEQ" + (5-i));
+            final URI node = URI.create(entityM.getKey() + "-SEQ" + (5 - i));
             data.add(new Quad(previous, URI.create(i == 5 ? Vocabulary.p_m_literalReferencedList : SequencesVocabulary.s_p_hasNext), node));
             data.add(new Quad(node, SequencesVocabulary.p_hasContents, d));
             previous = node;
@@ -601,5 +603,25 @@ public abstract class ListsTestRunner extends BaseRunner {
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(updatedList, result.getLiteralReferencedList());
+    }
+
+    @Test
+    void persistSupportsMultilingualReferencedLists() {
+        this.em = getEntityManager("persistSupportsMultilingualReferencedLists", false);
+        entityM.setMultilingualReferencedList(List.of(
+                new MultilingualString(Map.of("en", "First", "cs", "První")),
+                new MultilingualString(Map.of("en", "Second", "cs", "Druhý")),
+                new MultilingualString(Map.of("en", "Third", "cs", "Třetí"))
+        ));
+        persist(entityM);
+
+        for (int i = 0; i < entityM.getMultilingualReferencedList().size(); i++) {
+            final URI hasNextProperty = URI.create(i == 0 ? Vocabulary.p_m_literalReferencedList : SequencesVocabulary.s_p_hasNext);
+            entityM.getMultilingualReferencedList().get(i).getValue()
+                   .forEach((lang, value) -> assertTrue(em.createNativeQuery("ASK WHERE { ?prev ?hasNext ?node . ?node ?hasContent ?content . }", Boolean.class)
+                                                          .setParameter("hasNext", hasNextProperty)
+                                                          .setParameter("hasContent", URI.create(SequencesVocabulary.s_p_hasContents))
+                                                          .setParameter("content", value, lang).getSingleResult()));
+        }
     }
 }
