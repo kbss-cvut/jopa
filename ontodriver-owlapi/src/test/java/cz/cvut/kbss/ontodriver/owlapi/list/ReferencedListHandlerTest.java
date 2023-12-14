@@ -23,6 +23,8 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
@@ -53,6 +55,7 @@ import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNodeSet;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -86,7 +89,7 @@ public class ReferencedListHandlerTest {
     ReferencedListDescriptor descriptor;
     ReferencedListValueDescriptor<NamedResource> valueDescriptor;
     ListTestHelper testHelper;
-    ReferencedListHandler listHandler;
+    ReferencedListHandler sut;
 
     private OWLObjectProperty hasListProperty;
     private OWLObjectProperty hasNextProperty;
@@ -103,7 +106,7 @@ public class ReferencedListHandlerTest {
         this.valueDescriptor = createDescriptor();
         final OntologySnapshot snapshotToUse = new OntologySnapshot(ontology, manager, dataFactory, reasonerMock);
         this.testHelper = new ReferencedListTestHelper(snapshotToUse, individual, ListTestHelper.SUBJECT.toString());
-        this.listHandler = new ReferencedListHandler(adapterMock, snapshotToUse);
+        this.sut = new ReferencedListHandler(adapterMock, snapshotToUse);
         this.hasListProperty = dataFactory.getOWLObjectProperty(IRI.create(ListTestHelper.HAS_LIST.getIdentifier()));
         this.hasNextProperty = dataFactory.getOWLObjectProperty(IRI.create(ListTestHelper.HAS_NEXT.getIdentifier()));
         this.hasContentProperty = dataFactory.getOWLObjectProperty(IRI.create(ListTestHelper.HAS_CONTENT.getIdentifier()));
@@ -115,7 +118,7 @@ public class ReferencedListHandlerTest {
 
     @Test
     public void loadListReturnsEmptyListWhenNoHeadIsFound() {
-        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = sut.loadList(descriptor);
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
@@ -124,7 +127,7 @@ public class ReferencedListHandlerTest {
     public void loadListLoadsSingleElementListWithHeadOnly() {
         final List<URI> headOnly = ListTestHelper.LIST_ITEMS.subList(0, 1);
         testHelper.persistList(headOnly);
-        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = sut.loadList(descriptor);
         assertEquals(1, result.size());
         final Object value = result.get(0).getValue().getValue();
         assertInstanceOf(NamedResource.class, value);
@@ -134,7 +137,7 @@ public class ReferencedListHandlerTest {
     @Test
     public void loadListWithMultipleItems() {
         testHelper.persistList(ListTestHelper.LIST_ITEMS);
-        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = sut.loadList(descriptor);
         assertEquals(ListTestHelper.LIST_ITEMS.size(), result.size());
         for (int i = 0; i < ListTestHelper.LIST_ITEMS.size(); i++) {
             final Object value = result.get(i).getValue().getValue();
@@ -147,7 +150,7 @@ public class ReferencedListHandlerTest {
     public void loadingListWithItemWithMultipleSuccessorsThrowsException() {
         testHelper.persistList(ListTestHelper.LIST_ITEMS.subList(0, 5));
         addExtraPropertyValue(ListTestHelper.HAS_NEXT_PROPERTY, ListTestHelper.LIST_ITEMS.get(8));
-        assertThrows(IntegrityConstraintViolatedException.class, () -> listHandler.loadList(descriptor));
+        assertThrows(IntegrityConstraintViolatedException.class, () -> sut.loadList(descriptor));
     }
 
     private void addExtraPropertyValue(String property, URI value) {
@@ -165,7 +168,7 @@ public class ReferencedListHandlerTest {
     public void loadingListWithNodeWithMultipleContentElementsThrowsException() {
         testHelper.persistList(ListTestHelper.LIST_ITEMS.subList(0, 8));
         addExtraPropertyValue(ListTestHelper.HAS_CONTENT_PROPERTY, ListTestHelper.LIST_ITEMS.get(0));
-        assertThrows(IntegrityConstraintViolatedException.class, () -> listHandler.loadList(descriptor));
+        assertThrows(IntegrityConstraintViolatedException.class, () -> sut.loadList(descriptor));
     }
 
     @Test
@@ -173,7 +176,7 @@ public class ReferencedListHandlerTest {
         initReasoner();
         final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT,
                 ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, Assertion.createObjectPropertyAssertion(ListTestHelper.HAS_CONTENT.getIdentifier(), true));
-        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = sut.loadList(descriptor);
         assertEquals(1, result.size());
         final Object value = result.get(0).getValue().getValue();
         assertInstanceOf(NamedResource.class, value);
@@ -197,7 +200,7 @@ public class ReferencedListHandlerTest {
         initReasoner();
         final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT,
                 Assertion.createObjectPropertyAssertion(ListTestHelper.HAS_LIST.getIdentifier(), true), ListTestHelper.HAS_NEXT, ListTestHelper.HAS_CONTENT);
-        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = sut.loadList(descriptor);
         assertEquals(1, result.size());
         final Object value = result.get(0).getValue().getValue();
         assertInstanceOf(NamedResource.class, value);
@@ -206,14 +209,14 @@ public class ReferencedListHandlerTest {
 
     @Test
     public void persistEmptyListDoesNothing() {
-        listHandler.persistList(valueDescriptor);
+        sut.persistList(valueDescriptor);
         verify(manager, never()).applyChanges(anyList());
     }
 
     @Test
     public void persistListWithHeadOnly() {
         valueDescriptor.addValue(NamedResource.create(ListTestHelper.LIST_ITEMS.get(0)));
-        listHandler.persistList(valueDescriptor);
+        sut.persistList(valueDescriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(manager).applyChanges(captor.capture());
         final List<?> changes = captor.getValue();
@@ -250,7 +253,7 @@ public class ReferencedListHandlerTest {
     @Test
     public void persistListWithMultipleElementsSavesTheList() {
         ListTestHelper.LIST_ITEMS.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
-        listHandler.persistList(valueDescriptor);
+        sut.persistList(valueDescriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(manager).applyChanges(captor.capture());
         final List<?> changes = captor.getValue();
@@ -262,12 +265,12 @@ public class ReferencedListHandlerTest {
     public void updateListToEmptyClearsList() {
         final List<URI> origList = ListTestHelper.LIST_ITEMS.subList(0, 5);
         origList.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
-        listHandler.persistList(valueDescriptor);
+        sut.persistList(valueDescriptor);
 
         final ReferencedListValueDescriptor<NamedResource> updatedDescriptor = createDescriptor();
-        listHandler.updateList(updatedDescriptor);
+        sut.updateList(updatedDescriptor);
 
-        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = sut.loadList(descriptor);
         assertTrue(result.isEmpty());
     }
 
@@ -276,9 +279,9 @@ public class ReferencedListHandlerTest {
         final List<URI> updated = ListTestHelper.LIST_ITEMS.subList(0, 5);
         updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
 
-        listHandler.updateList(valueDescriptor);
+        sut.updateList(valueDescriptor);
 
-        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        final List<Axiom<?>> result = sut.loadList(descriptor);
         ListTestHelper.verifyListContent(updated, result);
     }
 
@@ -288,8 +291,8 @@ public class ReferencedListHandlerTest {
         final List<URI> subList = ListTestHelper.LIST_ITEMS.subList(0, 5);
         subList.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
 
-        listHandler.updateList(valueDescriptor);
-        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        sut.updateList(valueDescriptor);
+        final List<Axiom<?>> result = sut.loadList(descriptor);
         ListTestHelper.verifyListContent(subList, result);
     }
 
@@ -303,8 +306,8 @@ public class ReferencedListHandlerTest {
         updated.set(4, ListTestHelper.LIST_ITEMS.get(9));
         updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
 
-        listHandler.updateList(valueDescriptor);
-        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        sut.updateList(valueDescriptor);
+        final List<Axiom<?>> result = sut.loadList(descriptor);
         ListTestHelper.verifyListContent(updated, result);
     }
 
@@ -318,8 +321,8 @@ public class ReferencedListHandlerTest {
         updated.add(ListTestHelper.LIST_ITEMS.get(9));
         updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
 
-        listHandler.updateList(valueDescriptor);
-        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        sut.updateList(valueDescriptor);
+        final List<Axiom<?>> result = sut.loadList(descriptor);
         ListTestHelper.verifyListContent(updated, result);
     }
 
@@ -334,8 +337,8 @@ public class ReferencedListHandlerTest {
         updated.remove(updated.size() - 2);
         updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
 
-        listHandler.updateList(valueDescriptor);
-        final List<Axiom<?>> result = listHandler.loadList(descriptor);
+        sut.updateList(valueDescriptor);
+        final List<Axiom<?>> result = sut.loadList(descriptor);
         ListTestHelper.verifyListContent(updated, result);
     }
 
@@ -345,7 +348,7 @@ public class ReferencedListHandlerTest {
         final ReferencedListValueDescriptor<Integer> valueDescriptor = new ReferencedListValueDescriptor<>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, Assertion.createDataPropertyAssertion(URI.create(ListTestHelper.HAS_CONTENT_PROPERTY), false));
         values.forEach(valueDescriptor::addValue);
 
-        listHandler.persistList(valueDescriptor);
+        sut.persistList(valueDescriptor);
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(manager).applyChanges(captor.capture());
         final List<AddAxiom> changes = captor.getValue();
@@ -368,12 +371,42 @@ public class ReferencedListHandlerTest {
         final ReferencedListDescriptor desc = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST,
                 ListTestHelper.HAS_NEXT,
                 Assertion.createDataPropertyAssertion(URI.create(ListTestHelper.HAS_CONTENT_PROPERTY), false));
-        final List<Axiom<?>> result = listHandler.loadList(desc);
+        final List<Axiom<?>> result = sut.loadList(desc);
         assertEquals(values.size(), result.size());
         for (int i = 0; i < values.size(); i++) {
             final Object value = result.get(i).getValue().getValue();
             assertInstanceOf(Integer.class, value);
             assertEquals(values.get(i), value);
+        }
+    }
+
+    @Test
+    void persistListSavesMultilingualStringTranslationsAsContentOfSingleNode() {
+        final List<MultilingualString> refList = List.of(
+                new MultilingualString(Map.of("en", "one", "cs", "jedna")),
+                new MultilingualString(Map.of("en", "two", "cs", "dva"))
+        );
+        final ReferencedListValueDescriptor<MultilingualString> valueDescriptor = new ReferencedListValueDescriptor<>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, Assertion.createDataPropertyAssertion(URI.create(ListTestHelper.HAS_CONTENT_PROPERTY), false));
+        refList.forEach(valueDescriptor::addValue);
+
+        sut.persistList(valueDescriptor);
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(manager).applyChanges(captor.capture());
+        final List<AddAxiom> changes = captor.getValue();
+        assertEquals(refList.size() * 3, changes.size());
+        for (AddAxiom change : changes) {
+            final OWLAxiom ax = change.getAxiom();
+            if (ax.isOfType(AxiomType.DATA_PROPERTY_ASSERTION)) {
+                final OWLDataPropertyAssertionAxiom dpaAx = (OWLDataPropertyAssertionAxiom) ax;
+                assertEquals(ListTestHelper.HAS_CONTENT_PROPERTY, dpaAx.getProperty().asOWLDataProperty().getIRI()
+                                                                       .toString());
+                final LangString literalValue = (LangString) OwlapiUtils.owlLiteralToValue(dpaAx.getObject());
+                assertTrue(literalValue.getLanguage().isPresent());
+                final String lang = literalValue.getLanguage().get();
+                final String value = literalValue.getValue();
+                assertTrue(refList.stream().anyMatch(mls -> mls.getValue().containsKey(lang) && mls.getValue().get(lang)
+                                                                                                   .equals(value)));
+            }
         }
     }
 }

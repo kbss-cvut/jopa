@@ -24,6 +24,8 @@ import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
@@ -36,7 +38,9 @@ import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReferencedListHandler {
 
@@ -200,20 +204,29 @@ public class ReferencedListHandler {
             final OWLAxiom nodeAxiom = axiomAdapter
                     .toOwlObjectPropertyAssertionAxiom(new AxiomImpl<>(previousNode, property, new Value<>(node)));
             changes.add(new MutableAddAxiom(ontology, nodeAxiom));
-            changes.add(generateNodeContent(node, value));
+            changes.addAll(generateNodeContent(node, value));
             index++;
             return node;
         }
 
-        private <V> TransactionalChange generateNodeContent(NamedResource node, V value) {
+        private <V> Collection<TransactionalChange> generateNodeContent(NamedResource node, V value) {
             if (nodeContentProperty.getType() == Assertion.AssertionType.OBJECT_PROPERTY) {
                 final OWLAxiom valueAxiom = axiomAdapter
                         .toOwlObjectPropertyAssertionAxiom(new AxiomImpl<>(node, nodeContentProperty, new Value<>(value)));
-                return new MutableAddAxiom(ontology, valueAxiom);
+                return List.of(new MutableAddAxiom(ontology, valueAxiom));
             } else {
                 assert nodeContentProperty.getType() == Assertion.AssertionType.DATA_PROPERTY;
+                if (value instanceof MultilingualString) {
+                    final MultilingualString mls = (MultilingualString) value;
+                    return mls.getValue().entrySet().stream().map(e -> {
+                        final String lang = e.getKey();
+                        final String val = e.getValue();
+                        final OWLAxiom valueAxiom = axiomAdapter.toOwlDataPropertyAssertionAxiom(new AxiomImpl<>(node, nodeContentProperty, new Value<>(new LangString(val, lang))));
+                        return new MutableAddAxiom(ontology, valueAxiom);
+                    }).collect(Collectors.toList());
+                }
                 final OWLAxiom valueAxiom = axiomAdapter.toOwlDataPropertyAssertionAxiom(new AxiomImpl<>(node, nodeContentProperty, new Value<>(value)));
-                return new MutableAddAxiom(ontology, valueAxiom);
+                return List.of(new MutableAddAxiom(ontology, valueAxiom));
             }
         }
 
