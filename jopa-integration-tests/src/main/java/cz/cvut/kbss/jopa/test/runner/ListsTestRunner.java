@@ -15,7 +15,6 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -606,7 +605,6 @@ public abstract class ListsTestRunner extends BaseRunner {
         assertEquals(updatedList, result.getLiteralReferencedList());
     }
 
-    @Disabled
     @Test
     void persistSupportsMultilingualReferencedLists() {
         this.em = getEntityManager("persistSupportsMultilingualReferencedLists", false);
@@ -618,7 +616,7 @@ public abstract class ListsTestRunner extends BaseRunner {
         persist(entityM);
 
         for (int i = 0; i < entityM.getMultilingualReferencedList().size(); i++) {
-            final URI hasNextProperty = URI.create(i == 0 ? Vocabulary.p_m_literalReferencedList : SequencesVocabulary.s_p_hasNext);
+            final URI hasNextProperty = URI.create(i == 0 ? Vocabulary.p_m_multilingualReferencedList : SequencesVocabulary.s_p_hasNext);
             entityM.getMultilingualReferencedList().get(i).getValue()
                    .forEach((lang, value) -> assertTrue(em.createNativeQuery("ASK WHERE { ?prev ?hasNext ?node . ?node ?hasContent ?content . }", Boolean.class)
                                                           .setParameter("hasNext", hasNextProperty)
