@@ -15,6 +15,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -623,5 +624,27 @@ public abstract class ListsTestRunner extends BaseRunner {
                                                           .setParameter("hasContent", URI.create(SequencesVocabulary.s_p_hasContents))
                                                           .setParameter("content", value, lang).getSingleResult()));
         }
+    }
+
+    @Test
+    void readSupportsMultilingualReferenceLists() throws Exception {
+        this.em = getEntityManager("readSupportsMultilingualReferenceLists", false);
+        final List<Quad> data = new ArrayList<>(List.of(new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M))));
+        final List<MultilingualString> strings = new ArrayList<>();
+        URI previous = URI.create(entityM.getKey());
+        for (int i = 5; i >= 0; i--) {
+            final MultilingualString mls = MultilingualString.create("Number " + i, "en");
+            mls.set("cs", "Číslo " + i);
+            strings.add(mls);
+            final URI node = URI.create(entityM.getKey() + "-SEQ" + (5 - i));
+            data.add(new Quad(previous, URI.create(i == 5 ? Vocabulary.p_m_literalReferencedList : SequencesVocabulary.s_p_hasNext), node));
+            mls.getValue()
+               .forEach((lang, val) -> data.add(new Quad(node, SequencesVocabulary.p_hasContents, new LangString(val, lang))));
+            previous = node;
+        }
+        persistTestData(data, em);
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(strings, result.getMultilingualReferencedList());
     }
 }
