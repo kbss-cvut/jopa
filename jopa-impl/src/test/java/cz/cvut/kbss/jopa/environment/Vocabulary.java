@@ -20,7 +20,8 @@ package cz.cvut.kbss.jopa.environment;
 public class Vocabulary {
 
     public static final String ATTRIBUTE_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
-    public static final String CLASS_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
+    public static final String CLASS_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/types#";
+    public static final String INDIVIDUAL_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
 
     public static final String c_OwlClassA = CLASS_BASE + "OWLClassA";
     public static final String c_OwlClassB = CLASS_BASE + "OWLClassB";
@@ -65,8 +66,8 @@ public class Vocabulary {
     public static final String P_R_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "R-stringAttribute";
     public static final String P_HAS_A = ATTRIBUTE_BASE + "hasA";
 
-    public static final String P_HAS_SIMPLE_LIST = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";
-    public static final String P_HAS_REFERENCED_LIST = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence";
+    public static final String P_HAS_SIMPLE_LIST = ATTRIBUTE_BASE + "C-hasSimpleSequence";
+    public static final String P_HAS_REFERENCED_LIST = ATTRIBUTE_BASE + "C-hasReferencedSequence";
 
     public static final String P_T_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDate";
     public static final String P_T_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDateTime";
@@ -80,8 +81,6 @@ public class Vocabulary {
     public static final String p_p_hasPhone = ATTRIBUTE_BASE + "hasPhone";
     public static final String p_p_gender = ATTRIBUTE_BASE + "gender";
     public static final String p_p_phoneNumber = ATTRIBUTE_BASE + "phoneNumber";
-
-    public static final String DC_SOURCE = "http://purl.org/dc/terms/source";
 
     private Vocabulary() {
         throw new AssertionError();

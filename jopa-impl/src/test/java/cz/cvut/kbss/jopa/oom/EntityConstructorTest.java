@@ -33,6 +33,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -629,7 +630,7 @@ class EntityConstructorTest {
         final Set<Axiom<?>> axioms = new HashSet<>();
         axioms.add(getClassAssertionAxiomForType(ID, OWLClassN.getClassIri()));
         final Assertion assertion =
-                Assertion.createAnnotationPropertyAssertion(URI.create(Vocabulary.DC_SOURCE), false);
+                Assertion.createAnnotationPropertyAssertion(URI.create(DC.Terms.SOURCE), false);
         axioms.add(new AxiomImpl<>(ID_RESOURCE, assertion, new Value<>(STRING_ATT)));
 
         final OWLClassN result =

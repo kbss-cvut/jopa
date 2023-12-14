@@ -21,18 +21,22 @@ import cz.cvut.kbss.jopa.exception.InstantiationException;
 import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.AttributeConverter;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.Convert;
+import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.CustomConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.OrdinalEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.StringEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToMultilingualStringConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToRdfLiteralConverter;
 import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -87,6 +91,9 @@ public class ConverterResolver {
         if (config.isLexicalForm()) {
             return Optional.of(new ToLexicalFormConverter());
         }
+        if (isMultilingualReferencedList(attValueType, field)) {
+            return Optional.of(new ToMultilingualStringConverter());
+        }
         return Converters.getDefaultConverter(attValueType);
     }
 
@@ -109,7 +116,8 @@ public class ConverterResolver {
         }
     }
 
-    private static Optional<ConverterWrapper<?, ?>> resolveCustomConverter(PropertyInfo field, PropertyAttributes config) {
+    private static Optional<ConverterWrapper<?, ?>> resolveCustomConverter(PropertyInfo field,
+                                                                           PropertyAttributes config) {
         final Convert convertAnn = field.getAnnotation(Convert.class);
         if (convertAnn == null || convertAnn.disableConversion()) {
             return Optional.empty();
@@ -132,6 +140,12 @@ public class ConverterResolver {
         } catch (InstantiationException e) {
             throw new InvalidConverterException("Unable to instantiate attribute converter.", e);
         }
+    }
+
+    private boolean isMultilingualReferencedList(Class<?> elemType, PropertyInfo field) {
+        return MultilingualString.class.isAssignableFrom(elemType)
+                && field.getAnnotation(Sequence.class) != null
+                && List.class.isAssignableFrom(field.getField().getType());
     }
 
     public static Class<?> resolveConverterAttributeType(Class<?> converterType) {
