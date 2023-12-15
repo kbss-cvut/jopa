@@ -21,12 +21,12 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
-import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
@@ -36,6 +36,8 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 class ReferencedListIterator<T> extends AbstractListIterator<T> {
 
@@ -46,7 +48,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
     private IRI currentProperty;
 
     private Statement currentNode;
-    private Statement currentContent;
+    private Collection<Statement> currentContent;
     private Collection<Statement> next;
 
     public ReferencedListIterator(ReferencedListDescriptor listDescriptor, Connector connector, ValueFactory vf)
@@ -77,7 +79,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         if (!hasNext()) {
             throw new IllegalStateException();
         }
-        checkSuccessorMax(next, currentProperty);
+        super.checkSuccessorMax(next, currentProperty);
         this.currentNode = next.iterator().next();
         this.currentProperty = currentNode.getPredicate();
         checkObjectIsResource(currentNode);
@@ -86,31 +88,75 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         this.next = connector.findStatements(elem, hasNextProperty, null, includeInferred, contexts());
     }
 
-    private Statement getNodeContent(Resource node) throws Rdf4jDriverException {
+    private Collection<Statement> getNodeContent(Resource node) throws Rdf4jDriverException {
         final Collection<Statement> elements = connector.findStatements(node, hasContentProperty,
                 null, includeInferred, contexts());
         checkSuccessorMax(elements, hasContentProperty);
         if (elements.isEmpty()) {
             throw new IntegrityConstraintViolatedException("Node " + node + " has no content.");
         }
-        return elements.iterator().next();
+        return elements;
+    }
+
+    @Override
+    protected void checkSuccessorMax(Collection<Statement> stmts, IRI property) {
+        final Set<String> langs = new HashSet<>();
+        // Remove duplicates
+        final Set<Statement> statements = new HashSet<>(stmts);
+        if (statements.size() == 1) {
+            return;
+        }
+        for (Statement s : statements) {
+            if (!s.getObject().isLiteral()) {
+                throw icViolatedException(property, statements.size());
+            }
+            final Literal literal = (Literal) s.getObject();
+            if (literal.getLanguage().isPresent() && !langs.contains(literal.getLanguage().get())) {
+                langs.add(literal.getLanguage().get());
+            } else {
+                throw icViolatedException(property, statements.size());
+            }
+        }
     }
 
     @Override
     public T currentContent() {
-        return (T) ValueConverter.fromRdf4jValue(listDescriptor.getNodeContent(), currentContent.getObject())
-                                 .orElse(null);
+        if (currentContent.size() == 1) {
+            return (T) fromRdf4jValue(currentContent.iterator().next().getObject());
+        } else {
+            final MultilingualString mls = currentContentToMultilingualString();
+            return (T) mls;
+        }
+    }
+
+    private Object fromRdf4jValue(org.eclipse.rdf4j.model.Value value) {
+        return value.isLiteral() ? Rdf4jUtils.getLiteralValue((Literal) value) : NamedResource.create(value.stringValue());
     }
 
     @Override
     public Axiom<T> nextAxiom() throws Rdf4jDriverException {
         nextInternal();
 
-        return new AxiomImpl(NamedResource.create(currentContent.getSubject().stringValue()),
-                listDescriptor.getNodeContent(),
-                new Value<>(currentContent.getObject()
-                                          .isLiteral() ? Rdf4jUtils.getLiteralValue((Literal) currentContent.getObject()) : NamedResource.create(currentContent.getObject()
-                                                                                                                                                               .stringValue())));
+        if (currentContent.size() == 1) {
+            final org.eclipse.rdf4j.model.Value obj = currentContent.iterator().next().getObject();
+            return new AxiomImpl(NamedResource.create(currentContent.iterator().next().getSubject().stringValue()),
+                    listDescriptor.getNodeContent(),
+                    new Value<>(fromRdf4jValue(obj)));
+        }
+        final MultilingualString mls = currentContentToMultilingualString();
+        return new AxiomImpl(NamedResource.create(currentContent.iterator().next().getSubject().stringValue()),
+                listDescriptor.getNodeContent(), new Value<>(mls));
+    }
+
+    private MultilingualString currentContentToMultilingualString() {
+        final MultilingualString mls = new MultilingualString();
+        currentContent.forEach(s -> {
+            assert s.getObject().isLiteral();
+            final Literal literal = (Literal) s.getObject();
+            assert literal.getLanguage().isPresent();
+            mls.set(literal.getLanguage().get(), literal.getLabel());
+        });
+        return mls;
     }
 
     @Override
@@ -118,7 +164,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         assert currentNode.getObject() instanceof Resource;
         final Collection<Statement> toRemove = new ArrayList<>();
         toRemove.add(currentNode);
-        toRemove.add(currentContent);
+        toRemove.addAll(currentContent);
         if (!next.isEmpty()) {
             toRemove.addAll(next);
             final Statement stmt = next.iterator().next();
@@ -141,7 +187,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
     public void replaceCurrentWith(T newContent) throws Rdf4jDriverException {
         assert currentNode.getObject() instanceof Resource;
         // We just replace the original content statement with new one
-        connector.removeStatements(Collections.singleton(currentContent));
+        connector.removeStatements(currentContent);
         final Resource node = (Resource) currentNode.getObject();
         final Statement stmt = vf
                 .createStatement(node, hasContentProperty, valueConverter.toRdf4jValue(listDescriptor.getNodeContent(), newContent),

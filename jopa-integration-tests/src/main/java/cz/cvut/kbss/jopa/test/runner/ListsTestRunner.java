@@ -637,7 +637,7 @@ public abstract class ListsTestRunner extends BaseRunner {
             mls.set("cs", "Číslo " + i);
             strings.add(mls);
             final URI node = URI.create(entityM.getKey() + "-SEQ" + (5 - i));
-            data.add(new Quad(previous, URI.create(i == 5 ? Vocabulary.p_m_literalReferencedList : SequencesVocabulary.s_p_hasNext), node));
+            data.add(new Quad(previous, URI.create(i == 5 ? Vocabulary.p_m_multilingualReferencedList : SequencesVocabulary.s_p_hasNext), node));
             mls.getValue()
                .forEach((lang, val) -> data.add(new Quad(node, SequencesVocabulary.p_hasContents, new LangString(val, lang))));
             previous = node;

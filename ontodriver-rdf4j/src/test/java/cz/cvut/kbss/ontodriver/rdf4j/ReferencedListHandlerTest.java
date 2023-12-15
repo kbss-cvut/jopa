@@ -48,7 +48,6 @@ import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -72,7 +71,6 @@ import static org.mockito.Mockito.anyCollection;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -84,15 +82,15 @@ import static org.mockito.Mockito.when;
 public class ReferencedListHandlerTest {
 
     private static final ValueFactory vf = SimpleValueFactory.getInstance();
-    private static final Resource owner = vf.createIRI(OWNER.toString());
+    static final Resource owner = vf.createIRI(OWNER.toString());
 
-    private static final IRI hasListProperty = vf.createIRI(LIST_PROPERTY);
-    private static final IRI nextNodeProperty = vf.createIRI(NEXT_NODE_PROPERTY);
-    private static final IRI nodeContentProperty = vf.createIRI(ListHandlerTestHelper.NODE_CONTENT_PROPERTY);
+    static final IRI hasListProperty = vf.createIRI(LIST_PROPERTY);
+    static final IRI nextNodeProperty = vf.createIRI(NEXT_NODE_PROPERTY);
+    static final IRI nodeContentProperty = vf.createIRI(ListHandlerTestHelper.NODE_CONTENT_PROPERTY);
 
-    private static final Assertion hasListAssertion = Assertion.createObjectPropertyAssertion(URI.create(LIST_PROPERTY), false);
-    private static final Assertion nextNodeAssertion = Assertion.createObjectPropertyAssertion(URI.create(NEXT_NODE_PROPERTY), false);
-    private static final Assertion nodeContentAssertion = Assertion.createObjectPropertyAssertion(
+    static final Assertion hasListAssertion = Assertion.createObjectPropertyAssertion(URI.create(LIST_PROPERTY), false);
+    static final Assertion nextNodeAssertion = Assertion.createObjectPropertyAssertion(URI.create(NEXT_NODE_PROPERTY), false);
+    static final Assertion nodeContentAssertion = Assertion.createObjectPropertyAssertion(
             URI.create(ListHandlerTestHelper.NODE_CONTENT_PROPERTY), false);
 
     @Mock
@@ -217,7 +215,9 @@ public class ReferencedListHandlerTest {
         final List<URI> listNodes = initListNodes(refList);
         initStatementsForList(listNodes, refList);
         final Resource node = selectRandomNode(listNodes);
-        final List<Statement> stmts = Arrays.asList(mock(Statement.class), mock(Statement.class));
+        final List<Statement> stmts = List.of(
+                vf.createStatement(node, property, vf.createIRI(Generator.generateUri().toString())),
+                vf.createStatement(node, property, vf.createIRI(Generator.generateUri().toString())));
         when(connector.findStatements(eq(node), eq(property), eq(null),
                 anyBoolean(), eq(Collections.emptySet()))).thenReturn(stmts);
         assertThrows(IntegrityConstraintViolatedException.class, () -> sut.loadList(listDescriptor));

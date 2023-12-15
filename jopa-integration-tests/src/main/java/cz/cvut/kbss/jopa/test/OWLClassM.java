@@ -292,7 +292,7 @@ public class OWLClassM {
 
     public void initializeTestValues(boolean includingKey) {
         if (includingKey) {
-            this.key = "http://krizik.felk.cvut.cz/ontologies/entityM";
+            this.key = Vocabulary.INDIVIDUAL_IRI_BASE + "entityM";
         }
         this.booleanAttribute = true;
         this.intAttribute = 117;
