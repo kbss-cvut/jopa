@@ -24,14 +24,20 @@ import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Statement;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
@@ -57,26 +63,55 @@ class ReferencedListIterator<T> extends AbstractListIterator<T, RDFNode> {
     @Override
     T nextValue() {
         resolveNextListNode();
-        final RDFNode content = resolveNodeContent();
-        return (T) (content.isResource() ? NamedResource.create(content.asResource().getURI()) : JenaUtils.literalToValue(content.asLiteral()));
+        final List<RDFNode> content = resolveNodeContent();
+        if (content.size() == 1) {
+            final RDFNode value = content.get(0);
+            return (T) (value.isResource() ? NamedResource.create(value.asResource()
+                                                                       .getURI()) : JenaUtils.literalToValue(value.asLiteral()));
+        } else {
+            final MultilingualString mls = new MultilingualString();
+            content.forEach(n -> {
+                assert n.isLiteral();
+                final Literal lit = n.asLiteral();
+                assert lit.getLanguage() != null;
+                mls.set(lit.getLanguage(), lit.getString());
+            });
+            return (T) mls;
+        }
     }
 
-    private RDFNode resolveNodeContent() {
+    private List<RDFNode> resolveNodeContent() {
         final Collection<Statement> contentStatements;
         contentStatements = connector.find(currentNode, hasContent, null, contexts());
         verifyContentValueCount(contentStatements);
-        final Statement statement = contentStatements.iterator().next();
-        return statement.getObject();
+        return contentStatements.stream().map(Statement::getObject).collect(Collectors.toList());
     }
 
     private void verifyContentValueCount(Collection<Statement> contentStatements) {
         if (contentStatements.isEmpty()) {
-            throw new IntegrityConstraintViolatedException("No content found for list node " + currentNode.getURI());
+            throw icViolatedException(currentNode.getURI(), 0);
         }
-        if (contentStatements.size() > 1) {
-            throw new IntegrityConstraintViolatedException(
-                    "Encountered multiple content values of list node " + currentNode.getURI());
+        final Set<String> langs = new HashSet<>();
+        final Set<Statement> statements = new HashSet<>(contentStatements);
+        if (statements.size() == 1) {
+            return;
         }
+        for (Statement s : statements) {
+            if (!s.getObject().isLiteral()) {
+                throw icViolatedException(currentNode.getURI(), statements.size());
+            }
+            final Literal literal = (Literal) s.getObject();
+            if (literal.getLanguage() != null && !langs.contains(literal.getLanguage())) {
+                langs.add(literal.getLanguage());
+            } else {
+                throw icViolatedException(currentNode.getURI(), statements.size());
+            }
+        }
+    }
+
+    private static IntegrityConstraintViolatedException icViolatedException(String node, int actualCount) {
+        return new IntegrityConstraintViolatedException(
+                "Expected exactly one content statement for node <" + node + ">, but got " + actualCount);
     }
 
     @Override

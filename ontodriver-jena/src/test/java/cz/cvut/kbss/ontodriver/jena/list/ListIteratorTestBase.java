@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.ontodriver.jena.list;
 
-import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
@@ -31,16 +30,23 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-public abstract class ListIteratorTestBase<T extends AbstractListIterator<NamedResource, ? extends RDFNode>, D extends ListDescriptor> {
+public abstract class ListIteratorTestBase<T extends AbstractListIterator<NamedResource, ? extends RDFNode>> {
 
     static final Resource RESOURCE = createResource(Generator.generateUri().toString());
     static final Property HAS_LIST = ResourceFactory.createProperty(Generator.generateUri().toString());
@@ -57,8 +63,6 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator<NamedR
     }
 
     abstract T iterator();
-
-    abstract D descriptor(String context);
 
     abstract List<URI> generateList();
 

@@ -52,7 +52,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListIterator, SimpleListDescriptor> {
+public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListIterator> {
 
     @BeforeEach
     public void setUp() {
@@ -64,7 +64,6 @@ public class SimpleListIteratorTest extends ListIteratorTestBase<SimpleListItera
         return new SimpleListIterator(descriptor(null), connectorMock);
     }
 
-    @Override
     SimpleListDescriptor descriptor(String context) {
         final NamedResource owner = NamedResource.create(RESOURCE.getURI());
         final Assertion hasList = Assertion.createObjectPropertyAssertion(URI.create(HAS_LIST.getURI()), false);
