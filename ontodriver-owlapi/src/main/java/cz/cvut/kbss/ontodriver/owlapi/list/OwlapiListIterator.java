@@ -49,7 +49,7 @@ abstract class OwlapiListIterator<T> {
     /**
      * Removes the current element without reconnecting the previous node to the following one.
      * <p>
-     * This effectively breaks the list. It should be used only for removing all of the following nodes from the list.
+     * This effectively breaks the list. It should be used only for removing all the following nodes from the list.
      * <p>
      * Note that this method just creates the changes, it does not apply them.
      *

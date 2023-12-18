@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 abstract class OwlapiListIteratorBase {
 
-    static final String SUBJECT = "http://krizik.felk.cvut.cz/jopa#Individual";
+    static final String SUBJECT = ListTestHelper.SUBJECT.getIdentifier().toString();
 
     OntologySnapshot snapshot;
     ListTestHelper testHelper;

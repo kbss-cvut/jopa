@@ -42,8 +42,7 @@ public class ReferencedListTestHelper extends ListTestHelper {
     @Override
     public void persistList(List<?> items) {
         assert items.size() > 0;
-        final OWLObjectProperty hasList = dataFactory.getOWLObjectProperty(
-                IRI.create(HAS_LIST_PROPERTY));
+        final OWLObjectProperty hasList = dataFactory.getOWLObjectProperty(IRI.create(HAS_LIST_PROPERTY));
         final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(HAS_NEXT_PROPERTY));
         int i = 0;
         final String sequenceNodeBase = baseUri + SEQUENCE_NODE_SUFFIX;
@@ -54,8 +53,7 @@ public class ReferencedListTestHelper extends ListTestHelper {
         for (i = 1; i < items.size(); i++) {
             previousNode = node;
             node = dataFactory.getOWLNamedIndividual(IRI.create(sequenceNodeBase + i));
-            manager.addAxiom(ontology,
-                    dataFactory.getOWLObjectPropertyAssertionAxiom(hasNext, previousNode, node));
+            manager.addAxiom(ontology,dataFactory.getOWLObjectPropertyAssertionAxiom(hasNext, previousNode, node));
             manager.addAxiom(ontology, createAssertion(node, HAS_CONTENT_PROPERTY, items.get(i)));
         }
     }
