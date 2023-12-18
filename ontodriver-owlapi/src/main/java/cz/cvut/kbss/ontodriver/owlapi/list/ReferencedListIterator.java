@@ -144,6 +144,10 @@ class ReferencedListIterator<T> extends OwlapiListIterator<T> {
         if (nextItem.isEmpty()) {
             throw new NoSuchElementException("There are no more elements.");
         }
+        return extractNodeContent();
+    }
+
+    protected T extractNodeContent() {
         verifyContentValueCount(nextItem);
         if (nextItem.size() == 1) {
             final OWLObject value = nextItem.iterator().next();
