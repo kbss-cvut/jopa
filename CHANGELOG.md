@@ -1,5 +1,11 @@
 # JOPA - Change Log
 
+## 1.2.0 - 2023-12-20
+- Support data properties for referenced list values (Enhancement #209).
+- Support using multilingual string as referenced list values (Enhancement #216).
+- Fix inconsistent license information (GH #214).
+- Dependency updates: Jena 4.10.0, RDF4J 4.3.8.
+
 ## 1.1.4 - 2023-10-25
 - Support ignoring removals of inferred values on entity merge into persistence context (Enhancement #189).
 - Dependency updates: RDF4J 4.3.7.
