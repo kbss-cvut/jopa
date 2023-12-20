@@ -667,4 +667,29 @@ public abstract class ListsTestRunner extends BaseRunner {
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(newValue, result.getMultilingualReferencedList());
     }
+
+    @Test
+    void removeMultilingualReferencedListItemRemovesStatementsFromRepository() {
+        this.em = getEntityManager("updateSupportsChangesInMultilingualReferencedLists", false);
+        entityM.setMultilingualReferencedList(List.of(
+                new MultilingualString(Map.of("en", "First", "cs", "První")),
+                new MultilingualString(Map.of("en", "Second", "cs", "Druhý")),
+                new MultilingualString(Map.of("en", "Third", "cs", "Třetí"))
+        ));
+        persist(entityM);
+        final MultilingualString toRemove = entityM.getMultilingualReferencedList()
+                                                   .get(entityM.getMultilingualReferencedList().size() - 1);
+
+        transactional(() -> {
+            final OWLClassM update = findRequired(OWLClassM.class, entityM.getKey());
+            update.getMultilingualReferencedList().remove(update.getMultilingualReferencedList().size() - 1);
+        });
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(entityM.getMultilingualReferencedList().size() - 1, result.getMultilingualReferencedList().size());
+        toRemove.getValue()
+                .forEach((lang, val) -> assertFalse(em.createNativeQuery("ASK { ?node ?hasContent ?value }", Boolean.class)
+                                                      .setParameter("hasContent", URI.create(Vocabulary.p_m_multilingualReferencedList))
+                                                      .setParameter("value", val, lang).getSingleResult()));
+    }
 }
