@@ -29,6 +29,8 @@ import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.list.ReferencedListHandler;
+import cz.cvut.kbss.ontodriver.rdf4j.list.SimpleListHandler;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import cz.cvut.kbss.ontodriver.util.Transaction;

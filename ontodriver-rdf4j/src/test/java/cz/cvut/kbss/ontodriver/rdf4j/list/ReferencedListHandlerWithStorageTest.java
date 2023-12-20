@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.ontodriver.rdf4j;
+package cz.cvut.kbss.ontodriver.rdf4j.list;
 
-import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
@@ -34,105 +34,107 @@ import java.util.Collection;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTestBase {
+public class ReferencedListHandlerWithStorageTest extends ListHandlerWithStorageTestBase {
 
-    private SimpleListHandler sut;
+    private static final String NODE_CONTENT_PROPERTY =
+            "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
+
+    private ReferencedListHandler handler;
 
     @BeforeEach
     public void setUp() throws Exception {
         connector = repositoryProvider.createConnector(false);
-        this.sut = new SimpleListHandler(connector, connector.getValueFactory());
+        this.handler = new ReferencedListHandler(connector, connector.getValueFactory());
         connector.begin();
     }
 
     @Test
-    public void persistsSimpleList() throws Exception {
-        final SimpleListValueDescriptor descriptor = initValues(8);
+    public void persistsReferencedList() throws Exception {
+        final ReferencedListValueDescriptor<NamedResource> descriptor = initValues(8);
         final Collection<Axiom<NamedResource>> axioms = generateAxiomsForList(descriptor);
 
-        sut.persistList(descriptor);
+        handler.persistList(descriptor);
         connector.commit();
         connector.begin();
-        verifyListContent(axioms, sut.loadList(descriptor));
+        verifyListContent(axioms, handler.loadList(descriptor));
     }
 
-    private SimpleListValueDescriptor initValues(int count) {
-        final SimpleListValueDescriptor desc = new SimpleListValueDescriptor(OWNER,
+    private ReferencedListValueDescriptor<NamedResource> initValues(int count) {
+        final ReferencedListValueDescriptor<NamedResource> desc = new ReferencedListValueDescriptor<>(OWNER,
                 Assertion.createObjectPropertyAssertion(URI.create(LIST_PROPERTY), false),
-                Assertion.createObjectPropertyAssertion(URI.create(NEXT_NODE_PROPERTY), false));
+                Assertion.createObjectPropertyAssertion(URI.create(NEXT_NODE_PROPERTY), false),
+                Assertion.createObjectPropertyAssertion(URI.create(NODE_CONTENT_PROPERTY), false));
         for (int i = 0; i < count; i++) {
             desc.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + "EntityA_" + i));
         }
         return desc;
     }
 
-    Collection<Axiom<NamedResource>> generateAxiomsForList(SimpleListValueDescriptor listDescriptor) {
+    Collection<Axiom<NamedResource>> generateAxiomsForList(
+            ReferencedListValueDescriptor<NamedResource> listDescriptor) {
         final Collection<Axiom<NamedResource>> axioms = new ArrayList<>(listDescriptor.getValues().size());
         if (listDescriptor.getValues().isEmpty()) {
             return axioms;
         }
-        NamedResource previous = listDescriptor.getValues().get(0);
+        int counter = 0;
+        final String uriBase = OWNER.getIdentifier().toString();
         for (NamedResource val : listDescriptor.getValues()) {
-            Axiom<NamedResource> ax;
-            if (val == previous) {
-                ax = new AxiomImpl<>(OWNER, listDescriptor.getListProperty(), new Value<>(val));
-            } else {
-                ax = new AxiomImpl<>(previous, listDescriptor.getNextNode(), new Value<>(val));
-            }
+
+            NamedResource node = NamedResource.create(uriBase + "-SEQ_" + counter++);
+            Axiom<NamedResource> ax = new AxiomImpl<>(node, listDescriptor.getNodeContent(), new Value<>(val));
             axioms.add(ax);
-            previous = val;
         }
         return axioms;
     }
 
     @Test
     public void persistsEmptyList() throws Exception {
-        final SimpleListValueDescriptor descriptor = initValues(0);
+        final ReferencedListValueDescriptor<NamedResource> descriptor = initValues(0);
         final Collection<Axiom<NamedResource>> axioms = generateAxiomsForList(descriptor);
 
-        sut.persistList(descriptor);
+        handler.persistList(descriptor);
         connector.commit();
         connector.begin();
-        verifyListContent(axioms, sut.loadList(descriptor));
+        verifyListContent(axioms, handler.loadList(descriptor));
     }
 
     @Test
     public void updatesListByPersistingValuesWhenTheOriginalWasEmpty() throws Exception {
-        final SimpleListValueDescriptor descriptor = initValues(5);
+        final ReferencedListValueDescriptor<NamedResource> descriptor = initValues(5);
         final Collection<Axiom<NamedResource>> axioms = generateAxiomsForList(descriptor);
-        assertTrue(sut.loadList(descriptor).isEmpty());
+        assertTrue(handler.loadList(descriptor).isEmpty());
 
-        sut.updateList(descriptor);
+        handler.updateList(descriptor);
         connector.commit();
         connector.begin();
-        verifyListContent(axioms, sut.loadList(descriptor));
+        verifyListContent(axioms, handler.loadList(descriptor));
     }
 
     @Test
     public void updatesListByClearingAllValues() throws Exception {
         persistOriginalList();
 
-        final SimpleListValueDescriptor updated = initValues(0);
-        sut.updateList(updated);
+        final ReferencedListValueDescriptor<NamedResource> updated = initValues(0);
+        handler.updateList(updated);
         connector.commit();
         connector.begin();
-        assertTrue(sut.loadList(updated).isEmpty());
+        assertTrue(handler.loadList(updated).isEmpty());
     }
 
-    private SimpleListValueDescriptor persistOriginalList() throws Exception {
-        final SimpleListValueDescriptor original = initValues(10);
-        sut.persistList(original);
+    private ReferencedListValueDescriptor<NamedResource> persistOriginalList() throws Exception {
+        final ReferencedListValueDescriptor<NamedResource> original = initValues(10);
+        handler.persistList(original);
         connector.commit();
         connector.begin();
-        assertFalse(sut.loadList(original).isEmpty());
+        assertFalse(handler.loadList(original).isEmpty());
         return original;
     }
 
     @Test
     public void updatesListByAppendingSeveralNewValues() throws Exception {
-        final SimpleListValueDescriptor original = persistOriginalList();
+        final ReferencedListValueDescriptor<NamedResource> original = persistOriginalList();
 
-        final SimpleListValueDescriptor updated = initValues(0);
+        final ReferencedListValueDescriptor<NamedResource> updated = initValues(0);
         for (NamedResource r : original.getValues()) {
             updated.addValue(r);
         }
@@ -142,19 +144,19 @@ public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTest
         updateAndCheck(updated);
     }
 
-    void updateAndCheck(SimpleListValueDescriptor descriptor) throws Exception {
+    void updateAndCheck(ReferencedListValueDescriptor<NamedResource> descriptor) throws Exception {
         final Collection<Axiom<NamedResource>> axioms = generateAxiomsForList(descriptor);
-        sut.updateList(descriptor);
+        handler.updateList(descriptor);
         connector.commit();
         connector.begin();
-        verifyListContent(axioms, sut.loadList(descriptor));
+        verifyListContent(axioms, handler.loadList(descriptor));
     }
 
     @Test
     public void updatesListByRemovingSeveralValuesFromTheEnd() throws Exception {
-        final SimpleListValueDescriptor original = persistOriginalList();
+        final ReferencedListValueDescriptor<NamedResource> original = persistOriginalList();
 
-        final SimpleListValueDescriptor updated = initValues(0);
+        final ReferencedListValueDescriptor<NamedResource> updated = initValues(0);
         for (int i = 0; i < original.getValues().size() / 2; i++) {
             updated.addValue(original.getValues().get(i));
         }
@@ -163,9 +165,9 @@ public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTest
 
     @Test
     public void updatesListByReplacingSomeElements() throws Exception {
-        final SimpleListValueDescriptor original = persistOriginalList();
+        final ReferencedListValueDescriptor<NamedResource> original = persistOriginalList();
 
-        final SimpleListValueDescriptor updated = initValues(0);
+        final ReferencedListValueDescriptor<NamedResource> updated = initValues(0);
         for (int i = 0; i < original.getValues().size(); i++) {
             if (i % 2 != 0) {
                 updated.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + "Modified_" + i));
@@ -178,9 +180,9 @@ public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTest
 
     @Test
     public void updatesListByPrependingSeveralNewElements() throws Exception {
-        final SimpleListValueDescriptor original = persistOriginalList();
+        final ReferencedListValueDescriptor<NamedResource> original = persistOriginalList();
 
-        final SimpleListValueDescriptor updated = initValues(0);
+        final ReferencedListValueDescriptor<NamedResource> updated = initValues(0);
         for (int i = 0; i < 4; i++) {
             updated.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + "Prepended_" + i));
         }
@@ -192,9 +194,9 @@ public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTest
 
     @Test
     public void updatesListByReplacingTheWholeListWithNewElements() throws Exception {
-        final SimpleListValueDescriptor original = persistOriginalList();
+        final ReferencedListValueDescriptor<NamedResource> original = persistOriginalList();
 
-        final SimpleListValueDescriptor updated = initValues(0);
+        final ReferencedListValueDescriptor<NamedResource> updated = initValues(0);
         for (int i = 0; i < original.getValues().size() + 2; i++) {
             updated.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + "Replacement_" + i));
         }
@@ -203,42 +205,14 @@ public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTest
 
     @Test
     public void updatesListByRemovingSomeOfTheElements() throws Exception {
-        final SimpleListValueDescriptor original = persistOriginalList();
+        final ReferencedListValueDescriptor<NamedResource> original = persistOriginalList();
 
-        final SimpleListValueDescriptor updated = initValues(0);
+        final ReferencedListValueDescriptor<NamedResource> updated = initValues(0);
         for (int i = 0; i < original.getValues().size(); i++) {
             if (i % 2 != 0) {
                 updated.addValue(original.getValues().get(i));
             }
         }
         updateAndCheck(updated);
-    }
-
-    @Test
-    public void updatesByInsertingElementsMultipleTimesInOneTransaction() throws Exception {
-        final SimpleListValueDescriptor original = persistOriginalList();
-
-        final SimpleListValueDescriptor updatedFirst = initValues(0);
-        for (int i = 0; i < original.getValues().size(); i++) {
-            if (original.getValues().size() / 2 == i) {
-                updatedFirst.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + "added"));
-            }
-            updatedFirst.addValue(original.getValues().get(i));
-        }
-
-        Collection<Axiom<NamedResource>> axioms = generateAxiomsForList(updatedFirst);
-        sut.updateList(updatedFirst);
-        verifyListContent(axioms, sut.loadList(updatedFirst));
-
-        final SimpleListValueDescriptor updatedSecond = initValues(0);
-        for (int i = 0; i < original.getValues().size() - 1; i++) {
-            updatedSecond.addValue(original.getValues().get(i));
-        }
-        updatedSecond.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + "addedSecond"));
-        updatedSecond.addValue(original.getValues().get(original.getValues().size() - 1));
-
-        axioms = generateAxiomsForList(updatedSecond);
-        sut.updateList(updatedSecond);
-        verifyListContent(axioms, sut.loadList(updatedSecond));
     }
 }

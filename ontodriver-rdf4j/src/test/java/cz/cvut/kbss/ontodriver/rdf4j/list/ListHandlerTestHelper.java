@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.rdf4j;
+package cz.cvut.kbss.ontodriver.rdf4j.list;
 
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;

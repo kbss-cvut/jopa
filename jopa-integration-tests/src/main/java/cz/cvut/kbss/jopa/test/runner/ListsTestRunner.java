@@ -647,4 +647,24 @@ public abstract class ListsTestRunner extends BaseRunner {
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(strings, result.getMultilingualReferencedList());
     }
+
+    @Test
+    void updateSupportsChangesInMultilingualReferencedLists() {
+        this.em = getEntityManager("updateSupportsChangesInMultilingualReferencedLists", false);
+        entityM.setMultilingualReferencedList(List.of(
+                new MultilingualString(Map.of("en", "First", "cs", "První")),
+                new MultilingualString(Map.of("en", "Second", "cs", "Druhý")),
+                new MultilingualString(Map.of("en", "Third", "cs", "Třetí"))
+        ));
+        persist(entityM);
+
+        final List<MultilingualString> newValue = new ArrayList<>(entityM.getMultilingualReferencedList());
+        newValue.set(Generators.randomPositiveInt(0, newValue.size()), new MultilingualString(Map.of("en", "New", "cs", "Nový")));
+        entityM.setMultilingualReferencedList(newValue);
+
+        transactional(() -> em.merge(entityM));
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(newValue, result.getMultilingualReferencedList());
+    }
 }

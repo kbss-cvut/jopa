@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.ontodriver.rdf4j;
+package cz.cvut.kbss.ontodriver.rdf4j.list;
 
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
@@ -56,10 +56,10 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestHelper.LIST_PROPERTY;
-import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestHelper.NEXT_NODE_PROPERTY;
-import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestHelper.OWNER;
-import static cz.cvut.kbss.ontodriver.rdf4j.ListHandlerTestHelper.generateList;
+import static cz.cvut.kbss.ontodriver.rdf4j.list.ListHandlerTestHelper.LIST_PROPERTY;
+import static cz.cvut.kbss.ontodriver.rdf4j.list.ListHandlerTestHelper.NEXT_NODE_PROPERTY;
+import static cz.cvut.kbss.ontodriver.rdf4j.list.ListHandlerTestHelper.OWNER;
+import static cz.cvut.kbss.ontodriver.rdf4j.list.ListHandlerTestHelper.generateList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;

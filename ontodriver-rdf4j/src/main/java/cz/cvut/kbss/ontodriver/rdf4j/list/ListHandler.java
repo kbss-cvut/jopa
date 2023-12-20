@@ -15,12 +15,10 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.ontodriver.rdf4j;
+package cz.cvut.kbss.ontodriver.rdf4j.list;
 
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
@@ -60,7 +58,7 @@ abstract class ListHandler<VD extends ListValueDescriptor<?>> {
      * @param listValueDescriptor Describes values to persist
      * @throws Rdf4jDriverException When storage access error occurs
      */
-    void persistList(VD listValueDescriptor) throws Rdf4jDriverException {
+    public void persistList(VD listValueDescriptor) throws Rdf4jDriverException {
         if (listValueDescriptor.getValues().isEmpty()) {
             return;
         }
@@ -80,7 +78,7 @@ abstract class ListHandler<VD extends ListValueDescriptor<?>> {
      * @param listValueDescriptor Describes the updated values
      * @throws Rdf4jDriverException When storage access error occurs
      */
-    void updateList(VD listValueDescriptor) throws Rdf4jDriverException {
+    public void updateList(VD listValueDescriptor) throws Rdf4jDriverException {
         if (listValueDescriptor.getValues().isEmpty()) {
             clearList(listValueDescriptor);
         } else if (isOldListEmpty(owner(listValueDescriptor), hasList(listValueDescriptor),

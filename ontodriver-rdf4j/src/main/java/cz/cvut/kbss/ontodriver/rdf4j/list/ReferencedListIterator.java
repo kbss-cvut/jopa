@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.ontodriver.rdf4j;
+package cz.cvut.kbss.ontodriver.rdf4j.list;
 
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 class ReferencedListIterator<T> extends AbstractListIterator<T> {
 
@@ -188,10 +189,10 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         assert currentNode.getObject() instanceof Resource;
         // We just replace the original content statement with new one
         connector.removeStatements(currentContent);
+        final Collection<org.eclipse.rdf4j.model.Value> contentValues = new ReferencedListHelper(valueConverter).toRdf4jValue(listDescriptor.getNodeContent(), newContent);
         final Resource node = (Resource) currentNode.getObject();
-        final Statement stmt = vf
-                .createStatement(node, hasContentProperty, valueConverter.toRdf4jValue(listDescriptor.getNodeContent(), newContent),
-                        context);
-        connector.addStatements(Collections.singleton(stmt));
+        connector.addStatements(contentValues.stream()
+                                             .map(v -> vf.createStatement(node, hasContentProperty, v, context))
+                                             .collect(Collectors.toList()));
     }
 }

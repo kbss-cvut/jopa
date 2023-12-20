@@ -15,14 +15,12 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.ontodriver.rdf4j;
+package cz.cvut.kbss.ontodriver.rdf4j.list;
 
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.LangString;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
@@ -37,7 +35,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class ReferencedListHandler extends ListHandler<ReferencedListValueDescriptor<?>> {
@@ -46,7 +43,7 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
 
     private final ValueConverter valueConverter;
 
-    ReferencedListHandler(Connector connector, ValueFactory vf) {
+    public ReferencedListHandler(Connector connector, ValueFactory vf) {
         super(connector, vf);
         this.valueConverter = new ValueConverter(vf);
     }
@@ -57,7 +54,7 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
      * @return Collection of axioms representing sequence values
      * @throws Rdf4jDriverException When storage access error occurs
      */
-    List<Axiom<?>> loadList(ReferencedListDescriptor listDescriptor) throws Rdf4jDriverException {
+    public List<Axiom<?>> loadList(ReferencedListDescriptor listDescriptor) throws Rdf4jDriverException {
         final List<Axiom<?>> axioms = new ArrayList<>();
         final ListIterator<?> it = new ReferencedListIterator<>(listDescriptor, connector, vf);
         while (it.hasNext()) {
@@ -85,15 +82,7 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
     }
 
     private Collection<Value> toRdf4jValue(Assertion a, Object value) throws Rdf4jDriverException {
-        if (value instanceof MultilingualString) {
-            final MultilingualString mls = (MultilingualString) value;
-            final List<Value> values = new ArrayList<>(mls.getValue().size());
-            for (Map.Entry<String, String> e : mls.getValue().entrySet()) {
-                values.add(valueConverter.toRdf4jValue(a, new cz.cvut.kbss.ontodriver.model.Value<>(new LangString(e.getValue(), e.getKey()))));
-            }
-            return values;
-        }
-        return List.of(valueConverter.toRdf4jValue(a, new cz.cvut.kbss.ontodriver.model.Value<>(value)));
+        return new ReferencedListHelper(valueConverter).toRdf4jValue(a, value);
     }
 
     private IRI generateSequenceNode(IRI owner, IRI context) throws Rdf4jDriverException {

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.ontodriver.rdf4j;
+package cz.cvut.kbss.ontodriver.rdf4j.list;
 
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
@@ -34,9 +34,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-class SimpleListHandler extends ListHandler<SimpleListValueDescriptor> {
+public class SimpleListHandler extends ListHandler<SimpleListValueDescriptor> {
 
-    SimpleListHandler(Connector connector, ValueFactory vf) {
+    public SimpleListHandler(Connector connector, ValueFactory vf) {
         super(connector, vf);
     }
 
@@ -46,7 +46,7 @@ class SimpleListHandler extends ListHandler<SimpleListValueDescriptor> {
      * @return Collection of axioms representing sequence values
      * @throws Rdf4jDriverException When storage access error occurs
      */
-    List<Axiom<NamedResource>> loadList(SimpleListDescriptor listDescriptor) throws Rdf4jDriverException {
+    public List<Axiom<NamedResource>> loadList(SimpleListDescriptor listDescriptor) throws Rdf4jDriverException {
         final List<Axiom<NamedResource>> axioms = new ArrayList<>();
         final ListIterator<NamedResource> it = new SimpleListIterator(listDescriptor, connector, vf);
         while (it.hasNext()) {
