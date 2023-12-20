@@ -33,7 +33,6 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Statement;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,7 +41,7 @@ import java.util.stream.Collectors;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 
-class ReferencedListIterator<T> extends AbstractListIterator<T, RDFNode> {
+class ReferencedListIterator<T> extends AbstractListIterator<T> {
 
     private final Property hasContent;
     private final Assertion hasContentAssertion;
@@ -121,9 +120,11 @@ class ReferencedListIterator<T> extends AbstractListIterator<T, RDFNode> {
     }
 
     @Override
-    void replace(RDFNode replacement) {
+    void replace(T replacement) {
         remove(currentNode, hasContent, null);
-        final Statement toAdd = createStatement(currentNode, hasContent, replacement);
-        connector.add(Collections.singletonList(toAdd), context);
+        final List<Statement> toAdd = ReferencedListHelper.toRdfNodes(replacement, hasContentAssertion)
+                                                          .map(n -> createStatement(currentNode, hasContent, n))
+                                                          .collect(Collectors.toList());
+        connector.add(toAdd, context);
     }
 }

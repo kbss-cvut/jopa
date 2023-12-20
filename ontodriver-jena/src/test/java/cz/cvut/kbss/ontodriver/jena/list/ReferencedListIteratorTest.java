@@ -31,6 +31,7 @@ import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -53,6 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -183,12 +185,13 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         generateList();
         final ReferencedListIterator<NamedResource> iterator = iterator();
         iterator.nextValue();
-        final Resource replacement = createResource(Generator.generateUri().toString());
+        final NamedResource replacement = NamedResource.create(Generator.generateUri());
         iterator.replace(replacement);
 
         final List<Resource> nodes = testUtil.getReferencedListNodes();
         verify(connectorMock).remove(nodes.get(0), HAS_CONTENT, null, null);
-        final Statement added = createStatement(nodes.get(0), HAS_CONTENT, replacement);
+        final Statement added = createStatement(nodes.get(0), HAS_CONTENT, createResource(replacement.getIdentifier()
+                                                                                                     .toString()));
         verify(connectorMock).add(Collections.singletonList(added), null);
     }
 
@@ -198,12 +201,13 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         testUtil.generateReferencedList(context);
         final ReferencedListIterator<NamedResource> iterator = new ReferencedListIterator<>(descriptor(Assertion.AssertionType.OBJECT_PROPERTY, context), connectorMock);
         iterator.nextValue();
-        final Resource replacement = createResource(Generator.generateUri().toString());
+        final NamedResource replacement = NamedResource.create(Generator.generateUri());
         iterator.replace(replacement);
 
         final List<Resource> nodes = testUtil.getReferencedListNodes();
         verify(connectorMock).remove(nodes.get(0), HAS_CONTENT, null, context);
-        final Statement added = createStatement(nodes.get(0), HAS_CONTENT, replacement);
+        final Statement added = createStatement(nodes.get(0), HAS_CONTENT, createResource(replacement.getIdentifier()
+                                                                                                     .toString()));
         verify(connectorMock).add(Collections.singletonList(added), context);
     }
 
@@ -222,5 +226,33 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         final Axiom<MultilingualString> result = sut.nextAxiom();
         assertNotNull(result);
         assertEquals(new MultilingualString(Map.of("en", "one", "cs", "jedna")), result.getValue().getValue());
+    }
+
+    @Test
+    void replaceReplacesAllTranslationsOfMultilingualStringInCurrentNode() {
+        final Resource node = createResource(Generator.generateUri().toString());
+        final Statement next = createStatement(RESOURCE, HAS_LIST, node);
+        when(connectorMock.find(RESOURCE, HAS_LIST, null, Collections.emptySet())).thenReturn(List.of(next));
+        final List<Statement> content = List.of(
+                createStatement(node, HAS_CONTENT, createLangLiteral("one", "en")),
+                createStatement(node, HAS_CONTENT, createLangLiteral("jedna", "cs"))
+        );
+        when(connectorMock.find(node, HAS_CONTENT, null, Collections.emptySet())).thenReturn(content);
+        final ReferencedListIterator<MultilingualString> sut = new ReferencedListIterator<>(descriptor(Assertion.AssertionType.DATA_PROPERTY, null), connectorMock);
+
+        final MultilingualString newContent = new MultilingualString(Map.of(
+                "en", "New",
+                "cs", "Nový"
+        ));
+        sut.nextAxiom();
+        sut.replace(newContent);
+        verify(connectorMock).remove(node, HAS_CONTENT, null, null);
+        final ArgumentCaptor<List<Statement>> captor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock).add(captor.capture(), isNull());
+        assertEquals(newContent.getValue().size(), captor.getValue().size());
+        captor.getValue().forEach(s -> {
+            assertTrue(s.getObject().isLiteral());
+            assertEquals(newContent.get(s.getObject().asLiteral().getLanguage()), s.getObject().asLiteral().getValue());
+        });
     }
 }

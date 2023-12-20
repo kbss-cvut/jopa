@@ -35,7 +35,7 @@ import java.util.Set;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
-abstract class AbstractListIterator<T, JT extends RDFNode> {
+abstract class AbstractListIterator<T> {
 
     final StorageConnector connector;
 
@@ -136,5 +136,5 @@ abstract class AbstractListIterator<T, JT extends RDFNode> {
         this.removed = true;
     }
 
-    abstract void replace(JT replacement);
+    abstract void replace(T replacement);
 }

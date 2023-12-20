@@ -85,7 +85,7 @@ public class SimpleListHandler {
             final NamedResource update = descriptor.getValues().get(i);
             final NamedResource existing = it.nextValue();
             if (!existing.equals(update)) {
-                it.replace(createResource(update.getIdentifier().toString()));
+                it.replace(update);
             }
             i++;
         }

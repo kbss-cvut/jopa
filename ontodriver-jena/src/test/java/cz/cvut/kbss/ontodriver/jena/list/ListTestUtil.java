@@ -19,9 +19,10 @@ package cz.cvut.kbss.ontodriver.jena.list;
 
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.model.MultilingualString;
 import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.apache.jena.rdf.model.ResourceFactory.createTypedLiteral;
@@ -113,9 +115,17 @@ public class ListTestUtil {
                 when(connectorMock.find(prevResource, hasNext, null, Collections.emptySet())).thenReturn(Collections
                         .singletonList(createStatement(prevResource, hasNext, node)));
             }
-            final RDFNode value = content instanceof URI ? createResource(content.toString()) : createTypedLiteral(content);
-            when(connectorMock.find(node, hasContent, null, Collections.emptySet())).thenReturn(
-                    Collections.singletonList(createStatement(node, hasContent, value)));
+            final List<Statement> contentStatements;
+            if (content instanceof URI) {
+                contentStatements = List.of(createStatement(node, hasContent, createResource(content.toString())));
+            } else if (content instanceof MultilingualString) {
+                contentStatements = ((MultilingualString) content).getValue().entrySet().stream()
+                                                                  .map(e -> createStatement(node, hasContent, createLangLiteral(e.getValue(), e.getKey())))
+                                                                  .collect(Collectors.toList());
+            } else {
+                contentStatements = List.of(createStatement(node, hasContent, createTypedLiteral(content)));
+            }
+            when(connectorMock.find(node, hasContent, null, Collections.emptySet())).thenReturn(contentStatements);
             if (firstNode == null) {
                 firstNode = node;
             }
