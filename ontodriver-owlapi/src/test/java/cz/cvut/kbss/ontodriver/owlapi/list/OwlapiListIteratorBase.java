@@ -1,16 +1,19 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
@@ -29,31 +32,30 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import static cz.cvut.kbss.ontodriver.owlapi.list.ListHandlerTestBase.LIST_ITEMS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 abstract class OwlapiListIteratorBase {
 
-    static final String SUBJECT = "http://krizik.felk.cvut.cz/jopa#Individual";
+    static final String SUBJECT = ListTestHelper.SUBJECT.getIdentifier().toString();
 
     OntologySnapshot snapshot;
     ListTestHelper testHelper;
     AxiomAdapter axiomAdapter;
 
-    OwlapiListIterator iterator;
+    OwlapiListIterator<NamedResource> iterator;
 
     public void setUp() throws Exception {
         this.snapshot = TestUtils.initRealOntology(null);
         this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory());
     }
 
-    abstract OwlapiListIterator iterator();
+    abstract OwlapiListIterator<NamedResource> iterator();
 
     @Test
     public void nextWithoutMoreElementsThrowsException() {
-        testHelper.persistList(LIST_ITEMS);
+        testHelper.persistList(ListTestHelper.LIST_ITEMS);
         while (iterator.hasNext()) {
             iterator.next();
         }
@@ -62,11 +64,11 @@ abstract class OwlapiListIteratorBase {
 
     @Test
     public void testBasicIteration() {
-        testHelper.persistList(LIST_ITEMS);
-        verifyIterationContent(iterator, LIST_ITEMS);
+        testHelper.persistList(ListTestHelper.LIST_ITEMS);
+        verifyIterationContent(iterator, ListTestHelper.LIST_ITEMS);
     }
 
-    private void verifyIterationContent(OwlapiListIterator it, List<URI> expected) {
+    private void verifyIterationContent(OwlapiListIterator<NamedResource> it, List<URI> expected) {
         int i = 0;
         while (it.hasNext()) {
             final Axiom<NamedResource> item = it.next();
@@ -78,14 +80,14 @@ abstract class OwlapiListIteratorBase {
 
     @Test
     public void removeWithoutReconnectOnAllElementsClearsTheWholeList() {
-        testHelper.persistList(LIST_ITEMS);
+        testHelper.persistList(ListTestHelper.LIST_ITEMS);
         final List<TransactionalChange> changes = new ArrayList<>();
         while (iterator.hasNext()) {
             iterator.next();
             changes.addAll(iterator.removeWithoutReconnect());
         }
         applyChanges(changes);
-        final OwlapiListIterator it = iterator();
+        final OwlapiListIterator<NamedResource> it = iterator();
         assertFalse(it.hasNext());
     }
 
@@ -98,7 +100,7 @@ abstract class OwlapiListIteratorBase {
 
     @Test
     public void removeWithoutReconnectClearsRestOfList() {
-        testHelper.persistList(LIST_ITEMS);
+        testHelper.persistList(ListTestHelper.LIST_ITEMS);
         final List<TransactionalChange> changes = new ArrayList<>();
         int i = 0;
         while (iterator.hasNext()) {
@@ -109,7 +111,7 @@ abstract class OwlapiListIteratorBase {
             i++;
         }
         applyChanges(changes);
-        final OwlapiListIterator it = iterator();
+        final OwlapiListIterator<NamedResource> it = iterator();
         int count = 0;
         while (it.hasNext()) {
             it.next();
@@ -120,23 +122,23 @@ abstract class OwlapiListIteratorBase {
 
     @Test
     public void testReplaceHead() {
-        final List<URI> lst = new ArrayList<>(LIST_ITEMS.subList(0, 5));
+        final List<URI> lst = new ArrayList<>(ListTestHelper.LIST_ITEMS.subList(0, 5));
         testHelper.persistList(lst);
-        lst.set(0, LIST_ITEMS.get(8));
+        lst.set(0, ListTestHelper.LIST_ITEMS.get(8));
         iterator.next();
         final List<TransactionalChange> changes = new ArrayList<>(iterator.replaceNode(NamedResource.create(lst.get(0))));
         applyChanges(changes);
 
-        final OwlapiListIterator it = iterator();
+        final OwlapiListIterator<NamedResource> it = iterator();
         verifyIterationContent(it, lst);
     }
 
     @Test
     public void testReplaceNodeInsideList() {
-        final List<URI> lst = new ArrayList<>(LIST_ITEMS.subList(0, 5));
+        final List<URI> lst = new ArrayList<>(ListTestHelper.LIST_ITEMS.subList(0, 5));
         testHelper.persistList(lst);
         int replaceIndex = 2;
-        lst.set(replaceIndex, LIST_ITEMS.get(8));
+        lst.set(replaceIndex, ListTestHelper.LIST_ITEMS.get(8));
         int i = 0;
         while (iterator.hasNext() && i < replaceIndex) {
             iterator.next();
@@ -147,16 +149,16 @@ abstract class OwlapiListIteratorBase {
                 new ArrayList<>(iterator.replaceNode(NamedResource.create(lst.get(replaceIndex))));
         applyChanges(changes);
 
-        final OwlapiListIterator it = iterator();
+        final OwlapiListIterator<NamedResource> it = iterator();
         verifyIterationContent(it, lst);
     }
 
     @Test
     public void testReplaceLastNode() {
-        final List<URI> lst = new ArrayList<>(LIST_ITEMS.subList(0, 5));
+        final List<URI> lst = new ArrayList<>(ListTestHelper.LIST_ITEMS.subList(0, 5));
         testHelper.persistList(lst);
         int replaceIndex = lst.size() - 1;
-        lst.set(replaceIndex, LIST_ITEMS.get(8));
+        lst.set(replaceIndex, ListTestHelper.LIST_ITEMS.get(8));
         int i = 0;
         while (iterator.hasNext() && i < replaceIndex) {
             iterator.next();
@@ -167,7 +169,7 @@ abstract class OwlapiListIteratorBase {
                 new ArrayList<>(iterator.replaceNode(NamedResource.create(lst.get(replaceIndex))));
         applyChanges(changes);
 
-        final OwlapiListIterator it = iterator();
+        final OwlapiListIterator<NamedResource> it = iterator();
         verifyIterationContent(it, lst);
     }
 }

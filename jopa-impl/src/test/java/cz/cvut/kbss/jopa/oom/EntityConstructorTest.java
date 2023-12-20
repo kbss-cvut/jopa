@@ -1,16 +1,19 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -30,6 +33,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -546,7 +550,7 @@ class EntityConstructorTest {
     }
 
     private Set<Axiom<?>> initInvalidFieldValuesForICValidation() throws NoSuchFieldException {
-        final Set<Axiom<NamedResource>> listAxioms = new HashSet<>();
+        final Set<Axiom<?>> listAxioms = new HashSet<>();
         when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(listAxioms);
         final Descriptor attDescriptor = new EntityDescriptor();
         descriptor.addAttributeDescriptor(mocks.forOwlClassL().referencedListAtt(), attDescriptor);
@@ -626,7 +630,7 @@ class EntityConstructorTest {
         final Set<Axiom<?>> axioms = new HashSet<>();
         axioms.add(getClassAssertionAxiomForType(ID, OWLClassN.getClassIri()));
         final Assertion assertion =
-                Assertion.createAnnotationPropertyAssertion(URI.create(Vocabulary.DC_SOURCE), false);
+                Assertion.createAnnotationPropertyAssertion(URI.create(DC.Terms.SOURCE), false);
         axioms.add(new AxiomImpl<>(ID_RESOURCE, assertion, new Value<>(STRING_ATT)));
 
         final OWLClassN result =

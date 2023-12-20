@@ -1,20 +1,24 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.Vocabulary;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -68,6 +72,14 @@ public abstract class Generators {
         generateInstances(lst,
                 "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAReferenced", size);
         return lst;
+    }
+
+    public static List<LocalDate> createDataPropertyList() {
+        final List<LocalDate> list = new ArrayList<>(DEFAULT_SIZE);
+        for (int i = DEFAULT_SIZE; i >= 0; i--) {
+            list.add(LocalDate.now().minusDays(i));
+        }
+        return list;
     }
 
     public static List<URI> createListOfIdentifiers() {
@@ -177,9 +189,9 @@ public abstract class Generators {
 
     private static Set<String> getTypes() {
         final Set<String> types = new HashSet<>(3);
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassDF");
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassDFF");
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassDFFF");
+        types.add(Vocabulary.CLASS_IRI_BASE + "OWLClassDF");
+        types.add(Vocabulary.CLASS_IRI_BASE + "OWLClassDFF");
+        types.add(Vocabulary.CLASS_IRI_BASE + "OWLClassDFFF");
         return types;
     }
 
@@ -240,8 +252,7 @@ public abstract class Generators {
      * @return Random URI
      */
     public static URI generateUri() {
-        return URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/individuals#instance" +
-                randomInt(Integer.MAX_VALUE));
+        return URI.create(Vocabulary.INDIVIDUAL_IRI_BASE + randomInt(Integer.MAX_VALUE));
     }
 
     /**

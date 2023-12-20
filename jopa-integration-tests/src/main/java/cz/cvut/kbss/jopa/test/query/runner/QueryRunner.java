@@ -1,16 +1,19 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.test.query.runner;
 
@@ -43,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public abstract class QueryRunner extends BaseQueryRunner {
 
     private static final String SELECT_E_BY_TYPE =
-            "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
+            "SELECT ?x WHERE { ?x a <" + Vocabulary.C_OWL_CLASS_E + "> . }";
 
     protected QueryRunner(Logger logger, DataAccessor dataAccessor) {
         super(logger, dataAccessor);
@@ -162,7 +165,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
     void testGetSingleResult() {
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
-                "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?y .}";
+                "SELECT ?x WHERE { ?x <" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y .}";
         final Query q = getEntityManager().createNativeQuery(query);
         q.setParameter("y", a.getStringAttribute(), "en");
 
@@ -180,7 +183,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     void testGetSingleResultNoResult() {
         final String query =
-                "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX> . }";
+                "SELECT ?x WHERE { ?x a <" + Vocabulary.CLASS_IRI_BASE + "OWLClassX> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         assertThrows(NoResultException.class, q::getSingleResult);
     }
@@ -189,7 +192,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
     void testSelectQueryWithPositionalParameters() {
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
-                "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> $ .}";
+                "SELECT ?x WHERE { ?x <" + Vocabulary.P_A_STRING_ATTRIBUTE + "> $ .}";
         final Query q = getEntityManager().createNativeQuery(query);
         q.setParameter(1, a.getStringAttribute(), "en");
 
@@ -201,8 +204,8 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     public void selectWithOptionalReturnsNullInUnfilledColumns() {
         final String query =
-                "SELECT ?x ?s WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> ." +
-                        " OPTIONAL {?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute> ?s . } }";
+                "SELECT ?x ?s WHERE { ?x a <" + Vocabulary.C_OWL_CLASS_E + "> ." +
+                        " OPTIONAL {?x <" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?s . } }";
         final OWLClassE e = new OWLClassE();
         final EntityManager em = getEntityManager();
         em.getTransaction().begin();

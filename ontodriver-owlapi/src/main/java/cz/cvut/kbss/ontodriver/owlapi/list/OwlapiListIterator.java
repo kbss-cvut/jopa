@@ -1,16 +1,19 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
@@ -19,18 +22,19 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import org.semanticweb.owlapi.model.OWLIndividual;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObject;
+import org.semanticweb.owlapi.model.OWLProperty;
 
 import java.util.Collection;
 import java.util.List;
 
-abstract class OwlapiListIterator {
+abstract class OwlapiListIterator<T> {
 
     abstract boolean hasNext();
 
-    abstract Axiom<NamedResource> next();
+    abstract Axiom<T> next();
 
-    abstract NamedResource nextValue();
+    abstract T nextValue();
 
     /**
      * Gets the current list node.
@@ -45,7 +49,7 @@ abstract class OwlapiListIterator {
     /**
      * Removes the current element without reconnecting the previous node to the following one.
      * <p>
-     * This effectively breaks the list. It should be used only for removing all of the following nodes from the list.
+     * This effectively breaks the list. It should be used only for removing all the following nodes from the list.
      * <p>
      * Note that this method just creates the changes, it does not apply them.
      *
@@ -61,9 +65,9 @@ abstract class OwlapiListIterator {
      * @param newValue The new value to use
      * @return List of changes to apply
      */
-    abstract List<TransactionalChange> replaceNode(NamedResource newValue);
+    abstract List<TransactionalChange> replaceNode(T newValue);
 
-    static void checkMaxSuccessors(OWLObjectProperty property, Collection<? extends OWLIndividual> successors) {
+    static void checkMaxSuccessors(OWLProperty property, Collection<? extends OWLObject> successors) {
         if (successors.size() > 1) {
             throw new IntegrityConstraintViolatedException(
                     "Invalid number of successors. Expected only 1 value of property " + property + ", but got " +

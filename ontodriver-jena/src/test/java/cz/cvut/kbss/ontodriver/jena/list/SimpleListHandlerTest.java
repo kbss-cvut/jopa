@@ -1,16 +1,19 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.ontodriver.jena.list;
 
@@ -18,6 +21,7 @@ import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -35,11 +39,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.apache.jena.rdf.model.ResourceFactory.*;
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescriptor, SimpleListValueDescriptor> {
+public class SimpleListHandlerTest extends ListHandlerTestHelper {
+
+    private SimpleListHandler handler;
 
     @BeforeEach
     public void setUp() {
@@ -47,7 +60,6 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         super.setUp();
     }
 
-    @Override
     List<URI> generateList(String context) {
         if (context != null) {
             return listUtil.generateSimpleList(context);
@@ -56,14 +68,41 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         }
     }
 
-    @Override
     SimpleListDescriptor listDescriptor() {
         return new SimpleListDescriptorImpl(OWNER, HAS_LIST, HAS_NEXT);
     }
 
-    @Override
     SimpleListValueDescriptor listValueDescriptor() {
         return new SimpleListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT);
+    }
+
+    @Test
+    public void loadListRetrievesAllListElements() {
+        final List<URI> expected = generateList(null);
+        final List<Axiom<NamedResource>> result = handler.loadList(listDescriptor());
+        assertNotNull(result);
+        final List<URI> actual = result.stream().map(ax -> ax.getValue().getValue().getIdentifier())
+                                       .collect(Collectors.toList());
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void loadListFromContextRetrievesAllListElements() {
+        final URI context = Generator.generateUri();
+        final List<URI> expected = generateList(context.toString());
+        final SimpleListDescriptor descriptor = listDescriptor();
+        descriptor.setContext(context);
+        final List<Axiom<NamedResource>> result = handler.loadList(descriptor);
+        final List<URI> actual = result.stream().map(ax -> ax.getValue().getValue().getIdentifier())
+                                       .collect(Collectors.toList());
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void persistListDoesNothingForEmptyDescriptor() {
+        final SimpleListValueDescriptor descriptor = listValueDescriptor();
+        handler.persistList(descriptor);
+        verify(connectorMock, never()).add(anyList(), anyString());
     }
 
     @Test

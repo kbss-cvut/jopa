@@ -1,16 +1,19 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -80,7 +83,7 @@ class PluralAnnotationPropertyStrategyTest {
         final PluralAnnotationPropertyStrategy<OWLClassN> sut = strategyForN();
         final Assertion result = sut.createAssertion();
         assertEquals(Assertion.AssertionType.ANNOTATION_PROPERTY, result.getType());
-        assertEquals(Vocabulary.DC_SOURCE, result.getIdentifier().toString());
+        assertEquals(DC.Terms.SOURCE, result.getIdentifier().toString());
         assertFalse(result.isInferred());
     }
 
@@ -102,7 +105,7 @@ class PluralAnnotationPropertyStrategyTest {
     }
 
     private Assertion createAnnotationAssertionForN() {
-        return Assertion.createAnnotationPropertyAssertion(URI.create(Vocabulary.DC_SOURCE), LANG, false);
+        return Assertion.createAnnotationPropertyAssertion(URI.create(DC.Terms.SOURCE), LANG, false);
     }
 
     @Test
@@ -143,7 +146,7 @@ class PluralAnnotationPropertyStrategyTest {
         when(att.getCollectionType()).thenReturn(CollectionType.SET);
         when(att.getBindableJavaType()).thenReturn(elementType);
         when(att.getJavaField()).thenReturn(entity.getDeclaredField("sources"));
-        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.DC_SOURCE));
+        when(att.getIRI()).thenReturn(IRI.create(DC.Terms.SOURCE));
         when(att.getConverter()).thenReturn(converter);
         when(att.hasLanguage()).thenReturn(true);
         when(att.getLanguage()).thenReturn(LANG);
@@ -153,7 +156,7 @@ class PluralAnnotationPropertyStrategyTest {
     @OWLClass(iri = Vocabulary.CLASS_BASE)
     private static class WithPluralUriAnnotations {
 
-        @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
+        @OWLAnnotationProperty(iri = DC.Terms.SOURCE)
         private Set<URI> sources;
     }
 
@@ -225,7 +228,7 @@ class PluralAnnotationPropertyStrategyTest {
     @OWLClass(iri = Vocabulary.CLASS_BASE)
     private static class WithPluralStringAnnotations {
 
-        @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
+        @OWLAnnotationProperty(iri = DC.Terms.SOURCE)
         private Set<String> sources;
     }
 

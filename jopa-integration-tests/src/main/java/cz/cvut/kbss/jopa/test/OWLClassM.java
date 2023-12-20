@@ -1,24 +1,29 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.test;
 
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -86,6 +91,14 @@ public class OWLClassM {
 
     @OWLAnnotationProperty(iri = Vocabulary.p_m_annotationSimpleLiteral, simpleLiteral = true)
     private String annotationSimpleLiteral;
+
+    @Sequence(type = SequenceType.referenced)
+    @OWLDataProperty(iri = Vocabulary.p_m_literalReferencedList)
+    private List<LocalDate> literalReferencedList;
+
+    @Sequence(type = SequenceType.referenced)
+    @OWLDataProperty(iri = Vocabulary.p_m_multilingualReferencedList)
+    private List<MultilingualString> multilingualReferencedList;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -235,6 +248,23 @@ public class OWLClassM {
         this.annotationSimpleLiteral = annotationSimpleLiteral;
     }
 
+    public List<LocalDate> getLiteralReferencedList() {
+        return literalReferencedList;
+    }
+
+    public void setLiteralReferencedList(List<LocalDate> literalReferencedList) {
+        this.literalReferencedList = literalReferencedList;
+    }
+
+    public List<MultilingualString> getMultilingualReferencedList() {
+        return multilingualReferencedList;
+    }
+
+    public void setMultilingualReferencedList(
+            List<MultilingualString> multilingualReferencedList) {
+        this.multilingualReferencedList = multilingualReferencedList;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -255,12 +285,14 @@ public class OWLClassM {
                 ", enumSimpleLiteral=" + enumSimpleLiteral +
                 ", withConverter=" + withConverter +
                 ", annotationSimpleLiteral=" + annotationSimpleLiteral +
+                ", literalReferencedList=" + literalReferencedList +
+                ", multilingualReferencedList=" + multilingualReferencedList +
                 '}';
     }
 
     public void initializeTestValues(boolean includingKey) {
         if (includingKey) {
-            this.key = "http://krizik.felk.cvut.cz/ontologies/entityM";
+            this.key = Vocabulary.INDIVIDUAL_IRI_BASE + "entityM";
         }
         this.booleanAttribute = true;
         this.intAttribute = 117;

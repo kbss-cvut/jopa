@@ -1,23 +1,27 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.test;
 
 public class Vocabulary {
 
-    public static final String CLASS_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
-    public static final String ATTRIBUTE_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
+    public static final String CLASS_IRI_BASE = "https://onto.fel.cvut.cz/ontologies/jopa/types#";
+    public static final String ATTRIBUTE_IRI_BASE = "https://onto.fel.cvut.cz/ontologies/jopa/attributes#";
+    public static final String INDIVIDUAL_IRI_BASE = "https://onto.fel.cvut.cz/ontologies/jopa/entities#";
 
     public static final String C_OWL_CLASS_A = CLASS_IRI_BASE + "OWLClassA";
     public static final String C_OWL_CLASS_B = CLASS_IRI_BASE + "OWLClassB";
@@ -69,6 +73,9 @@ public class Vocabulary {
     public static final String C_OwlClassWithUnProperties = CLASS_IRI_BASE + "OWLClassWithUnProperties";
     public static final String C_ChildOfMappedSuperClass = CLASS_IRI_BASE + "ChildOfMappedSuperClass";
 
+    public static final String p_e_simpleList = ATTRIBUTE_IRI_BASE + "simpleList";
+    public static final String p_e_enumeratedOrdinalColor = ATTRIBUTE_IRI_BASE + "enumeratedOrdinalColor";
+
     public static final String p_m_booleanAttribute = ATTRIBUTE_IRI_BASE + "m-booleanAttribute";
     public static final String p_m_intAttribute = ATTRIBUTE_IRI_BASE + "m-intAttribute";
     public static final String p_m_longAttribute = ATTRIBUTE_IRI_BASE + "m-longAttribute";
@@ -90,9 +97,9 @@ public class Vocabulary {
     public static final String p_m_attributeB = ATTRIBUTE_IRI_BASE + "attributeB";
     public static final String p_m_data = ATTRIBUTE_IRI_BASE + "data";
     public static final String p_m_multiple_data = ATTRIBUTE_IRI_BASE + "multipleData";
-    public static final String p_m_enumeratedOrdinalColor = ATTRIBUTE_IRI_BASE + "enumeratedOrdinalColor";
-    public static final String p_m_simpleList = ATTRIBUTE_IRI_BASE + "simpleList";
     public static final String p_m_annotationSimpleLiteral = ATTRIBUTE_IRI_BASE + "m-annotationSimpleLiteral";
+    public static final String p_m_literalReferencedList = ATTRIBUTE_IRI_BASE + "m-literalReferencedList";
+    public static final String p_m_multilingualReferencedList = ATTRIBUTE_IRI_BASE + "m-multilingualReferencedList";
 
     public static final String P_N_STR_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationProperty";
     public static final String P_N_URI_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationUri";

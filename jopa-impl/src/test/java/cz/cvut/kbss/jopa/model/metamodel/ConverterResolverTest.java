@@ -1,16 +1,19 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -24,11 +27,14 @@ import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.Convert;
 import cz.cvut.kbss.jopa.model.annotations.EnumType;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.Sequence;
+import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.CustomConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.ObjectConverter;
@@ -37,6 +43,7 @@ import cz.cvut.kbss.jopa.oom.converter.OrdinalEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.StringEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToMultilingualStringConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToRdfLiteralConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.DateConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.InstantConverter;
@@ -49,6 +56,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -220,7 +228,7 @@ class ConverterResolverTest {
         assertTrue(result.isPresent());
         assertThat(result.get(), instanceOf(CustomConverterWrapper.class));
         assertThat(((CustomConverterWrapper<?, ?>) result.get()).getWrappedConverter(),
-                   instanceOf(ZoneOffsetConverter.class));
+                instanceOf(ZoneOffsetConverter.class));
         assertTrue(result.get().supportsAxiomValueType(String.class));
     }
 
@@ -247,6 +255,7 @@ class ConverterResolverTest {
         public static PropertyInfo getZoneOffsetFieldPropertyInfo() throws Exception {
             return PropertyInfo.from(ClassWithDisabledConverter.class.getDeclaredField("zoneOffset"));
         }
+
         public static PropertyInfo getBadConverterFieldPropertyInfo() throws Exception {
             return PropertyInfo.from(ClassWithDisabledConverter.class.getDeclaredField("badConverter"));
         }
@@ -288,7 +297,7 @@ class ConverterResolverTest {
 
     @Test
     void resolveConverterThrowsInvalidConverterExceptionWhenAttemptingToUseCustomConverterOnObjectPropertyField() throws Exception {
-        final PropertyInfo field =PropertyInfo.from(ClassWithConverterOnObjectProperty.class.getDeclaredField("converted"));
+        final PropertyInfo field = PropertyInfo.from(ClassWithConverterOnObjectProperty.class.getDeclaredField("converted"));
         final PropertyAttributes pa = mock(PropertyAttributes.class);
         when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final EntityType et = mock(EntityType.class);
@@ -315,5 +324,24 @@ class ConverterResolverTest {
         public OWLClassA convertToAttribute(NamedResource value) {
             return new OWLClassA(value.getIdentifier());
         }
+    }
+
+    @Test
+    void resolveConverterReturnsToMultilingualStringConverterForReferencedListFieldWithMultilingualStringElementType() throws Exception {
+        final PropertyInfo field = PropertyInfo.from(ClassWithMultilingualStringReferencedList.class.getDeclaredField("multilingualReferencedList"));
+        final PropertyAttributes pa = mock(PropertyAttributes.class);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        doReturn(BasicTypeImpl.get(MultilingualString.class)).when(pa).getType();
+
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(field, pa);
+        assertTrue(result.isPresent());
+        assertInstanceOf(ToMultilingualStringConverter.class, result.get());
+    }
+
+    private static class ClassWithMultilingualStringReferencedList {
+
+        @Sequence(type = SequenceType.referenced)
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "multilingualReferencedList")
+        private List<MultilingualString> multilingualReferencedList;
     }
 }

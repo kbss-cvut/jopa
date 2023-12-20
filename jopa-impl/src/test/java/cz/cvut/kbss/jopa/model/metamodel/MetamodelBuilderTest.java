@@ -1,25 +1,49 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.OWLClassT;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
+import cz.cvut.kbss.jopa.model.MultilingualString;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.Inferred;
+import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
+import cz.cvut.kbss.jopa.model.annotations.Namespace;
+import cz.cvut.kbss.jopa.model.annotations.Namespaces;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.PrePersist;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Sequence;
+import cz.cvut.kbss.jopa.model.annotations.SequenceType;
+import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
+import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
@@ -36,14 +60,26 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import static org.hamcrest.CoreMatchers.containsStringIgnoringCase;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -65,6 +101,7 @@ class MetamodelBuilderTest {
         assertEquals(Vocabulary.CLASS_BASE + "EntityWithNamespace", result.getIRI().toString());
     }
 
+    @TestLocal
     @Namespace(prefix = "class", namespace = Vocabulary.CLASS_BASE)
     @OWLClass(iri = "class:EntityWithNamespace")
     private static class EntityWithNamespace {
@@ -81,6 +118,7 @@ class MetamodelBuilderTest {
         assertEquals(Vocabulary.CLASS_BASE + "EntityWithNamespaces", result.getIRI().toString());
     }
 
+    @TestLocal
     @Namespaces({@Namespace(prefix = "class", namespace = Vocabulary.CLASS_BASE)})
     @OWLClass(iri = "class:EntityWithNamespaces")
     private static class EntityWithNamespaces {
@@ -101,6 +139,7 @@ class MetamodelBuilderTest {
         assertEquals(DC.Elements.DESCRIPTION, descriptionAtt.getIRI().toString());
     }
 
+    @TestLocal
     @Namespaces({@Namespace(prefix = "dc", namespace = DC.Elements.NAMESPACE),
             @Namespace(prefix = "ex2", namespace = "http://www.example2.org/")})
     @OWLClass(iri = "ex2:EntityWithNamespaceAttributes")
@@ -124,6 +163,7 @@ class MetamodelBuilderTest {
         assertEquals("http://www.example.org/EntityWithNamespaceFromPackage", result.getIRI().toString());
     }
 
+    @TestLocal
     @OWLClass(iri = "ex:EntityWithNamespaceFromPackage")
     private static class EntityWithNamespaceFromPackage {
         @Id
@@ -173,10 +213,11 @@ class MetamodelBuilderTest {
         assertTrue(childLifecycleManager.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST));
         assertNotNull(childLifecycleManager.getParents());
         assertTrue(childLifecycleManager.getParents()
-                .stream()
-                .anyMatch(parent -> parent.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST)));
+                                        .stream()
+                                        .anyMatch(parent -> parent.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST)));
     }
 
+    @TestLocal
     @MappedSuperclass
     public static class ParentWithCallback {
 
@@ -188,6 +229,7 @@ class MetamodelBuilderTest {
         }
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ChildWithCallback")
     public static class ChildWithCallback extends ParentWithCallback {
 
@@ -233,6 +275,7 @@ class MetamodelBuilderTest {
         assertEquals(String.class, att.getElementType().getJavaType());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithPluralSimpleLiteral")
     private static class WithPluralSimpleLiteral {
 
@@ -266,6 +309,7 @@ class MetamodelBuilderTest {
         assertEquals(CollectionType.COLLECTION, objectAtt.getCollectionType());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithCollectionAttributes")
     private static class WithCollectionAttributes {
         @Id
@@ -302,6 +346,7 @@ class MetamodelBuilderTest {
         assertThrows(InvalidFieldMappingException.class, () -> builder.buildMetamodel(finderMock));
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithInvalidTypeField")
     private static class WithInvalidTypeField {
         @Id
@@ -327,14 +372,17 @@ class MetamodelBuilderTest {
         assertThat(cClassEt.getSupertypes(), containsInAnyOrder(AParentEt, BParentEt));
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "AParentI")
     private interface AParentI {
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "BParentI")
     private interface BParentI {
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "InterfaceChild")
     private static class InterfaceChild implements AParentI, BParentI {
         @Id
@@ -357,12 +405,14 @@ class MetamodelBuilderTest {
         assertThat(cClassEt.getSupertypes(), containsInAnyOrder(AParentEt, BParentEt));
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "BParent")
     private static class BParent {
         @Id
         private URI uri;
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "Child")
     private static class ClassChild extends BParent implements AParentI {
 
@@ -375,6 +425,7 @@ class MetamodelBuilderTest {
         assertThrows(MetamodelInitializationException.class, () -> builder.buildMetamodel(finderMock));
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidMethod")
     private interface InterfaceWithInvalidMethod {
         @OWLDataProperty(iri = Vocabulary.CLASS_BASE + "name")
@@ -386,7 +437,8 @@ class MetamodelBuilderTest {
         when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassM.class));
         builder.buildMetamodel(finderMock);
         final AbstractIdentifiableType<OWLClassM> et = builder.entity(OWLClassM.class);
-        final AbstractAttribute<? super OWLClassM, ?> att = et.getAttribute(OWLClassM.getObjectOneOfEnumAttributeField().getName());
+        final AbstractAttribute<? super OWLClassM, ?> att = et.getAttribute(OWLClassM.getObjectOneOfEnumAttributeField()
+                                                                                     .getName());
         assertNotNull(att.getConverter());
         assertInstanceOf(ObjectOneOfEnumConverter.class, att.getConverter());
         assertEquals(Attribute.PersistentAttributeType.OBJECT, att.getPersistentAttributeType());
@@ -402,6 +454,7 @@ class MetamodelBuilderTest {
         assertEquals(FetchType.EAGER, types.getFetchType());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithInferredTypesAndProperties")
     private static class WithInferredTypesAndProperties {
 
@@ -425,5 +478,48 @@ class MetamodelBuilderTest {
         final PropertiesSpecification<? super WithInferredTypesAndProperties, ?, ?, ?> types = et.getProperties();
         assertTrue(types.isInferred());
         assertEquals(FetchType.EAGER, types.getFetchType());
+    }
+
+    @Test
+    void buildMetamodelSupportsClassWithDataPropertyReferencedListAttribute() {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(ClassWithDataPropertyReferencedList.class));
+        builder.buildMetamodel(finderMock);
+        final AbstractIdentifiableType<ClassWithDataPropertyReferencedList> et = builder.entity(ClassWithDataPropertyReferencedList.class);
+        final ListAttribute<? super ClassWithDataPropertyReferencedList, MultilingualString> att = et.getList("altLabels", MultilingualString.class);
+        assertEquals(SequenceType.referenced, att.getSequenceType());
+        assertEquals(RDF.REST, att.getOWLObjectPropertyHasNextIRI().toString());
+        assertEquals(RDF.FIRST, att.getOWLPropertyHasContentsIRI().toString());
+
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithDataPropertyReferencedList")
+    private static class ClassWithDataPropertyReferencedList {
+        @Id
+        private URI uri;
+
+        @Sequence(type = SequenceType.referenced, ObjectPropertyHasNextIRI = RDF.REST,
+                  ObjectPropertyHasContentsIRI = RDF.FIRST)
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "dp-referenced-list")
+        private List<MultilingualString> altLabels;
+    }
+
+    @Test
+    void buildMetamodelThrowsInvalidFieldMappingExceptionWhenAttemptingToUseDataPropertyWithSimpleList() {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(ClassWithDataPropertySimpleList.class));
+        final InvalidFieldMappingException ex = assertThrows(InvalidFieldMappingException.class, () -> builder.buildMetamodel(finderMock));
+        assertThat(ex.getMessage(), containsStringIgnoringCase("simple list"));
+        assertThat(ex.getMessage(), containsStringIgnoringCase("must be mapped to an object property"));
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithDataPropertySimpleList")
+    private static class ClassWithDataPropertySimpleList {
+        @Id
+        private URI uri;
+
+        @Sequence(type = SequenceType.simple)
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "dp-referenced-list")
+        private List<MultilingualString> altLabels;
     }
 }

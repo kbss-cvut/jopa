@@ -1,16 +1,19 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -18,18 +21,22 @@ import cz.cvut.kbss.jopa.exception.InstantiationException;
 import cz.cvut.kbss.jopa.exception.InvalidConverterException;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.AttributeConverter;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.Convert;
+import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.CustomConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.OrdinalEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.StringEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToMultilingualStringConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToRdfLiteralConverter;
 import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -84,6 +91,9 @@ public class ConverterResolver {
         if (config.isLexicalForm()) {
             return Optional.of(new ToLexicalFormConverter());
         }
+        if (isMultilingualReferencedList(attValueType, field)) {
+            return Optional.of(new ToMultilingualStringConverter());
+        }
         return Converters.getDefaultConverter(attValueType);
     }
 
@@ -106,7 +116,8 @@ public class ConverterResolver {
         }
     }
 
-    private static Optional<ConverterWrapper<?, ?>> resolveCustomConverter(PropertyInfo field, PropertyAttributes config) {
+    private static Optional<ConverterWrapper<?, ?>> resolveCustomConverter(PropertyInfo field,
+                                                                           PropertyAttributes config) {
         final Convert convertAnn = field.getAnnotation(Convert.class);
         if (convertAnn == null || convertAnn.disableConversion()) {
             return Optional.empty();
@@ -129,6 +140,12 @@ public class ConverterResolver {
         } catch (InstantiationException e) {
             throw new InvalidConverterException("Unable to instantiate attribute converter.", e);
         }
+    }
+
+    private boolean isMultilingualReferencedList(Class<?> elemType, PropertyInfo field) {
+        return MultilingualString.class.isAssignableFrom(elemType)
+                && field.getAnnotation(Sequence.class) != null
+                && List.class.isAssignableFrom(field.getField().getType());
     }
 
     public static Class<?> resolveConverterAttributeType(Class<?> converterType) {

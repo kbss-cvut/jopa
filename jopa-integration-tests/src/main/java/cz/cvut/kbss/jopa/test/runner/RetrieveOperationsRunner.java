@@ -1,20 +1,24 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -525,7 +529,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     @Test
     void retrieveSupportsMappingEnumsToSimpleLiterals() throws Exception {
         this.em = getEntityManager("retrieveSupportsMappingEnumsToSimpleLiterals", false);
-        persistTestData(Arrays.asList(
+        persistTestData(List.of(
                 new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_enumSimpleLiteralAttribute),
                          entityM.getEnumSimpleLiteral().name(), (String) null)

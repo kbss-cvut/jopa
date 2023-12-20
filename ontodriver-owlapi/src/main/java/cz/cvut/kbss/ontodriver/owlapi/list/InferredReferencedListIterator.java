@@ -1,27 +1,28 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
-import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
@@ -31,7 +32,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-class InferredReferencedListIterator extends ReferencedListIterator {
+class InferredReferencedListIterator<T> extends ReferencedListIterator<T> {
 
     private OWLNamedIndividual currentNode;
     private final OWLReasoner reasoner;
@@ -66,20 +67,20 @@ class InferredReferencedListIterator extends ReferencedListIterator {
         checkMaxSuccessors(currentNextNodeProperty, nextNodes);
         this.currentNextNodeProperty = hasNextProperty;
         this.currentNode = nextNodes.iterator().next();
-        this.nextItem = reasoner.getObjectPropertyValues(currentNode, hasContentProperty).entities()
-                                .collect(Collectors.toSet());
+        this.nextItem = hasContentProperty.isOWLObjectProperty() ? reasoner.getObjectPropertyValues(currentNode, hasContentProperty.asOWLObjectProperty())
+                                                                           .entities()
+                                                                           .collect(Collectors.toSet())
+                : reasoner.getDataPropertyValues(currentNode, hasContentProperty.asOWLDataProperty());
     }
 
     @Override
-    NamedResource nextValue() {
+    T nextValue() {
         if (!hasNext()) {
             throw new NoSuchElementException("There are no more elements.");
         }
-        checkMaxSuccessors(hasContentProperty, nextItem);
-        final OWLIndividual value = nextItem.iterator().next();
-        checkIsNamed(value);
+        final T result = extractNodeContent();
         doStep();
-        return NamedResource.create(value.asOWLNamedIndividual().getIRI().toURI());
+        return result;
     }
 
     @Override
@@ -88,7 +89,7 @@ class InferredReferencedListIterator extends ReferencedListIterator {
     }
 
     @Override
-    List<TransactionalChange> replaceNode(NamedResource newValue) {
+    List<TransactionalChange> replaceNode(T newValue) {
         throw new UnsupportedOperationException();
     }
 }

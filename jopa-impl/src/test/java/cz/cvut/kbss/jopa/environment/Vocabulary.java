@@ -1,23 +1,27 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.environment;
 
 public class Vocabulary {
 
     public static final String ATTRIBUTE_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
-    public static final String CLASS_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
+    public static final String CLASS_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/types#";
+    public static final String INDIVIDUAL_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
 
     public static final String c_OwlClassA = CLASS_BASE + "OWLClassA";
     public static final String c_OwlClassB = CLASS_BASE + "OWLClassB";
@@ -62,8 +66,8 @@ public class Vocabulary {
     public static final String P_R_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "R-stringAttribute";
     public static final String P_HAS_A = ATTRIBUTE_BASE + "hasA";
 
-    public static final String P_HAS_SIMPLE_LIST = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";
-    public static final String P_HAS_REFERENCED_LIST = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence";
+    public static final String P_HAS_SIMPLE_LIST = ATTRIBUTE_BASE + "C-hasSimpleSequence";
+    public static final String P_HAS_REFERENCED_LIST = ATTRIBUTE_BASE + "C-hasReferencedSequence";
 
     public static final String P_T_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDate";
     public static final String P_T_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDateTime";
@@ -77,8 +81,6 @@ public class Vocabulary {
     public static final String p_p_hasPhone = ATTRIBUTE_BASE + "hasPhone";
     public static final String p_p_gender = ATTRIBUTE_BASE + "gender";
     public static final String p_p_phoneNumber = ATTRIBUTE_BASE + "phoneNumber";
-
-    public static final String DC_SOURCE = "http://purl.org/dc/terms/source";
 
     private Vocabulary() {
         throw new AssertionError();
