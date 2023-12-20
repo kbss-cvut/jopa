@@ -88,7 +88,7 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
         return loadedProviders;
     }
 
-    private Optional<PersistenceProvider> loadProvider(Iterator<PersistenceProvider> ipp) {
+    private static Optional<PersistenceProvider> loadProvider(Iterator<PersistenceProvider> ipp) {
         try {
             return Optional.of(ipp.next());
         } catch (ServiceConfigurationError sce) {

@@ -140,8 +140,8 @@ public class ModelGenProcessor extends AbstractProcessor {
         TypeElement typeElement = (TypeElement) element;
         List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
         for (AnnotationMirror annotation : annotations) {
-            if (annotation.getAnnotationType().toString()
-                          .equals("cz.cvut.kbss.jopa.model.annotations.util.NonEntity")) {
+            if ("cz.cvut.kbss.jopa.model.annotations.util.NonEntity".equals(annotation.getAnnotationType()
+                                                                                      .toString())) {
                 return true;
             }
         }
