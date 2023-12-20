@@ -17,30 +17,35 @@
  */
 package cz.cvut.kbss.ontodriver.jena.list;
 
-import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-public abstract class ListIteratorTestBase<T extends AbstractListIterator<NamedResource, ? extends RDFNode>, D extends ListDescriptor> {
+public abstract class ListIteratorTestBase<T extends AbstractListIterator<NamedResource>> {
 
     static final Resource RESOURCE = createResource(Generator.generateUri().toString());
     static final Property HAS_LIST = ResourceFactory.createProperty(Generator.generateUri().toString());
@@ -58,20 +63,18 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator<NamedR
 
     abstract T iterator();
 
-    abstract D descriptor(String context);
-
     abstract List<URI> generateList();
 
     @Test
     public void hasNextReturnsTrueForListHead() {
         generateList();
-        final AbstractListIterator<NamedResource, ? extends RDFNode> iterator = iterator();
+        final AbstractListIterator<NamedResource> iterator = iterator();
         assertTrue(iterator.hasNext());
     }
 
     @Test
     public void nextThrowsNoSuchElementWhenNoMoreElementsExist() {
-        final AbstractListIterator<NamedResource, ? extends RDFNode> iterator = iterator();
+        final AbstractListIterator<NamedResource> iterator = iterator();
         assertFalse(iterator.hasNext());
         assertThrows(NoSuchElementException.class, iterator::nextAxiom);
     }
@@ -79,7 +82,7 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator<NamedR
     @Test
     public void nextAllowsToReadWholeList() {
         final List<URI> list = generateList();
-        final AbstractListIterator<NamedResource, ? extends RDFNode> iterator = iterator();
+        final AbstractListIterator<NamedResource> iterator = iterator();
         final List<URI> actual = new ArrayList<>();
         while (iterator.hasNext()) {
             final Axiom<NamedResource> axiom = iterator.nextAxiom();
@@ -94,7 +97,7 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator<NamedR
         when(connectorMock.find(RESOURCE, HAS_LIST, null, Collections.emptySet())).thenReturn(
                 Arrays.asList(createStatement(RESOURCE, HAS_LIST, createResource()),
                         createStatement(RESOURCE, HAS_LIST, createResource())));
-        final AbstractListIterator<NamedResource, ? extends RDFNode> iterator = iterator();
+        final AbstractListIterator<NamedResource> iterator = iterator();
         final IntegrityConstraintViolatedException ex = assertThrows(IntegrityConstraintViolatedException.class,
                 iterator::nextAxiom);
         assertThat(ex.getMessage(),
@@ -104,7 +107,7 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator<NamedR
     @Test
     public void removeWithoutReconnectThrowsIllegalStateExceptionWhenNextWasNotCalledBefore() {
         generateList();
-        final AbstractListIterator<NamedResource, ? extends RDFNode> iterator = iterator();
+        final AbstractListIterator<NamedResource> iterator = iterator();
         final IllegalStateException ex = assertThrows(IllegalStateException.class, iterator::removeWithoutReconnect);
         assertThat(ex.getMessage(), containsString("Cannot call remove before calling next."));
     }
@@ -112,7 +115,7 @@ public abstract class ListIteratorTestBase<T extends AbstractListIterator<NamedR
     @Test
     public void removeWithoutReconnectThrowsIllegalStateExceptionWhenRemoveIsCalledTwiceOnElement() {
         generateList();
-        final AbstractListIterator<NamedResource, ? extends RDFNode> iterator = iterator();
+        final AbstractListIterator<NamedResource> iterator = iterator();
         iterator.nextValue();
         iterator.removeWithoutReconnect();
         final IllegalStateException ex = assertThrows(IllegalStateException.class, iterator::removeWithoutReconnect);

@@ -20,9 +20,7 @@ package cz.cvut.kbss.ontodriver.jena.list;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
-import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -32,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -83,7 +82,9 @@ public class ReferencedListHandler {
                                     ReferencedListValueDescriptor<V> descriptor, int index) {
         final Resource node = generateNewListNode(descriptor.getListOwner().getIdentifier(), context, index);
         statements.add(createStatement(previousNode, link, node));
-        statements.add(createStatement(node, hasContent, JenaUtils.valueToRdfNode(descriptor.getNodeContent(), new Value<>(value))));
+        statements.addAll(ReferencedListHelper.toRdfNodes(value, descriptor.getNodeContent())
+                                              .map(n -> createStatement(node, hasContent, n))
+                                              .collect(Collectors.toList()));
         return node;
     }
 
@@ -105,7 +106,7 @@ public class ReferencedListHandler {
             final V update = descriptor.getValues().get(i);
             final V existing = it.nextValue();
             if (!existing.equals(update)) {
-                it.replace(JenaUtils.valueToRdfNode(descriptor.getNodeContent(), new Value<>(update)));
+                it.replace(update);
             }
             i++;
         }

@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.PropertyInfo;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -41,7 +42,7 @@ public class OWLClassN {
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
     private String stringAttribute;
 
-    @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
+    @OWLAnnotationProperty(iri = DC.Terms.SOURCE)
     private Set<String> pluralAnnotation;
 
     @Inferred

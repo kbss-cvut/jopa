@@ -18,9 +18,17 @@
 package cz.cvut.kbss.jopa.environment.utils;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -66,13 +74,11 @@ public abstract class Generators {
     }
 
     public static URI createIndividualIdentifier() {
-        return URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/individuals#instance-" +
-                randomInt(Integer.MAX_VALUE));
+        return URI.create(Vocabulary.INDIVIDUAL_BASE + randomInt(Integer.MAX_VALUE));
     }
 
     public static URI createPropertyIdentifier() {
-        return URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#property-" +
-                randomInt(Integer.MAX_VALUE));
+        return URI.create(Vocabulary.ATTRIBUTE_BASE + randomInt(Integer.MAX_VALUE));
     }
 
     public static Map<String, Set<String>> generateStringProperties() {
@@ -84,11 +90,11 @@ public abstract class Generators {
         final Map<String, Set<String>> properties = new HashMap<>(propCount);
         for (int i = 0; i < propCount; i++) {
             final Set<String> values = new HashSet<>(valCount);
-            properties.put("http://krizik.felk.cvut.cz/ontologies/jopa#property_" + i, values);
+            properties.put(Vocabulary.ATTRIBUTE_BASE + i, values);
             boolean objectProperty = i % 2 != 0;
             for (int j = 0; j < valCount; j++) {
                 if (objectProperty) {
-                    values.add("http://krizik.felk.cvut.cz/ontologies/jopa#value_" + valueCounter++);
+                    values.add(Vocabulary.INDIVIDUAL_BASE + "value_" + valueCounter++);
                 } else {
                     values.add(j % 2 != 0 ? "value" + valueCounter++ : Integer.toString(valueCounter++));
                 }
@@ -106,11 +112,11 @@ public abstract class Generators {
         final Map<URI, Set<Object>> properties = new HashMap<>(propCount);
         for (int i = 0; i < propCount; i++) {
             final Set<Object> values = new HashSet<>(valCount);
-            properties.put(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#property_" + i), values);
+            properties.put(URI.create(Vocabulary.ATTRIBUTE_BASE + i), values);
             boolean objectProperty = i % 2 != 0;
             for (int j = 0; j < valCount; j++) {
                 if (objectProperty) {
-                    values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#value_" + valueCounter++));
+                    values.add(URI.create(Vocabulary.INDIVIDUAL_BASE + "value_" + valueCounter++));
                 } else {
                     values.add(generateDataPropertyValue(j));
                 }
@@ -156,7 +162,7 @@ public abstract class Generators {
     public static Set<String> generateTypes(int count) {
         final Set<String> types = new HashSet<>(count);
         for (int i = 0; i < count; i++) {
-            types.add("http://krizik.felk.cvut.cz/ontologies/jopa#type_" + i);
+            types.add(Vocabulary.CLASS_BASE + i);
         }
         return types;
     }

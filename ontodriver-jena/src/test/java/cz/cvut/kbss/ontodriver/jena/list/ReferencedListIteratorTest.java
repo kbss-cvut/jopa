@@ -24,13 +24,14 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.ListProcessingException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.MockitoAnnotations;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -39,19 +40,27 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-import static org.apache.jena.rdf.model.ResourceFactory.*;
+import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
+import static org.apache.jena.rdf.model.ResourceFactory.createTypedLiteral;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedListIterator<NamedResource>, ReferencedListDescriptor> {
+public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedListIterator<NamedResource>> {
 
     @BeforeEach
     public void setUp() {
@@ -61,15 +70,19 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
 
     @Override
     ReferencedListIterator<NamedResource> iterator() {
-        return new ReferencedListIterator<>(descriptor(null), connectorMock);
+        return new ReferencedListIterator<>(descriptor(Assertion.AssertionType.OBJECT_PROPERTY, null), connectorMock);
     }
 
-    @Override
-    ReferencedListDescriptor descriptor(String context) {
+    ReferencedListDescriptor descriptor(Assertion.AssertionType contentAssertionType, String context) {
         final NamedResource owner = NamedResource.create(RESOURCE.getURI());
         final Assertion hasList = Assertion.createObjectPropertyAssertion(URI.create(HAS_LIST.getURI()), false);
         final Assertion hasNext = Assertion.createObjectPropertyAssertion(URI.create(HAS_NEXT.getURI()), false);
-        final Assertion hasContent = Assertion.createObjectPropertyAssertion(URI.create(HAS_CONTENT.getURI()), false);
+        final Assertion hasContent;
+        if (contentAssertionType == Assertion.AssertionType.OBJECT_PROPERTY) {
+            hasContent = Assertion.createObjectPropertyAssertion(URI.create(HAS_CONTENT.getURI()), false);
+        } else {
+            hasContent = Assertion.createDataPropertyAssertion(URI.create(HAS_CONTENT.getURI()), false);
+        }
         final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(owner, hasList, hasNext,
                 hasContent);
         if (context != null) {
@@ -90,7 +103,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         assertTrue(iterator.hasNext());
         final Axiom<NamedResource> head = iterator.nextAxiom();
         assertNotNull(head);
-        assertEquals(descriptor(null).getNodeContent(), head.getAssertion());
+        assertEquals(descriptor(Assertion.AssertionType.OBJECT_PROPERTY, null).getNodeContent(), head.getAssertion());
         assertEquals(NamedResource.create(list.get(0)), head.getValue().getValue());
     }
 
@@ -125,7 +138,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
             }
         });
         assertThat(ex.getMessage(),
-                containsString("Encountered multiple content values of list node " + node.getURI()));
+                containsString("Expected exactly one content statement for node <" + node.getURI() + ">"));
     }
 
     @Test
@@ -140,7 +153,7 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
                 iterator.nextAxiom();
             }
         });
-        assertThat(ex.getMessage(), containsString("No content found for list node " + node.getURI()));
+        assertThat(ex.getMessage(), containsString("Expected exactly one content statement for node <" + node.getURI() + ">"));
     }
 
     @Test
@@ -172,12 +185,13 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
         generateList();
         final ReferencedListIterator<NamedResource> iterator = iterator();
         iterator.nextValue();
-        final Resource replacement = createResource(Generator.generateUri().toString());
+        final NamedResource replacement = NamedResource.create(Generator.generateUri());
         iterator.replace(replacement);
 
         final List<Resource> nodes = testUtil.getReferencedListNodes();
         verify(connectorMock).remove(nodes.get(0), HAS_CONTENT, null, null);
-        final Statement added = createStatement(nodes.get(0), HAS_CONTENT, replacement);
+        final Statement added = createStatement(nodes.get(0), HAS_CONTENT, createResource(replacement.getIdentifier()
+                                                                                                     .toString()));
         verify(connectorMock).add(Collections.singletonList(added), null);
     }
 
@@ -185,14 +199,60 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
     public void replaceReplacesNodeContentInContext() {
         final String context = Generator.generateUri().toString();
         testUtil.generateReferencedList(context);
-        final ReferencedListIterator <NamedResource>iterator = new ReferencedListIterator<>(descriptor(context), connectorMock);
+        final ReferencedListIterator<NamedResource> iterator = new ReferencedListIterator<>(descriptor(Assertion.AssertionType.OBJECT_PROPERTY, context), connectorMock);
         iterator.nextValue();
-        final Resource replacement = createResource(Generator.generateUri().toString());
+        final NamedResource replacement = NamedResource.create(Generator.generateUri());
         iterator.replace(replacement);
 
         final List<Resource> nodes = testUtil.getReferencedListNodes();
         verify(connectorMock).remove(nodes.get(0), HAS_CONTENT, null, context);
-        final Statement added = createStatement(nodes.get(0), HAS_CONTENT, replacement);
+        final Statement added = createStatement(nodes.get(0), HAS_CONTENT, createResource(replacement.getIdentifier()
+                                                                                                     .toString()));
         verify(connectorMock).add(Collections.singletonList(added), context);
+    }
+
+    @Test
+    void nextAxiomReturnsAxiomWithMultilingualStringValueWhenNodeContentIsMultilingualString() {
+        final Resource node = createResource(Generator.generateUri().toString());
+        final Statement next = createStatement(RESOURCE, HAS_LIST, node);
+        when(connectorMock.find(RESOURCE, HAS_LIST, null, Collections.emptySet())).thenReturn(List.of(next));
+        final List<Statement> content = List.of(
+                createStatement(node, HAS_CONTENT, createLangLiteral("one", "en")),
+                createStatement(node, HAS_CONTENT, createLangLiteral("jedna", "cs"))
+        );
+        when(connectorMock.find(node, HAS_CONTENT, null, Collections.emptySet())).thenReturn(content);
+        final ReferencedListIterator<MultilingualString> sut = new ReferencedListIterator<>(descriptor(Assertion.AssertionType.DATA_PROPERTY, null), connectorMock);
+
+        final Axiom<MultilingualString> result = sut.nextAxiom();
+        assertNotNull(result);
+        assertEquals(new MultilingualString(Map.of("en", "one", "cs", "jedna")), result.getValue().getValue());
+    }
+
+    @Test
+    void replaceReplacesAllTranslationsOfMultilingualStringInCurrentNode() {
+        final Resource node = createResource(Generator.generateUri().toString());
+        final Statement next = createStatement(RESOURCE, HAS_LIST, node);
+        when(connectorMock.find(RESOURCE, HAS_LIST, null, Collections.emptySet())).thenReturn(List.of(next));
+        final List<Statement> content = List.of(
+                createStatement(node, HAS_CONTENT, createLangLiteral("one", "en")),
+                createStatement(node, HAS_CONTENT, createLangLiteral("jedna", "cs"))
+        );
+        when(connectorMock.find(node, HAS_CONTENT, null, Collections.emptySet())).thenReturn(content);
+        final ReferencedListIterator<MultilingualString> sut = new ReferencedListIterator<>(descriptor(Assertion.AssertionType.DATA_PROPERTY, null), connectorMock);
+
+        final MultilingualString newContent = new MultilingualString(Map.of(
+                "en", "New",
+                "cs", "Nový"
+        ));
+        sut.nextAxiom();
+        sut.replace(newContent);
+        verify(connectorMock).remove(node, HAS_CONTENT, null, null);
+        final ArgumentCaptor<List<Statement>> captor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock).add(captor.capture(), isNull());
+        assertEquals(newContent.getValue().size(), captor.getValue().size());
+        captor.getValue().forEach(s -> {
+            assertTrue(s.getObject().isLiteral());
+            assertEquals(newContent.get(s.getObject().asLiteral().getLanguage()), s.getObject().asLiteral().getValue());
+        });
     }
 }

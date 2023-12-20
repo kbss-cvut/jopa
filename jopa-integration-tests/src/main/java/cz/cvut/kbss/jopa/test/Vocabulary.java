@@ -19,8 +19,9 @@ package cz.cvut.kbss.jopa.test;
 
 public class Vocabulary {
 
-    public static final String CLASS_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
-    public static final String ATTRIBUTE_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
+    public static final String CLASS_IRI_BASE = "https://onto.fel.cvut.cz/ontologies/jopa/types#";
+    public static final String ATTRIBUTE_IRI_BASE = "https://onto.fel.cvut.cz/ontologies/jopa/attributes#";
+    public static final String INDIVIDUAL_IRI_BASE = "https://onto.fel.cvut.cz/ontologies/jopa/entities#";
 
     public static final String C_OWL_CLASS_A = CLASS_IRI_BASE + "OWLClassA";
     public static final String C_OWL_CLASS_B = CLASS_IRI_BASE + "OWLClassB";
@@ -98,6 +99,7 @@ public class Vocabulary {
     public static final String p_m_multiple_data = ATTRIBUTE_IRI_BASE + "multipleData";
     public static final String p_m_annotationSimpleLiteral = ATTRIBUTE_IRI_BASE + "m-annotationSimpleLiteral";
     public static final String p_m_literalReferencedList = ATTRIBUTE_IRI_BASE + "m-literalReferencedList";
+    public static final String p_m_multilingualReferencedList = ATTRIBUTE_IRI_BASE + "m-multilingualReferencedList";
 
     public static final String P_N_STR_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationProperty";
     public static final String P_N_URI_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationUri";

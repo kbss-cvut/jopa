@@ -40,8 +40,7 @@ abstract class ListTestHelper {
     public static final String HAS_CONTENT_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContent";
 
     static final List<URI> LIST_ITEMS = initListItems();
-    static final NamedResource SUBJECT = NamedResource
-            .create("http://krizik.felk.cvut.cz/ontologies/jopa#Owner");
+    static final NamedResource SUBJECT = NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa#Owner");
     static final Assertion HAS_LIST = Assertion
             .createObjectPropertyAssertion(URI.create(ListTestHelper.HAS_LIST_PROPERTY), false);
     static final Assertion HAS_NEXT = Assertion

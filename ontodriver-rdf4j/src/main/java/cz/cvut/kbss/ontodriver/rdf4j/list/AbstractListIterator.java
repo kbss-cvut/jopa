@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.ontodriver.rdf4j;
+package cz.cvut.kbss.ontodriver.rdf4j.list;
 
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
@@ -64,10 +64,12 @@ abstract class AbstractListIterator<JT> implements ListIterator<JT> {
     protected void checkSuccessorMax(Collection<Statement> stmts, IRI property) {
         // We don't mind the same statement multiple times, it could have been added during transaction
         if (new HashSet<>(stmts).size() > 1) {
-            throw new IntegrityConstraintViolatedException(
-                    "Invalid number of values found for assertion " + property
-                            + ". Expected 1, got " + stmts.size());
+            throw icViolatedException(property, stmts.size());
         }
+    }
+
+    protected IntegrityConstraintViolatedException icViolatedException(IRI property, int count) {
+        return new IntegrityConstraintViolatedException("Invalid number of values found for assertion " + property + ". Expected 1, got " + count);
     }
 
     protected void checkObjectIsResource(Statement stmt) {

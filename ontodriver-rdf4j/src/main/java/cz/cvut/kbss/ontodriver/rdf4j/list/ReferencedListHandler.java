@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.ontodriver.rdf4j;
+package cz.cvut.kbss.ontodriver.rdf4j.list;
 
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
@@ -43,7 +43,7 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
 
     private final ValueConverter valueConverter;
 
-    ReferencedListHandler(Connector connector, ValueFactory vf) {
+    public ReferencedListHandler(Connector connector, ValueFactory vf) {
         super(connector, vf);
         this.valueConverter = new ValueConverter(vf);
     }
@@ -54,7 +54,7 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
      * @return Collection of axioms representing sequence values
      * @throws Rdf4jDriverException When storage access error occurs
      */
-    List<Axiom<?>> loadList(ReferencedListDescriptor listDescriptor) throws Rdf4jDriverException {
+    public List<Axiom<?>> loadList(ReferencedListDescriptor listDescriptor) throws Rdf4jDriverException {
         final List<Axiom<?>> axioms = new ArrayList<>();
         final ListIterator<?> it = new ReferencedListIterator<>(listDescriptor, connector, vf);
         while (it.hasNext()) {
@@ -64,15 +64,16 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
     }
 
     protected IRI createListHead(ReferencedListValueDescriptor<?> listValueDescriptor,
-                       Collection<Statement> statements) throws Rdf4jDriverException {
+                                 Collection<Statement> statements) throws Rdf4jDriverException {
         final IRI owner = owner(listValueDescriptor);
         final IRI hasList = hasList(listValueDescriptor);
         final IRI hasContent = hasContent(listValueDescriptor);
         final IRI context = context(listValueDescriptor);
         final IRI nodeUri = generateSequenceNode(owner, context);
         statements.add(vf.createStatement(owner, hasList, nodeUri, context));
-        final Value nodeContent = toRdf4jValue(listValueDescriptor.getNodeContent(), listValueDescriptor.getValues().get(0));
-        statements.add(vf.createStatement(nodeUri, hasContent, nodeContent, context));
+        final Collection<Value> nodeContent = toRdf4jValue(listValueDescriptor.getNodeContent(), listValueDescriptor.getValues()
+                                                                                                                    .get(0));
+        nodeContent.forEach(item -> statements.add(vf.createStatement(nodeUri, hasContent, item, context)));
         return nodeUri;
     }
 
@@ -80,8 +81,8 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
         return toRdf4jIri(listDescriptor.getNodeContent().getIdentifier());
     }
 
-    private Value toRdf4jValue(Assertion a, Object value) throws Rdf4jDriverException {
-        return valueConverter.toRdf4jValue(a, new cz.cvut.kbss.ontodriver.model.Value<>(value));
+    private Collection<Value> toRdf4jValue(Assertion a, Object value) throws Rdf4jDriverException {
+        return new ReferencedListHelper(valueConverter).toRdf4jValue(a, value);
     }
 
     private IRI generateSequenceNode(IRI owner, IRI context) throws Rdf4jDriverException {
@@ -109,17 +110,18 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
         // Skip the first element, it is already in the head
         it.next();
         while (it.hasNext()) {
-            final Value content = toRdf4jValue(listValueDescriptor.getNodeContent(), it.next());
+            final Collection<Value> content = toRdf4jValue(listValueDescriptor.getNodeContent(), it.next());
             previous = createListNode(owner, hasNext, hasContent, content, context, previous, statements);
         }
         return statements;
     }
 
-    private IRI createListNode(IRI owner, IRI hasNext, IRI hasContent, Value content, IRI context, Resource previous,
+    private IRI createListNode(IRI owner, IRI hasNext, IRI hasContent, Collection<Value> content, IRI context,
+                               Resource previous,
                                Collection<Statement> statements) throws Rdf4jDriverException {
         final IRI node = generateSequenceNode(owner, context);
         statements.add(vf.createStatement(previous, hasNext, node, context));
-        statements.add(vf.createStatement(node, hasContent, content, context));
+        content.forEach(item -> statements.add(vf.createStatement(node, hasContent, item, context)));
         return node;
     }
 
@@ -184,7 +186,8 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
         assert i > 0;
         final Collection<Statement> toAdd = new ArrayList<>((listDescriptor.getValues().size() - i) * 2);
         while (i < listDescriptor.getValues().size()) {
-            final Value content = toRdf4jValue(listDescriptor.getNodeContent(), listDescriptor.getValues().get(i));
+            final Collection<Value> content = toRdf4jValue(listDescriptor.getNodeContent(), listDescriptor.getValues()
+                                                                                                          .get(i));
             previous = createListNode(owner, hasNext, hasContent, content, context, previous, toAdd);
             i++;
         }

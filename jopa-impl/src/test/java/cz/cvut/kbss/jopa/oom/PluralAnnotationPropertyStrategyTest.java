@@ -83,7 +83,7 @@ class PluralAnnotationPropertyStrategyTest {
         final PluralAnnotationPropertyStrategy<OWLClassN> sut = strategyForN();
         final Assertion result = sut.createAssertion();
         assertEquals(Assertion.AssertionType.ANNOTATION_PROPERTY, result.getType());
-        assertEquals(Vocabulary.DC_SOURCE, result.getIdentifier().toString());
+        assertEquals(DC.Terms.SOURCE, result.getIdentifier().toString());
         assertFalse(result.isInferred());
     }
 
@@ -105,7 +105,7 @@ class PluralAnnotationPropertyStrategyTest {
     }
 
     private Assertion createAnnotationAssertionForN() {
-        return Assertion.createAnnotationPropertyAssertion(URI.create(Vocabulary.DC_SOURCE), LANG, false);
+        return Assertion.createAnnotationPropertyAssertion(URI.create(DC.Terms.SOURCE), LANG, false);
     }
 
     @Test
@@ -146,7 +146,7 @@ class PluralAnnotationPropertyStrategyTest {
         when(att.getCollectionType()).thenReturn(CollectionType.SET);
         when(att.getBindableJavaType()).thenReturn(elementType);
         when(att.getJavaField()).thenReturn(entity.getDeclaredField("sources"));
-        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.DC_SOURCE));
+        when(att.getIRI()).thenReturn(IRI.create(DC.Terms.SOURCE));
         when(att.getConverter()).thenReturn(converter);
         when(att.hasLanguage()).thenReturn(true);
         when(att.getLanguage()).thenReturn(LANG);
@@ -156,7 +156,7 @@ class PluralAnnotationPropertyStrategyTest {
     @OWLClass(iri = Vocabulary.CLASS_BASE)
     private static class WithPluralUriAnnotations {
 
-        @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
+        @OWLAnnotationProperty(iri = DC.Terms.SOURCE)
         private Set<URI> sources;
     }
 
@@ -228,7 +228,7 @@ class PluralAnnotationPropertyStrategyTest {
     @OWLClass(iri = Vocabulary.CLASS_BASE)
     private static class WithPluralStringAnnotations {
 
-        @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
+        @OWLAnnotationProperty(iri = DC.Terms.SOURCE)
         private Set<String> sources;
     }
 

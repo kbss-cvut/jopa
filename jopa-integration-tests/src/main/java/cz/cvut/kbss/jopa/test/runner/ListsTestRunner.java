@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassC;
@@ -14,6 +15,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -21,6 +23,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class ListsTestRunner extends BaseRunner {
 
-    protected ListsTestRunner(Logger logger,PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
+    protected ListsTestRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);
     }
 
@@ -305,7 +308,7 @@ public abstract class ListsTestRunner extends BaseRunner {
         for (int i = 5; i >= 0; i--) {
             final LocalDate d = LocalDate.now().minusDays(i);
             dates.add(d);
-            final URI node = URI.create(entityM.getKey() + "-SEQ" + (5-i));
+            final URI node = URI.create(entityM.getKey() + "-SEQ" + (5 - i));
             data.add(new Quad(previous, URI.create(i == 5 ? Vocabulary.p_m_literalReferencedList : SequencesVocabulary.s_p_hasNext), node));
             data.add(new Quad(node, SequencesVocabulary.p_hasContents, d));
             previous = node;
@@ -512,7 +515,7 @@ public abstract class ListsTestRunner extends BaseRunner {
         final OWLClassP update = findRequired(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
         for (int i = 0; i < Generators.randomPositiveInt(5, 10); i++) {
-            final URI u = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Added-" + i);
+            final URI u = URI.create(Vocabulary.INDIVIDUAL_IRI_BASE + "Added-" + i);
             // Insert at random position
             update.getSimpleList().add(Generators.randomInt(update.getSimpleList().size()), u);
         }
@@ -531,7 +534,7 @@ public abstract class ListsTestRunner extends BaseRunner {
         final OWLClassP update = findRequired(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
         for (int i = 0; i < Generators.randomPositiveInt(5, 10); i++) {
-            final URI u = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Added-" + i);
+            final URI u = URI.create(Vocabulary.INDIVIDUAL_IRI_BASE + "Added-" + i);
             // We might even overwrite items set in previous iterations, but it does not matter. JOPA should handle it
             update.getReferencedList().set(Generators.randomInt(update.getReferencedList().size()), u);
         }
@@ -601,5 +604,92 @@ public abstract class ListsTestRunner extends BaseRunner {
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(updatedList, result.getLiteralReferencedList());
+    }
+
+    @Test
+    void persistSupportsMultilingualReferencedLists() {
+        this.em = getEntityManager("persistSupportsMultilingualReferencedLists", false);
+        entityM.setMultilingualReferencedList(List.of(
+                new MultilingualString(Map.of("en", "First", "cs", "První")),
+                new MultilingualString(Map.of("en", "Second", "cs", "Druhý")),
+                new MultilingualString(Map.of("en", "Third", "cs", "Třetí"))
+        ));
+        persist(entityM);
+
+        for (int i = 0; i < entityM.getMultilingualReferencedList().size(); i++) {
+            final URI hasNextProperty = URI.create(i == 0 ? Vocabulary.p_m_multilingualReferencedList : SequencesVocabulary.s_p_hasNext);
+            entityM.getMultilingualReferencedList().get(i).getValue()
+                   .forEach((lang, value) -> assertTrue(em.createNativeQuery("ASK WHERE { ?prev ?hasNext ?node . ?node ?hasContent ?content . }", Boolean.class)
+                                                          .setParameter("hasNext", hasNextProperty)
+                                                          .setParameter("hasContent", URI.create(SequencesVocabulary.s_p_hasContents))
+                                                          .setParameter("content", value, lang).getSingleResult()));
+        }
+    }
+
+    @Test
+    void readSupportsMultilingualReferenceLists() throws Exception {
+        this.em = getEntityManager("readSupportsMultilingualReferenceLists", false);
+        final List<Quad> data = new ArrayList<>(List.of(new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M))));
+        final List<MultilingualString> strings = new ArrayList<>();
+        URI previous = URI.create(entityM.getKey());
+        for (int i = 5; i >= 0; i--) {
+            final MultilingualString mls = MultilingualString.create("Number " + i, "en");
+            mls.set("cs", "Číslo " + i);
+            strings.add(mls);
+            final URI node = URI.create(entityM.getKey() + "-SEQ" + (5 - i));
+            data.add(new Quad(previous, URI.create(i == 5 ? Vocabulary.p_m_multilingualReferencedList : SequencesVocabulary.s_p_hasNext), node));
+            mls.getValue()
+               .forEach((lang, val) -> data.add(new Quad(node, SequencesVocabulary.p_hasContents, new LangString(val, lang))));
+            previous = node;
+        }
+        persistTestData(data, em);
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(strings, result.getMultilingualReferencedList());
+    }
+
+    @Test
+    void updateSupportsChangesInMultilingualReferencedLists() {
+        this.em = getEntityManager("updateSupportsChangesInMultilingualReferencedLists", false);
+        entityM.setMultilingualReferencedList(List.of(
+                new MultilingualString(Map.of("en", "First", "cs", "První")),
+                new MultilingualString(Map.of("en", "Second", "cs", "Druhý")),
+                new MultilingualString(Map.of("en", "Third", "cs", "Třetí"))
+        ));
+        persist(entityM);
+
+        final List<MultilingualString> newValue = new ArrayList<>(entityM.getMultilingualReferencedList());
+        newValue.set(Generators.randomPositiveInt(0, newValue.size()), new MultilingualString(Map.of("en", "New", "cs", "Nový")));
+        entityM.setMultilingualReferencedList(newValue);
+
+        transactional(() -> em.merge(entityM));
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(newValue, result.getMultilingualReferencedList());
+    }
+
+    @Test
+    void removeMultilingualReferencedListItemRemovesStatementsFromRepository() {
+        this.em = getEntityManager("updateSupportsChangesInMultilingualReferencedLists", false);
+        entityM.setMultilingualReferencedList(List.of(
+                new MultilingualString(Map.of("en", "First", "cs", "První")),
+                new MultilingualString(Map.of("en", "Second", "cs", "Druhý")),
+                new MultilingualString(Map.of("en", "Third", "cs", "Třetí"))
+        ));
+        persist(entityM);
+        final MultilingualString toRemove = entityM.getMultilingualReferencedList()
+                                                   .get(entityM.getMultilingualReferencedList().size() - 1);
+
+        transactional(() -> {
+            final OWLClassM update = findRequired(OWLClassM.class, entityM.getKey());
+            update.getMultilingualReferencedList().remove(update.getMultilingualReferencedList().size() - 1);
+        });
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(entityM.getMultilingualReferencedList().size() - 1, result.getMultilingualReferencedList().size());
+        toRemove.getValue()
+                .forEach((lang, val) -> assertFalse(em.createNativeQuery("ASK { ?node ?hasContent ?value }", Boolean.class)
+                                                      .setParameter("hasContent", URI.create(Vocabulary.p_m_multilingualReferencedList))
+                                                      .setParameter("value", val, lang).getSingleResult()));
     }
 }

@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Assertion.AssertionType;
@@ -454,7 +455,7 @@ class EntityDeconstructorTest {
 
         final AxiomValueDescriptor valueDescriptor = getAxiomValueDescriptor(builder);
         final Assertion assertion =
-                Assertion.createAnnotationPropertyAssertion(URI.create(Vocabulary.DC_SOURCE), Generators.LANG, false);
+                Assertion.createAnnotationPropertyAssertion(URI.create(DC.Terms.SOURCE), Generators.LANG, false);
         assertTrue(valueDescriptor.getAssertions().contains(assertion));
         assertAll(() -> assertEquals(n.getPluralAnnotation().size(),
                                      valueDescriptor.getAssertionValues(assertion).size()),

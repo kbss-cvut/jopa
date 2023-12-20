@@ -18,16 +18,12 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
-import org.semanticweb.owlapi.model.OWLIndividual;
-import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.util.Collection;
@@ -82,17 +78,9 @@ class InferredReferencedListIterator<T> extends ReferencedListIterator<T> {
         if (!hasNext()) {
             throw new NoSuchElementException("There are no more elements.");
         }
-        checkMaxSuccessors(hasContentProperty, nextItem);
-        final OWLObject value = nextItem.iterator().next();
+        final T result = extractNodeContent();
         doStep();
-        if (value.isIndividual()) {
-            final OWLIndividual individual = (OWLIndividual) value;
-            checkIsNamed(individual);
-            return (T) NamedResource.create(individual.asOWLNamedIndividual().getIRI().toURI());
-        } else {
-            final OWLLiteral literal = (OWLLiteral) value;
-            return (T) OwlapiUtils.owlLiteralToValue(literal);
-        }
+        return result;
     }
 
     @Override

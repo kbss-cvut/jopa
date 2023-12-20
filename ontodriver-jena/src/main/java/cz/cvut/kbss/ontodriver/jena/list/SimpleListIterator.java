@@ -29,9 +29,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 
-class SimpleListIterator extends AbstractListIterator<NamedResource, Resource> {
+class SimpleListIterator extends AbstractListIterator<NamedResource> {
 
     SimpleListIterator(SimpleListDescriptor descriptor, StorageConnector connector) {
         super(descriptor, connector);
@@ -59,23 +60,24 @@ class SimpleListIterator extends AbstractListIterator<NamedResource, Resource> {
      * @param replacement The replacement node
      */
     @Override
-    void replace(Resource replacement) {
+    void replace(NamedResource replacement) {
         removeWithoutReconnect();
         final List<Statement> toAdd = new ArrayList<>(2);
-        toAdd.add(createStatement(previousNode, index == 0 ? hasListProperty : hasNextProperty, replacement));
+        final Resource replacementNode = createResource(replacement.getIdentifier().toString());
+        toAdd.add(createStatement(previousNode, index == 0 ? hasListProperty : hasNextProperty, replacementNode));
         if (hasNext()) {
             verifySuccessorCount();
             final RDFNode nextNode = cursor.iterator().next().getObject();
             remove(currentNode, hasNextProperty, nextNode);
-            if (!nextNode.equals(replacement)) {
-                final Statement linkToNext = createStatement(replacement, hasNextProperty, nextNode);
+            if (!nextNode.equals(replacementNode)) {
+                final Statement linkToNext = createStatement(replacementNode, hasNextProperty, nextNode);
                 toAdd.add(linkToNext);
                 this.cursor = Collections.singleton(linkToNext);
             } else {
-                moveCursor(replacement);
+                moveCursor(replacementNode);
             }
         }
-        this.currentNode = replacement;
+        this.currentNode = replacementNode;
         connector.add(toAdd, context);
     }
 }
