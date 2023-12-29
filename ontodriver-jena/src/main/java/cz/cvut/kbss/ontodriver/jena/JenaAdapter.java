@@ -1,26 +1,31 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.Wrapper;
-import cz.cvut.kbss.ontodriver.descriptor.*;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.connector.InferredStorageConnector;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
-import cz.cvut.kbss.ontodriver.jena.list.ListHandler;
+import cz.cvut.kbss.ontodriver.jena.list.ReferencedListHandler;
+import cz.cvut.kbss.ontodriver.jena.list.SimpleListHandler;
 import cz.cvut.kbss.ontodriver.jena.query.JenaPreparedStatement;
 import cz.cvut.kbss.ontodriver.jena.query.JenaStatement;
 import cz.cvut.kbss.ontodriver.jena.util.IdentifierGenerator;
@@ -133,14 +138,14 @@ public class JenaAdapter implements Wrapper {
         return new PropertiesHandler(connector);
     }
 
-    public ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> simpleListHandler() {
+    public SimpleListHandler simpleListHandler() {
         beginTransactionIfNotActive();
-        return ListHandler.simpleListHandler(connector);
+        return new SimpleListHandler(connector);
     }
 
-    public ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> referencedListHandler() {
+    public ReferencedListHandler referencedListHandler() {
         beginTransactionIfNotActive();
-        return ListHandler.referencedListHandler(connector);
+        return new ReferencedListHandler(connector);
     }
 
     JenaStatement createStatement() {

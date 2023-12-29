@@ -1,22 +1,26 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.ontodriver.jena.list;
 
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -29,23 +33,32 @@ import java.util.List;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
-class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> {
+public class SimpleListHandler {
 
-    SimpleListHandler(StorageConnector connector) {
-        super(connector);
+    private final StorageConnector connector;
+
+    public SimpleListHandler(StorageConnector connector) {
+        this.connector = connector;
     }
 
-    @Override
-    SimpleListIterator iterator(SimpleListDescriptor descriptor) {
-        return new SimpleListIterator(descriptor, connector);
+    List<Axiom<NamedResource>> loadList(SimpleListDescriptor descriptor) {
+        final List<Axiom<NamedResource>> result = new ArrayList<>();
+        final SimpleListIterator it = new SimpleListIterator(descriptor, connector);
+        while (it.hasNext()) {
+            result.add(it.nextAxiom());
+        }
+        return result;
     }
 
-    @Override
-    AbstractListIterator iterator(SimpleListValueDescriptor descriptor) {
-        return iterator((SimpleListDescriptor) descriptor);
+    void persistList(SimpleListValueDescriptor descriptor) {
+        final List<NamedResource> values = descriptor.getValues();
+        if (values.isEmpty()) {
+            return;
+        }
+        Resource owner = createResource(descriptor.getListOwner().getIdentifier().toString());
+        appendNewNodes(descriptor, 0, owner);
     }
 
-    @Override
     void appendNewNodes(SimpleListValueDescriptor descriptor, int index, Resource lastNode) {
         final Property hasList = ResourceFactory
                 .createProperty(descriptor.getListProperty().getIdentifier().toString());
@@ -63,5 +76,29 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         final Resource node = createResource(value.getIdentifier().toString());
         statements.add(ResourceFactory.createStatement(previous, property, node));
         return node;
+    }
+
+    void updateList(SimpleListValueDescriptor descriptor) {
+        final SimpleListIterator it = new SimpleListIterator(descriptor, connector);
+        int i = 0;
+        while (it.hasNext() && i < descriptor.getValues().size()) {
+            final NamedResource update = descriptor.getValues().get(i);
+            final NamedResource existing = it.nextValue();
+            if (!existing.equals(update)) {
+                it.replace(update);
+            }
+            i++;
+        }
+        removeObsoleteNodes(it);
+        if (i < descriptor.getValues().size()) {
+            appendNewNodes(descriptor, i, it.getCurrentNode());
+        }
+    }
+
+    private static void removeObsoleteNodes(SimpleListIterator it) {
+        while (it.hasNext()) {
+            it.nextValue();
+            it.removeWithoutReconnect();
+        }
     }
 }

@@ -1,16 +1,19 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.ontodriver.jena.list;
 
@@ -26,9 +29,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 
-class SimpleListIterator extends AbstractListIterator {
+class SimpleListIterator extends AbstractListIterator<NamedResource> {
 
     SimpleListIterator(SimpleListDescriptor descriptor, StorageConnector connector) {
         super(descriptor, connector);
@@ -56,23 +60,24 @@ class SimpleListIterator extends AbstractListIterator {
      * @param replacement The replacement node
      */
     @Override
-    void replace(Resource replacement) {
+    void replace(NamedResource replacement) {
         removeWithoutReconnect();
         final List<Statement> toAdd = new ArrayList<>(2);
-        toAdd.add(createStatement(previousNode, index == 0 ? hasListProperty : hasNextProperty, replacement));
+        final Resource replacementNode = createResource(replacement.getIdentifier().toString());
+        toAdd.add(createStatement(previousNode, index == 0 ? hasListProperty : hasNextProperty, replacementNode));
         if (hasNext()) {
             verifySuccessorCount();
             final RDFNode nextNode = cursor.iterator().next().getObject();
             remove(currentNode, hasNextProperty, nextNode);
-            if (!nextNode.equals(replacement)) {
-                final Statement linkToNext = createStatement(replacement, hasNextProperty, nextNode);
+            if (!nextNode.equals(replacementNode)) {
+                final Statement linkToNext = createStatement(replacementNode, hasNextProperty, nextNode);
                 toAdd.add(linkToNext);
                 this.cursor = Collections.singleton(linkToNext);
             } else {
-                moveCursor(replacement);
+                moveCursor(replacementNode);
             }
         }
-        this.currentNode = replacement;
+        this.currentNode = replacementNode;
         connector.add(toAdd, context);
     }
 }

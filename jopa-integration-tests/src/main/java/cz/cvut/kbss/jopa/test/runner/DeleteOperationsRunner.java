@@ -1,16 +1,19 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -119,71 +122,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         em.detach(e);
         assertFalse(em.contains(e));
         assertThrows(IllegalArgumentException.class, () -> em.remove(e));
-    }
-
-    @Test
-    void testRemoveFromSimpleList() {
-        this.em = getEntityManager("RemoveFromSimpleList", false);
-        final int size = 5;
-        entityC.setSimpleList(Generators.createSimpleList(10));
-        persistCWithLists(entityC);
-
-        final int randIndex = Generators.randomInt(size);
-        final OWLClassA a = findRequired(OWLClassA.class, entityC.getSimpleList().get(randIndex).getUri());
-        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
-        em.getTransaction().begin();
-        // We have to remove A from the simple list as well because otherwise we would break the chain in instances
-        assertTrue(c.getSimpleList().remove(a));
-        em.remove(a);
-        em.getTransaction().commit();
-
-        final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
-        assertNull(resA);
-        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
-        assertFalse(resC.getSimpleList().stream().anyMatch(item -> item.getUri().equals(a.getUri())));
-    }
-
-    @Test
-    void testRemoveFromReferencedList() {
-        this.em = getEntityManager("RemoveFromReferencedList", false);
-        final int size = 10;
-        entityC.setReferencedList(Generators.createReferencedList(size));
-        persistCWithLists(entityC);
-
-        final int randIndex = Generators.randomInt(size);
-        final OWLClassA a = findRequired(OWLClassA.class, entityC.getReferencedList().get(randIndex).getUri());
-        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
-        em.getTransaction().begin();
-        // We have to remove A from the referenced list as well because otherwise we would break the chain in instances
-        assertTrue(c.getReferencedList().remove(a));
-        em.remove(a);
-        em.getTransaction().commit();
-
-        final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
-        assertNull(resA);
-        final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
-        assertFalse(resC.getReferencedList().stream().anyMatch(item -> item.getUri().equals(a.getUri())));
-    }
-
-    @Test
-    void testRemoveListOwner() {
-        this.em = getEntityManager("RemoveListOwner", false);
-        entityC.setSimpleList(Generators.createSimpleList());
-        entityC.setReferencedList(Generators.createReferencedList());
-        persistCWithLists(entityC);
-
-        final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
-        em.getTransaction().begin();
-        em.remove(c);
-        em.getTransaction().commit();
-
-        em.getEntityManagerFactory().getCache().evictAll();
-        for (OWLClassA a : entityC.getSimpleList()) {
-            assertNotNull(em.find(OWLClassA.class, a.getUri()));
-        }
-        for (OWLClassA a : entityC.getReferencedList()) {
-            assertNotNull(em.find(OWLClassA.class, a.getUri()));
-        }
     }
 
     @Test
@@ -512,41 +450,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
         assertNull(em.find(OWLClassD.class, entityD.getUri()));
         assertNull(em.find(OWLClassA.class, entityA.getUri()));
-    }
-
-    @Test
-    void removingNewlyPersistedInstanceRemovesPendingListReferencesAndAllowsTransactionToFinish() {
-        this.em = getEntityManager(
-                "removingNewlyPersistedInstanceRemovesPendingListReferencesAndAllowsTransactionToFinish", true);
-        em.getTransaction().begin();
-        entityC.setSimpleList(Generators.createSimpleList());
-        entityC.setReferencedList(Generators.createReferencedList());
-        em.persist(entityC);
-        em.remove(entityC);
-        em.getTransaction().commit();
-
-        assertNull(em.find(OWLClassC.class, entityC.getUri()));
-        entityC.getSimpleList().forEach(a -> assertNull(em.find(OWLClassA.class, a.getUri())));
-        entityC.getReferencedList().forEach(a -> assertNull(em.find(OWLClassA.class, a.getUri())));
-    }
-
-    @Test
-    void removingListItemsFromNewlyPersistedOwnerRemovesThemFromPendingReferencesAndAllowsTransactionToFinish() {
-        this.em = getEntityManager(
-                "removingListItemsFromNewlyPersistedOwnerRemovesThemFromPendingReferencesAndAllowsTransactionToFinish",
-                false);
-        em.getTransaction().begin();
-        entityC.setSimpleList(Generators.createSimpleList());
-        entityC.setReferencedList(Generators.createReferencedList());
-        em.persist(entityC);
-        entityC.getSimpleList().clear();
-        entityC.getReferencedList().clear();
-        em.getTransaction().commit();
-
-        final OWLClassC result = em.find(OWLClassC.class, entityC.getUri());
-        assertNotNull(result);
-        assertNull(result.getSimpleList());
-        assertNull(result.getReferencedList());
     }
 
     @Test

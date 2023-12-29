@@ -1,16 +1,19 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -45,7 +48,7 @@ import static org.mockito.Mockito.when;
 
 class ListPropertyStrategyTestBase {
 
-    protected static final URI PK = Generators.createIndividualIdentifier();
+    protected static final URI IDENTIFIER = Generators.createIndividualIdentifier();
 
     @Mock
     protected ObjectOntologyMapperImpl mapperMock;
@@ -60,7 +63,7 @@ class ListPropertyStrategyTestBase {
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(mocks.forOwlClassA().entityType());
         this.descriptor = new EntityDescriptor();
         this.builder =
-                spy(new AxiomValueGatherer(NamedResource.create(PK), descriptor.getSingleContext().orElse(null)));
+                spy(new AxiomValueGatherer(NamedResource.create(IDENTIFIER), descriptor.getSingleContext().orElse(null)));
         when(mapperMock.containsEntity(any(), any(), any())).thenReturn(true);
     }
 
@@ -86,7 +89,7 @@ class ListPropertyStrategyTestBase {
         }
     }
 
-    void verifyListItems(List<URI> expected, ListValueDescriptor actual) {
+    void verifyListItems(List<URI> expected, ListValueDescriptor<NamedResource> actual) {
         assertEquals(expected.size(), actual.getValues().size());
         for (int i = 0; i < expected.size(); i++) {
             assertEquals(expected.get(i), actual.getValues().get(i).getIdentifier());
@@ -96,6 +99,7 @@ class ListPropertyStrategyTestBase {
     static ListAttributeImpl<WithEnumList, OneOfEnum> initEnumListAttribute() throws Exception {
         final ListAttributeImpl<WithEnumList, OneOfEnum> att = mock(ListAttributeImpl.class);
         when(att.getBindableJavaType()).thenReturn(OneOfEnum.class);
+        when(att.isAssociation()).thenReturn(true);
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_objectOneOfEnumAttribute));
         when(att.getConverter()).thenReturn(new ObjectOneOfEnumConverter<>(OneOfEnum.class));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);

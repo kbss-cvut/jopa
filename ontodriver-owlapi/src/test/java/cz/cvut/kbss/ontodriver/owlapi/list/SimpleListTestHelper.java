@@ -1,16 +1,19 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
@@ -29,18 +32,19 @@ class SimpleListTestHelper extends ListTestHelper {
     }
 
     @Override
-    void persistList(List<URI> items) {
+    void persistList(List<?> items) {
         assert items.size() > 0;
         final OWLObjectProperty hasList = dataFactory
                 .getOWLObjectProperty(IRI.create(HAS_LIST_PROPERTY));
         final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(HAS_NEXT_PROPERTY));
         manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasList, individual,
-                dataFactory.getOWLNamedIndividual(IRI.create(items.get(0)))));
+                dataFactory.getOWLNamedIndividual(IRI.create(items.get(0).toString()))));
         for (int i = 1; i < items.size(); i++) {
+            assert items.get(i) instanceof URI;
             manager.addAxiom(ontology,
                     dataFactory.getOWLObjectPropertyAssertionAxiom(hasNext, dataFactory.getOWLNamedIndividual(
-                            IRI.create(items.get(i - 1))),
-                            dataFactory.getOWLNamedIndividual(IRI.create(items.get(i)))));
+                            IRI.create(items.get(i - 1).toString())),
+                            dataFactory.getOWLNamedIndividual(IRI.create(items.get(i).toString()))));
 
         }
     }

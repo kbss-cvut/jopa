@@ -1,39 +1,60 @@
 /*
+ * JOPA
  * Copyright (C) 2023 Czech Technical University in Prague
  *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.change.MutableRemoveAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLIndividual;
+import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObject;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLProperty;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class ReferencedListIterator extends OwlapiListIterator {
+class ReferencedListIterator<T> extends OwlapiListIterator<T> {
 
     final OWLObjectProperty hasNextProperty;
-    final OWLObjectProperty hasContentProperty;
+    final OWLProperty hasContentProperty;
 
     final OWLOntology ontology;
     private final OWLDataFactory dataFactory;
@@ -44,24 +65,34 @@ class ReferencedListIterator extends OwlapiListIterator {
     OWLIndividual currentNode;
     OWLObjectProperty previousNextNodeProperty;
     OWLObjectProperty currentNextNodeProperty;
-    Collection<? extends OWLIndividual> nextItem;
+    Collection<? extends OWLObject> nextItem;
 
     final ReferencedListDescriptor descriptor;
 
-    ReferencedListIterator(ReferencedListDescriptor descriptor, OntologySnapshot snapshot,
-                           AxiomAdapter axiomAdapter) {
+    ReferencedListIterator(ReferencedListDescriptor descriptor, OntologySnapshot snapshot, AxiomAdapter axiomAdapter) {
         this.ontology = snapshot.getOntology();
         this.dataFactory = snapshot.getDataFactory();
+        this.descriptor = descriptor;
         this.hasNextProperty = dataFactory.getOWLObjectProperty(IRI.create(descriptor.getNextNode().getIdentifier()));
-        this.hasContentProperty = dataFactory
-                .getOWLObjectProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
+        this.hasContentProperty = assertionToOwlProperty(descriptor.getNodeContent());
         this.axiomAdapter = axiomAdapter;
         this.currentNextNodeProperty = dataFactory
                 .getOWLObjectProperty(IRI.create(descriptor.getListProperty().getIdentifier()));
         this.previousNextNodeProperty = currentNextNodeProperty;
         this.currentNode = OwlapiUtils.getIndividual(descriptor.getListOwner(), dataFactory);
         this.previousNode = currentNode;
-        this.descriptor = descriptor;
+    }
+
+    private OWLProperty assertionToOwlProperty(Assertion a) {
+        switch (a.getType()) {
+            case OBJECT_PROPERTY:
+                return dataFactory
+                        .getOWLObjectProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
+            case DATA_PROPERTY:
+                return dataFactory.getOWLDataProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
+            default:
+                throw new IllegalArgumentException("Node content property cannot be type " + a.getType());
+        }
     }
 
     @Override
@@ -85,28 +116,85 @@ class ReferencedListIterator extends OwlapiListIterator {
         checkIsNamed(node);
         this.previousNode = currentNode;
         this.currentNode = node;
-        this.nextItem =
-                EntitySearcher.getObjectPropertyValues(node, hasContentProperty, ontology).collect(Collectors.toSet());
+        this.nextItem = resolveCurrentContent();
+    }
+
+    private Collection<? extends OWLObject> resolveCurrentContent() {
+        if (hasContentProperty.isOWLObjectProperty()) {
+            return EntitySearcher.getObjectPropertyValues(currentNode, hasContentProperty.asOWLObjectProperty(), ontology)
+                                 .collect(Collectors.toSet());
+        } else {
+            assert hasContentProperty.isOWLDataProperty();
+            return EntitySearcher.getDataPropertyValues(currentNode, hasContentProperty.asOWLDataProperty(), ontology)
+                                 .collect(Collectors.toSet());
+        }
     }
 
     @Override
-    public Axiom<NamedResource> next() {
-        final NamedResource value = nextValue();
+    public Axiom<T> next() {
+        final T value = nextValue();
         return axiomAdapter
                 .createAxiom(NamedResource.create(currentNode.asOWLNamedIndividual().getIRI().toURI()),
                         descriptor.getNodeContent(), value);
     }
 
     @Override
-    NamedResource nextValue() {
+    T nextValue() {
         doStep();
         if (nextItem.isEmpty()) {
             throw new NoSuchElementException("There are no more elements.");
         }
-        checkMaxSuccessors(hasContentProperty, nextItem);
-        final OWLIndividual value = nextItem.iterator().next();
-        checkIsNamed(value);
-        return NamedResource.create(value.asOWLNamedIndividual().getIRI().toURI());
+        return extractNodeContent();
+    }
+
+    protected T extractNodeContent() {
+        verifyContentValueCount(nextItem);
+        if (nextItem.size() == 1) {
+            final OWLObject value = nextItem.iterator().next();
+            if (value.isIndividual()) {
+                final OWLIndividual individual = (OWLIndividual) value;
+                checkIsNamed(individual);
+                return (T) NamedResource.create(individual.asOWLNamedIndividual().getIRI().toURI());
+            } else {
+                final OWLLiteral literal = (OWLLiteral) value;
+                return (T) OwlapiUtils.owlLiteralToValue(literal);
+            }
+        } else {
+            final MultilingualString mls = new MultilingualString();
+            nextItem.forEach(n -> {
+                assert n instanceof OWLLiteral;
+                final OWLLiteral lit = (OWLLiteral) n;
+                assert lit.getLang() != null;
+                mls.set(lit.getLang(), lit.getLiteral());
+            });
+            return (T) mls;
+        }
+    }
+
+    private void verifyContentValueCount(Collection<? extends OWLObject> values) {
+        if (values.isEmpty()) {
+            throw icViolatedException(currentNode.toStringID(), 0);
+        }
+        final Set<String> langs = new HashSet<>();
+        if (values.size() == 1) {
+            return;
+        }
+        for (OWLObject s : values) {
+            if (s.isIndividual()) {
+                throw icViolatedException(currentNode.toStringID(), values.size());
+            }
+            assert s instanceof OWLLiteral;
+            final OWLLiteral literal = (OWLLiteral) s;
+            if (literal.getLang() != null && !langs.contains(literal.getLang())) {
+                langs.add(literal.getLang());
+            } else {
+                throw icViolatedException(currentNode.toStringID(), values.size());
+            }
+        }
+    }
+
+    private static IntegrityConstraintViolatedException icViolatedException(String nodeId, int count) {
+        return new IntegrityConstraintViolatedException("Expected exactly one content statement for node <" + nodeId + ">, but got " + count);
     }
 
     @Override
@@ -135,15 +223,27 @@ class ReferencedListIterator extends OwlapiListIterator {
     }
 
     @Override
-    List<TransactionalChange> replaceNode(NamedResource newValue) {
+    List<TransactionalChange> replaceNode(T newValue) {
         // We know there is exactly one, because nextItem has to have been called before this method
-        final OWLIndividual originalContent = nextItem.iterator().next();
-        final OWLNamedIndividual newContent = OwlapiUtils.getIndividual(newValue, dataFactory);
-        final List<TransactionalChange> changes = new ArrayList<>(2);
-        changes.add(new MutableRemoveAxiom(ontology,
-                dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty, currentNode, originalContent)));
-        changes.add(new MutableAddAxiom(ontology,
-                dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty, currentNode, newContent)));
+        final List<TransactionalChange> changes;
+        if (hasContentProperty.isOWLObjectProperty()) {
+            assert nextItem.size() == 1;
+            final OWLObject originalContent = nextItem.iterator().next();
+            final OWLNamedIndividual newContent = OwlapiUtils.getIndividual((NamedResource) newValue, dataFactory);
+            changes = List.of(
+                    new MutableRemoveAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty.asOWLObjectProperty(), currentNode, (OWLIndividual) originalContent)),
+                    new MutableAddAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty.asOWLObjectProperty(), currentNode, newContent)));
+        } else {
+            changes = replaceDataPropertyContent(newValue);
+        }
         return changes;
+    }
+
+    private List<TransactionalChange> replaceDataPropertyContent(T newValue) {
+        final List<TransactionalChange> result = new ArrayList<>(nextItem.size() + 1);
+        nextItem.forEach(o -> result.add(new MutableRemoveAxiom(ontology, dataFactory.getOWLDataPropertyAssertionAxiom(hasContentProperty.asOWLDataProperty(), currentNode, (OWLLiteral) o))));
+        final ReferencedListNodeGenerator nodeGenerator = new ReferencedListNodeGenerator(descriptor, axiomAdapter, ontology);
+        result.addAll(nodeGenerator.generateNodeContent(getCurrentNode(), newValue));
+        return result;
     }
 }
