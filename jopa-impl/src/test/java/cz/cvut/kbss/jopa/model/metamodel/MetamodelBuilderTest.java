@@ -494,7 +494,7 @@ class MetamodelBuilderTest {
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithDataPropertyReferencedList")
-    private static class ClassWithDataPropertyReferencedList {
+    public static class ClassWithDataPropertyReferencedList {
         @Id
         private URI uri;
 
@@ -514,7 +514,7 @@ class MetamodelBuilderTest {
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithDataPropertySimpleList")
-    private static class ClassWithDataPropertySimpleList {
+    public static class ClassWithDataPropertySimpleList {
         @Id
         private URI uri;
 

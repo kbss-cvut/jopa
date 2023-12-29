@@ -1076,21 +1076,21 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     void updateSupportCollectionAttribute() {
         this.em = getEntityManager("updateSupportCollectionAttribute", true);
         final OWLClassX x = new OWLClassX();
-        x.setOwlClassACollection(new HashSet<>(Arrays.asList(entityA, entityA2)));
+        x.setACollection(new HashSet<>(Arrays.asList(entityA, entityA2)));
 
         final OWLClassA newA = new OWLClassA();
         newA.setUri(Generators.generateUri());
         newA.setStringAttribute("stringAttributeeee");
         em.getTransaction().begin();
         em.persist(newA);
-        x.setOwlClassACollection(Collections.singletonList(newA));
+        x.setACollection(Collections.singletonList(newA));
         final OWLClassX merged = em.merge(x);
-        assertFalse(merged.getOwlClassACollection().isEmpty());
+        assertFalse(merged.getACollection().isEmpty());
         em.getTransaction().commit();
 
         final OWLClassX result = findRequired(OWLClassX.class, x.getUri());
-        assertEquals(1, result.getOwlClassACollection().size());
-        assertEquals(newA.getUri(), result.getOwlClassACollection().iterator().next().getUri());
+        assertEquals(1, result.getACollection().size());
+        assertEquals(newA.getUri(), result.getACollection().iterator().next().getUri());
     }
 
     // Bug #81

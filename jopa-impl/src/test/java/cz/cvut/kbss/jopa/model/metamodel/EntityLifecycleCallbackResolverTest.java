@@ -55,9 +55,8 @@ public class EntityLifecycleCallbackResolverTest {
     }
 
     private <T> AbstractIdentifiableType<T> typeFor(Class<T> cls) {
-        final String name = cls.getName();
         final String iri = cls.getDeclaredAnnotation(OWLClass.class).iri();
-        return new ConcreteEntityType<>(name, cls, IRI.create(iri));
+        return new ConcreteEntityType<>(cls, cls, IRI.create(iri));
     }
 
     @Test

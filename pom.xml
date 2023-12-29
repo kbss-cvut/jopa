@@ -46,7 +46,6 @@
         <!-- We use OWLAPI in multiple modules, so let's keep them in sync -->
         <net.sourceforge.owlapi.version>5.5.0</net.sourceforge.owlapi.version>
 
-        <maven.aspectj.plugin.version>1.13.1</maven.aspectj.plugin.version>
         <maven.deploy.plugin.version>3.1.1</maven.deploy.plugin.version>
         <maven.javadoc.plugin.version>3.6.0</maven.javadoc.plugin.version>
         <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
