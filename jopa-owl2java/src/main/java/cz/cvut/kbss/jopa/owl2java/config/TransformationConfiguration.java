@@ -41,6 +41,8 @@ public class TransformationConfiguration {
 
     private final boolean generateThing;
 
+    private final String ontologyPrefixProperty;
+
     private final CliParams cliParams;
 
     private TransformationConfiguration(TransformationConfigurationBuilder builder) {
@@ -53,6 +55,7 @@ public class TransformationConfiguration {
         this.propertiesType = builder.propertiesType;
         this.generateAnnotationFields = builder.generateAnnotationFields;
         this.generateThing = builder.generateThing;
+        this.ontologyPrefixProperty = builder.ontologyPrefixProperty;
         this.cliParams = CliParams.empty();
     }
 
@@ -68,6 +71,7 @@ public class TransformationConfiguration {
         this.propertiesType = PropertiesType.fromParam(cliParams.valueOf(Option.PROPERTIES_TYPE.arg));
         this.generateAnnotationFields = cliParams.is(Option.GENERATE_ANNOTATION_FIELDS.arg, Defaults.GENERATE_ANNOTATION_FIELDS);
         this.generateThing = cliParams.is(Option.GENERATE_THING.arg, Defaults.GENERATE_THING);
+        this.ontologyPrefixProperty = cliParams.valueOf(Option.ONTOLOGY_PREFIX_PROPERTY.arg).toString();
     }
 
     public String getContext() {
@@ -110,6 +114,10 @@ public class TransformationConfiguration {
         return generateThing;
     }
 
+    public String getOntologyPrefixProperty() {
+        return ontologyPrefixProperty;
+    }
+
     public CliParams getCliParams() {
         return cliParams;
     }
@@ -132,6 +140,7 @@ public class TransformationConfiguration {
         private boolean preferMultilingualStrings = Defaults.PREFER_MULTILINGUAL_STRINGS;
         private boolean generateAnnotationFields = Defaults.GENERATE_ANNOTATION_FIELDS;
         private boolean generateThing = Defaults.GENERATE_THING;
+        private String ontologyPrefixProperty = Defaults.ONTOLOGY_PREFIX_PROPERTY;
 
         public TransformationConfigurationBuilder context(String context) {
             this.context = context;
@@ -175,6 +184,11 @@ public class TransformationConfiguration {
 
         public TransformationConfigurationBuilder generateThing(boolean generateThing) {
             this.generateThing = generateThing;
+            return this;
+        }
+
+        public TransformationConfigurationBuilder ontologyPrefixProperty(String ontologyPrefixProperty) {
+            this.ontologyPrefixProperty = ontologyPrefixProperty;
             return this;
         }
 

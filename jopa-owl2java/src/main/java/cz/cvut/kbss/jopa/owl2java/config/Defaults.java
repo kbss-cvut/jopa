@@ -81,6 +81,11 @@ public class Defaults {
      */
     public static final boolean GENERATE_THING = true;
 
+    /**
+     * @see Option#ONTOLOGY_PREFIX_PROPERTY
+     */
+    public static final String ONTOLOGY_PREFIX_PROPERTY = "http://purl.org/vocab/vann/preferredNamespacePrefix";
+
     private Defaults() {
         throw new AssertionError();
     }
