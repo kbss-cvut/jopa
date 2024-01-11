@@ -29,8 +29,20 @@ class JavaNameGeneratorTest {
     }
 
     @Test
-    void generateJavaNameUsesFragmentWhenIriContainsIt() {
+    void generateJavaNameForIriUsesFragmentWhenIriContainsIt() {
         final IRI iri = IRI.create("http://onto.fel.cvut.cz/ontologies/owl2java-test#Fragment");
         assertEquals("Fragment", sut.generateJavaNameForIri(iri));
+    }
+
+    @Test
+    void generateJavaNameForIriUsesPartBetweenLastHashAndFragmentWhenFragmentIsLastChar() {
+        final IRI iri = IRI.create("http://www.w3.org/ns/activitystreams#");
+        assertEquals("activitystreams", sut.generateJavaNameForIri(iri));
+    }
+
+    @Test
+    void generateJavaNameForIriUsesPartBetweenLastAndSecondToLastSlashWhenSlashIsLastChar() {
+        final IRI iri = IRI.create("http://purl.org/vocab/vann/");
+        assertEquals("vann", sut.generateJavaNameForIri(iri));
     }
 }
