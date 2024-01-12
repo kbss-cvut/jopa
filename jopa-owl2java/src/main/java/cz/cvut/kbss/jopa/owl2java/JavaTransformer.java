@@ -232,17 +232,20 @@ public class JavaTransformer {
         }
         String fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generateJavaNameForIri(c.getIRI());
         if (voc.fields().containsKey(fieldName)) {
-            final Optional<OWLOntology> containingOntology = ontologyManager.getOntologies().stream()
-                                                                            .filter(o -> !o.getOntologyID()
-                                                                                           .isAnonymous())
-                                                                            .filter(o -> o.containsEntityInSignature(c))
-                                                                            .findFirst();
+            final Optional<OWLOntology> containingOntology = resolveContainingOntology(c, ontologyManager);
             if (containingOntology.isPresent()) {
                 fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generatePrefixedJavaNameForIri(c.getIRI(), containingOntology.get()
                                                                                                                                       .getOntologyID());
             }
         }
         return Optional.of(ensureVocabularyItemUniqueIdentifier(fieldName));
+    }
+
+    private static Optional<OWLOntology> resolveContainingOntology(OWLEntity c, OWLOntologyManager ontologyManager) {
+        return ontologyManager.getOntologies().stream()
+                              .filter(o -> !o.getOntologyID().isAnonymous())
+                              .filter(o -> o.containsEntityInSignature(c))
+                              .findFirst();
     }
 
     private static Optional<String> resolveFieldPrefix(OWLEntity c, Set<IRI> visitedProperties) {
@@ -315,8 +318,9 @@ public class JavaTransformer {
         }
 
         for (final OWLClass clazz : context.classes) {
-            LOG.info("  Generating class '{}'.", clazz);
+            LOG.info("  Generating entity class for '{}'.", clazz);
             final JDefinedClass subj = ensureEntityClassExists(pkg, cm, clazz, ontology);
+
 
             final AtomicBoolean extendClass = new AtomicBoolean(false);
             context.set.getClassIntegrityConstraints(clazz).stream()
@@ -489,7 +493,7 @@ public class JavaTransformer {
                                             final OWLOntology ontology) {
         JDefinedClass cls;
 
-        String name = generateUniqueClassName(pkg, javaClassId(ontology, clazz), cm);
+        String name = javaClassId(ontology, clazz, pkg, cm);
 
         try {
             cls = cm._class(name);
@@ -505,23 +509,28 @@ public class JavaTransformer {
         return cls;
     }
 
-    private String generateUniqueClassName(String pkg, String simpleName, JCodeModel cm) {
-        String fqn = pkg + PACKAGE_SEPARATOR + simpleName;
-        while (cm._getClass(fqn) != null) {
-            fqn += DISAMBIGUATION_SUFFIX;
+    private String javaClassId(OWLOntology rootOntology, OWLClass owlClass, String pkg,
+                               JCodeModel codeModel) {
+        final Optional<OWLOntology> containingOntology = resolveContainingOntology(owlClass, rootOntology.getOWLOntologyManager());
+        final OWLOntology onto = containingOntology.orElse(rootOntology);
+        String className = resolveExplicitClassName(rootOntology, owlClass)
+                .orElseGet(() -> JavaNameGenerator.toCamelCaseNotation(nameGenerator.generateJavaNameForIri(owlClass.getIRI())));
+
+        if (isClassNameUnique(pkg, className, codeModel)) {
+            return fqn(pkg, className);
         }
-        return fqn;
+        className = JavaNameGenerator.toCamelCaseNotation(nameGenerator.generatePrefixedJavaNameForIri(owlClass.getIRI(), onto.getOntologyID()));
+        while (!isClassNameUnique(pkg, className, codeModel)) {
+            className += DISAMBIGUATION_SUFFIX;
+        }
+        return fqn(pkg, className);
     }
 
-    private String javaClassId(OWLOntology ontology, OWLClass owlClass) {
-        final Optional<OWLAnnotation> res = EntitySearcher.getAnnotations(owlClass, ontology)
-                                                          .filter(a -> isJavaClassNameAnnotation(a) &&
-                                                                  a.getValue().isLiteral()).findFirst();
-        if (res.isPresent()) {
-            return res.get().getValue().asLiteral().get().getLiteral();
-        } else {
-            return JavaNameGenerator.toCamelCaseNotation(nameGenerator.generateJavaNameForIri(owlClass.getIRI()));
-        }
+    private Optional<String> resolveExplicitClassName(OWLOntology ontology, OWLClass owlClass) {
+        return EntitySearcher.getAnnotations(owlClass, ontology)
+                             .filter(a -> isJavaClassNameAnnotation(a) &&
+                                     a.getValue().isLiteral()).findFirst()
+                             .map(a -> a.getValue().asLiteral().get().getLiteral());
     }
 
     private boolean isJavaClassNameAnnotation(OWLAnnotation a) {
@@ -529,6 +538,14 @@ public class JavaTransformer {
                                                                .valueOf(Option.JAVA_CLASSNAME_ANNOTATION.arg);
         return a.getProperty().getIRI()
                 .equals(IRI.create(classNameProperty != null ? classNameProperty : Constants.P_CLASS_NAME));
+    }
+
+    private static boolean isClassNameUnique(String pkg, String simpleName, JCodeModel cm) {
+        return cm._getClass(fqn(pkg, simpleName)) == null;
+    }
+
+    private static String fqn(String pkg, String simpleName) {
+        return pkg + PACKAGE_SEPARATOR + simpleName;
     }
 
     private void generateClassJavadoc(OWLOntology ontology, OWLEntity owlEntity, JDocCommentable javaElem) {

@@ -285,6 +285,7 @@ class JavaTransformerTest {
         context.add(dataFactory.getOWLClass(iriOne));
         context.add(dataFactory.getOWLClass(iriTwo));
         context.parse();
+
         final ObjectModel result = sut.generateModel(ontology, context);
         final Iterator<JDefinedClass> classIterator = result.getCodeModel()._package(Constants.MODEL_PACKAGE).classes();
         final List<JDefinedClass> classes = new ArrayList<>();
@@ -292,7 +293,7 @@ class JavaTransformerTest {
             classes.add(classIterator.next());
         }
         assertEquals(2, classes.size());
-        assertEquals(2, classes.stream().filter(cls -> cls.name().startsWith(className)).count());
+        assertEquals(2, classes.stream().filter(cls -> cls.name().endsWith(className)).count());
     }
 
     @Test
@@ -335,5 +336,35 @@ class JavaTransformerTest {
         final Map<String, JFieldVar> fields = vocabClass.fields();
         assertThat(fields.keySet(), hasItem("ONTOLOGY_IRI_TEST"));
         assertThat(fields.keySet(), hasItem("ONTOLOGY_IRI_FOAF"));
+    }
+
+    @Test
+    void generateModelDisambiguateClassesWithIdenticalJavaNameUsingOntologyPrefixes() throws Exception {
+        this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("").generateThing(false)
+                                                                  .build());
+        final String className = "Concept";
+        final IRI iriOne = IRI.create(PREFIX + className);
+        final IRI iriTwo = IRI.create(SKOS.CONCEPT);
+        ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iriOne)));
+        final IRI skosOntIri = IRI.create(SKOS.NAMESPACE);
+        final OWLOntology skosOnto = ontology.getOWLOntologyManager().createOntology(skosOntIri);
+        final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
+        skosOnto.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, IRI.create(SKOS.NAMESPACE), dataFactory.getOWLLiteral(SKOS.PREFIX)));
+        skosOnto.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iriTwo)));
+        final OWLOntology merged = new OWLOntologyMerger(ontologyManager).createMergedOntology(ontologyManager, null);
+        final ContextDefinition context = new ContextDefinition();
+        context.add(dataFactory.getOWLClass(iriOne));
+        context.add(dataFactory.getOWLClass(iriTwo));
+        context.parse();
+
+        final ObjectModel result = sut.generateModel(merged, context);
+        final Iterator<JDefinedClass> classIterator = result.getCodeModel()._package(Constants.MODEL_PACKAGE).classes();
+        final List<JDefinedClass> classes = new ArrayList<>();
+        while (classIterator.hasNext()) {
+            classes.add(classIterator.next());
+        }
+        assertEquals(2, classes.size());
+        assertEquals(2, classes.stream().filter(cls -> cls.name().endsWith(className)).count());
+        assertTrue(classes.stream().anyMatch(cls -> cls.name().equals("Skos" + className)));
     }
 }
