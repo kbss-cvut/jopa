@@ -43,6 +43,8 @@ public class TransformationConfiguration {
 
     private final String ontologyPrefixProperty;
 
+    private final boolean alwaysUseOntologyPrefix;
+
     private final CliParams cliParams;
 
     private TransformationConfiguration(TransformationConfigurationBuilder builder) {
@@ -56,6 +58,7 @@ public class TransformationConfiguration {
         this.generateAnnotationFields = builder.generateAnnotationFields;
         this.generateThing = builder.generateThing;
         this.ontologyPrefixProperty = builder.ontologyPrefixProperty;
+        this.alwaysUseOntologyPrefix = builder.alwaysUseOntologyPrefix;
         this.cliParams = CliParams.empty();
     }
 
@@ -72,6 +75,7 @@ public class TransformationConfiguration {
         this.generateAnnotationFields = cliParams.is(Option.GENERATE_ANNOTATION_FIELDS.arg, Defaults.GENERATE_ANNOTATION_FIELDS);
         this.generateThing = cliParams.is(Option.GENERATE_THING.arg, Defaults.GENERATE_THING);
         this.ontologyPrefixProperty = cliParams.valueOf(Option.ONTOLOGY_PREFIX_PROPERTY.arg).toString();
+        this.alwaysUseOntologyPrefix = cliParams.is(Option.ALWAYS_USE_ONTOLOGY_PREFIX.arg, Defaults.USE_ONTOLOGY_PREFIX);
     }
 
     public String getContext() {
@@ -118,6 +122,10 @@ public class TransformationConfiguration {
         return ontologyPrefixProperty;
     }
 
+    public boolean shouldAlwaysUseOntologyPrefix() {
+        return alwaysUseOntologyPrefix;
+    }
+
     public CliParams getCliParams() {
         return cliParams;
     }
@@ -141,6 +149,7 @@ public class TransformationConfiguration {
         private boolean generateAnnotationFields = Defaults.GENERATE_ANNOTATION_FIELDS;
         private boolean generateThing = Defaults.GENERATE_THING;
         private String ontologyPrefixProperty = Defaults.ONTOLOGY_PREFIX_PROPERTY;
+        private boolean alwaysUseOntologyPrefix = Defaults.USE_ONTOLOGY_PREFIX;
 
         public TransformationConfigurationBuilder context(String context) {
             this.context = context;
@@ -189,6 +198,11 @@ public class TransformationConfiguration {
 
         public TransformationConfigurationBuilder ontologyPrefixProperty(String ontologyPrefixProperty) {
             this.ontologyPrefixProperty = ontologyPrefixProperty;
+            return this;
+        }
+
+        public TransformationConfigurationBuilder alwaysUseOntologyPrefix(boolean alwaysUseOntologyPrefix) {
+            this.alwaysUseOntologyPrefix = alwaysUseOntologyPrefix;
             return this;
         }
 

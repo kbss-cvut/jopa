@@ -86,6 +86,11 @@ public class Defaults {
      */
     public static final String ONTOLOGY_PREFIX_PROPERTY = "http://purl.org/vocab/vann/preferredNamespacePrefix";
 
+    /**
+     * @see Option#ALWAYS_USE_ONTOLOGY_PREFIX
+     */
+    public static final boolean USE_ONTOLOGY_PREFIX = false;
+
     private Defaults() {
         throw new AssertionError();
     }

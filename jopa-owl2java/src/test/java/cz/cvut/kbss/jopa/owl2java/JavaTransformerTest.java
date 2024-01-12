@@ -297,7 +297,7 @@ class JavaTransformerTest {
     }
 
     @Test
-    void generateVocabularyDisambiguatePropertiesWithSameNameUsingPrefix() throws Exception {
+    void generateVocabularyDisambiguateResourcesWithSameNameUsingPrefix() throws Exception {
         final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
         ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, IRI.create(ONTOLOGY_IRI), dataFactory.getOWLLiteral("test")));
         final IRI personIri = IRI.create(PREFIX + "Person");
@@ -366,5 +366,46 @@ class JavaTransformerTest {
         assertEquals(2, classes.size());
         assertEquals(2, classes.stream().filter(cls -> cls.name().endsWith(className)).count());
         assertTrue(classes.stream().anyMatch(cls -> cls.name().equals("Skos" + className)));
+    }
+
+    @Test
+    void generateVocabularyAlwaysOutputsPrefixedNamesWhenConfiguredTo() {
+        this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
+                                                                  .alwaysUseOntologyPrefix(true).build());
+        final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
+        ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, IRI.create(ONTOLOGY_IRI), dataFactory.getOWLLiteral("test")));
+        final IRI personIri = IRI.create(PREFIX + "Person");
+        ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(personIri)));
+        final ContextDefinition context = new ContextDefinition();
+        context.add(dataFactory.getOWLClass(personIri));
+
+        final ObjectModel result = sut.generateVocabulary(ontology, context);
+        final JDefinedClass vocabClass = result.getCodeModel()._getClass(Constants.VOCABULARY_CLASS);
+        assertNotNull(vocabClass);
+        final Map<String, JFieldVar> fields = vocabClass.fields();
+        assertThat(fields.keySet(), hasItem("s_c_test_Person"));
+    }
+
+    @Test
+    void generateModelAlwaysOutputsPrefixedEntityClassNamesWhenConfiguredTo() {
+        this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
+                                                                  .alwaysUseOntologyPrefix(true)
+                                                                  .build());
+        final String className = "Concept";
+        final IRI iriOne = IRI.create(PREFIX + className);
+        final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
+        ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iriOne)));
+        ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, IRI.create(ONTOLOGY_IRI), dataFactory.getOWLLiteral("test")));
+        final ContextDefinition context = new ContextDefinition();
+        context.add(dataFactory.getOWLClass(iriOne));
+        context.parse();
+
+        final ObjectModel result = sut.generateModel(ontology, context);
+        final Iterator<JDefinedClass> classIterator = result.getCodeModel()._package(Constants.MODEL_PACKAGE).classes();
+        final List<JDefinedClass> classes = new ArrayList<>();
+        while (classIterator.hasNext()) {
+            classes.add(classIterator.next());
+        }
+        assertTrue(classes.stream().anyMatch(cls -> cls.name().equals("Test" + className)));
     }
 }

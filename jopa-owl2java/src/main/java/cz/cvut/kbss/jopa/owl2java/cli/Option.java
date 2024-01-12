@@ -112,7 +112,12 @@ public enum Option {
     /**
      * Property whose value represents the ontology IRI prefix.
      */
-    ONTOLOGY_PREFIX_PROPERTY("prefixProperty", "identifier of the property whose value represents the ontology IRI prefix");
+    ONTOLOGY_PREFIX_PROPERTY("prefixProperty", "identifier of the property whose value represents the ontology IRI prefix"),
+
+    /**
+     * Specifies whether to always use ontology prefix (if available) when generating vocabulary and model.
+     */
+    ALWAYS_USE_ONTOLOGY_PREFIX("usePrefixes", "whether to always use ontology prefix for generating vocabulary and model");
 
     public final String arg;
     final String description;

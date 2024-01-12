@@ -142,7 +142,7 @@ public class OWL2Java {
     }
 
     private static void transformOwlToJava(CliParams input) {
-        boolean whole = input.is(Option.WHOLE_ONTOLOGY_AS_IC.arg);
+        boolean whole = input.is(Option.WHOLE_ONTOLOGY_AS_IC.arg, Defaults.WHOLE_ONTOLOGY_AS_IC);
 
         if (!whole && invalidTransformationOptions(input)) {
             return;
@@ -169,7 +169,7 @@ public class OWL2Java {
     }
 
     private static void generateVocabulary(CliParams input) {
-        final boolean whole = input.is(Option.WHOLE_ONTOLOGY_AS_IC.arg);
+        final boolean whole = input.is(Option.WHOLE_ONTOLOGY_AS_IC.arg, Defaults.WHOLE_ONTOLOGY_AS_IC);
         if (!whole && invalidTransformationOptions(input)) {
             return;
         }
