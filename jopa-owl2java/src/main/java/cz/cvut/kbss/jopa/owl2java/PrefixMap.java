@@ -6,16 +6,13 @@ import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.jopa.vocabulary.SKOS;
+import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLLiteral;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.search.EntitySearcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,29 +52,28 @@ public class PrefixMap {
         final Map<String, String> result = new HashMap<>(defaultPrefixes());
         ontologyManager.ontologies().filter(o -> o.getOntologyID().isNamed()).forEach(o -> {
             assert o.getOntologyID().getOntologyIRI().isPresent();
-            resolveOntologyPrefix(o, prefixProperty).ifPresent(prefix -> result.put(o.getOntologyID().getOntologyIRI()
-                                                                                     .get().getIRIString(), prefix));
+            result.putAll(resolveOntologyPrefixes(o, prefixProperty));
         });
         LOG.debug("Resolved prefix map: {}", result);
         return result;
     }
 
-    private Optional<String> resolveOntologyPrefix(OWLOntology ontology, String prefixProperty) {
+    private Map<String, String> resolveOntologyPrefixes(OWLOntology ontology, String prefixProperty) {
+        final Map<String, String> result = new HashMap<>();
         final OWLDataFactory df = ontology.getOWLOntologyManager().getOWLDataFactory();
         final OWLAnnotationProperty annProperty = df.getOWLAnnotationProperty(prefixProperty);
         assert ontology.getOntologyID().getOntologyIRI().isPresent();
-        final IRI ontologyIri = ontology.getOntologyID().getOntologyIRI().get();
-        final Optional<OWLAnnotationAssertionAxiom> prefixAnnotation = EntitySearcher.getAnnotationAssertionAxioms(ontologyIri, ontology)
-                                                                                     .filter(ann -> annProperty.equals(ann.getProperty()))
-                                                                                     .filter(ax -> ax.getValue()
-                                                                                                     .isLiteral())
-                                                                                     .findFirst();
-        if (prefixAnnotation.isPresent()) {
-            return prefixAnnotation.flatMap(a -> a.getValue().asLiteral()).map(OWLLiteral::getLiteral);
-        }
+        ontology.axioms(AxiomType.ANNOTATION_ASSERTION)
+                .filter(ax -> ax.getProperty().equals(annProperty) && ax.getValue().isLiteral() && ax.getSubject()
+                                                                                                     .isIRI())
+                .forEach(ax -> result.put(ax.getSubject().asIRI().get().getIRIString(), ax.getValue().asLiteral().get()
+                                                                                          .getLiteral()));
         final OWLDataProperty dataProperty = df.getOWLDataProperty(prefixProperty);
-        final OWLNamedIndividual individual = df.getOWLNamedIndividual(ontologyIri);
-        return EntitySearcher.getDataPropertyValues(individual, dataProperty, ontology).findFirst().map(OWLLiteral::getLiteral);
+        ontology.axioms(AxiomType.DATA_PROPERTY_ASSERTION)
+                .filter(ax -> ax.getProperty().equals(dataProperty) && ax.getSubject().isIndividual())
+                .forEach(ax -> result.put(ax.getSubject().asOWLNamedIndividual().toStringID(), ax.getObject()
+                                                                                                 .getLiteral()));
+        return result;
     }
 
     /**

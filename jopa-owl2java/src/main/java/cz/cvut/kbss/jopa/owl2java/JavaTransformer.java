@@ -105,7 +105,7 @@ public class JavaTransformer {
 
     private final Map<OWLClass, JDefinedClass> classes = new HashMap<>();
 
-    private final JavaNameGenerator nameGenerator = new JavaNameGenerator();
+    private JavaNameGenerator nameGenerator;
 
     private final TransformationConfiguration configuration;
 
@@ -123,6 +123,7 @@ public class JavaTransformer {
      */
     public ObjectModel generateModel(final OWLOntology ontology, final ContextDefinition context) {
         try {
+            this.nameGenerator = new JavaNameGenerator(new PrefixMap(ontology.getOWLOntologyManager(), configuration));
             final JCodeModel cm = new JCodeModel();
             voc = createVocabularyClass(cm);
             generateVocabulary(ontology, cm, context);
@@ -167,6 +168,7 @@ public class JavaTransformer {
      */
     public ObjectModel generateVocabulary(final OWLOntology ontology, ContextDefinition context) {
         try {
+            this.nameGenerator = new JavaNameGenerator(new PrefixMap(ontology.getOWLOntologyManager(), configuration));
             final JCodeModel cm = new JCodeModel();
             this.voc = createVocabularyClass(cm);
             generateVocabulary(ontology, cm, context);
@@ -191,18 +193,16 @@ public class JavaTransformer {
         final Set<IRI> visitedProperties = new HashSet<>(col.size());
 
         for (final OWLEntity c : col) {
-            final Optional<String> prefix = resolveFieldPrefix(c, visitedProperties);
-            if (prefix.isEmpty()) {
+            final Optional<String> sFieldName = generateFieldName(c, o.getOWLOntologyManager(), visitedProperties);
+            if (sFieldName.isEmpty()) {
                 continue;
             }
-            final String sFieldName = ensureVocabularyItemUniqueIdentifier(
-                    PREFIX_STRING + prefix.get() + nameGenerator.generateJavaNameForIri(c.getIRI()));
 
             final JFieldVar fv1 = voc.field(JMod.PUBLIC | JMod.STATIC
-                    | JMod.FINAL, String.class, sFieldName, JExpr.lit(c.getIRI().toString()));
+                    | JMod.FINAL, String.class, sFieldName.get(), JExpr.lit(c.getIRI().toString()));
             if (configuration.shouldGenerateOwlapiIris()) {
                 voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class,
-                        sFieldName.substring(PREFIX_STRING.length()),
+                        sFieldName.get().substring(PREFIX_STRING.length()),
                         cm.ref(IRI.class).staticInvoke("create").arg(fv1));
             }
             generateJavadoc(o, c, fv1);
@@ -217,9 +217,32 @@ public class JavaTransformer {
                                                       .sorted(Comparator.comparing(IRI::getIRIString))
                                                       .collect(Collectors.toList());
         ontologyIris.forEach(iri -> {
-            final String fieldName = ensureVocabularyItemUniqueIdentifier("ONTOLOGY_IRI_" + nameGenerator.generateJavaNameForIri(iri));
+            final String fieldName = ensureVocabularyItemUniqueIdentifier("ONTOLOGY_IRI_" + nameGenerator.getOntologyPrefix(iri)
+                                                                                                         .orElseGet(() -> nameGenerator.generateJavaNameForIri(iri))
+                                                                                                         .toUpperCase());
             voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, String.class, fieldName, JExpr.lit(iri.toString()));
         });
+    }
+
+    private Optional<String> generateFieldName(OWLEntity c, OWLOntologyManager ontologyManager,
+                                               Set<IRI> visitedProperties) {
+        final Optional<String> prefix = resolveFieldPrefix(c, visitedProperties);
+        if (prefix.isEmpty()) {
+            return prefix;
+        }
+        String fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generateJavaNameForIri(c.getIRI());
+        if (voc.fields().containsKey(fieldName)) {
+            final Optional<OWLOntology> containingOntology = ontologyManager.getOntologies().stream()
+                                                                            .filter(o -> !o.getOntologyID()
+                                                                                           .isAnonymous())
+                                                                            .filter(o -> o.containsEntityInSignature(c))
+                                                                            .findFirst();
+            if (containingOntology.isPresent()) {
+                fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generatePrefixedJavaNameForIri(c.getIRI(), containingOntology.get()
+                                                                                                                                      .getOntologyID());
+            }
+        }
+        return Optional.of(ensureVocabularyItemUniqueIdentifier(fieldName));
     }
 
     private static Optional<String> resolveFieldPrefix(OWLEntity c, Set<IRI> visitedProperties) {
@@ -485,7 +508,7 @@ public class JavaTransformer {
     private String generateUniqueClassName(String pkg, String simpleName, JCodeModel cm) {
         String fqn = pkg + PACKAGE_SEPARATOR + simpleName;
         while (cm._getClass(fqn) != null) {
-            fqn  += DISAMBIGUATION_SUFFIX;
+            fqn += DISAMBIGUATION_SUFFIX;
         }
         return fqn;
     }

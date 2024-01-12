@@ -78,11 +78,31 @@ class PrefixMapTest {
         });
     }
 
-    private void assertOntologyPrefixAnnotation(String prefix, IRI ontologyIri) {
+    @Test
+    void getPrefixReturnsPrefixWhenMultiplePrefixAssertionsAreInMergedOntology() {
+        final TransformationConfiguration config = new TransformationConfiguration.TransformationConfigurationBuilder().build();
+        final Map<String, IRI> prefixes = Map.of(
+                "owl2java", IRI.create(Generator.generateUri()),
+                "jopa", IRI.create(Generator.generateUri())
+        );
+        final OWLOntology ontology = assertOntologyPrefixAnnotation("owl2java", prefixes.get("owl2java"));
+        final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
+        ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, prefixes.get("jopa"), dataFactory.getOWLLiteral("jopa")));
+
+        final PrefixMap sut = new PrefixMap(ontologyManager, config);
+        prefixes.forEach((prefix, iri) -> {
+            final Optional<String> result = sut.getPrefix(iri);
+            assertTrue(result.isPresent());
+            assertEquals(prefix, result.get());
+        });
+    }
+
+    private OWLOntology assertOntologyPrefixAnnotation(String prefix, IRI ontologyIri) {
         try {
             final OWLOntology ontology = ontologyManager.createOntology(ontologyIri);
             final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
             ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, ontologyIri, dataFactory.getOWLLiteral(prefix)));
+            return ontology;
         } catch (OWLOntologyCreationException e) {
             throw new RuntimeException(e);
         }

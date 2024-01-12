@@ -347,8 +347,8 @@ public class OWL2JavaTransformerTest {
         transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
         final File vocabularyFile = targetDir.listFiles()[0];
         final String fileContents = readFile(vocabularyFile);
-        assertTrue(fileContents.contains("ONTOLOGY_IRI_model"));
-        assertTrue(fileContents.contains("ONTOLOGY_IRI_model_A"));
+        assertTrue(fileContents.contains("ONTOLOGY_IRI_MODEL"));
+        assertTrue(fileContents.contains("ONTOLOGY_IRI_MODEL_A"));
     }
 
     @Test
