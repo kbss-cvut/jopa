@@ -42,6 +42,9 @@ public class OWL2JavaMojo extends AbstractMojo {
     private static final String PREFER_MULTILINGUAL_STRINGS = "prefer-multilingual-strings";
     private static final String GENERATE_ANNOTATION_FIELDS = "generate-annotation-fields";
     private static final String GENERATE_THING = "generate-thing";
+    private static final String ONTOLOGY_PREFIX_PROPERTY = "ontology-prefix-property";
+    private static final String ALWAYS_USE_PREFIXES = "always-use-prefixes";
+    private static final String PREFIX_MAPPING_FILE = "prefix-mapping-file";
 
     @Parameter(name = MAPPING_FILE_PARAM)
     private String mappingFile;
@@ -85,6 +88,15 @@ public class OWL2JavaMojo extends AbstractMojo {
     @Parameter(name = GENERATE_THING, defaultValue = "true")
     private boolean generateThing;
 
+    @Parameter(name = ONTOLOGY_PREFIX_PROPERTY)
+    private String ontologyPrefixProperty;
+
+    @Parameter(name = ALWAYS_USE_PREFIXES, defaultValue = "false")
+    private boolean alwaysUsePrefixes;
+
+    @Parameter(name = PREFIX_MAPPING_FILE)
+    private String prefixMappingFile;
+
     @Override
     public void execute() {
         OWL2JavaTransformer owl2java = new OWL2JavaTransformer();
@@ -117,7 +129,9 @@ public class OWL2JavaMojo extends AbstractMojo {
         final TransformationConfiguration config =
                 builder.packageName(pPackage).targetDir(outputDirectory).addOwlapiIris(withOwlapi)
                        .generateJavadoc(javadocFromRdfsComment).preferMultilingualStrings(preferMultilingualStrings)
-                       .generateAnnotationFields(generateAnnotationFields).generateThing(generateThing).build();
+                       .generateAnnotationFields(generateAnnotationFields).generateThing(generateThing)
+                       .ontologyPrefixProperty(ontologyPrefixProperty).alwaysUseOntologyPrefix(alwaysUsePrefixes)
+                       .prefixMappingFile(prefixMappingFile).build();
 
         if (vocabularyOnly) {
             owl2java.generateVocabulary(config);
@@ -143,6 +157,9 @@ public class OWL2JavaMojo extends AbstractMojo {
         Utils.logParameterValue(PREFER_MULTILINGUAL_STRINGS, preferMultilingualStrings, getLog());
         Utils.logParameterValue(GENERATE_ANNOTATION_FIELDS, generateAnnotationFields, getLog());
         Utils.logParameterValue(GENERATE_THING, generateThing, getLog());
+        Utils.logParameterValue(ONTOLOGY_PREFIX_PROPERTY, ontologyPrefixProperty, getLog());
+        Utils.logParameterValue(ALWAYS_USE_PREFIXES, alwaysUsePrefixes, getLog());
+        Utils.logParameterValue(PREFIX_MAPPING_FILE, prefixMappingFile, getLog());
     }
 
     public String getPackage() {

@@ -77,7 +77,8 @@ public class TransformationConfiguration {
         this.propertiesType = PropertiesType.fromParam(cliParams.valueOf(Option.PROPERTIES_TYPE.arg));
         this.generateAnnotationFields = cliParams.is(Option.GENERATE_ANNOTATION_FIELDS.arg, Defaults.GENERATE_ANNOTATION_FIELDS);
         this.generateThing = cliParams.is(Option.GENERATE_THING.arg, Defaults.GENERATE_THING);
-        this.ontologyPrefixProperty = cliParams.valueOf(Option.ONTOLOGY_PREFIX_PROPERTY.arg).toString();
+        this.ontologyPrefixProperty = cliParams.has(Option.ONTOLOGY_PREFIX_PROPERTY.arg) ? cliParams.valueOf(Option.ONTOLOGY_PREFIX_PROPERTY.arg)
+                                                                                                    .toString() : Defaults.ONTOLOGY_PREFIX_PROPERTY;
         this.alwaysUseOntologyPrefix = cliParams.is(Option.ALWAYS_USE_ONTOLOGY_PREFIX.arg, Defaults.USE_ONTOLOGY_PREFIX);
         this.prefixMappingFile = cliParams.has(Option.PREFIX_MAPPING_FILE.arg) ? cliParams.valueOf(Option.PREFIX_MAPPING_FILE.arg)
                                                                                           .toString() : null;
@@ -207,7 +208,9 @@ public class TransformationConfiguration {
         }
 
         public TransformationConfigurationBuilder ontologyPrefixProperty(String ontologyPrefixProperty) {
-            this.ontologyPrefixProperty = ontologyPrefixProperty;
+            if (ontologyPrefixProperty != null && !ontologyPrefixProperty.isBlank()) {
+                this.ontologyPrefixProperty = ontologyPrefixProperty;
+            }
             return this;
         }
 
