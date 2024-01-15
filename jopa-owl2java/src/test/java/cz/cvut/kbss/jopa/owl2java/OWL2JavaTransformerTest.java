@@ -76,7 +76,7 @@ public class OWL2JavaTransformerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        this.mappingFilePath = TestUtils.resolveMappingFilePath();
+        this.mappingFilePath = TestUtils.resolveTestResourcesFilePath(TestUtils.MAPPING_FILE_NAME);
         this.dataFactory = new OWLDataFactoryImpl();
         this.transformer = new OWL2JavaTransformer();
     }

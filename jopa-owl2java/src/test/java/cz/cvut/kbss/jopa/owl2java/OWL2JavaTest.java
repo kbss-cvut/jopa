@@ -49,7 +49,7 @@ public class OWL2JavaTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        this.mappingFilePath = TestUtils.resolveMappingFilePath();
+        this.mappingFilePath = TestUtils.resolveTestResourcesFilePath(TestUtils.MAPPING_FILE_NAME);
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
     }

@@ -45,6 +45,8 @@ public class TransformationConfiguration {
 
     private final boolean alwaysUseOntologyPrefix;
 
+    private final String prefixMappingFile;
+
     private final CliParams cliParams;
 
     private TransformationConfiguration(TransformationConfigurationBuilder builder) {
@@ -59,6 +61,7 @@ public class TransformationConfiguration {
         this.generateThing = builder.generateThing;
         this.ontologyPrefixProperty = builder.ontologyPrefixProperty;
         this.alwaysUseOntologyPrefix = builder.alwaysUseOntologyPrefix;
+        this.prefixMappingFile = builder.prefixMappingFile;
         this.cliParams = CliParams.empty();
     }
 
@@ -76,6 +79,8 @@ public class TransformationConfiguration {
         this.generateThing = cliParams.is(Option.GENERATE_THING.arg, Defaults.GENERATE_THING);
         this.ontologyPrefixProperty = cliParams.valueOf(Option.ONTOLOGY_PREFIX_PROPERTY.arg).toString();
         this.alwaysUseOntologyPrefix = cliParams.is(Option.ALWAYS_USE_ONTOLOGY_PREFIX.arg, Defaults.USE_ONTOLOGY_PREFIX);
+        this.prefixMappingFile = cliParams.has(Option.PREFIX_MAPPING_FILE.arg) ? cliParams.valueOf(Option.PREFIX_MAPPING_FILE.arg)
+                                                                                          .toString() : null;
     }
 
     public String getContext() {
@@ -126,6 +131,10 @@ public class TransformationConfiguration {
         return alwaysUseOntologyPrefix;
     }
 
+    public String getPrefixMappingFile() {
+        return prefixMappingFile;
+    }
+
     public CliParams getCliParams() {
         return cliParams;
     }
@@ -150,6 +159,7 @@ public class TransformationConfiguration {
         private boolean generateThing = Defaults.GENERATE_THING;
         private String ontologyPrefixProperty = Defaults.ONTOLOGY_PREFIX_PROPERTY;
         private boolean alwaysUseOntologyPrefix = Defaults.USE_ONTOLOGY_PREFIX;
+        private String prefixMappingFile = null;
 
         public TransformationConfigurationBuilder context(String context) {
             this.context = context;
@@ -203,6 +213,11 @@ public class TransformationConfiguration {
 
         public TransformationConfigurationBuilder alwaysUseOntologyPrefix(boolean alwaysUseOntologyPrefix) {
             this.alwaysUseOntologyPrefix = alwaysUseOntologyPrefix;
+            return this;
+        }
+
+        public TransformationConfigurationBuilder prefixMappingFile(String prefixMappingFile) {
+            this.prefixMappingFile = prefixMappingFile;
             return this;
         }
 

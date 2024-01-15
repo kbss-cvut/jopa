@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
+import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -16,7 +17,14 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,7 +48,7 @@ public class PrefixMap {
     private final Map<String, String> prefixes;
 
     public PrefixMap(OWLOntologyManager ontologyManager, TransformationConfiguration config) {
-        this.prefixes = resolvePrefixes(Objects.requireNonNull(ontologyManager), config.getOntologyPrefixProperty());
+        this.prefixes = resolvePrefixes(Objects.requireNonNull(ontologyManager), config);
     }
 
     /**
@@ -48,12 +56,13 @@ public class PrefixMap {
      *
      * @param ontologyManager Manager of ontologies to process
      */
-    private Map<String, String> resolvePrefixes(OWLOntologyManager ontologyManager, String prefixProperty) {
+    private Map<String, String> resolvePrefixes(OWLOntologyManager ontologyManager, TransformationConfiguration config) {
         final Map<String, String> result = new HashMap<>(defaultPrefixes());
         ontologyManager.ontologies().filter(o -> o.getOntologyID().isNamed()).forEach(o -> {
             assert o.getOntologyID().getOntologyIRI().isPresent();
-            result.putAll(resolveOntologyPrefixes(o, prefixProperty));
+            result.putAll(resolveOntologyPrefixes(o, config.getOntologyPrefixProperty()));
         });
+        result.putAll(resolvePrefixesFromPrefixMappingFile(config.getPrefixMappingFile()));
         LOG.debug("Resolved prefix map: {}", result);
         return result;
     }
@@ -74,6 +83,29 @@ public class PrefixMap {
                 .forEach(ax -> result.put(ax.getSubject().asOWLNamedIndividual().toStringID(), ax.getObject()
                                                                                                  .getLiteral()));
         return result;
+    }
+
+    private Map<String, String> resolvePrefixesFromPrefixMappingFile(String mappingFilePath) {
+        if (mappingFilePath == null) {
+            return Collections.emptyMap();
+        }
+        final File file = new File(mappingFilePath);
+        try {
+            LOG.debug("Loading prefix mapping from file '{}'.", file);
+            final List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
+            final Map<String, String> prefixMap = new HashMap<>(lines.size());
+            lines.forEach(line -> {
+                final String[] mapping = line.split("=");
+                if (mapping.length != 2) {
+                    LOG.warn("Mapping line '{}' does not correspond to the expected pattern '$namespace=$prefix'. Skipping it.", line);
+                }
+                prefixMap.put(mapping[0], mapping[1]);
+            });
+            return prefixMap;
+        } catch (IOException e) {
+            LOG.error("Unable to read prefix mapping file.", e);
+            throw new OWL2JavaException("Unable to read prefix mapping file.", e);
+        }
     }
 
     /**

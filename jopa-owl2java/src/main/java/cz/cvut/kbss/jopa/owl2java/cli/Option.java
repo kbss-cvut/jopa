@@ -117,7 +117,12 @@ public enum Option {
     /**
      * Specifies whether to always use ontology prefix (if available) when generating vocabulary and model.
      */
-    ALWAYS_USE_ONTOLOGY_PREFIX("usePrefixes", "whether to always use ontology prefix for generating vocabulary and model");
+    ALWAYS_USE_ONTOLOGY_PREFIX("usePrefixes", "whether to always use ontology prefix for generating vocabulary and model"),
+
+    /**
+     * Specifies file containing ontology prefix mapping.
+     */
+    PREFIX_MAPPING_FILE("prefixFile", "file containing prefix mapping");
 
     public final String arg;
     final String description;

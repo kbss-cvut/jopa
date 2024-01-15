@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.owl2java;
 import cz.cvut.kbss.jopa.owl2java.config.Defaults;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import cz.cvut.kbss.jopa.owl2java.environment.Generator;
+import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PrefixMapTest {
@@ -130,5 +132,26 @@ class PrefixMapTest {
                 Arguments.of(SKOS.PREFIX, IRI.create(SKOS.NAMESPACE)),
                 Arguments.of("foaf", IRI.create("http://xmlns.com/foaf/0.1/"))
         );
+    }
+
+    @Test
+    void getPrefixReturnsPrefixResolvedFromPrefixMappingFileSpecifiedInConfiguration() throws Exception {
+        final String prefixMappingFilePath = TestUtils.resolveTestResourcesFilePath("prefixMappingFile");
+        final TransformationConfiguration config = new TransformationConfiguration.TransformationConfigurationBuilder().prefixMappingFile(prefixMappingFilePath)
+                                                                                                                       .build();
+        final PrefixMap sut = new PrefixMap(ontologyManager, config);
+        final Optional<String> siocPrefix = sut.getPrefix(IRI.create("http://rdfs.org/sioc/ns#"));
+        assertTrue(siocPrefix.isPresent());
+        assertEquals("sioc", siocPrefix.get());
+        final Optional<String> ddoPrefix = sut.getPrefix(IRI.create("http://onto.fel.cvut.cz/ontologies/dataset-descriptor/"));
+        assertTrue(ddoPrefix.isPresent());
+        assertEquals("ddo", ddoPrefix.get());
+    }
+
+    @Test
+    void prefixResolvingThrowsOWL2JavaExceptionWhenPrefixMappingFileIsNotFound() {
+        final TransformationConfiguration config = new TransformationConfiguration.TransformationConfigurationBuilder().prefixMappingFile("unknownFile")
+                                                                                                                       .build();
+        assertThrows(OWL2JavaException.class, () -> new PrefixMap(ontologyManager, config));
     }
 }
