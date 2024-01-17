@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.owl2java;
+package cz.cvut.kbss.jopa.owl2java.prefix;
 
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
@@ -21,13 +21,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Keeps a map of prefixes resolved from provided ontologies.
@@ -56,22 +56,25 @@ public class PrefixMap {
      *
      * @param ontologyManager Manager of ontologies to process
      */
-    private Map<String, String> resolvePrefixes(OWLOntologyManager ontologyManager, TransformationConfiguration config) {
-        final Map<String, String> result = new HashMap<>(defaultPrefixes());
-        ontologyManager.ontologies().filter(o -> o.getOntologyID().isNamed()).forEach(o -> {
+    private Map<String, String> resolvePrefixes(OWLOntologyManager ontologyManager,
+                                                TransformationConfiguration config) {
+        final Map<String, String> result = new ConcurrentHashMap<>(defaultPrefixes());
+        ontologyManager.ontologies().parallel().filter(o -> o.getOntologyID().isNamed()).forEach(o -> {
             assert o.getOntologyID().getOntologyIRI().isPresent();
-            result.putAll(resolveOntologyPrefixes(o, config.getOntologyPrefixProperty()));
+            result.putAll(resolveOntologyPrefixes(o, config.getOntologyPrefixProperty(), config.getRemotePrefixResolver()));
         });
         result.putAll(resolvePrefixesFromPrefixMappingFile(config.getPrefixMappingFile()));
         LOG.debug("Resolved prefix map: {}", result);
         return result;
     }
 
-    private Map<String, String> resolveOntologyPrefixes(OWLOntology ontology, String prefixProperty) {
+    private Map<String, String> resolveOntologyPrefixes(OWLOntology ontology, String prefixProperty,
+                                                        RemotePrefixResolver remotePrefixResolver) {
         final Map<String, String> result = new HashMap<>();
         final OWLDataFactory df = ontology.getOWLOntologyManager().getOWLDataFactory();
         final OWLAnnotationProperty annProperty = df.getOWLAnnotationProperty(prefixProperty);
         assert ontology.getOntologyID().getOntologyIRI().isPresent();
+        final IRI ontologyIri = ontology.getOntologyID().getOntologyIRI().get();
         ontology.axioms(AxiomType.ANNOTATION_ASSERTION)
                 .filter(ax -> ax.getProperty().equals(annProperty) && ax.getValue().isLiteral() && ax.getSubject()
                                                                                                      .isIRI())
@@ -82,6 +85,9 @@ public class PrefixMap {
                 .filter(ax -> ax.getProperty().equals(dataProperty) && ax.getSubject().isIndividual())
                 .forEach(ax -> result.put(ax.getSubject().asOWLNamedIndividual().toStringID(), ax.getObject()
                                                                                                  .getLiteral()));
+        if (!result.containsKey(ontologyIri.getIRIString())) {
+            remotePrefixResolver.resolvePrefix(ontologyIri).ifPresent(p -> result.put(ontologyIri.getIRIString(), p));
+        }
         return result;
     }
 
@@ -125,8 +131,7 @@ public class PrefixMap {
                 RDFS.NAMESPACE, RDFS.PREFIX,
                 OWL.NAMESPACE, OWL.PREFIX,
                 SKOS.NAMESPACE, SKOS.PREFIX,
-                DC.Terms.NAMESPACE, "dcterms",
-                "http://xmlns.com/foaf/0.1/", "foaf"
+                DC.Terms.NAMESPACE, "dcterms"
         );
     }
 }

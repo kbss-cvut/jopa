@@ -20,6 +20,8 @@ package cz.cvut.kbss.jopa.owl2java.config;
 import cz.cvut.kbss.jopa.owl2java.cli.CliParams;
 import cz.cvut.kbss.jopa.owl2java.cli.Option;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
+import cz.cvut.kbss.jopa.owl2java.prefix.PrefixCcRemotePrefixResolver;
+import cz.cvut.kbss.jopa.owl2java.prefix.RemotePrefixResolver;
 
 public class TransformationConfiguration {
 
@@ -49,6 +51,8 @@ public class TransformationConfiguration {
 
     private final CliParams cliParams;
 
+    private final RemotePrefixResolver remotePrefixResolver;
+
     private TransformationConfiguration(TransformationConfigurationBuilder builder) {
         this.context = builder.context;
         this.packageName = builder.packageName;
@@ -62,6 +66,7 @@ public class TransformationConfiguration {
         this.ontologyPrefixProperty = builder.ontologyPrefixProperty;
         this.alwaysUseOntologyPrefix = builder.alwaysUseOntologyPrefix;
         this.prefixMappingFile = builder.prefixMappingFile;
+        this.remotePrefixResolver = builder.remotePrefixResolver;
         this.cliParams = CliParams.empty();
     }
 
@@ -82,6 +87,7 @@ public class TransformationConfiguration {
         this.alwaysUseOntologyPrefix = cliParams.is(Option.ALWAYS_USE_ONTOLOGY_PREFIX.arg, Defaults.USE_ONTOLOGY_PREFIX);
         this.prefixMappingFile = cliParams.has(Option.PREFIX_MAPPING_FILE.arg) ? cliParams.valueOf(Option.PREFIX_MAPPING_FILE.arg)
                                                                                           .toString() : null;
+        this.remotePrefixResolver = new PrefixCcRemotePrefixResolver();
     }
 
     public String getContext() {
@@ -136,6 +142,10 @@ public class TransformationConfiguration {
         return prefixMappingFile;
     }
 
+    public RemotePrefixResolver getRemotePrefixResolver() {
+        return remotePrefixResolver;
+    }
+
     public CliParams getCliParams() {
         return cliParams;
     }
@@ -161,6 +171,7 @@ public class TransformationConfiguration {
         private String ontologyPrefixProperty = Defaults.ONTOLOGY_PREFIX_PROPERTY;
         private boolean alwaysUseOntologyPrefix = Defaults.USE_ONTOLOGY_PREFIX;
         private String prefixMappingFile = null;
+        private RemotePrefixResolver remotePrefixResolver = new PrefixCcRemotePrefixResolver();
 
         public TransformationConfigurationBuilder context(String context) {
             this.context = context;
@@ -221,6 +232,11 @@ public class TransformationConfiguration {
 
         public TransformationConfigurationBuilder prefixMappingFile(String prefixMappingFile) {
             this.prefixMappingFile = prefixMappingFile;
+            return this;
+        }
+
+        public TransformationConfigurationBuilder remotePrefixResolver(RemotePrefixResolver resolver) {
+            this.remotePrefixResolver = resolver;
             return this;
         }
 

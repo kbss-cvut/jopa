@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.owl2java;
 
+import cz.cvut.kbss.jopa.owl2java.prefix.PrefixMap;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,5 +1,6 @@
-package cz.cvut.kbss.jopa.owl2java;
+package cz.cvut.kbss.jopa.owl2java.prefix;
 
+import cz.cvut.kbss.jopa.owl2java.TestUtils;
 import cz.cvut.kbss.jopa.owl2java.config.Defaults;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import cz.cvut.kbss.jopa.owl2java.environment.Generator;
@@ -30,6 +31,9 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class PrefixMapTest {
 
@@ -37,9 +41,11 @@ class PrefixMapTest {
 
     private final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
 
+    private final RemotePrefixResolver remotePrefixResolver = mock(RemotePrefixResolver.class);
+
     @Test
     void getPrefixReturnsPrefixResolvedFromSingleStringAnnotationPropertyValue() {
-        final TransformationConfiguration config = new TransformationConfiguration.TransformationConfigurationBuilder().build();
+        final TransformationConfiguration config = configBuilder().build();
         final String prefix = "owl2java";
         final IRI ontologyIri = IRI.create(Generator.generateUri());
         assertOntologyPrefixAnnotation(prefix, ontologyIri);
@@ -49,9 +55,13 @@ class PrefixMapTest {
         assertEquals(prefix, result.get());
     }
 
+    private TransformationConfiguration.TransformationConfigurationBuilder configBuilder() {
+        return new TransformationConfiguration.TransformationConfigurationBuilder().remotePrefixResolver(remotePrefixResolver);
+    }
+
     @Test
     void getPrefixReturnsPrefixResolvedFromSingleStringDataPropertyValue() throws Exception {
-        final TransformationConfiguration config = new TransformationConfiguration.TransformationConfigurationBuilder().build();
+        final TransformationConfiguration config = configBuilder().build();
         final String prefix = "owl2java";
         final IRI ontologyIri = IRI.create(Generator.generateUri());
         final OWLOntology ontology = ontologyManager.createOntology(ontologyIri);
@@ -65,7 +75,7 @@ class PrefixMapTest {
 
     @Test
     void getPrefixReturnsPrefixesOfMultipleOntologies() {
-        final TransformationConfiguration config = new TransformationConfiguration.TransformationConfigurationBuilder().build();
+        final TransformationConfiguration config = configBuilder().build();
         final Map<String, IRI> prefixes = Map.of(
                 "owl2java", IRI.create(Generator.generateUri()),
                 "jopa", IRI.create(Generator.generateUri())
@@ -82,7 +92,7 @@ class PrefixMapTest {
 
     @Test
     void getPrefixReturnsPrefixWhenMultiplePrefixAssertionsAreInMergedOntology() {
-        final TransformationConfiguration config = new TransformationConfiguration.TransformationConfigurationBuilder().build();
+        final TransformationConfiguration config = configBuilder().build();
         final Map<String, IRI> prefixes = Map.of(
                 "owl2java", IRI.create(Generator.generateUri()),
                 "jopa", IRI.create(Generator.generateUri())
@@ -113,7 +123,7 @@ class PrefixMapTest {
     @ParameterizedTest
     @MethodSource("predefinedPrefixes")
     void getPrefixReturnsPredefinedPrefixesForSelectedVocabularies(String expectedPrefix, IRI iri) {
-        final TransformationConfiguration config = new TransformationConfiguration.TransformationConfigurationBuilder().build();
+        final TransformationConfiguration config = configBuilder().build();
         final String prefix = "owl2java";
         final IRI ontologyIri = IRI.create(Generator.generateUri());
         assertOntologyPrefixAnnotation(prefix, ontologyIri);
@@ -129,16 +139,14 @@ class PrefixMapTest {
                 Arguments.of(RDF.PREFIX, IRI.create(RDF.NAMESPACE)),
                 Arguments.of(RDFS.PREFIX, IRI.create(RDFS.NAMESPACE)),
                 Arguments.of(OWL.PREFIX, IRI.create(OWL.NAMESPACE)),
-                Arguments.of(SKOS.PREFIX, IRI.create(SKOS.NAMESPACE)),
-                Arguments.of("foaf", IRI.create("http://xmlns.com/foaf/0.1/"))
+                Arguments.of(SKOS.PREFIX, IRI.create(SKOS.NAMESPACE))
         );
     }
 
     @Test
     void getPrefixReturnsPrefixResolvedFromPrefixMappingFileSpecifiedInConfiguration() throws Exception {
         final String prefixMappingFilePath = TestUtils.resolveTestResourcesFilePath("prefixMappingFile");
-        final TransformationConfiguration config = new TransformationConfiguration.TransformationConfigurationBuilder().prefixMappingFile(prefixMappingFilePath)
-                                                                                                                       .build();
+        final TransformationConfiguration config = configBuilder().prefixMappingFile(prefixMappingFilePath).build();
         final PrefixMap sut = new PrefixMap(ontologyManager, config);
         final Optional<String> siocPrefix = sut.getPrefix(IRI.create("http://rdfs.org/sioc/ns#"));
         assertTrue(siocPrefix.isPresent());
@@ -150,8 +158,21 @@ class PrefixMapTest {
 
     @Test
     void prefixResolvingThrowsOWL2JavaExceptionWhenPrefixMappingFileIsNotFound() {
-        final TransformationConfiguration config = new TransformationConfiguration.TransformationConfigurationBuilder().prefixMappingFile("unknownFile")
-                                                                                                                       .build();
+        final TransformationConfiguration config = configBuilder().prefixMappingFile("unknownFile").build();
         assertThrows(OWL2JavaException.class, () -> new PrefixMap(ontologyManager, config));
+    }
+
+    @Test
+    void prefixResolvingUsesRemotePrefixResolverWhenOntologyPrefixCannotBeResolvedLocally() throws Exception {
+        final TransformationConfiguration config = configBuilder().build();
+        final String prefix = "owl2java";
+        final IRI ontologyIri = IRI.create(Generator.generateUri());
+        ontologyManager.createOntology(ontologyIri);
+        when(remotePrefixResolver.resolvePrefix(ontologyIri)).thenReturn(Optional.of(prefix));
+        final PrefixMap sut = new PrefixMap(ontologyManager, config);
+        final Optional<String> result = sut.getPrefix(ontologyIri);
+        assertTrue(result.isPresent());
+        assertEquals(prefix, result.get());
+        verify(remotePrefixResolver).resolvePrefix(ontologyIri);
     }
 }

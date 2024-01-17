@@ -51,6 +51,7 @@ import cz.cvut.kbss.jopa.owl2java.cli.Option;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
 import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
+import cz.cvut.kbss.jopa.owl2java.prefix.PrefixMap;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;

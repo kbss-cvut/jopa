@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.owl2java;
 
+import cz.cvut.kbss.jopa.owl2java.prefix.PrefixMap;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntologyID;
 
