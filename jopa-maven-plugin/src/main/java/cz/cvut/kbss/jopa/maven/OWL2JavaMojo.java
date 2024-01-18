@@ -91,7 +91,7 @@ public class OWL2JavaMojo extends AbstractMojo {
     @Parameter(name = ONTOLOGY_PREFIX_PROPERTY)
     private String ontologyPrefixProperty;
 
-    @Parameter(name = ALWAYS_USE_PREFIXES, defaultValue = "false")
+    @Parameter(name = ALWAYS_USE_PREFIXES, defaultValue = "true")
     private boolean alwaysUsePrefixes;
 
     @Parameter(name = PREFIX_MAPPING_FILE)

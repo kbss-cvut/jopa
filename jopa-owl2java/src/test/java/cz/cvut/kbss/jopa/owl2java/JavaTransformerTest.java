@@ -73,7 +73,8 @@ class JavaTransformerTest {
         this.ontologyManager = OWLManager.createOWLOntologyManager();
         this.ontology = ontologyManager.createOntology(IRI.create(ONTOLOGY_IRI));
         this.dataFactory = new OWLDataFactoryImpl();
-        this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("").build());
+        this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
+                                                                  .alwaysUseOntologyPrefix(false).build());
     }
 
     @Test
@@ -193,6 +194,7 @@ class JavaTransformerTest {
     @Test
     void generateModelGeneratesFieldOfTypeStringForLangStringRangeWhenConfiguredNotToPreferMultilingualStrings() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().preferMultilingualStrings(false)
+                                                                  .alwaysUseOntologyPrefix(false)
                                                                   .packageName("").build());
         final String className = "TestClass";
         final String fieldName = "multilingualString";
@@ -244,6 +246,7 @@ class JavaTransformerTest {
     @Test
     void generateModelDoesNotGenerateLabelAndDescriptionFieldsWhenDisabled() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
+                                                                  .alwaysUseOntologyPrefix(false)
                                                                   .generateAnnotationFields(false).build());
         final String className = "TestClass";
         final IRI iri = IRI.create(PREFIX + className);
@@ -275,7 +278,7 @@ class JavaTransformerTest {
     @Test
     void generateModelDisambiguateClassesWithIdenticalJavaName() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("").generateThing(false)
-                                                                  .build());
+                                                                  .alwaysUseOntologyPrefix(false).build());
         final String className = "Concept";
         final IRI iriOne = IRI.create(PREFIX + className);
         final IRI iriTwo = IRI.create(SKOS.CONCEPT);

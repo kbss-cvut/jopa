@@ -80,6 +80,16 @@ public class JavaNameGenerator {
     }
 
     /**
+     * Checks whether a prefix exists for the specified ontology identifier.
+     *
+     * @param ontologyIri Ontology IRI
+     * @return {@code true} if a prefix has been resolved for ontology IRI, {@code false} otherwise
+     */
+    public boolean hasPrefix(IRI ontologyIri) {
+        return prefixMap.hasPrefix(ontologyIri);
+    }
+
+    /**
      * Returns the specified name sanitized for Java.
      * <p>
      * This means the result of this function can be used as/in a Java variable/field/class name.

@@ -61,6 +61,7 @@ import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.search.EntitySearcher;
 import org.slf4j.Logger;
@@ -517,7 +518,7 @@ public class JavaTransformer {
         String className = resolveExplicitClassName(rootOntology, owlClass)
                 .orElseGet(() -> JavaNameGenerator.toCamelCaseNotation(nameGenerator.generateJavaNameForIri(owlClass.getIRI())));
 
-        if (isClassNameUnique(pkg, className, codeModel) && !configuration.shouldAlwaysUseOntologyPrefix()) {
+        if (isClassNameUnique(pkg, className, codeModel) && !isPrefixedVersionRequired(onto.getOntologyID())) {
             return fqn(pkg, className);
         }
         className = JavaNameGenerator.toCamelCaseNotation(nameGenerator.generatePrefixedJavaNameForIri(owlClass.getIRI(), onto.getOntologyID()));
@@ -547,6 +548,11 @@ public class JavaTransformer {
 
     private static String fqn(String pkg, String simpleName) {
         return pkg + PACKAGE_SEPARATOR + simpleName;
+    }
+
+    private boolean isPrefixedVersionRequired(OWLOntologyID ontologyId) {
+        return configuration.shouldAlwaysUseOntologyPrefix()
+                && (ontologyId.isAnonymous() || nameGenerator.hasPrefix(ontologyId.getOntologyIRI().get()));
     }
 
     private void generateClassJavadoc(OWLOntology ontology, OWLEntity owlEntity, JDocCommentable javaElem) {

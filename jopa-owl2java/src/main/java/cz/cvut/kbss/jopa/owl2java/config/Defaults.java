@@ -89,7 +89,7 @@ public class Defaults {
     /**
      * @see Option#ALWAYS_USE_ONTOLOGY_PREFIX
      */
-    public static final boolean USE_ONTOLOGY_PREFIX = false;
+    public static final boolean ALWAYS_USE_ONTOLOGY_PREFIX = true;
 
     private Defaults() {
         throw new AssertionError();

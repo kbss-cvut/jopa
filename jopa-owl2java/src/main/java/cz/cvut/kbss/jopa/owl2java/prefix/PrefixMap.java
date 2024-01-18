@@ -58,7 +58,7 @@ public class PrefixMap {
      */
     private Map<String, String> resolvePrefixes(OWLOntologyManager ontologyManager,
                                                 TransformationConfiguration config) {
-        final Map<String, String> result = new ConcurrentHashMap<>(defaultPrefixes());
+        final Map<String, String> result = new ConcurrentHashMap<>(builtInPrefixes());
         ontologyManager.ontologies().parallel().filter(o -> o.getOntologyID().isNamed()).forEach(o -> {
             assert o.getOntologyID().getOntologyIRI().isPresent();
             result.putAll(resolveOntologyPrefixes(o, config.getOntologyPrefixProperty(), config.getRemotePrefixResolver()));
@@ -78,8 +78,13 @@ public class PrefixMap {
         ontology.axioms(AxiomType.ANNOTATION_ASSERTION)
                 .filter(ax -> ax.getProperty().equals(annProperty) && ax.getValue().isLiteral() && ax.getSubject()
                                                                                                      .isIRI())
-                .forEach(ax -> result.put(ax.getSubject().asIRI().get().getIRIString(), ax.getValue().asLiteral().get()
-                                                                                          .getLiteral()));
+                .forEach(ax -> {
+                    assert ax.getSubject().asIRI().isPresent();
+                    assert ax.getValue().asLiteral().isPresent();
+
+                    result.put(ax.getSubject().asIRI().get().getIRIString(), ax.getValue().asLiteral().get()
+                                                                               .getLiteral());
+                });
         final OWLDataProperty dataProperty = df.getOWLDataProperty(prefixProperty);
         ontology.axioms(AxiomType.DATA_PROPERTY_ASSERTION)
                 .filter(ax -> ax.getProperty().equals(dataProperty) && ax.getSubject().isIndividual())
@@ -125,7 +130,18 @@ public class PrefixMap {
         return Optional.ofNullable(prefixes.get(ontologyIri.getIRIString()));
     }
 
-    private static Map<String, String> defaultPrefixes() {
+    /**
+     * Checks whether a prefix has been resolved for the specified ontology IRI.
+     *
+     * @param ontologyIri Ontology IRI
+     * @return {@code true} if a prefix is registered for the ontology IRI, {@code false} otherwise
+     */
+    public boolean hasPrefix(IRI ontologyIri) {
+        Objects.requireNonNull(ontologyIri);
+        return prefixes.containsKey(ontologyIri.getIRIString());
+    }
+
+    private static Map<String, String> builtInPrefixes() {
         return Map.of(
                 RDF.NAMESPACE, RDF.PREFIX,
                 RDFS.NAMESPACE, RDFS.PREFIX,
