@@ -64,8 +64,8 @@ public class JavaNameGenerator {
         }
         assert ontologyId.getOntologyIRI().isPresent();
         final IRI ontologyIri = ontologyId.getOntologyIRI().get();
-        return prefixMap.getPrefix(ontologyIri)
-                        .orElse(generateJavaNameForIri(ontologyIri)) + SEPARATOR + generateJavaNameForIri(iri);
+        return makeNameValidJava(prefixMap.getPrefix(ontologyIri)
+                                          .orElse(generateJavaNameForIri(ontologyIri))) + SEPARATOR + generateJavaNameForIri(iri);
     }
 
     /**

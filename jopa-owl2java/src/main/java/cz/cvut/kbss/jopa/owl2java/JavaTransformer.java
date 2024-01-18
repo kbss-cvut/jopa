@@ -219,9 +219,9 @@ public class JavaTransformer {
                                                       .sorted(Comparator.comparing(IRI::getIRIString))
                                                       .collect(Collectors.toList());
         ontologyIris.forEach(iri -> {
-            final String fieldName = ensureVocabularyItemUniqueIdentifier("ONTOLOGY_IRI_" + nameGenerator.getOntologyPrefix(iri)
-                                                                                                         .orElseGet(() -> nameGenerator.generateJavaNameForIri(iri))
-                                                                                                         .toUpperCase());
+            final String fieldName = ensureVocabularyItemUniqueIdentifier("ONTOLOGY_IRI_" + JavaNameGenerator.makeNameValidJava(nameGenerator.getOntologyPrefix(iri)
+                                                                                                                                             .orElseGet(() -> nameGenerator.generateJavaNameForIri(iri)))
+                                                                                                             .toUpperCase());
             voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, String.class, fieldName, JExpr.lit(iri.toString()));
         });
     }

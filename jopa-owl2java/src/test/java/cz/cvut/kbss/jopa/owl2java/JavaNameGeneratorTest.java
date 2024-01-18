@@ -85,4 +85,12 @@ class JavaNameGeneratorTest {
         assertEquals("Event", sut.generatePrefixedJavaNameForIri(iri, new OWLOntologyID()));
         verify(prefixMap, never()).getPrefix(any());
     }
+
+    @Test
+    void generatedPrefixedJavaNameForIriReturnsValidJavaNameWhenPrefixContainsDashes() {
+        final IRI ontologyIri = IRI.create("http://onto.fel.cvut.cz/ontologies/slovn\\u00edk/agendov\\u00fd/popis-dat");
+        final IRI iri = IRI.create("http://onto.fel.cvut.cz/ontologies/slovn\\u00edk/agendov\\u00fd/popis-dat/pojem/atribut");
+        when(prefixMap.getPrefix(ontologyIri)).thenReturn(Optional.of("popis-dat"));
+        assertEquals("popis_dat_atribut", sut.generatePrefixedJavaNameForIri(iri, new OWLOntologyID(ontologyIri)));
+    }
 }
