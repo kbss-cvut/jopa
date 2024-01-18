@@ -86,7 +86,7 @@ public class OWL2JavaTransformer {
 
         try {
             m.loadOntology(IRI.create(owlOntologyName));
-            return new OWLOntologyMerger(m).createMergedOntology(m, IRI.create(owlOntologyName + "-generated"));
+            return new OWLOntologyMerger(m).createMergedOntology(m, null);
         } catch (OWLException | OWLRuntimeException e) {
             LOG.error(e.getMessage(), e);
             throw new OWL2JavaException("Unable to load ontology " + owlOntologyName, e);

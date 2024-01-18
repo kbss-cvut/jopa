@@ -48,8 +48,8 @@ public class TestUtils {
         throw new AssertionError();
     }
 
-    public static String resolveMappingFilePath() throws UnsupportedEncodingException {
-        final URL resource = TestUtils.class.getClassLoader().getResource(MAPPING_FILE_NAME);
+    public static String resolveTestResourcesFilePath(String fileName) throws UnsupportedEncodingException {
+        final URL resource = TestUtils.class.getClassLoader().getResource(fileName);
         final String decodedPath = URLDecoder.decode(resource.getFile(), StandardCharsets.UTF_8.toString());
         final File mf = new File(decodedPath);
         return mf.getAbsolutePath();

@@ -56,6 +56,7 @@ public final class CommandParserProvider {
         p.accepts(WHOLE_ONTOLOGY_AS_IC).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
         p.accepts(IGNORE_FAILED_IMPORTS).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
         p.accepts(GENERATE_JAVADOC_FROM_COMMENT).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
+        p.accepts(ONTOLOGY_PREFIX_PROPERTY).withOptionalArg().ofType(String.class).defaultsTo(Defaults.ONTOLOGY_PREFIX_PROPERTY);
         return p;
     }
 

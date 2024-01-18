@@ -40,7 +40,7 @@ public final class MappingFileParser {
     /**
      * Default delimiter of mappings in the mapping file.
      * <p>
-     * That is, on the left hand side of the delimiter would the original IRI and on the right hand side is the mapped
+     * That is, on the left-hand side of the delimiter would the original IRI and on the right-hand side is the mapped
      * value.
      */
     public static final String DEFAULT_DELIMITER = ">";

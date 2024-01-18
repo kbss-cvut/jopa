@@ -17,6 +17,9 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+
 public class Constants {
 
     /**
@@ -74,6 +77,11 @@ public class Constants {
      * Name of the field representing {@link cz.cvut.kbss.jopa.model.annotations.Properties}.
      */
     public static final String PROPERTIES_FIELD_NAME = "properties";
+
+    /**
+     * Timeout for resolving ontology prefix via a remote service.
+     */
+    public static final Duration PREFIX_RESOLVE_TIMEOUT = Duration.of(5, ChronoUnit.SECONDS);
 
     /**
      * Tool version.
