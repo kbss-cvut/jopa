@@ -232,13 +232,13 @@ public class JavaTransformer {
         if (prefix.isEmpty()) {
             return prefix;
         }
+        final Optional<OWLOntology> containingOntology = resolveContainingOntology(c, ontologyManager);
         String fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generateJavaNameForIri(c.getIRI());
-        if (voc.fields().containsKey(fieldName) || configuration.shouldAlwaysUseOntologyPrefix()) {
-            final Optional<OWLOntology> containingOntology = resolveContainingOntology(c, ontologyManager);
-            if (containingOntology.isPresent()) {
-                fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generatePrefixedJavaNameForIri(c.getIRI(), containingOntology.get()
-                                                                                                                                      .getOntologyID());
-            }
+        if (voc.fields().containsKey(fieldName) || (
+                containingOntology.isPresent() && isPrefixedVersionRequired(containingOntology.get()
+                                                                                              .getOntologyID()))) {
+            fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generatePrefixedJavaNameForIri(c.getIRI(), containingOntology.get()
+                                                                                                                                  .getOntologyID());
         }
         return Optional.of(ensureVocabularyItemUniqueIdentifier(fieldName));
     }

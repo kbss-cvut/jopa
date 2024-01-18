@@ -105,7 +105,7 @@ public class PrefixMap {
             LOG.debug("Loading prefix mapping from file '{}'.", file);
             final List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
             final Map<String, String> prefixMap = new HashMap<>(lines.size());
-            lines.forEach(line -> {
+            lines.stream().filter(line -> !line.isBlank()).forEach(line -> {
                 final String[] mapping = line.split("=");
                 if (mapping.length != 2) {
                     LOG.warn("Mapping line '{}' does not correspond to the expected pattern '$namespace=$prefix'. Skipping it.", line);
