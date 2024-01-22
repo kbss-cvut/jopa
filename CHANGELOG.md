@@ -1,5 +1,8 @@
 # JOPA - Change Log
 
+## 1.2.1 - 2024-01-22
+- Unwrap `IndirectMultilingualString` instances when owner entity is detached from the persistence context.
+
 ## 1.2.0 - 2023-12-20
 - Support data properties for referenced list values (Enhancement #209).
 - Support using multilingual string as referenced list values (Enhancement #216).

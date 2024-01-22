@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.adapters.IndirectWrapper;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
@@ -297,10 +296,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     private void detachAllManagedInstances() {
         cloneMapping.forEach(instance -> {
-            removeIndirectCollections(instance);
+            removeIndirectWrappers(instance);
             deregisterEntityFromPersistenceContext(instance);
         });
-        newObjectsCloneToOriginal.keySet().forEach(this::removeIndirectCollections);
+        newObjectsCloneToOriginal.keySet().forEach(this::removeIndirectWrappers);
     }
 
     @Override
@@ -925,7 +924,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         if (original != null) {
             cloneBuilder.removeVisited(original, repoMap.getEntityDescriptor(object));
         }
-        removeIndirectCollections(object);
+        removeIndirectWrappers(object);
         deregisterEntityFromPersistenceContext(object);
         unregisterEntityFromOntologyContext(object);
     }
@@ -1131,18 +1130,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     }
 
     /**
-     * Remove indirect collection implementations from the specified entity (if present).
+     * Removes {@link IndirectWrapper} instances from the specified entity (if present).
      *
-     * @param entity The entity to remove indirect collections from
+     * @param entity The entity to remove indirect wrappers from
      */
-    private void removeIndirectCollections(Object entity) {
+    private void removeIndirectWrappers(Object entity) {
         assert entity != null;
         final EntityType<?> et = entityType(entity.getClass());
         for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
             final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
-            if (value instanceof IndirectCollection) {
-                IndirectCollection<?> indCol = (IndirectCollection<?>) value;
-                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, indCol.unwrap());
+            if (value instanceof IndirectWrapper) {
+                IndirectWrapper indirectWrapper = (IndirectWrapper) value;
+                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, indirectWrapper.unwrap());
             }
         }
     }

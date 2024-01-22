@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectMap;
+import cz.cvut.kbss.jopa.adapters.IndirectMultilingualString;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
@@ -26,6 +27,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassE;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
 import cz.cvut.kbss.jopa.environment.OWLClassR;
+import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exception.IdentifierNotSetException;
@@ -36,6 +38,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.model.LoadState;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -66,10 +69,13 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -1140,5 +1146,16 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
 
         verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
         verify(storageMock).persist(entityB.getUri(), entityB, descriptor);
+    }
+
+    @Test
+    void unregisterObjectRemovesIndirectMultilingualStringOfManagedObjectBeingDetached() {
+        when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+        final OWLClassU entityU = new OWLClassU(Generators.createIndividualIdentifier());
+        entityU.setSingularStringAtt(MultilingualString.create("test", "en"));
+        final OWLClassU managed = (OWLClassU) uow.registerExistingObject(entityU, descriptor);
+        assertInstanceOf(IndirectMultilingualString.class, managed.getSingularStringAtt());
+        uow.unregisterObject(managed);
+        assertThat(managed.getSingularStringAtt(), not(instanceOf(IndirectMultilingualString.class)));
     }
 }

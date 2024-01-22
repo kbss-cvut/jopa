@@ -1450,6 +1450,7 @@ public class MetamodelFactory {
         when(singularStringAtt.getJavaType()).thenReturn(OWLClassU.getSingularStringAttField().getType());
         when(singularStringAtt.getName()).thenReturn(OWLClassU.getSingularStringAttField().getName());
         when(et.getAttribute(OWLClassU.getSingularStringAttField().getName())).thenReturn(singularStringAtt);
+        when(et.getFieldSpecification(OWLClassU.getSingularStringAttField().getName())).thenReturn(singularStringAtt);
         when(singularStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(singularStringAtt.isCollection()).thenReturn(false);
         when(singularStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
@@ -1465,6 +1466,7 @@ public class MetamodelFactory {
         when(pluralStringAtt.getJavaType()).thenReturn(OWLClassU.getPluralStringAttField().getType());
         when(pluralStringAtt.getName()).thenReturn(OWLClassU.getPluralStringAttField().getName());
         when(et.getAttribute(OWLClassU.getPluralStringAttField().getName())).thenReturn(pluralStringAtt);
+        when(et.getFieldSpecification(OWLClassU.getPluralStringAttField().getName())).thenReturn(pluralStringAtt);
         when(pluralStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(pluralStringAtt.isCollection()).thenReturn(true);
         when(pluralStringAtt.getCollectionType()).thenReturn(CollectionType.SET);
