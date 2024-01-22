@@ -34,7 +34,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-public interface EntityManager {
+public interface EntityManager extends AutoCloseable {
 
     /**
      * Make an instance managed and persistent.

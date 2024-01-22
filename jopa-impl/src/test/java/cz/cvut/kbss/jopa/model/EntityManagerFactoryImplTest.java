@@ -23,19 +23,23 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.Types;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class EntityManagerFactoryImplTest {
@@ -50,14 +54,16 @@ class EntityManagerFactoryImplTest {
 
     @BeforeEach
     void setUp() {
-        final Map<String, String> props = new HashMap<>();
-        props.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, DataSourceStub.class.getName());
-        props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
-                Generators.createIndividualIdentifier().toString());
-        props.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
-        this.emf = new EntityManagerFactoryImpl(props, closeListener);
+        this.emf = new EntityManagerFactoryImpl(getProps(), closeListener);
         emf.createEntityManager();
         emf.getServerSession().unwrap(DataSourceStub.class).setConnection(connection);
+    }
+
+    private Map<String, String> getProps() {
+        return Map.of(JOPAPersistenceProperties.DATA_SOURCE_CLASS, DataSourceStub.class.getName(),
+                JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
+                Generators.createIndividualIdentifier().toString(),
+                JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
     }
 
     @Test
@@ -141,5 +147,13 @@ class EntityManagerFactoryImplTest {
     void closeInvokesCloseListener() {
         emf.close();
         verify(closeListener).accept(emf);
+    }
+
+    @Test
+    void entityManagerFactoryIsAutoCloseable() {
+        try (final EntityManagerFactory emf = new EntityManagerFactoryImpl(getProps(), closeListener)) {
+            assertTrue(emf.isOpen());
+        }
+        verify(closeListener).accept(any(EntityManagerFactoryImpl.class));
     }
 }

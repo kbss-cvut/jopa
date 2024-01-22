@@ -24,7 +24,7 @@ import cz.cvut.kbss.jopa.sessions.Cache;
 
 import java.util.Map;
 
-public interface EntityManagerFactory {
+public interface EntityManagerFactory extends AutoCloseable {
     /**
      * Create a new application-managed EntityManager. This method returns a new
      * EntityManager instance each time it is invoked. The isOpen method will
