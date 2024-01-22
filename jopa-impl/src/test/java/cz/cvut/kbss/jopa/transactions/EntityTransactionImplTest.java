@@ -18,26 +18,23 @@
 package cz.cvut.kbss.jopa.transactions;
 
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
-import cz.cvut.kbss.jopa.model.AbstractEntityManager;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class EntityTransactionImplTest {
 
     @Mock
     private EntityTransactionWrapper wrapperMock;
-    @Mock
-    private AbstractEntityManager emMock;
-    @Mock
-    private UnitOfWork uowMock;
 
     private EntityTransactionImpl transaction;
 
@@ -53,16 +50,14 @@ public class EntityTransactionImplTest {
 
     @Test
     public void testBegin() {
-        when(wrapperMock.getEntityManager()).thenReturn(emMock);
         assertFalse(transaction.isActive());
         transaction.begin();
         assertTrue(transaction.isActive());
-        verify(emMock).transactionStarted(transaction);
+        verify(wrapperMock).begin();
     }
 
     @Test
     public void testBeginAlreadyActive() {
-        when(wrapperMock.getEntityManager()).thenReturn(emMock);
         assertFalse(transaction.isActive());
         transaction.begin();
         assertTrue(transaction.isActive());
@@ -72,22 +67,10 @@ public class EntityTransactionImplTest {
 
     @Test
     public void testCommit() {
-        when(wrapperMock.getEntityManager()).thenReturn(emMock);
-        when(wrapperMock.getTransactionUOW()).thenReturn(uowMock);
         transaction.begin();
         transaction.commit();
         assertFalse(transaction.isActive());
-        verify(emMock).transactionFinished(transaction);
-    }
-
-    @Test
-    public void testCommitAndRelease() {
-        when(wrapperMock.getEntityManager()).thenReturn(emMock);
-        when(wrapperMock.getTransactionUOW()).thenReturn(uowMock);
-        when(uowMock.shouldReleaseAfterCommit()).thenReturn(Boolean.TRUE);
-        transaction.begin();
-        transaction.commit();
-        verify(emMock).removeCurrentPersistenceContext();
+        verify(wrapperMock).commit();
     }
 
     @Test
@@ -97,21 +80,17 @@ public class EntityTransactionImplTest {
 
     @Test
     public void testCommitWithException() {
-        when(wrapperMock.getEntityManager()).thenReturn(emMock);
-        when(wrapperMock.getTransactionUOW()).thenReturn(uowMock);
-        doThrow(RuntimeException.class).when(uowMock).commit();
+        doThrow(RuntimeException.class).when(wrapperMock).commit();
         transaction.begin();
         try {
             assertThrows(RuntimeException.class, () -> transaction.commit());
         } finally {
-            verify(emMock).removeCurrentPersistenceContext();
+            verify(wrapperMock).rollback();
         }
     }
 
     @Test
     public void testCommitRollbackOnly() {
-        when(wrapperMock.getEntityManager()).thenReturn(emMock);
-        when(wrapperMock.getTransactionUOW()).thenReturn(uowMock);
         transaction.begin();
         transaction.setRollbackOnly();
         assertThrows(RollbackException.class, () -> transaction.commit());
@@ -119,12 +98,10 @@ public class EntityTransactionImplTest {
 
     @Test
     public void testRollback() {
-        when(wrapperMock.getEntityManager()).thenReturn(emMock);
-        when(wrapperMock.getTransactionUOW()).thenReturn(uowMock);
         transaction.begin();
         transaction.rollback();
         assertFalse(transaction.isActive());
-        verify(uowMock).rollback();
+        verify(wrapperMock).rollback();
     }
 
     @Test
@@ -135,7 +112,6 @@ public class EntityTransactionImplTest {
 
     @Test
     public void testSetRollbackOnly() {
-        when(wrapperMock.getEntityManager()).thenReturn(emMock);
         transaction.begin();
         assertFalse(transaction.isRollbackOnly());
         transaction.setRollbackOnly();

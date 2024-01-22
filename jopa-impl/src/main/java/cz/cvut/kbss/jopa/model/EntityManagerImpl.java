@@ -33,13 +33,21 @@ import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
-import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
-import cz.cvut.kbss.jopa.utils.*;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
+import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.jopa.utils.Wrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
@@ -52,7 +60,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     private boolean open;
 
-    private TransactionWrapper transaction;
+    private final EntityTransactionWrapper transaction;
     private UnitOfWorkImpl persistenceContext;
     private final Configuration configuration;
 
@@ -63,7 +71,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         this.serverSession = serverSession;
         this.configuration = configuration;
 
-        setTransactionWrapper();
+        this.transaction = new EntityTransactionWrapper(this);
 
         this.open = true;
     }
@@ -610,16 +618,6 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     @Override
     public void transactionFinished(EntityTransaction t) {
         this.serverSession.transactionFinished(t);
-    }
-
-    /**
-     * Since we support only EntityTransactions, we set the TransactionWrapper to EntityTransactionWrapper.
-     * <p>
-     * In the future, if JTA transactions are supported, JTATransactionWrapper should be set instead of the
-     * EntityTransactionWrapper.
-     */
-    private void setTransactionWrapper() {
-        this.transaction = new EntityTransactionWrapper(this);
     }
 
     @Override

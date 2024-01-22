@@ -42,9 +42,8 @@ public class EntityTransactionImpl implements EntityTransaction {
         if (isActive()) {
             throw new IllegalStateException("Transaction already active!");
         }
-        wrapper.begin();
         this.active = true;
-        wrapper.getEntityManager().transactionStarted(this);
+        wrapper.begin();
         LOG.trace("EntityTransaction begin.");
     }
 
@@ -57,16 +56,14 @@ public class EntityTransactionImpl implements EntityTransaction {
                 throw new RollbackException("Trying to commit transaction marked as rollback only.");
             } else {
                 try {
-                    wrapper.getTransactionUOW().commit();
+                    wrapper.commit();
                 } catch (RuntimeException ex) {
-                    wrapper.getEntityManager().removeCurrentPersistenceContext();
+                    wrapper.rollback();
                     throw new RollbackException(ex);
                 }
             }
         } finally {
-            if (wrapper.getTransactionUOW().shouldReleaseAfterCommit()) {
-                wrapper.getEntityManager().removeCurrentPersistenceContext();
-            }
+            wrapper.transactionFinished();
             cleanup();
             LOG.trace("EntityTransaction commit finished.");
         }
@@ -81,15 +78,13 @@ public class EntityTransactionImpl implements EntityTransaction {
     private void cleanup() {
         this.active = false;
         this.rollbackOnly = false;
-        wrapper.setTransactionUOW(null);
-        wrapper.getEntityManager().transactionFinished(this);
     }
 
     @Override
     public void rollback() {
         verifyTransactionActive("rollback");
-        wrapper.getTransactionUOW().rollback();
-        wrapper.getEntityManager().removeCurrentPersistenceContext();
+        wrapper.rollback();
+        wrapper.transactionFinished();
         cleanup();
         LOG.trace("EntityTransaction rolled back.");
     }
