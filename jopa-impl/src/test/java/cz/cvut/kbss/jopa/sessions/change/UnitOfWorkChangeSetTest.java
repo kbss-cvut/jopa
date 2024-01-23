@@ -18,8 +18,6 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.api.ObjectChangeSet;
-import cz.cvut.kbss.jopa.api.UnitOfWorkChangeSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +35,7 @@ public class UnitOfWorkChangeSetTest {
         this.testObject = "TEST";
         final String testClone = "TEST";
         this.changeSet = ChangeSetFactory.createObjectChangeSet(testObject, testClone, new EntityDescriptor());
-        uowChangeSet = new UnitOfWorkChangeSetImpl();
+        uowChangeSet = new UnitOfWorkChangeSet();
     }
 
     @Test

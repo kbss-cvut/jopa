@@ -20,7 +20,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.adapters.IndirectList;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
-import cz.cvut.kbss.jopa.api.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
@@ -28,7 +28,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,7 +70,7 @@ public class RefreshInstanceMergerTest {
         final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(original, clone, new EntityDescriptor());
         final FieldSpecification<?, ?> fieldSpec = mock(FieldSpecification.class);
         when(fieldSpec.getJavaField()).thenReturn(OWLClassA.getStrAttField());
-        changeSet.addChangeRecord(new ChangeRecordImpl(fieldSpec, clone.getStringAttribute()));
+        changeSet.addChangeRecord(new ChangeRecord(fieldSpec, clone.getStringAttribute()));
 
         sut.mergeChanges(changeSet);
         assertEquals(original.getStringAttribute(), clone.getStringAttribute());
@@ -85,7 +85,7 @@ public class RefreshInstanceMergerTest {
         final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(original, clone, new EntityDescriptor());
         final TypesSpecification<?, ?> fieldSpec = mock(TypesSpecification.class);
         when(fieldSpec.getJavaField()).thenReturn(OWLClassA.getTypesField());
-        changeSet.addChangeRecord(new ChangeRecordImpl(fieldSpec, clone.getTypes()));
+        changeSet.addChangeRecord(new ChangeRecord(fieldSpec, clone.getTypes()));
 
         sut.mergeChanges(changeSet);
         assertTrue(clone.getTypes() instanceof IndirectSet);
@@ -108,7 +108,7 @@ public class RefreshInstanceMergerTest {
         final Attribute<?, ?> att = mock(Attribute.class);
         when(att.getJavaField()).thenReturn(OWLClassC.getRefListField());
         final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(original, clone, new EntityDescriptor());
-        changeSet.addChangeRecord(new ChangeRecordImpl(att, refListClone));
+        changeSet.addChangeRecord(new ChangeRecord(att, refListClone));
 
         sut.mergeChanges(changeSet);
         assertEquals(refList.size(), clone.getReferencedList().size());

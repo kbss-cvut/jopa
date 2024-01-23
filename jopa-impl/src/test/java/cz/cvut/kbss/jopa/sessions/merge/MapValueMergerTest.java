@@ -22,7 +22,7 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -61,7 +61,7 @@ public class MapValueMergerTest {
         merged.getProperties().get(newKey).add(vOne);
         merged.getProperties().get(newKey).add(vTwo);
 
-        sut.mergeValue(orig, new ChangeRecordImpl(metamodelMocks.forOwlClassB().propertiesSpec(), merged.getProperties()), descriptor);
+        sut.mergeValue(orig, new ChangeRecord(metamodelMocks.forOwlClassB().propertiesSpec(), merged.getProperties()), descriptor);
         assertEquals(merged.getProperties(), orig.getProperties());
     }
 
@@ -72,7 +72,7 @@ public class MapValueMergerTest {
         final OWLClassB merged = new OWLClassB(orig.getUri());
         merged.setProperties(null);
 
-        sut.mergeValue(orig, new ChangeRecordImpl(metamodelMocks.forOwlClassB().propertiesSpec(), merged.getProperties()), descriptor);
+        sut.mergeValue(orig, new ChangeRecord(metamodelMocks.forOwlClassB().propertiesSpec(), merged.getProperties()), descriptor);
         assertNull(orig.getProperties());
     }
 }

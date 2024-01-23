@@ -17,10 +17,10 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.api.ChangeRecord;
-import cz.cvut.kbss.jopa.api.ObjectChangeSet;
-import cz.cvut.kbss.jopa.api.UnitOfWorkChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.util.Objects;

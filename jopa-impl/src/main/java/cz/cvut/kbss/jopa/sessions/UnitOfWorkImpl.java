@@ -18,10 +18,8 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectWrapper;
-import cz.cvut.kbss.jopa.api.ChangeRecord;
-import cz.cvut.kbss.jopa.api.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.api.UnitOfWork;
-import cz.cvut.kbss.jopa.api.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -40,8 +38,9 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeCalculator;
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
+import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
@@ -585,7 +584,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         if (orig == null) {
             return;
         }
-        final ChangeRecord record = new ChangeRecordImpl(fieldSpec, EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(), clone));
+        final ChangeRecord record = new ChangeRecord(fieldSpec, EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(), clone));
         preventCachingIfReferenceIsNotLoaded(record);
         registerChangeRecord(clone, orig, descriptor, record);
     }

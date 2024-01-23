@@ -18,9 +18,11 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.api.ChangeRecord;
 
-public class ChangeRecordImpl implements ChangeRecord {
+/**
+ * Record of a single change to an attribute.
+ */
+public class ChangeRecord {
 
     private final FieldSpecification<?, ?> attribute;
 
@@ -28,40 +30,60 @@ public class ChangeRecordImpl implements ChangeRecord {
 
     private boolean preventsCaching;
 
-    public ChangeRecordImpl(FieldSpecification<?, ?> att, Object value) {
+    public ChangeRecord(FieldSpecification<?, ?> att, Object value) {
         assert att != null;
         this.attribute = att;
         this.newValue = value;
     }
 
-    @Override
+    /**
+     * Returns the new value of the attribute.
+     *
+     * @return Object
+     */
     public Object getNewValue() {
         return newValue;
     }
 
-    @Override
+    /**
+     * Sets the new value of the attribute in case this change record needs to be updated.
+     *
+     * @param value The value to set
+     */
     public void setNewValue(Object value) {
         this.newValue = value;
     }
 
-    @Override
+    /**
+     * Gets the attribute to which this change record is bound.
+     *
+     * @return the attribute
+     */
     public FieldSpecification<?, ?> getAttribute() {
         return attribute;
     }
 
-    @Override
+    /**
+     * Marks this change record to prevent caching.
+     *
+     * @see #doesPreventCaching()
+     */
     public void preventCaching() {
         this.preventsCaching = true;
     }
 
-    @Override
+    /**
+     * Whether this change record prevents caching of the instance on which the change is applied.
+     *
+     * @return Whether this change record prevents caching
+     */
     public boolean doesPreventCaching() {
         return preventsCaching;
     }
 
     @Override
     public String toString() {
-        return "ChangeRecordImpl{" +
+        return "ChangeRecord{" +
                 "attribute='" + attribute.getName() + '\'' +
                 ", newValue=" + newValue +
                 ", preventsCaching=" + preventsCaching +

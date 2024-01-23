@@ -21,8 +21,8 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.api.ChangeRecord;
-import cz.cvut.kbss.jopa.api.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.util.Objects;

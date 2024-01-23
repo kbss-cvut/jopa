@@ -17,24 +17,28 @@
  */
 package cz.cvut.kbss.jopa.sessions.change;
 
-import cz.cvut.kbss.jopa.api.ObjectChangeSet;
-import cz.cvut.kbss.jopa.api.UnitOfWorkChangeSet;
-
 import java.util.*;
 
-public class UnitOfWorkChangeSetImpl implements UnitOfWorkChangeSet {
+/**
+ * A set of changes made in a {@link cz.cvut.kbss.jopa.api.UnitOfWork}.
+ */
+public class UnitOfWorkChangeSet {
 
     private final Set<ObjectChangeSet> deletedObjects;
     private final Map<Object, ObjectChangeSet> objectChanges;
     private final Set<ObjectChangeSet> newObjectChanges;
 
-    public UnitOfWorkChangeSetImpl() {
+    public UnitOfWorkChangeSet() {
         this.objectChanges = new HashMap<>();
         this.deletedObjects = new HashSet<>();
         this.newObjectChanges = new HashSet<>();
     }
 
-    @Override
+    /**
+     * Add new ObjectChangeSet to this changeSet.
+     *
+     * @param objectChangeSet ObjectChangeSet
+     */
     public void addObjectChangeSet(ObjectChangeSet objectChangeSet) {
         if (objectChangeSet.isNew()) {
             addNewObjectChangeSet(objectChangeSet);
@@ -43,53 +47,97 @@ public class UnitOfWorkChangeSetImpl implements UnitOfWorkChangeSet {
         }
     }
 
-    @Override
+    /**
+     * Adds a change set for deleted object.
+     *
+     * @param deletedObject The change set to add
+     */
     public void addDeletedObjectChangeSet(ObjectChangeSet deletedObject) {
         deletedObjects.add(deletedObject);
     }
 
-    @Override
+    /**
+     * Add a change set for newly created object. These changes are held in separate attribute and get special treatment
+     * when merged into shared session cache.
+     *
+     * @param newObject ObjectChangeSet
+     */
     public void addNewObjectChangeSet(ObjectChangeSet newObject) {
         newObject.setNew(true);
         newObjectChanges.add(newObject);
     }
 
-    @Override
+    /**
+     * Returns change sets for existing modified objects.
+     * <p>
+     * New object and deleted object change sets are not included.
+     *
+     * @return Collection of change sets
+     */
     public Collection<ObjectChangeSet> getExistingObjectsChanges() {
         return Collections.unmodifiableCollection(objectChanges.values());
     }
 
-    @Override
+    /**
+     * Removes change record of the specified original object, if present, cancelling the changes.
+     *
+     * @param original The object whose changes should be removed
+     */
     public void cancelObjectChanges(Object original) {
         objectChanges.remove(original);
     }
 
-    @Override
+    /**
+     * Gets changes for the specified original object (if there are any).
+     *
+     * @param original The object for which changes should be found
+     * @return Object change set or null, if the object has no changes
+     */
     public ObjectChangeSet getExistingObjectChanges(Object original) {
         return objectChanges.get(original);
     }
 
-    @Override
+    /**
+     * Returns the collection of deleted objects.
+     *
+     * @return Set of change sets
+     */
     public Set<ObjectChangeSet> getDeletedObjects() {
         return this.deletedObjects;
     }
 
-    @Override
+    /**
+     * Returns the collection of change sets for newly created objects.
+     *
+     * @return Set of change sets
+     */
     public Set<ObjectChangeSet> getNewObjects() {
         return this.newObjectChanges;
     }
 
-    @Override
+    /**
+     * Returns true if there are deleted objects in this change set.
+     *
+     * @return boolean
+     */
     public boolean hasDeleted() {
         return !deletedObjects.isEmpty();
     }
 
-    @Override
+    /**
+     * Returns true if this changeSet has any changes.
+     *
+     * @return boolean
+     */
     public boolean hasChanges() {
         return hasDeleted() || hasNew() || !objectChanges.isEmpty();
     }
 
-    @Override
+    /**
+     * Are there any new objects in the change set?
+     *
+     * @return boolean
+     */
     public boolean hasNew() {
         return !this.newObjectChanges.isEmpty();
     }

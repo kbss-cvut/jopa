@@ -19,7 +19,6 @@ package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
-import cz.cvut.kbss.jopa.api.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,7 +139,7 @@ public class ChangeCalculator {
             }
             boolean changed = valueChanged(origVal, clVal);
             if (changed) {
-                changeSet.addChangeRecord(new ChangeRecordImpl(fs, clVal));
+                changeSet.addChangeRecord(new ChangeRecord(fs, clVal));
                 changesFound = true;
             }
         }

@@ -17,11 +17,11 @@
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.api.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSetImpl;
+import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Value;
@@ -35,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 public final class TestEnvironmentUtils {
 
@@ -45,7 +46,7 @@ public final class TestEnvironmentUtils {
     }
 
     public static ObjectChangeSet createObjectChangeSet(Object original, Object clone, URI context) {
-        return new ObjectChangeSetImpl(original, clone, new EntityDescriptor(context));
+        return ChangeSetFactory.createObjectChangeSet(original, clone, new EntityDescriptor(context));
     }
 
     /**
@@ -57,11 +58,12 @@ public final class TestEnvironmentUtils {
      * @param assertions Actual assertions
      * @return Equality status.
      */
-    public static boolean assertionsCorrespondToProperties(Map properties, Map<Assertion, Set<Value<?>>> assertions) {
+    public static boolean assertionsCorrespondToProperties(Map<?, ?> properties, Map<Assertion, Set<Value<?>>> assertions) {
         if (properties.size() != assertions.size()) {
             return false;
         }
-        for (Object entry : properties.entrySet()) {
+        for (Entry<?, ?> entry : properties.entrySet()) {
+            assertInstanceOf(Set.class, entry.getValue());
             @SuppressWarnings("unchecked")
             Entry<?, Set<?>> e = (Entry<?, Set<?>>) entry;
             final Set<Value<?>> values = assertions

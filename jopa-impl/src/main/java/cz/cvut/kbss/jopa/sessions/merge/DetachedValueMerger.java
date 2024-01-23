@@ -19,8 +19,8 @@ package cz.cvut.kbss.jopa.sessions.merge;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.api.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 
 import java.util.Collection;
 import java.util.Map;

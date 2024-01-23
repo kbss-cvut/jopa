@@ -18,8 +18,8 @@
 package cz.cvut.kbss.jopa.sessions.merge;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.api.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 class ManagedTypeValueMerger implements ValueMerger {

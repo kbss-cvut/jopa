@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.sessions.merge;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.api.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 public class DefaultValueMerger implements ValueMerger {

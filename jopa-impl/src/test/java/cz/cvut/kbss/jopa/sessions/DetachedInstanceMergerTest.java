@@ -17,7 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.api.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
@@ -25,8 +25,8 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
-import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSetImpl;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,8 +37,13 @@ import org.mockito.quality.Strictness;
 
 import java.util.HashSet;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -71,7 +76,7 @@ public class DetachedInstanceMergerTest {
         final String updatedString = "updatedString";
         detached.setStringAttribute(updatedString);
         final ObjectChangeSet changeSet = createChangeSet(original, detached);
-        changeSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassA().stringAttribute(), updatedString));
+        changeSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassA().stringAttribute(), updatedString));
 
         final OWLClassA result = (OWLClassA) sut.mergeChangesFromDetachedToManagedInstance(changeSet, descriptor);
         assertEquals(updatedString, result.getStringAttribute());
@@ -83,7 +88,7 @@ public class DetachedInstanceMergerTest {
         final OWLClassA detached = new OWLClassA(original.getUri());
         detached.setTypes(original.getTypes());
         final ObjectChangeSet changeSet = createChangeSet(original, detached);
-        changeSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassA().stringAttribute(), null));
+        changeSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassA().stringAttribute(), null));
 
         final OWLClassA result = (OWLClassA) sut.mergeChangesFromDetachedToManagedInstance(changeSet, descriptor);
         assertNull(result.getStringAttribute());
@@ -100,7 +105,7 @@ public class DetachedInstanceMergerTest {
         newRefOrig.setStringAttribute(newRef.getStringAttribute());
         newRefOrig.setTypes(new HashSet<>(newRef.getTypes()));
         final ObjectChangeSet chSet = createChangeSet(orig, clone);
-        chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassD().owlClassAAtt(), newRef));
+        chSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassD().owlClassAAtt(), newRef));
         when(uow.readObject(OWLClassA.class, newRef.getUri(), descriptor)).thenReturn(newRefOrig);
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
 
@@ -111,6 +116,6 @@ public class DetachedInstanceMergerTest {
     }
 
     private ObjectChangeSet createChangeSet(Object original, Object clone) {
-        return new ObjectChangeSetImpl(original, clone, new EntityDescriptor());
+        return ChangeSetFactory.createObjectChangeSet(original, clone, new EntityDescriptor());
     }
 }

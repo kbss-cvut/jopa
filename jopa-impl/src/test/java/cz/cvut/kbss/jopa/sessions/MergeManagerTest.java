@@ -17,8 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.api.ObjectChangeSet;
-import cz.cvut.kbss.jopa.api.UnitOfWorkChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
@@ -27,20 +26,26 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
-import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSetImpl;
-import org.junit.jupiter.api.AfterEach;
+import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class MergeManagerTest {
 
     private static final URI DEFAULT_URI = URI.create("http://defaultContext");
@@ -69,18 +74,12 @@ class MergeManagerTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
-        this.uowChangeSet = new UnitOfWorkChangeSetImpl();
+        this.uowChangeSet = ChangeSetFactory.createUoWChangeSet();
         when(uow.getMetamodel()).thenReturn(metamodel);
         when(uow.getCloneBuilder()).thenReturn(cloneBuilder);
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodel);
         this.mm = new MergeManager(uow);
-    }
-
-    @AfterEach
-    void tearDown() {
-        uow.release();
     }
 
     @Test
@@ -91,7 +90,7 @@ class MergeManagerTest {
         final ObjectChangeSet chs = createChangeSet(orig, clone);
         clone.setStringAttribute("AnotherStringAttribute");
         chs.addChangeRecord(
-                new ChangeRecordImpl(metamodelMocks.forOwlClassB().stringAttribute(), clone.getStringAttribute()));
+                new ChangeRecord(metamodelMocks.forOwlClassB().stringAttribute(), clone.getStringAttribute()));
         mm.mergeChangesOnObject(chs);
         verify(cloneBuilder).mergeChanges(chs);
     }
@@ -106,7 +105,7 @@ class MergeManagerTest {
         uowChangeSet.addDeletedObjectChangeSet(createChangeSet(objTwo, cloneTwo));
         final ObjectChangeSet changeSet = createChangeSet(objOne, cloneOne);
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(metamodelMocks.forOwlClassB().stringAttribute(), cloneOne.getStringAttribute()));
+                new ChangeRecord(metamodelMocks.forOwlClassB().stringAttribute(), cloneOne.getStringAttribute()));
         uowChangeSet.addObjectChangeSet(changeSet);
         mm.mergeChangesFromChangeSet(uowChangeSet);
         verify(uow).removeObjectFromCache(objTwo, DEFAULT_URI);
@@ -144,8 +143,8 @@ class MergeManagerTest {
         final OWLClassD clone = new OWLClassD(original.getUri());
         clone.setOwlClassA(new OWLClassA(Generators.createIndividualIdentifier()));
         final ObjectChangeSet changeSet = createChangeSet(original, clone);
-        final ChangeRecordImpl record =
-                new ChangeRecordImpl(metamodelMocks.forOwlClassD().owlClassAAtt(), clone.getOwlClassA());
+        final ChangeRecord record =
+                new ChangeRecord(metamodelMocks.forOwlClassD().owlClassAAtt(), clone.getOwlClassA());
         record.preventCaching();
         changeSet.addChangeRecord(record);
         mm.mergeChangesOnObject(changeSet);
