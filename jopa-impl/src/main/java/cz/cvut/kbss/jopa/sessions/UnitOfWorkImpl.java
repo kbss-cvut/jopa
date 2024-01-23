@@ -18,11 +18,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectWrapper;
-import cz.cvut.kbss.jopa.api.ChangeManager;
 import cz.cvut.kbss.jopa.api.ChangeRecord;
-import cz.cvut.kbss.jopa.api.CloneBuilder;
-import cz.cvut.kbss.jopa.api.CloneConfiguration;
-import cz.cvut.kbss.jopa.api.MergeManager;
 import cz.cvut.kbss.jopa.api.ObjectChangeSet;
 import cz.cvut.kbss.jopa.api.UnitOfWork;
 import cz.cvut.kbss.jopa.api.UnitOfWorkChangeSet;
@@ -43,7 +39,7 @@ import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
-import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;
+import cz.cvut.kbss.jopa.sessions.change.ChangeCalculator;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptor;
@@ -106,7 +102,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     private final MergeManager mergeManager;
     private final CloneBuilder cloneBuilder;
-    private final ChangeManager changeManager;
+    private final ChangeCalculator changeCalculator;
     private final SparqlQueryFactory queryFactory;
     private final CriteriaBuilder criteriaFactory;
     private final IndirectWrapperHelper indirectWrapperHelper;
@@ -125,14 +121,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.newObjectsCloneToOriginal = createMap();
         this.instanceDescriptors = new IdentityHashMap<>();
         this.repoMap = new RepositoryMap();
-        this.cloneBuilder = new CloneBuilderImpl(this);
+        this.cloneBuilder = new CloneBuilder(this);
         this.indirectWrapperHelper = new IndirectWrapperHelper(this);
         this.cacheManager = parent.getLiveObjectCache();
         this.storage = acquireConnection();
         this.queryFactory = new SparqlQueryFactory(this, storage);
         this.criteriaFactory = new CriteriaBuilderImpl(this);
-        this.mergeManager = new MergeManagerImpl(this);
-        this.changeManager = new ChangeManagerImpl(this);
+        this.mergeManager = new MergeManager(this);
+        this.changeCalculator = new ChangeCalculator(this);
         this.inferredAttributeChangeValidator = new InferredAttributeChangeValidator(storage);
         this.isActive = true;
     }
@@ -663,7 +659,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             // Merge only the changed attributes
             ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
             // Have to check for inferred attribute changes before the actual merge
-            changeManager.calculateChanges(chSet);
+            changeCalculator.calculateChanges(chSet);
             chSet = processInferredValueChanges(chSet);
             if (chSet.hasChanges()) {
                 et.getLifecycleListenerManager().invokePreUpdateCallbacks(clone);
@@ -808,7 +804,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             }
             T source = (T) cloneBuilder.buildClone(original, new CloneConfiguration(descriptor, false));
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(source, object, descriptor);
-            changeManager.calculateChanges(chSet);
+            changeCalculator.calculateChanges(chSet);
             new RefreshInstanceMerger(indirectWrapperHelper).mergeChanges(chSet);
             revertTransactionalChanges(object, descriptor, chSet);
             registerClone(object, original, descriptor);

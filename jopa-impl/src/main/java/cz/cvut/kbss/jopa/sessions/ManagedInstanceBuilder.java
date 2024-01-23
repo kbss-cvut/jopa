@@ -1,6 +1,5 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.api.CloneConfiguration;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 
@@ -16,7 +15,7 @@ import java.lang.reflect.Field;
  */
 public class ManagedInstanceBuilder extends DefaultInstanceBuilder {
 
-    ManagedInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
+    ManagedInstanceBuilder(CloneBuilder builder, UnitOfWorkImpl uow) {
         super(builder, uow);
     }
 

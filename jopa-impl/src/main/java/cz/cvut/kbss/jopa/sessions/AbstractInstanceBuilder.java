@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.api.CloneConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,10 +28,10 @@ abstract class AbstractInstanceBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractInstanceBuilder.class);
 
-    protected final CloneBuilderImpl builder;
+    protected final CloneBuilder builder;
     protected final UnitOfWorkImpl uow;
 
-    AbstractInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
+    AbstractInstanceBuilder(CloneBuilder builder, UnitOfWorkImpl uow) {
         this.builder = builder;
         this.uow = uow;
     }

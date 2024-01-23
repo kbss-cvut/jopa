@@ -18,7 +18,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
-import cz.cvut.kbss.jopa.api.CloneConfiguration;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
@@ -38,7 +37,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
     private static final Class<?> singletonMapClass = Collections.singletonMap(null, null)
                                                                  .getClass();
 
-    MapInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
+    MapInstanceBuilder(CloneBuilder builder, UnitOfWorkImpl uow) {
         super(builder, uow);
     }
 
@@ -113,9 +112,9 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
     private Map<?, ?> buildSingletonClone(Object cloneOwner, Field field, Map<?, ?> orig,
                                           CloneConfiguration configuration) {
         Entry<?, ?> e = orig.entrySet().iterator().next();
-        Object key = CloneBuilderImpl.isImmutable(e.getKey()) ? e.getKey() :
+        Object key = CloneBuilder.isImmutable(e.getKey()) ? e.getKey() :
                      cloneObject(cloneOwner, field, e.getKey(), configuration);
-        Object value = CloneBuilderImpl.isImmutable(e.getValue()) ? e.getValue() :
+        Object value = CloneBuilder.isImmutable(e.getValue()) ? e.getValue() :
                        cloneObject(cloneOwner, field, e.getValue(), configuration);
         if ((value instanceof Collection || value instanceof Map) && !(value instanceof IndirectCollection)) {
             value = uow.createIndirectCollection(value, cloneOwner, field);
@@ -131,8 +130,8 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         final Map<Object, Object> m = (Map<Object, Object>) target;
         final Entry<?, ?> tmp = source.entrySet().iterator().next();
         // Note: If we encounter null -> null mapping first, the whole map will be treated as immutable type map, which can be incorrect
-        final boolean keyPrimitive = CloneBuilderImpl.isImmutable(tmp.getKey());
-        final boolean valuePrimitive = CloneBuilderImpl.isImmutable(tmp.getValue());
+        final boolean keyPrimitive = CloneBuilder.isImmutable(tmp.getKey());
+        final boolean valuePrimitive = CloneBuilder.isImmutable(tmp.getValue());
         for (Entry<?, ?> e : source.entrySet()) {
             Object key;
             Object value;

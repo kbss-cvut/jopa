@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.api.CloneConfiguration;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
@@ -40,7 +39,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultInstanceBuilder.class);
 
-    DefaultInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
+    DefaultInstanceBuilder(CloneBuilder builder, UnitOfWorkImpl uow) {
         super(builder, uow);
     }
 
@@ -51,7 +50,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
      */
     @Override
     Object buildClone(Object cloneOwner, Field field, Object original, CloneConfiguration config) {
-        if (CloneBuilderImpl.isImmutable(original)) {
+        if (CloneBuilder.isImmutable(original)) {
             return original;
         }
         final Class<?> javaClass = original.getClass();

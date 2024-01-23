@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.api.CloneConfiguration;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -36,7 +35,7 @@ class DateInstanceBuilderTest {
     private Field dateField;
     private Descriptor descriptor;
 
-    private final DateInstanceBuilder builder = new DateInstanceBuilder(mock(CloneBuilderImpl.class),
+    private final DateInstanceBuilder builder = new DateInstanceBuilder(mock(CloneBuilder.class),
             mock(UnitOfWorkImpl.class));
 
     @BeforeEach

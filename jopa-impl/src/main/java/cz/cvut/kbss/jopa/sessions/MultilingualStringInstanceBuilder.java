@@ -18,7 +18,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectMultilingualString;
-import cz.cvut.kbss.jopa.api.CloneConfiguration;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
@@ -26,7 +25,7 @@ import java.lang.reflect.Field;
 
 class MultilingualStringInstanceBuilder extends AbstractInstanceBuilder {
 
-    MultilingualStringInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
+    MultilingualStringInstanceBuilder(CloneBuilder builder, UnitOfWorkImpl uow) {
         super(builder, uow);
     }
 

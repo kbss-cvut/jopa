@@ -19,7 +19,6 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectList;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
-import cz.cvut.kbss.jopa.api.CloneConfiguration;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
@@ -60,7 +59,7 @@ public class CollectionInstanceBuilderTest {
 
     @BeforeEach
     public void setUp() {
-        CloneBuilderImpl cloneBuilder = new CloneBuilderImpl(uowMock);
+        CloneBuilder cloneBuilder = new CloneBuilder(uowMock);
         this.builder = new CollectionInstanceBuilder(cloneBuilder, uowMock);
         this.descriptor = new EntityDescriptor();
     }

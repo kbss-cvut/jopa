@@ -18,8 +18,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.api.ChangeRecord;
-import cz.cvut.kbss.jopa.api.CloneBuilder;
-import cz.cvut.kbss.jopa.api.MergeManager;
 import cz.cvut.kbss.jopa.api.ObjectChangeSet;
 import cz.cvut.kbss.jopa.api.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -27,13 +25,16 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.util.Objects;
 
-public class MergeManagerImpl implements MergeManager {
+/**
+ * Merges changes that are made to clones to the registered original objects and live object cache.
+ */
+public class MergeManager {
 
     private final UnitOfWorkImpl uow;
 
     private final CloneBuilder builder;
 
-    MergeManagerImpl(UnitOfWorkImpl session) {
+    MergeManager(UnitOfWorkImpl session) {
         this.uow = session;
         this.builder = session.getCloneBuilder();
     }
@@ -44,12 +45,17 @@ public class MergeManagerImpl implements MergeManager {
         uow.removeObjectFromCache(toDelete, changeSet.getEntityContext());
     }
 
-    @Override
-    public Object mergeChangesOnObject(ObjectChangeSet changeSet) {
+    /**
+     * Merge changes from one {@link ObjectChangeSet}, which represents the changes made to clone, into the original
+     * object.
+     *
+     * @param changeSet ObjectChangeSet containing changes on a single object
+     */
+    public void mergeChangesOnObject(ObjectChangeSet changeSet) {
         Objects.requireNonNull(changeSet);
         final Object clone = changeSet.getCloneObject();
         if (clone == null) {
-            return null;
+            return;
         }
         if (changeSet.getChangedObject() == null) {
             // If the original is null, then we may have a new object
@@ -63,7 +69,6 @@ public class MergeManagerImpl implements MergeManager {
             builder.mergeChanges(changeSet);
             updateCache(changeSet);
         }
-        return clone;
     }
 
     private void updateCache(ObjectChangeSet changeSet) {
@@ -81,7 +86,11 @@ public class MergeManagerImpl implements MergeManager {
         }
     }
 
-    @Override
+    /**
+     * Merge changes from the provided {@link UnitOfWorkChangeSet}.
+     *
+     * @param changeSet Change set from a single Unit of Work
+     */
     public void mergeChangesFromChangeSet(UnitOfWorkChangeSet changeSet) {
         Objects.requireNonNull(changeSet);
         for (ObjectChangeSet objectChangeSet : changeSet.getExistingObjectsChanges()) {
@@ -92,14 +101,15 @@ public class MergeManagerImpl implements MergeManager {
 
     }
 
-    @Override
+    /**
+     * Merge a newly created object represented by an {@link ObjectChangeSet} into the shared live object cache.
+     *
+     * @param changeSet ObjectChangeSet representing the new object
+     */
     public void mergeNewObject(ObjectChangeSet changeSet) {
         Objects.requireNonNull(changeSet);
-        if (!changeSet.isNew()) {
-            mergeChangesOnObject(changeSet);
-            return;
-        }
-        // Put the original object into the shared session cache
+        assert changeSet.isNew();
+        // Put the original object into the live object cache
         updateCache(changeSet);
     }
 }

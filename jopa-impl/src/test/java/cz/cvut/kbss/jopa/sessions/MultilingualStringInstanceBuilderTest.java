@@ -18,7 +18,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectMultilingualString;
-import cz.cvut.kbss.jopa.api.CloneConfiguration;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.MultilingualString;
@@ -41,7 +40,7 @@ class MultilingualStringInstanceBuilderTest {
 
     @BeforeEach
     void setUp() {
-        this.sut = new MultilingualStringInstanceBuilder(mock(CloneBuilderImpl.class), mock(UnitOfWorkImpl.class));
+        this.sut = new MultilingualStringInstanceBuilder(mock(CloneBuilder.class), mock(UnitOfWorkImpl.class));
     }
 
     @Test

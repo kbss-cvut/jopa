@@ -51,7 +51,7 @@ class MergeManagerTest {
     private UnitOfWorkImpl uow;
 
     @Mock
-    private CloneBuilderImpl cloneBuilder;
+    private CloneBuilder cloneBuilder;
 
     @Mock
     private MetamodelImpl metamodel;
@@ -60,7 +60,7 @@ class MergeManagerTest {
 
     private UnitOfWorkChangeSet uowChangeSet;
 
-    private MergeManagerImpl mm;
+    private MergeManager mm;
 
     @BeforeAll
     static void setUpBeforeClass() {
@@ -75,7 +75,7 @@ class MergeManagerTest {
         when(uow.getCloneBuilder()).thenReturn(cloneBuilder);
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodel);
-        this.mm = new MergeManagerImpl(uow);
+        this.mm = new MergeManager(uow);
     }
 
     @AfterEach
@@ -129,6 +129,7 @@ class MergeManagerTest {
         final OWLClassB newOne = new OWLClassB(Generators.createIndividualIdentifier());
         final OWLClassB clone = new OWLClassB(newOne.getUri());
         final ObjectChangeSet changeSet = createChangeSet(newOne, clone);
+        changeSet.setNew(true);
         mm.mergeNewObject(changeSet);
         verify(uow).putObjectIntoCache(newOne.getUri(), newOne, defaultDescriptor);
     }

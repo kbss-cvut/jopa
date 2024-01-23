@@ -17,7 +17,7 @@
  */
 package cz.cvut.kbss.jopa.feature;
 
-import cz.cvut.kbss.jopa.api.CloneConfiguration;
+import cz.cvut.kbss.jopa.sessions.CloneConfiguration;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassR;
@@ -69,7 +69,7 @@ public class EntityLifecycleListenersTest {
     private MetamodelImpl metamodelMock;
 
     @Mock
-    private CloneBuilderImpl cloneBuilderMock;
+    private CloneBuilder cloneBuilderMock;
 
     @Mock
     private ConnectionWrapper storageMock;

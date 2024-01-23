@@ -18,7 +18,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
-import cz.cvut.kbss.jopa.api.CloneConfiguration;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
@@ -48,7 +47,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     private static final Class<?> singletonSetClass = Collections.singleton(null).getClass();
     private static final Class<?> arrayAsListClass = Arrays.asList(null, null).getClass();
 
-    CollectionInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
+    CollectionInstanceBuilder(CloneBuilder builder, UnitOfWorkImpl uow) {
         super(builder, uow);
     }
 
@@ -145,7 +144,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                 tg.add(null);
                 continue;
             }
-            if (CloneBuilderImpl.isImmutable(elem)) {
+            if (CloneBuilder.isImmutable(elem)) {
                 tg.addAll(source);
                 break;
             }
@@ -173,7 +172,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             return arrayList;
         } else if (singletonListClass.isInstance(container) || singletonSetClass.isInstance(container)) {
             final Object element = container.iterator().next();
-            final Object elementClone = CloneBuilderImpl.isImmutable(element) ? element :
+            final Object elementClone = CloneBuilder.isImmutable(element) ? element :
                                         cloneCollectionElement(cloneOwner, field, element, configuration);
             return singletonListClass.isInstance(container) ? Collections.singletonList(elementClone) :
                    Collections.singleton(elementClone);

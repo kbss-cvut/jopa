@@ -18,7 +18,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
-import cz.cvut.kbss.jopa.api.CloneConfiguration;
 import cz.cvut.kbss.jopa.api.ObjectChangeSet;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
@@ -51,7 +50,7 @@ import static org.mockito.Mockito.*;
 
 public class CloneBuilderTest {
 
-    private CloneBuilderImpl builder;
+    private CloneBuilder builder;
 
     private OWLClassA entityA;
     private OWLClassB entityB;
@@ -105,7 +104,7 @@ public class CloneBuilderTest {
                 });
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodel);
-        this.builder = new CloneBuilderImpl(uow);
+        this.builder = new CloneBuilder(uow);
         initValues();
         final IndirectWrapperHelper cf = new IndirectWrapperHelper(uow);
         when(uow.createIndirectCollection(any(), any(), any())).thenAnswer(call -> {
