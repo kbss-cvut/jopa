@@ -28,7 +28,6 @@ import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
@@ -51,9 +50,8 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
                           final ConnectionWrapper connection, MetamodelProvider metamodelProvider) {
         super(query, connection);
-        this.resultType = Objects.requireNonNull(resultType, ErrorUtils.getNPXMessageSupplier("resultType"));
-        this.metamodelProvider = Objects
-                .requireNonNull(metamodelProvider, ErrorUtils.getNPXMessageSupplier("metamodelProvider"));
+        this.resultType = Objects.requireNonNull(resultType);
+        this.metamodelProvider = Objects.requireNonNull(metamodelProvider);
     }
 
     public void setUnitOfWork(UnitOfWork uow) {

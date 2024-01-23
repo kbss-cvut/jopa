@@ -36,7 +36,6 @@ import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,8 +89,8 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     public void persist(final Object entity, final Descriptor descriptor) {
         LOG.trace("Persisting instance of type {}.", entity.getClass());
         try {
-            Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-            Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+            Objects.requireNonNull(entity);
+            Objects.requireNonNull(descriptor);
             ensureOpen();
             checkClassIsValidEntity(entity.getClass());
 
@@ -173,8 +172,8 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     @Override
     public <T> T merge(final T entity, final Descriptor descriptor) {
         try {
-            Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-            Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+            Objects.requireNonNull(entity);
+            Objects.requireNonNull(descriptor);
             ensureOpen();
             checkClassIsValidEntity(entity.getClass());
 
@@ -288,9 +287,9 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     @Override
     public <T> T find(Class<T> cls, Object identifier, Descriptor descriptor) {
         try {
-            Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
-            Objects.requireNonNull(identifier, ErrorUtils.getNPXMessageSupplier("primaryKey"));
-            Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+            Objects.requireNonNull(cls);
+            Objects.requireNonNull(identifier);
+            Objects.requireNonNull(descriptor);
             ensureOpen();
             checkClassIsValidEntity(cls);
 
@@ -593,7 +592,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     @Override
     public UnitOfWorkImpl getCurrentPersistenceContext() {
         if (this.persistenceContext == null) {
-            this.persistenceContext = (UnitOfWorkImpl) serverSession.acquireUnitOfWork();
+            this.persistenceContext = serverSession.acquireUnitOfWork(configuration);
             persistenceContext.setEntityManager(this);
         }
         return this.persistenceContext;

@@ -27,7 +27,6 @@ import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.QueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.util.Objects;
 
@@ -57,13 +56,13 @@ public class SparqlQueryFactory implements QueryFactory {
 
     @Override
     public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
-        Objects.requireNonNull(sparql, ErrorUtils.getNPXMessageSupplier("sparql"));
+        Objects.requireNonNull(sparql);
 
         return createQueryImpl(sparql, resultClass, queryParser);
     }
 
     private <T> TypedQueryImpl<T> createQueryImpl(String query, Class<T> resultClass, QueryParser parser) {
-        Objects.requireNonNull(resultClass, ErrorUtils.getNPXMessageSupplier("resultClass"));
+        Objects.requireNonNull(resultClass);
 
         final TypedQueryImpl<T> tq = new TypedQueryImpl<>(parser.parseQuery(query), resultClass, connection, uow);
         tq.setUnitOfWork(uow);
@@ -72,8 +71,8 @@ public class SparqlQueryFactory implements QueryFactory {
 
     @Override
     public QueryImpl createNativeQuery(String sparql, String resultSetMapping) {
-        Objects.requireNonNull(sparql, ErrorUtils.getNPXMessageSupplier("sparql"));
-        Objects.requireNonNull(resultSetMapping, ErrorUtils.getNPXMessageSupplier("resultSetMapping"));
+        Objects.requireNonNull(sparql);
+        Objects.requireNonNull(resultSetMapping);
 
         final SparqlResultMapper mapper = uow.getResultSetMappingManager().getMapper(resultSetMapping);
         return new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper, uow);
@@ -88,7 +87,7 @@ public class SparqlQueryFactory implements QueryFactory {
 
     @Override
     public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
-        Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
+        Objects.requireNonNull(query);
         return createQueryImpl(query, resultClass, soqlQueryParser);
     }
 
