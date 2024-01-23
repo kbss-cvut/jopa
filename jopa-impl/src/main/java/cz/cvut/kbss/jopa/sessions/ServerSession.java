@@ -22,8 +22,6 @@ import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.query.NamedQueryManager;
-import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -33,7 +31,6 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,7 +52,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
     private Map<EntityTransaction, AbstractEntityManager> runningTransactions;
 
     ServerSession() {
-        super(new Configuration(Collections.emptyMap()));
+        super(new Configuration());
         this.metamodel = null;
     }
 
@@ -144,16 +141,6 @@ public class ServerSession extends AbstractSession implements Wrapper {
     @Override
     public boolean isEntityType(Class<?> cls) {
         return metamodel.isEntityType(cls);
-    }
-
-    @Override
-    public NamedQueryManager getNamedQueryManager() {
-        return metamodel.getNamedQueryManager();
-    }
-
-    @Override
-    public ResultSetMappingManager getResultSetMappingManager() {
-        return metamodel.getResultSetMappingManager();
     }
 
     @Override

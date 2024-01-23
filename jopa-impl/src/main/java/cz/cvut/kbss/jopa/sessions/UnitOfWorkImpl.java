@@ -32,8 +32,6 @@ import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.query.NamedQueryManager;
-import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;
@@ -110,7 +108,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private final CacheManager cacheManager;
 
     public UnitOfWorkImpl(AbstractSession parent, Configuration configuration) {
-        super(Objects.requireNonNull(configuration));
+        super(configuration);
         this.parent = Objects.requireNonNull(parent);
         this.cloneToOriginals = createMap();
         this.cloneMapping = cloneToOriginals.keySet();
@@ -738,16 +736,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     }
 
     @Override
-    public NamedQueryManager getNamedQueryManager() {
-        return parent.getNamedQueryManager();
-    }
-
-    @Override
-    public ResultSetMappingManager getResultSetMappingManager() {
-        return parent.getResultSetMappingManager();
-    }
-
-    @Override
     public Object registerExistingObject(Object entity, Descriptor descriptor) {
         return registerExistingObject(entity, descriptor, Collections.emptyList());
     }
@@ -960,7 +948,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     @Override
     public boolean isEntityType(Class<?> cls) {
-        return parent.isEntityType(cls);
+        return getMetamodel().isEntityType(cls);
     }
 
     @Override

@@ -22,28 +22,21 @@ import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 
+import java.util.Objects;
+
 /**
- * This is the implementation of the basic Session operations. Other more
- * specific methods are to be implemented in descendants.
+ * Defines common session-related methods.
  */
-public abstract class AbstractSession implements MetamodelProvider, ConfigurationHolder {
+abstract class AbstractSession implements MetamodelProvider, ConfigurationHolder {
 
     protected Configuration configuration;
 
     protected AbstractSession(Configuration configuration) {
-        this.configuration = configuration;
+        this.configuration = Objects.requireNonNull(configuration);
     }
 
     @Override
     public abstract MetamodelImpl getMetamodel();
-
-    /**
-     * This method just releases the live object cache. Subclasses are free to
-     * make additional cleanup.
-     */
-    public void release() {
-        getLiveObjectCache().evictAll();
-    }
 
     @Override
     public Configuration getConfiguration() {
@@ -55,7 +48,7 @@ public abstract class AbstractSession implements MetamodelProvider, Configuratio
      * <p>
      * This manager represents the second level cache.
      *
-     * @return Second level cache
+     * @return Second level cache manager
      */
     public abstract CacheManager getLiveObjectCache();
 
@@ -67,15 +60,20 @@ public abstract class AbstractSession implements MetamodelProvider, Configuratio
     protected abstract ConnectionWrapper acquireConnection();
 
     /**
-     * Gets an object managing named queries in this persistence unit.
+     * Gets {@link NamedQueryManager} for this persistence unit.
      *
-     * @return {@link NamedQueryManager}
+     * @return {@code NamedQueryManager}
      */
-    public abstract NamedQueryManager getNamedQueryManager();
+    public NamedQueryManager getNamedQueryManager() {
+        return getMetamodel().getNamedQueryManager();
+    }
 
     /**
-     * Gets the manager of SPARQL result set mapping instances.
-     * @return {@link ResultSetMappingManager}
+     * Gets the SPARQL result set mapping manager ({@link ResultSetMappingManager}) for this persistence unit.
+     *
+     * @return {@code ResultSetMappingManager}
      */
-    public abstract ResultSetMappingManager getResultSetMappingManager();
+    public ResultSetMappingManager getResultSetMappingManager() {
+        return getMetamodel().getResultSetMappingManager();
+    }
 }

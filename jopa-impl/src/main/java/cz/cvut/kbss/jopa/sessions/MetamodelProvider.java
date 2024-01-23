@@ -29,7 +29,7 @@ public interface MetamodelProvider {
     Metamodel getMetamodel();
 
     /**
-     * Checks whether the specified class is a managed (=entity) type.
+     * Checks whether the specified class is an entity type.
      *
      * @param cls The class to check
      * @return Whether type is managed
