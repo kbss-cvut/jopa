@@ -39,7 +39,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultInstanceBuilder.class);
 
-    DefaultInstanceBuilder(CloneBuilder builder, UnitOfWorkImpl uow) {
+    DefaultInstanceBuilder(CloneBuilder builder, UnitOfWork uow) {
         super(builder, uow);
     }
 

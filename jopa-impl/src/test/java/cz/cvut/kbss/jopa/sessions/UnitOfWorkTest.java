@@ -20,7 +20,6 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.adapters.IndirectMap;
 import cz.cvut.kbss.jopa.adapters.IndirectMultilingualString;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
-import cz.cvut.kbss.jopa.api.UnitOfWork;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
@@ -37,7 +36,7 @@ import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
@@ -91,7 +90,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -233,26 +231,26 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
 
     @Test
     void testGetState() {
-        assertEquals(State.NOT_MANAGED, uow.getState(entityA));
+        assertEquals(EntityState.NOT_MANAGED, uow.getState(entityA));
         OWLClassA toRemove = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
-        assertEquals(State.MANAGED, uow.getState(toRemove));
+        assertEquals(EntityState.MANAGED, uow.getState(toRemove));
         uow.removeObject(toRemove);
-        assertEquals(State.REMOVED, uow.getState(toRemove));
+        assertEquals(EntityState.REMOVED, uow.getState(toRemove));
         final OWLClassA stateTest = Generators.generateOwlClassAInstance();
         uow.registerNewObject(stateTest, descriptor);
-        assertEquals(State.MANAGED_NEW, uow.getState(stateTest));
+        assertEquals(EntityState.MANAGED_NEW, uow.getState(stateTest));
     }
 
     @Test
     void testGetStateWithDescriptor() {
-        assertEquals(State.NOT_MANAGED, uow.getState(entityA, descriptor));
+        assertEquals(EntityState.NOT_MANAGED, uow.getState(entityA, descriptor));
         OWLClassA toRemove = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
-        assertEquals(State.MANAGED, uow.getState(toRemove, descriptor));
+        assertEquals(EntityState.MANAGED, uow.getState(toRemove, descriptor));
         uow.removeObject(toRemove);
-        assertEquals(State.REMOVED, uow.getState(toRemove, descriptor));
+        assertEquals(EntityState.REMOVED, uow.getState(toRemove, descriptor));
         final OWLClassA stateTest = Generators.generateOwlClassAInstance();
         uow.registerNewObject(stateTest, descriptor);
-        assertEquals(State.MANAGED_NEW, uow.getState(stateTest, descriptor));
+        assertEquals(EntityState.MANAGED_NEW, uow.getState(stateTest, descriptor));
     }
 
     @Test
@@ -371,7 +369,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassA newOne = Generators.generateOwlClassAInstance();
         uow.registerNewObject(newOne, descriptor);
         assertTrue(uow.contains(newOne));
-        assertEquals(State.MANAGED_NEW, uow.getState(newOne));
+        assertEquals(EntityState.MANAGED_NEW, uow.getState(newOne));
         verify(storageMock, never()).persist(newOne.getUri(), newOne, descriptor);
     }
 
@@ -405,7 +403,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassB toRemove = (OWLClassB) uow.registerExistingObject(entityB, descriptor);
         uow.removeObject(toRemove);
         assertFalse(uow.contains(toRemove));
-        assertEquals(State.REMOVED, uow.getState(toRemove));
+        assertEquals(EntityState.REMOVED, uow.getState(toRemove));
         verify(storageMock).remove(entityB.getUri(), entityB.getClass(), descriptor);
     }
 
@@ -463,14 +461,6 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     void rollbackInactiveUoWThrowsIllegalStateException() {
         uow.release();
         assertThrows(IllegalStateException.class, () -> uow.rollback());
-    }
-
-    @Test
-    void exceptionDuringStorageCommitRemovesUoWFromEntityManagerAndRethrowsException() {
-        doThrow(OWLPersistenceException.class).when(storageMock).commit();
-
-        assertThrows(OWLPersistenceException.class, () -> uow.commit());
-        verify(emMock).removeCurrentPersistenceContext();
     }
 
     @Test
@@ -569,6 +559,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
 
     @Test
     void attributeChangedOutsideTransactionThrowsIllegalStateException() throws Exception {
+        uow.clear();
         final Field strField = OWLClassA.getStrAttField();
         assertThrows(IllegalStateException.class, () -> uow.attributeChanged(entityA, strField));
         verify(storageMock, never()).merge(any(OWLClassA.class), eq(metamodelMocks.forOwlClassA().stringAttribute()),

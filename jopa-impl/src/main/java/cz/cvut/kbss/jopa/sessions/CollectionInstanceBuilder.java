@@ -32,7 +32,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Special class for cloning collections. Introduced because some Java collection have no no-argument constructor and
@@ -47,7 +53,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     private static final Class<?> singletonSetClass = Collections.singleton(null).getClass();
     private static final Class<?> arrayAsListClass = Arrays.asList(null, null).getClass();
 
-    CollectionInstanceBuilder(CloneBuilder builder, UnitOfWorkImpl uow) {
+    CollectionInstanceBuilder(CloneBuilder builder, UnitOfWork uow) {
         super(builder, uow);
     }
 

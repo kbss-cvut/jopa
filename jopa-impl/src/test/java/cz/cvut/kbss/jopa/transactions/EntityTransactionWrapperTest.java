@@ -1,7 +1,9 @@
 package cz.cvut.kbss.jopa.transactions;
 
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
-import cz.cvut.kbss.jopa.api.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -10,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,6 +37,7 @@ class EntityTransactionWrapperTest {
         final InOrder inOrder = Mockito.inOrder(em);
         inOrder.verify(em).getCurrentPersistenceContext();
         inOrder.verify(em).transactionStarted(transaction);
+        verify(uow).begin();
     }
 
     @Test
@@ -43,6 +48,16 @@ class EntityTransactionWrapperTest {
         sut.commit();
         verify(uow).commit();
     }
+
+     @Test
+     void commitRemovesCurrentPersistenceContextFromEntityManagerWhenUoWCommitThrowsException() {
+         when(em.getCurrentPersistenceContext()).thenReturn(uow);
+         doThrow(new OWLPersistenceException("Commit exception.")).when(uow).commit();
+         sut.getTransaction();
+         sut.begin();
+         assertThrows(RollbackException.class, () -> sut.commit());
+         verify(em).removeCurrentPersistenceContext();
+     }
 
     @Test
     void transactionFinishedNotifiesEntityManagerOfTransactionFinish() {

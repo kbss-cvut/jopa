@@ -25,7 +25,7 @@ import java.lang.reflect.Field;
 
 class MultilingualStringInstanceBuilder extends AbstractInstanceBuilder {
 
-    MultilingualStringInstanceBuilder(CloneBuilder builder, UnitOfWorkImpl uow) {
+    MultilingualStringInstanceBuilder(CloneBuilder builder, UnitOfWork uow) {
         super(builder, uow);
     }
 

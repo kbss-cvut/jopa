@@ -26,11 +26,11 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
@@ -60,7 +60,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     private boolean open;
 
     private final EntityTransactionWrapper transaction;
-    private UnitOfWorkImpl persistenceContext;
+    private UnitOfWork persistenceContext;
     private final Configuration configuration;
 
     private Map<Object, Object> cascadingRegistry = new IdentityHashMap<>();
@@ -73,10 +73,6 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         this.transaction = new EntityTransactionWrapper(this);
 
         this.open = true;
-    }
-
-    public enum State {
-        MANAGED, MANAGED_NEW, NOT_MANAGED, REMOVED
     }
 
     @Override
@@ -573,11 +569,11 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         }
     }
 
-    private State getState(Object entity) {
+    private EntityState getState(Object entity) {
         return getCurrentPersistenceContext().getState(entity);
     }
 
-    private State getState(Object entity, Descriptor descriptor) {
+    private EntityState getState(Object entity, Descriptor descriptor) {
         return getCurrentPersistenceContext().getState(entity, descriptor);
     }
 
@@ -590,12 +586,11 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     @Override
-    public UnitOfWorkImpl getCurrentPersistenceContext() {
-        if (this.persistenceContext == null) {
+    public UnitOfWork getCurrentPersistenceContext() {
+        if (persistenceContext == null) {
             this.persistenceContext = serverSession.acquireUnitOfWork(configuration);
-            persistenceContext.setEntityManager(this);
         }
-        return this.persistenceContext;
+        return persistenceContext;
     }
 
     /**

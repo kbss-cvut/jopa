@@ -17,10 +17,12 @@
  */
 package cz.cvut.kbss.jopa.sessions.change;
 
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+
 import java.util.*;
 
 /**
- * A set of changes made in a {@link cz.cvut.kbss.jopa.api.UnitOfWork}.
+ * A set of changes made in a {@link UnitOfWork}.
  */
 public class UnitOfWorkChangeSet {
 

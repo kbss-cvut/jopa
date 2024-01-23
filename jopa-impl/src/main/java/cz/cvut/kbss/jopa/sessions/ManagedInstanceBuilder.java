@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 
@@ -15,15 +16,16 @@ import java.lang.reflect.Field;
  */
 public class ManagedInstanceBuilder extends DefaultInstanceBuilder {
 
-    ManagedInstanceBuilder(CloneBuilder builder, UnitOfWorkImpl uow) {
+    ManagedInstanceBuilder(CloneBuilder builder, UnitOfWork uow) {
         super(builder, uow);
     }
 
     @Override
     Object buildClone(Object cloneOwner, Field field, Object original, CloneConfiguration config) {
         assert uow.isEntityType(original.getClass());
-        final IdentifiableEntityType<?> et = uow.getMetamodel().entity(original.getClass());
-        final Class<?> cls = config.isForPersistenceContext() ? et.getInstantiableJavaType() : et.getJavaType();
+        final EntityType<?> et = uow.getMetamodel().entity(original.getClass());
+        assert et instanceof IdentifiableEntityType;
+        final Class<?> cls = config.isForPersistenceContext() ? ((IdentifiableEntityType<?>) et).getInstantiableJavaType() : et.getJavaType();
         return ReflectionUtils.instantiateUsingDefaultConstructor(cls);
     }
 }

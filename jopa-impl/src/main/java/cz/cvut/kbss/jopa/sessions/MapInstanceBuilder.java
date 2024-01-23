@@ -34,10 +34,9 @@ import java.util.Map.Entry;
 
 class MapInstanceBuilder extends AbstractInstanceBuilder {
 
-    private static final Class<?> singletonMapClass = Collections.singletonMap(null, null)
-                                                                 .getClass();
+    private static final Class<?> singletonMapClass = Collections.singletonMap(null, null).getClass();
 
-    MapInstanceBuilder(CloneBuilder builder, UnitOfWorkImpl uow) {
+    MapInstanceBuilder(CloneBuilder builder, UnitOfWork uow) {
         super(builder, uow);
     }
 
@@ -99,8 +98,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         } catch (IllegalAccessException e) {
             logConstructorAccessException(c, e);
             try {
-                result = (Map<?, ?>) AccessController
-                        .doPrivileged(new PrivilegedInstanceCreator(c));
+                result = (Map<?, ?>) AccessController.doPrivileged(new PrivilegedInstanceCreator(c));
             } catch (PrivilegedActionException ex) {
                 logPrivilegedConstructorAccessException(c, ex);
                 // Do nothing

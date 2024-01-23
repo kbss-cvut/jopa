@@ -27,7 +27,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -76,17 +75,6 @@ public class EntityTransactionImplTest {
     @Test
     public void testCommitNotActive() {
         assertThrows(IllegalStateException.class, () -> transaction.commit());
-    }
-
-    @Test
-    public void testCommitWithException() {
-        doThrow(RuntimeException.class).when(wrapperMock).commit();
-        transaction.begin();
-        try {
-            assertThrows(RuntimeException.class, () -> transaction.commit());
-        } finally {
-            verify(wrapperMock).rollback();
-        }
     }
 
     @Test

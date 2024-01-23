@@ -82,8 +82,8 @@ public abstract class UnitOfWorkTestBase {
         when(emMock.getConfiguration()).thenReturn(config);
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodelMock);
-        uow = new UnitOfWorkImpl(serverSessionStub, config);
-        uow.setEntityManager(emMock);
+        this.uow = new UnitOfWorkImpl(serverSessionStub, config);
+        uow.begin();
         final Field cbField = UnitOfWorkImpl.class.getDeclaredField("cloneBuilder");
         cbField.setAccessible(true);
         this.cloneBuilder = spy((CloneBuilder) cbField.get(uow));

@@ -17,8 +17,9 @@
  */
 package cz.cvut.kbss.jopa.transactions;
 
+import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
-import cz.cvut.kbss.jopa.api.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 /**
  * Wraps an {@link EntityTransaction} and mediates communication with the current persistence context and the {@link
@@ -43,11 +44,17 @@ public class EntityTransactionWrapper {
 
     void begin() {
         this.transactionUOW = entityManager.getCurrentPersistenceContext();
+        transactionUOW.begin();
         entityManager.transactionStarted(entityTransaction);
     }
 
     void commit() {
-        transactionUOW.commit();
+        try {
+            transactionUOW.commit();
+        } catch (RuntimeException e) {
+            rollback();
+            throw new RollbackException(e);
+        }
     }
 
     void transactionFinished() {

@@ -37,9 +37,9 @@ import java.util.Set;
  */
 class IndirectWrapperHelper {
 
-    private final UnitOfWorkImpl uow;
+    private final UnitOfWork uow;
 
-    IndirectWrapperHelper(UnitOfWorkImpl uow) {
+    IndirectWrapperHelper(UnitOfWork uow) {
         this.uow = uow;
     }
 

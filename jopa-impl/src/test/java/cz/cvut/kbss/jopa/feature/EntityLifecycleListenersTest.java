@@ -100,8 +100,8 @@ public class EntityLifecycleListenersTest {
         this.parentListenerMock = mocks.forOwlClassS().parentListener();
         this.concreteListenerMock = mocks.forOwlClassR().concreteListener();
         this.anotherListenerMock = mocks.forOwlClassR().anotherListener();
-        uow = new UnitOfWorkImpl(serverSessionStub, config);
-        uow.setEntityManager(emMock);
+        this.uow = new UnitOfWorkImpl(serverSessionStub, config);
+        uow.begin();
         TestEnvironmentUtils.setMock(uow, UnitOfWorkImpl.class.getDeclaredField("cloneBuilder"), cloneBuilderMock);
     }
 

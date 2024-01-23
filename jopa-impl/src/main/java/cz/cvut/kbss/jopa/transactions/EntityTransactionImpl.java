@@ -54,14 +54,8 @@ public class EntityTransactionImpl implements EntityTransaction {
             LOG.trace("EntityTransaction commit started.");
             if (rollbackOnly) {
                 throw new RollbackException("Trying to commit transaction marked as rollback only.");
-            } else {
-                try {
-                    wrapper.commit();
-                } catch (RuntimeException ex) {
-                    wrapper.rollback();
-                    throw new RollbackException(ex);
-                }
             }
+            wrapper.commit();
         } finally {
             wrapper.transactionFinished();
             cleanup();

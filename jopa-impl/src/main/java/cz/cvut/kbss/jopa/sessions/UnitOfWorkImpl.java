@@ -18,13 +18,10 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectWrapper;
-import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
-import cz.cvut.kbss.jopa.api.UnitOfWork;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.AbstractEntityManager;
-import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.Manageable;
@@ -40,6 +37,7 @@ import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeCalculator;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptorFactory;
@@ -90,13 +88,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     private boolean shouldReleaseAfterCommit;
     private boolean shouldClearCacheAfterCommit;
 
+    private boolean transactionActive;
     private boolean isActive;
     private boolean inCommit;
 
     private UnitOfWorkChangeSet uowChangeSet = ChangeSetFactory.createUoWChangeSet();
 
     private final AbstractSession parent;
-    private AbstractEntityManager entityManager;
     private final ConnectionWrapper storage;
 
     private final MergeManager mergeManager;
@@ -294,6 +292,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.repoMap = new RepositoryMap();
         repoMap.initDescriptors();
         this.uowChangeSet = ChangeSetFactory.createUoWChangeSet();
+        this.transactionActive = false;
     }
 
     private void detachAllManagedInstances() {
@@ -308,6 +307,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     public boolean contains(Object entity) {
         Objects.requireNonNull(entity);
         return isObjectManaged(entity);
+    }
+
+    @Override
+    public void begin() {
+        this.transactionActive = true;
     }
 
     @Override
@@ -366,7 +370,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             calculateChanges();
         }
         validateIntegrityConstraints();
-        storageCommit();
+        storage.commit();
     }
 
     private void persistNewObjects() {
@@ -392,48 +396,34 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         return new IdentityHashMap<>();
     }
 
-    /**
-     * Gets current state of the specified entity.
-     * <p>
-     * Note that since no repository is specified we can only determine if the entity is managed or removed. Therefore
-     * if the case is different this method returns State#NOT_MANAGED.
-     *
-     * @param entity The entity to check
-     * @return State of the entity
-     */
-    public State getState(Object entity) {
+    @Override
+    public EntityState getState(Object entity) {
         Objects.requireNonNull(entity);
 
         if (deletedObjects.containsKey(entity)) {
-            return State.REMOVED;
+            return EntityState.REMOVED;
         } else if (newObjectsCloneToOriginal.containsKey(entity)) {
-            return State.MANAGED_NEW;
+            return EntityState.MANAGED_NEW;
         } else if (cloneMapping.contains(entity)) {
-            return State.MANAGED;
+            return EntityState.MANAGED;
         } else {
-            return State.NOT_MANAGED;
+            return EntityState.NOT_MANAGED;
         }
     }
 
-    /**
-     * Checks the state of the specified entity with regards to the specified repository.
-     *
-     * @param entity     Object
-     * @param descriptor Entity descriptor
-     * @return The state of the specified entity
-     */
-    public State getState(Object entity, Descriptor descriptor) {
+    @Override
+    public EntityState getState(Object entity, Descriptor descriptor) {
         Objects.requireNonNull(entity);
         Objects.requireNonNull(descriptor);
 
         if (deletedObjects.containsKey(entity)) {
-            return State.REMOVED;
+            return EntityState.REMOVED;
         } else if (newObjectsCloneToOriginal.containsKey(entity) && isInRepository(descriptor, entity)) {
-            return State.MANAGED_NEW;
+            return EntityState.MANAGED_NEW;
         } else if (cloneMapping.contains(entity) && isInRepository(descriptor, entity)) {
-            return State.MANAGED;
+            return EntityState.MANAGED;
         } else {
-            return State.NOT_MANAGED;
+            return EntityState.NOT_MANAGED;
         }
     }
 
@@ -546,6 +536,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      * @throws IllegalStateException If this UoW is not in transaction
      * @see #attributeChanged(Object, FieldSpecification)
      */
+    @Override
     public void attributeChanged(Object entity, Field f) {
         final IdentifiableEntityType<Object> et = entityType((Class<Object>) entity.getClass());
         final FieldSpecification<Object, ?> fieldSpec = et.getFieldSpecification(f.getName());
@@ -555,10 +546,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     /**
      * Persists changed value of the specified field.
      *
-     * @param entity Entity with changes (the clone)
+     * @param entity    Entity with changes (the clone)
      * @param fieldSpec Metamodel element representing the attribute that changed
      * @throws IllegalStateException If this UoW is not in transaction
      */
+    @Override
     public void attributeChanged(Object entity, FieldSpecification<?, ?> fieldSpec) {
         if (!isInTransaction()) {
             throw new IllegalStateException("This unit of work is not in a transaction.");
@@ -897,11 +889,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         storage.persist(id, entity, getDescriptor(entity));
     }
 
-    /**
-     * Remove the registered object from this Unit of Work.
-     *
-     * @param object Clone of the original object
-     */
+    @Override
     public void unregisterObject(Object object) {
         if (object == null) {
             return;
@@ -930,10 +918,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.shouldClearCacheAfterCommit = shouldClearCache;
     }
 
-    public void setEntityManager(AbstractEntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
-
     @Override
     public void writeUncommittedChanges() {
         if (hasChanges()) {
@@ -957,14 +941,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     @Override
     public boolean isInTransaction() {
-        return entityManager != null && entityManager.getTransaction().isActive();
+        return transactionActive;
     }
 
-    /**
-     * Returns {@code true} if this UoW is currently committing changes.
-     *
-     * @return Whether this UoW is in the commit phase
-     */
+    @Override
     public boolean isInCommit() {
         return inCommit;
     }
@@ -1179,15 +1159,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
             throw new OWLPersistenceException("Unable to find descriptor of entity " + entity + " in this UoW!");
         }
         return descriptor;
-    }
-
-    private void storageCommit() {
-        try {
-            storage.commit();
-        } catch (OWLPersistenceException e) {
-            entityManager.removeCurrentPersistenceContext();
-            throw e;
-        }
     }
 
     @Override

@@ -200,7 +200,7 @@ class BugTest extends IntegrationTestBase {
     }
 
     @Test
-    void getterOnLazyAttributeWithNullValueAfterPersistDoesNotTriggerLazyFetch() {
+    void exceptionInCommitIsWrappedInRollbackException() {
         final OWLClassF owner = new OWLClassF(Generators.generateUri());
         final OWLClassA a = new OWLClassA();
         owner.setSimpleSet(new HashSet<>(Collections.singletonList(a)));

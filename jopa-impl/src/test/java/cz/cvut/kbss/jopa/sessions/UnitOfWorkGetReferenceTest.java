@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
@@ -24,7 +25,6 @@ import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.model.EntityManagerImpl;
 import cz.cvut.kbss.jopa.model.LoadState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,8 +100,8 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         final OWLClassA reference = new OWLClassA(entityA.getUri());
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
-        assertEquals(EntityManagerImpl.State.MANAGED, uow.getState(result));
-        assertEquals(EntityManagerImpl.State.MANAGED, uow.getState(result, descriptor));
+        assertEquals(EntityState.MANAGED, uow.getState(result));
+        assertEquals(EntityState.MANAGED, uow.getState(result, descriptor));
     }
 
     @Test
@@ -112,7 +112,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         assertTrue(uow.contains(result));
         uow.removeObject(result);
         assertFalse(uow.contains(result));
-        assertEquals(EntityManagerImpl.State.REMOVED, uow.getState(result));
+        assertEquals(EntityState.REMOVED, uow.getState(result));
         verify(storageMock).remove(entityA.getUri(), OWLClassA.class, descriptor);
     }
 

@@ -25,12 +25,14 @@ import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.api.QueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 import java.util.Objects;
 
-public class SparqlQueryFactory implements QueryFactory {
+/**
+ * Factory for creating SPARQL queries.
+ */
+public class SparqlQueryFactory {
 
     private final UnitOfWorkImpl uow;
     private final ConnectionWrapper connection;
@@ -47,14 +49,27 @@ public class SparqlQueryFactory implements QueryFactory {
         this.soqlQueryParser = new SoqlQueryParser(queryParser, uow.getMetamodel());
     }
 
-    @Override
+    /**
+     * Creates query object representing a native SPARQL query.
+     *
+     * @param sparql The query
+     * @return Query object
+     * @throws NullPointerException If {@code sparql} is {@code null}
+     */
     public QueryImpl createNativeQuery(String sparql) {
         Objects.requireNonNull(sparql);
 
         return new QueryImpl(queryParser.parseQuery(sparql), connection);
     }
 
-    @Override
+    /**
+     * Creates typed query object representing a native SPARQL query.
+     *
+     * @param sparql      The query
+     * @param resultClass Type of the results
+     * @return Query object
+     * @throws NullPointerException If {@code sparql} or {@code resultClass} is {@code null}
+     */
     public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
         Objects.requireNonNull(sparql);
 
@@ -69,7 +84,13 @@ public class SparqlQueryFactory implements QueryFactory {
         return tq;
     }
 
-    @Override
+    /**
+     * Creates a query object representing a native SPARQL query.
+     *
+     * @param sparql           The query
+     * @param resultSetMapping Name of the result set mapping to apply
+     * @return Query object * @throws NullPointerException If {@code sparql} or {@code resultSetMapping} is {@code null}
+     */
     public QueryImpl createNativeQuery(String sparql, String resultSetMapping) {
         Objects.requireNonNull(sparql);
         Objects.requireNonNull(resultSetMapping);
@@ -78,26 +99,54 @@ public class SparqlQueryFactory implements QueryFactory {
         return new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper, uow);
     }
 
-    @Override
+    /**
+     * Creates query object representing a native SPARQL query.
+     *
+     * @param query The query
+     * @return Query object
+     * @throws NullPointerException If {@code sparql} is {@code null}
+     */
     public QueryImpl createQuery(String query) {
         Objects.requireNonNull(query);
 
         return new QueryImpl(soqlQueryParser.parseQuery(query), connection);
     }
 
-    @Override
+    /**
+     * Creates typed query object representing a native SPARQL query.
+     *
+     * @param query       The query
+     * @param resultClass Type of the results param URI of the ontology context against which the query will be
+     *                    evaluated
+     * @return Query object
+     * @throws NullPointerException If {@code sparql} or {@code resultClass} is {@code null}
+     */
     public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
         Objects.requireNonNull(query);
         return createQueryImpl(query, resultClass, soqlQueryParser);
     }
 
-    @Override
+    /**
+     * Creates a query object representing a native SPARQL query.
+     *
+     * @param name The name of the query defined in metadata
+     * @return Query object
+     * @throws IllegalArgumentException If a query has not been defined with the given name
+     */
     public QueryImpl createNamedQuery(String name) {
         final String query = uow.getNamedQueryManager().getQuery(name);
         return createNativeQuery(query);
     }
 
-    @Override
+    /**
+     * Creates a typed query object representing a native SPARQL query.
+     *
+     * @param name        The name of the query defined in metadata
+     * @param resultClass Type of the results param URI of the ontology context against which the query will be
+     *                    evaluated
+     * @return Query object
+     * @throws IllegalArgumentException If a query has not been defined with the given name
+     */
     public <T> TypedQueryImpl<T> createNamedQuery(String name, Class<T> resultClass) {
         final String query = uow.getNamedQueryManager().getQuery(name);
         return createNativeQuery(query, resultClass);
