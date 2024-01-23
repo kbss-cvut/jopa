@@ -25,7 +25,7 @@ import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.sessions.QueryFactory;
+import cz.cvut.kbss.jopa.api.QueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 import java.util.Objects;

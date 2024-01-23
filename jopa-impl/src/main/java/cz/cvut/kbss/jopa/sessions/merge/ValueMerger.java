@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.sessions.merge;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
+import cz.cvut.kbss.jopa.api.ChangeRecord;
 
 @FunctionalInterface
 public interface ValueMerger {

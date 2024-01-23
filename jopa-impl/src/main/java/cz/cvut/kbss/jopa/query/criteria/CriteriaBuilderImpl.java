@@ -46,7 +46,7 @@ import cz.cvut.kbss.jopa.query.criteria.expressions.LowerFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.OrderImpl;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ParameterExpressionImpl;
 import cz.cvut.kbss.jopa.query.criteria.expressions.UpperFunction;
-import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 import java.util.Arrays;

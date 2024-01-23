@@ -17,8 +17,8 @@
  */
 package cz.cvut.kbss.jopa.sessions.change;
 
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
+import cz.cvut.kbss.jopa.api.ObjectChangeSet;
+import cz.cvut.kbss.jopa.api.UnitOfWorkChangeSet;
 
 import java.util.*;
 

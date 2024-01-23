@@ -17,6 +17,10 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.api.ChangeRecord;
+import cz.cvut.kbss.jopa.api.CloneBuilder;
+import cz.cvut.kbss.jopa.api.CloneConfiguration;
+import cz.cvut.kbss.jopa.api.ObjectChangeSet;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;

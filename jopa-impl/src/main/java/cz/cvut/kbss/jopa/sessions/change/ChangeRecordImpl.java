@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
+import cz.cvut.kbss.jopa.api.ChangeRecord;
 
 public class ChangeRecordImpl implements ChangeRecord {
 

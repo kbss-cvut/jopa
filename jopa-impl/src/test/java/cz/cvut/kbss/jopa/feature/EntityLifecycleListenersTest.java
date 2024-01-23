@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.feature;
 
+import cz.cvut.kbss.jopa.api.CloneConfiguration;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassR;

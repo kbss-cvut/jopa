@@ -17,6 +17,8 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.api.ChangeRecord;
+import cz.cvut.kbss.jopa.api.ObjectChangeSet;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.sessions.merge.DetachedValueMerger;
 import cz.cvut.kbss.jopa.sessions.merge.ValueMerger;

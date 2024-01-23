@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.transactions;
 
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.api.UnitOfWork;
 
 /**
  * Wraps an {@link EntityTransaction} and mediates communication with the current persistence context and the {@link

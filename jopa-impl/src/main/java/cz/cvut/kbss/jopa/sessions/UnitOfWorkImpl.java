@@ -18,6 +18,14 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectWrapper;
+import cz.cvut.kbss.jopa.api.ChangeManager;
+import cz.cvut.kbss.jopa.api.ChangeRecord;
+import cz.cvut.kbss.jopa.api.CloneBuilder;
+import cz.cvut.kbss.jopa.api.CloneConfiguration;
+import cz.cvut.kbss.jopa.api.MergeManager;
+import cz.cvut.kbss.jopa.api.ObjectChangeSet;
+import cz.cvut.kbss.jopa.api.UnitOfWork;
+import cz.cvut.kbss.jopa.api.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -32,6 +40,7 @@ import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;

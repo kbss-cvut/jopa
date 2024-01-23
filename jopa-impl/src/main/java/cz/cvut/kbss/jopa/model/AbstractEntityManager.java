@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.NonJPA;
 import cz.cvut.kbss.jopa.sessions.ConfigurationHolder;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.api.UnitOfWork;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 
 public interface AbstractEntityManager extends EntityManager, ConfigurationHolder {

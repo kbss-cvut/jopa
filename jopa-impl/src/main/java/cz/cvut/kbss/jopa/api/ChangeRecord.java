@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.sessions;
+package cz.cvut.kbss.jopa.api;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
