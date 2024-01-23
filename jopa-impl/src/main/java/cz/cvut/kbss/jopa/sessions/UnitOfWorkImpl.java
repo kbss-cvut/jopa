@@ -44,9 +44,12 @@ import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
 import cz.cvut.kbss.jopa.sessions.validator.InferredAttributeChangeValidator;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.MetamodelUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -66,6 +69,8 @@ import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator
 import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, ConfigurationHolder, Wrapper {
+
+    private static final Logger LOG = LoggerFactory.getLogger(UnitOfWorkImpl.class);
 
     // Read-only!!! It is just the keyset of cloneToOriginals
     private final Set<Object> cloneMapping;
@@ -104,8 +109,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
      */
     private final CacheManager cacheManager;
 
-    public UnitOfWorkImpl(AbstractSession parent) {
-        super(parent.getConfiguration());
+    public UnitOfWorkImpl(AbstractSession parent, Configuration configuration) {
+        super(Objects.requireNonNull(configuration));
         this.parent = Objects.requireNonNull(parent);
         this.cloneToOriginals = createMap();
         this.cloneMapping = cloneToOriginals.keySet();
@@ -127,11 +132,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     CloneBuilder getCloneBuilder() {
         return cloneBuilder;
-    }
-
-    @Override
-    public UnitOfWork acquireUnitOfWork() {
-        throw new UnsupportedOperationException("Nested UoWs are not supported.");
     }
 
     @Override
@@ -940,8 +940,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
 
     public void setEntityManager(AbstractEntityManager entityManager) {
         this.entityManager = entityManager;
-        // TODO This is a temporary workaround, configuration should be provided in constructor
-        this.configuration = entityManager.getConfiguration();
     }
 
     @Override

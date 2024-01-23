@@ -107,15 +107,16 @@ class EntityManagerImplTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        final Configuration config = new Configuration();
         this.serverSessionMock = spy(new ServerSessionStub(connectorMock));
         when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
         when(serverSessionMock.getLiveObjectCache()).thenReturn(new DisabledCacheManager());
-        this.uow = spy(new UnitOfWorkImpl(serverSessionMock));
-        doReturn(uow).when(serverSessionMock).acquireUnitOfWork();
+        this.uow = spy(new UnitOfWorkImpl(serverSessionMock, config));
+        doReturn(uow).when(serverSessionMock).acquireUnitOfWork(any());
         when(emfMock.getMetamodel()).thenReturn(metamodelMock);
         this.mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
-        this.em = new EntityManagerImpl(emfMock, new Configuration(Collections.emptyMap()), serverSessionMock);
+        this.em = new EntityManagerImpl(emfMock, config, serverSessionMock);
     }
 
     @Test

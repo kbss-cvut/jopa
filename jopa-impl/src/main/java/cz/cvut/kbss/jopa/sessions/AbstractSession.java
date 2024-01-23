@@ -21,29 +21,17 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This is the implementation of the basic Session operations. Other more
  * specific methods are to be implemented in descendants.
  */
-public abstract class AbstractSession implements Session, MetamodelProvider, ConfigurationHolder {
-
-    protected static final Logger LOG = LoggerFactory.getLogger(AbstractSession.class);
+public abstract class AbstractSession implements MetamodelProvider, ConfigurationHolder {
 
     protected Configuration configuration;
 
     protected AbstractSession(Configuration configuration) {
         this.configuration = configuration;
-    }
-
-    @Override
-    public UnitOfWork acquireUnitOfWork() {
-        // TODO UoW acquisition needs to be provided with configuration from EntityManager, because it may override the server session config
-        UnitOfWork uow = new UnitOfWorkImpl(this);
-        LOG.trace("UnitOfWork acquired.");
-        return uow;
     }
 
     @Override
@@ -53,7 +41,6 @@ public abstract class AbstractSession implements Session, MetamodelProvider, Con
      * This method just releases the live object cache. Subclasses are free to
      * make additional cleanup.
      */
-    @Override
     public void release() {
         getLiveObjectCache().evictAll();
     }

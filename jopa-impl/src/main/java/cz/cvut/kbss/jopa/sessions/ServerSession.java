@@ -30,8 +30,9 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -43,6 +44,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * It manages an accessor object, which performs the queries.
  */
 public class ServerSession extends AbstractSession implements Wrapper {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ServerSession.class);
 
     private final MetamodelImpl metamodel;
 
@@ -79,6 +82,17 @@ public class ServerSession extends AbstractSession implements Wrapper {
         this.liveObjectCache = CacheFactory.createCache(configuration.getProperties());
         liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
         this.storageAccessor = new DefaultStorageAccessor(storageProperties, configuration.getProperties());
+    }
+
+    /**
+     * Acquires a {@link UnitOfWork} instance to perform transactional operations.
+     *
+     * @return UnitOfWork instance
+     */
+    public UnitOfWorkImpl acquireUnitOfWork(Configuration configuration) {
+        final UnitOfWorkImpl uow = new UnitOfWorkImpl(this, configuration);
+        LOG.trace("UnitOfWork acquired.");
+        return uow;
     }
 
     @Override
@@ -120,11 +134,6 @@ public class ServerSession extends AbstractSession implements Wrapper {
             }
         }
         liveObjectCache.close();
-    }
-
-    @Override
-    public void removeObjectFromCache(Object object, URI context) {
-        // do nothing
     }
 
     @Override

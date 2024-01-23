@@ -32,7 +32,7 @@ import java.util.function.Consumer;
  * All interactions with objects managed in a persistence context are tracked by its corresponding UoW and on commit,
  * the UoW propagates them into the changes into the storage.
  */
-public interface UnitOfWork extends Session {
+public interface UnitOfWork {
 
     /**
      * Clears this Unit of Work.
@@ -99,11 +99,11 @@ public interface UnitOfWork extends Session {
      * <p>
      * The value is set on the entity.
      *
-     * @param entity The entity to load field for
-     * @param fieldSpec  Metamodel element representing the field to load
+     * @param entity    The entity to load field for
+     * @param fieldSpec Metamodel element representing the field to load
      * @throws NullPointerException    If {@code entity} or {@code field} is {@code null}
-     * @throws OWLPersistenceException If an error occurs, this may be e.g. that the field is not present on the
-     *                                 entity, an ontology access error occurred etc.
+     * @throws OWLPersistenceException If an error occurs, this may be e.g. that the field is not present on the entity,
+     *                                 an ontology access error occurred etc.
      */
     <T> void loadEntityField(T entity, FieldSpecification<? super T, ?> fieldSpec);
 
@@ -206,9 +206,20 @@ public interface UnitOfWork extends Session {
     void restoreRemovedObject(Object entity);
 
     /**
-     * Release the current unit of work. Calling this method disregards any changes made to clones.
+     * Removes the given object from the live object cache.
+     * <p>
+     * This is particularly meant for merging deleted objects from transactions.
+     *
+     * @param object  Object
+     * @param context Entity context URI
      */
-    @Override
+    void removeObjectFromCache(Object object, URI context);
+
+    /**
+     * Release the current unit of work.
+     *
+     * Calling this method disregards any changes made to clones.
+     */
     void release();
 
     /**

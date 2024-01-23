@@ -92,13 +92,14 @@ public class EntityLifecycleListenersTest {
         when(serverSessionStub.getLiveObjectCache()).thenReturn(mock(CacheManager.class));
         when(emMock.getTransaction()).thenReturn(transactionMock);
         when(transactionMock.isActive()).thenReturn(true);
-        when(emMock.getConfiguration()).thenReturn(new Configuration());
+        final Configuration config = new Configuration();
+        when(emMock.getConfiguration()).thenReturn(config);
         this.mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         this.parentListenerMock = mocks.forOwlClassS().parentListener();
         this.concreteListenerMock = mocks.forOwlClassR().concreteListener();
         this.anotherListenerMock = mocks.forOwlClassR().anotherListener();
-        uow = new UnitOfWorkImpl(serverSessionStub);
+        uow = new UnitOfWorkImpl(serverSessionStub, config);
         uow.setEntityManager(emMock);
         TestEnvironmentUtils.setMock(uow, UnitOfWorkImpl.class.getDeclaredField("cloneBuilder"), cloneBuilderMock);
     }

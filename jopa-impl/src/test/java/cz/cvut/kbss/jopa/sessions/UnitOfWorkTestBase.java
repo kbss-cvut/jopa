@@ -30,7 +30,6 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -73,17 +72,17 @@ public abstract class UnitOfWorkTestBase {
     protected UnitOfWorkImpl uow;
 
     protected void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         this.descriptor = new EntityDescriptor(CONTEXT_URI);
         this.serverSessionStub = spy(new ServerSessionStub(storageMock));
         when(serverSessionStub.getMetamodel()).thenReturn(metamodelMock);
         when(serverSessionStub.getLiveObjectCache()).thenReturn(cacheManagerMock);
         when(serverSessionStub.acquireConnection()).thenReturn(storageMock);
         when(emMock.getTransaction()).thenReturn(transactionMock);
-        when(emMock.getConfiguration()).thenReturn(new Configuration());
+        final Configuration config = new Configuration();
+        when(emMock.getConfiguration()).thenReturn(config);
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodelMock);
-        uow = new UnitOfWorkImpl(serverSessionStub);
+        uow = new UnitOfWorkImpl(serverSessionStub, config);
         uow.setEntityManager(emMock);
         final Field cbField = UnitOfWorkImpl.class.getDeclaredField("cloneBuilder");
         cbField.setAccessible(true);
