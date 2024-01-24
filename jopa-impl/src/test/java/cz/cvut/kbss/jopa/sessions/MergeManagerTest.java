@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
@@ -28,6 +27,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +53,7 @@ class MergeManagerTest {
     private static Descriptor defaultDescriptor;
 
     @Mock
-    private UnitOfWorkImpl uow;
+    private UnitOfWork uow;
 
     @Mock
     private CloneBuilder cloneBuilder;
@@ -76,10 +76,9 @@ class MergeManagerTest {
     void setUp() throws Exception {
         this.uowChangeSet = ChangeSetFactory.createUoWChangeSet();
         when(uow.getMetamodel()).thenReturn(metamodel);
-        when(uow.getCloneBuilder()).thenReturn(cloneBuilder);
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodel);
-        this.mm = new MergeManager(uow);
+        this.mm = new MergeManager(uow, cloneBuilder);
     }
 
     @Test

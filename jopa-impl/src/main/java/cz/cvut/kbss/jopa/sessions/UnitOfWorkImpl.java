@@ -47,7 +47,6 @@ import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.MetamodelUtils;
-import cz.cvut.kbss.jopa.utils.Wrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +67,7 @@ import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator
 import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.isNotInferred;
 import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
-public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, ConfigurationHolder, Wrapper {
+public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
     private static final Logger LOG = LoggerFactory.getLogger(UnitOfWorkImpl.class);
 
@@ -124,7 +123,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.storage = acquireConnection();
         this.queryFactory = new SparqlQueryFactory(this, storage);
         this.criteriaFactory = new CriteriaBuilderImpl(parent.getMetamodel());
-        this.mergeManager = new MergeManager(this);
+        this.mergeManager = new MergeManager(this, cloneBuilder);
         this.changeCalculator = new ChangeCalculator(this);
         this.inferredAttributeChangeValidator = new InferredAttributeChangeValidator(storage);
         this.isActive = true;
@@ -495,22 +494,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         return this.isActive;
     }
 
-    /**
-     * Returns true if the given clone represents a newly created object. Otherwise returns false.
-     *
-     * @param clone Object
-     * @return boolean
-     */
-    public boolean isObjectNew(Object clone) {
-        return clone != null && newObjectsCloneToOriginal.containsKey(clone);
+    @Override
+    public boolean isObjectNew(Object entity) {
+        return entity != null && newObjectsCloneToOriginal.containsKey(entity);
     }
 
-    /**
-     * Returns true if the given object is already managed.
-     *
-     * @param entity Object
-     * @return boolean
-     */
     @Override
     public boolean isObjectManaged(Object entity) {
         Objects.requireNonNull(entity);
@@ -518,14 +506,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         return cloneMapping.contains(entity) && !deletedObjects.containsKey(entity) || newObjectsCloneToOriginal.containsKey(entity);
     }
 
-    /**
-     * Persists changed value of the specified field.
-     *
-     * @param entity Entity with changes (the clone)
-     * @param f      The field whose value has changed
-     * @throws IllegalStateException If this UoW is not in transaction
-     * @see #attributeChanged(Object, FieldSpecification)
-     */
     @Override
     public void attributeChanged(Object entity, Field f) {
         final IdentifiableEntityType<Object> et = entityType((Class<Object>) entity.getClass());
@@ -533,13 +513,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         attributeChanged(entity, fieldSpec);
     }
 
-    /**
-     * Persists changed value of the specified field.
-     *
-     * @param entity    Entity with changes (the clone)
-     * @param fieldSpec Metamodel element representing the attribute that changed
-     * @throws IllegalStateException If this UoW is not in transaction
-     */
     @Override
     public void attributeChanged(Object entity, FieldSpecification<?, ?> fieldSpec) {
         if (!isInTransaction()) {
@@ -990,6 +963,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
     }
 
     @Override
+    public void putObjectIntoCache(Object identifier, Object entity, Descriptor descriptor) {
+        cacheManager.add(identifier, entity, descriptor);
+    }
+
+    @Override
     public void removeObjectFromCache(Object toRemove, URI context) {
         Objects.requireNonNull(toRemove);
 
@@ -1104,10 +1082,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
                 EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, indirectWrapper.unwrap());
             }
         }
-    }
-
-    void putObjectIntoCache(Object identifier, Object entity, Descriptor descriptor) {
-        cacheManager.add(identifier, entity, descriptor);
     }
 
     private Object getIdentifier(Object entity) {

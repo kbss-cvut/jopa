@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.sessions.merge;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 
 import java.util.Collection;
@@ -27,14 +27,14 @@ import java.util.Map;
 
 public class DetachedValueMerger implements ValueMerger {
 
-    private final UnitOfWorkImpl uow;
+    private final UnitOfWork uow;
 
     private final ValueMerger defaultValueMerger;
     private final ManagedTypeValueMerger managedTypeMerger;
     private final CollectionValueMerger collectionMerger;
     private final MapValueMerger mapValueMerger;
 
-    public DetachedValueMerger(UnitOfWorkImpl uow) {
+    public DetachedValueMerger(UnitOfWork uow) {
         assert uow != null;
         this.uow = uow;
         this.defaultValueMerger = new DefaultValueMerger();

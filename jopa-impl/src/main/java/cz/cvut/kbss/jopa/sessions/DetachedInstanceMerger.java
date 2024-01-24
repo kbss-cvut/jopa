@@ -27,7 +27,7 @@ class DetachedInstanceMerger {
 
     private final ValueMerger valueMerger;
 
-    DetachedInstanceMerger(UnitOfWorkImpl uow) {
+    DetachedInstanceMerger(UnitOfWork uow) {
         this.valueMerger = new DetachedValueMerger(uow);
     }
 

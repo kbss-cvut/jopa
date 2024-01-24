@@ -30,13 +30,13 @@ import java.util.Objects;
  */
 public class MergeManager {
 
-    private final UnitOfWorkImpl uow;
+    private final UnitOfWork uow;
 
     private final CloneBuilder builder;
 
-    MergeManager(UnitOfWorkImpl session) {
+    MergeManager(UnitOfWork session, CloneBuilder cloneBuilder) {
         this.uow = session;
-        this.builder = session.getCloneBuilder();
+        this.builder = cloneBuilder;
     }
 
     private void deleteObjectFromCache(ObjectChangeSet changeSet) {

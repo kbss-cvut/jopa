@@ -37,7 +37,7 @@ import java.util.function.Consumer;
  * All interactions with objects managed in a persistence context are tracked by its corresponding UoW and on commit,
  * the UoW propagates them into the repository.
  */
-public interface UnitOfWork extends MetamodelProvider, Wrapper {
+public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrapper {
 
     /**
      * Clears this Unit of Work.
@@ -97,9 +97,18 @@ public interface UnitOfWork extends MetamodelProvider, Wrapper {
      * repository.
      *
      * @param entity Object to check
-     * @return boolean
+     * @return {@code true} when the entity is managed, {@code false} otherwise
      */
     boolean isObjectManaged(Object entity);
+
+    /**
+     * Checks whether the specified entity has been registered in this Unit of Work as a new object for persist.
+     *
+     * @param entity Object to check
+     * @return {@code true} when entity is managed and new, {@code false} otherwise
+     * @see #isObjectManaged(Object)
+     */
+    boolean isObjectNew(Object entity);
 
     /**
      * Checks whether the specified repository context is consistent.
@@ -234,11 +243,20 @@ public interface UnitOfWork extends MetamodelProvider, Wrapper {
     void restoreRemovedObject(Object entity);
 
     /**
-     * Removes the given object from the live object cache.
+     * Puts the specified object into the live object cache.
+     *
+     * @param identifier Object identifier
+     * @param entity     Object to cache
+     * @param descriptor Descriptor of repository context
+     */
+    void putObjectIntoCache(Object identifier, Object entity, Descriptor descriptor);
+
+    /**
+     * Removes the specified object from the live object cache.
      * <p>
      * This is particularly meant for merging deleted objects from transactions.
      *
-     * @param object  Object
+     * @param object  Object to remove from cache
      * @param context Entity context URI
      */
     void removeObjectFromCache(Object object, URI context);

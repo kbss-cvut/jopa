@@ -40,6 +40,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.sessions.cache.DisabledCacheManager;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
@@ -94,7 +95,7 @@ class EntityManagerImplTest {
     @Mock
     private ConnectionWrapper connectorMock;
 
-    private UnitOfWorkImpl uow;
+    private UnitOfWork uow;
 
     @Mock
     private MetamodelImpl metamodelMock;
@@ -500,12 +501,8 @@ class EntityManagerImplTest {
         final CascadeCycleTwo cloneTwo = new CascadeCycleTwo(cTwo.uri);
         cloneOne.two = cloneTwo;
         cloneTwo.one = cloneOne;
-        doReturn(EntityState.MANAGED).doReturn(EntityState.REMOVED).when(uow)
-                                     .getState(cloneOne);
-        doReturn(EntityState.MANAGED).doReturn(EntityState.REMOVED).when(uow)
-                                     .getState(cloneTwo);
-        doReturn(cOne).when(uow).getOriginal(cloneOne);
-        doReturn(cTwo).when(uow).getOriginal(cloneTwo);
+        doReturn(EntityState.MANAGED).doReturn(EntityState.REMOVED).when(uow).getState(cloneOne);
+        doReturn(EntityState.MANAGED).doReturn(EntityState.REMOVED).when(uow).getState(cloneTwo);
         doNothing().when(uow).removeObject(any());
         em.remove(cloneOne);
         verify(uow).removeObject(cloneOne);

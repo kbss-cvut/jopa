@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.feature;
 
-import cz.cvut.kbss.jopa.sessions.CloneConfiguration;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassR;
@@ -32,10 +31,17 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.sessions.*;
+import cz.cvut.kbss.jopa.sessions.CacheManager;
+import cz.cvut.kbss.jopa.sessions.CloneBuilder;
+import cz.cvut.kbss.jopa.sessions.CloneConfiguration;
+import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
+import cz.cvut.kbss.jopa.sessions.LoadingParameters;
+import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
-import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +57,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Verifies entity lifecycle listener behavior w.r.t. the JPA 2.1 spec.
@@ -79,7 +93,7 @@ public class EntityLifecycleListenersTest {
 
     private MetamodelMocks mocks;
 
-    private UnitOfWorkImpl uow;
+    private UnitOfWork uow;
 
     private ParentListener parentListenerMock;
     private ConcreteListener concreteListenerMock;
