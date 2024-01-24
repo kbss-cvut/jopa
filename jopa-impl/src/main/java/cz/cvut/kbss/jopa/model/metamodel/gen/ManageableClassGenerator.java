@@ -6,7 +6,6 @@ import cz.cvut.kbss.jopa.model.metamodel.AnnotatedAccessor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -55,7 +54,7 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
         DynamicType.Unloaded<? extends T> typeDef = byteBuddy.subclass(entityClass)
                                                              .annotateType(entityClass.getAnnotations())
                                                              .annotateType(new GeneratedEntityClassImpl())
-                                                             .defineField("persistenceContext", UnitOfWorkImpl.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
+                                                             .defineField("persistenceContext", UnitOfWork.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
                                                              .implement(Manageable.class)
                                                              .intercept(FieldAccessor.ofBeanProperty())
                                                              .method(isSetter().and(new PersistentPropertySetterMatcher<>(entityClass)))

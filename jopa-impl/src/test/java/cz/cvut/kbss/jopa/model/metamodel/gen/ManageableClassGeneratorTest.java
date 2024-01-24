@@ -9,7 +9,7 @@ import cz.cvut.kbss.jopa.model.Manageable;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 class ManageableClassGeneratorTest {
 
     @Mock
-    private UnitOfWorkImpl uow;
+    private UnitOfWork uow;
 
     private MetamodelMocks metamodelMocks;
 
