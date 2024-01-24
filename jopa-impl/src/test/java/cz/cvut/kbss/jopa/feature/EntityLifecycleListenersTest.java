@@ -31,7 +31,6 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.CloneBuilder;
 import cz.cvut.kbss.jopa.sessions.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
@@ -61,7 +60,6 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -102,9 +100,6 @@ public class EntityLifecycleListenersTest {
     @BeforeEach
     public void setUp() throws Exception {
         this.descriptor = new EntityDescriptor();
-        final ServerSessionStub serverSessionStub = spy(new ServerSessionStub(storageMock));
-        when(serverSessionStub.getMetamodel()).thenReturn(metamodelMock);
-        when(serverSessionStub.getLiveObjectCache()).thenReturn(mock(CacheManager.class));
         when(emMock.getTransaction()).thenReturn(transactionMock);
         when(transactionMock.isActive()).thenReturn(true);
         final Configuration config = new Configuration();
@@ -114,6 +109,7 @@ public class EntityLifecycleListenersTest {
         this.parentListenerMock = mocks.forOwlClassS().parentListener();
         this.concreteListenerMock = mocks.forOwlClassR().concreteListener();
         this.anotherListenerMock = mocks.forOwlClassR().anotherListener();
+        final ServerSessionStub serverSessionStub = new ServerSessionStub(metamodelMock, storageMock);
         this.uow = new UnitOfWorkImpl(serverSessionStub, config);
         uow.begin();
         TestEnvironmentUtils.setMock(uow, UnitOfWorkImpl.class.getDeclaredField("cloneBuilder"), cloneBuilderMock);

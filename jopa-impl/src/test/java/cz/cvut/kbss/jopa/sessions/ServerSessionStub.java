@@ -19,13 +19,20 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.sessions.cache.DisabledCacheManager;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
+
+import static org.mockito.Mockito.spy;
 
 public class ServerSessionStub extends ServerSession {
 
     private final ConnectionWrapper connection;
 
-    public ServerSessionStub(ConnectionWrapper conn) {
+    private final CacheManager disabledCache = spy(new DisabledCacheManager());
+
+    public ServerSessionStub(MetamodelImpl metamodel, ConnectionWrapper conn) {
+        super(metamodel);
         this.connection = conn;
     }
 
@@ -41,5 +48,10 @@ public class ServerSessionStub extends ServerSession {
     @Override
     public void transactionStarted(EntityTransaction t, AbstractEntityManager em) {
         // Do nothing
+    }
+
+    @Override
+    public CacheManager getLiveObjectCache() {
+        return disabledCache;
     }
 }

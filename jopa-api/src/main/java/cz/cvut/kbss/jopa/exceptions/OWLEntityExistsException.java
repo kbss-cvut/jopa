@@ -22,8 +22,6 @@ package cz.cvut.kbss.jopa.exceptions;
  */
 public class OWLEntityExistsException extends OWLPersistenceException {
 
-    private static final long serialVersionUID = 453666323423782580L;
-
     public OWLEntityExistsException(String message) {
         super(message);
     }

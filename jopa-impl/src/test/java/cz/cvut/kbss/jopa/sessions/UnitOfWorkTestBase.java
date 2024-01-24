@@ -52,9 +52,6 @@ public abstract class UnitOfWorkTestBase {
     protected MetamodelImpl metamodelMock;
 
     @Mock
-    CacheManager cacheManagerMock;
-
-    @Mock
     ConnectionWrapper storageMock;
 
     @Mock
@@ -73,10 +70,7 @@ public abstract class UnitOfWorkTestBase {
 
     protected void setUp() throws Exception {
         this.descriptor = new EntityDescriptor(CONTEXT_URI);
-        this.serverSessionStub = spy(new ServerSessionStub(storageMock));
-        when(serverSessionStub.getMetamodel()).thenReturn(metamodelMock);
-        when(serverSessionStub.getLiveObjectCache()).thenReturn(cacheManagerMock);
-        when(serverSessionStub.acquireConnection()).thenReturn(storageMock);
+        this.serverSessionStub = spy(new ServerSessionStub(metamodelMock, storageMock));
         when(emMock.getTransaction()).thenReturn(transactionMock);
         final Configuration config = new Configuration();
         when(emMock.getConfiguration()).thenReturn(config);

@@ -411,5 +411,5 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      *
      * @return Criteria query builder
      */
-    CriteriaBuilder criteriaFactory();
+    CriteriaBuilder getCriteriaBuilder();
 }

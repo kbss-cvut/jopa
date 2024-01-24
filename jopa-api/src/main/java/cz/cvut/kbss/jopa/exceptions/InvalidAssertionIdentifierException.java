@@ -22,15 +22,8 @@ package cz.cvut.kbss.jopa.exceptions;
  */
 public class InvalidAssertionIdentifierException extends OWLPersistenceException {
 
-    public InvalidAssertionIdentifierException(String message) {
-        super(message);
-    }
-
     public InvalidAssertionIdentifierException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public InvalidAssertionIdentifierException(Throwable cause) {
-        super(cause);
-    }
 }

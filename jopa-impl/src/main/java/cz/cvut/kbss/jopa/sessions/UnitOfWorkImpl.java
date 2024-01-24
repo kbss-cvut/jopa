@@ -32,7 +32,6 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
-import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeCalculator;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
@@ -100,7 +99,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
     private final CloneBuilder cloneBuilder;
     private final ChangeCalculator changeCalculator;
     private final SparqlQueryFactory queryFactory;
-    private final CriteriaBuilder criteriaFactory;
     private final IndirectWrapperHelper indirectWrapperHelper;
     private final InferredAttributeChangeValidator inferredAttributeChangeValidator;
     /**
@@ -122,7 +120,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
         this.cacheManager = parent.getLiveObjectCache();
         this.storage = acquireConnection();
         this.queryFactory = new SparqlQueryFactory(this, storage);
-        this.criteriaFactory = new CriteriaBuilderImpl(parent.getMetamodel());
         this.mergeManager = new MergeManager(this, cloneBuilder);
         this.changeCalculator = new ChangeCalculator(this);
         this.inferredAttributeChangeValidator = new InferredAttributeChangeValidator(storage);
@@ -1013,8 +1010,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
         return queryFactory;
     }
 
-    public CriteriaBuilder criteriaFactory() {
-        return criteriaFactory;
+    public CriteriaBuilder getCriteriaBuilder() {
+        return parent.getCriteriaBuilder();
     }
 
     /**

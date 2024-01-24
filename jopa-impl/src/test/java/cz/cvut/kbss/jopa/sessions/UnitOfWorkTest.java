@@ -109,19 +109,19 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void readObjectWithNullIdentifierArgumentThrowsNullPointerException() {
         assertThrows(NullPointerException.class, () -> uow.readObject(entityA.getClass(), null, descriptor));
-        verify(cacheManagerMock, never()).get(any(), any(), any());
+        verify(serverSessionStub.getLiveObjectCache(), never()).get(any(), any(), any());
     }
 
     @Test
     void readObjectWithNullClassThrowsNullPointerException() {
         assertThrows(NullPointerException.class, () -> uow.readObject(null, entityB.getUri(), descriptor));
-        verify(cacheManagerMock, never()).get(any(), any(), any());
+        verify(serverSessionStub.getLiveObjectCache(), never()).get(any(), any(), any());
     }
 
     @Test
     void readObjectWithNullDescriptorThrowsNullPointerException() {
         assertThrows(NullPointerException.class, () -> uow.readObject(entityA.getClass(), entityA.getUri(), null));
-        verify(cacheManagerMock, never()).get(any(), any(), any());
+        verify(serverSessionStub.getLiveObjectCache(), never()).get(any(), any(), any());
     }
 
     @Test
@@ -160,7 +160,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.commit();
 
         ArgumentCaptor<Object> pks = ArgumentCaptor.forClass(Object.class);
-        verify(cacheManagerMock, times(3)).add(pks.capture(), any(Object.class), eq(descriptor));
+        verify(serverSessionStub.getLiveObjectCache(), times(3)).add(pks.capture(), any(Object.class), eq(descriptor));
         final Set<URI> uris = pks.getAllValues().stream().map(pk -> URI.create(pk.toString())).collect(
                 Collectors.toSet());
         assertTrue(uris.contains(entityA.getUri()));
@@ -185,7 +185,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.removeObject(toRemove);
         uow.commit();
 
-        verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
+        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
     }
 
     @Test
@@ -206,7 +206,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.commit();
 
         assertEquals(d.getOwlClassA().getUri(), newA.getUri());
-        verify(cacheManagerMock).add(eq(newA.getUri()), any(Object.class), eq(descriptor));
+        verify(serverSessionStub.getLiveObjectCache()).add(eq(newA.getUri()), any(Object.class), eq(descriptor));
     }
 
     @Test
@@ -350,7 +350,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void removeObjectFromCacheEvictsObjectFromCacheManager() {
         uow.removeObjectFromCache(entityB, descriptor.getSingleContext().orElse(null));
-        verify(cacheManagerMock).evict(OWLClassB.class, entityB.getUri(), descriptor.getSingleContext().orElse(null));
+        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassB.class, entityB.getUri(), descriptor.getSingleContext().orElse(null));
     }
 
     @Test
@@ -472,7 +472,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.setShouldClearAfterCommit(true);
         uow.commit();
 
-        verify(cacheManagerMock).evictAll();
+        verify(serverSessionStub.getLiveObjectCache()).evictAll();
     }
 
     @Test
@@ -726,7 +726,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         assertNotNull(merged);
         assertEquals(entityA.getStringAttribute(), merged.getStringAttribute());
         uow.commit();
-        verify(cacheManagerMock).add(entityA.getUri(), original, descriptor);
+        verify(serverSessionStub.getLiveObjectCache()).add(entityA.getUri(), original, descriptor);
     }
 
     @Test
@@ -931,7 +931,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.registerExistingObject(entityA, descriptor);
         uow.registerNewObject(entityB, descriptor);
         uow.commit();
-        verify(cacheManagerMock).evictInferredObjects();
+        verify(serverSessionStub.getLiveObjectCache()).evictInferredObjects();
     }
 
     @Test

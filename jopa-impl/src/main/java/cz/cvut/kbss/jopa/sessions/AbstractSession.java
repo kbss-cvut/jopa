@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.util.Objects;
@@ -52,4 +53,11 @@ abstract class AbstractSession implements MetamodelProvider, ConfigurationHolder
      * @return Connection
      */
     protected abstract ConnectionWrapper acquireConnection();
+
+    /**
+     * Gets a {@link CriteriaBuilder} instance for building Criteria API queries.
+     *
+     * @return Criteria query builder
+     */
+    public abstract CriteriaBuilder getCriteriaBuilder();
 }

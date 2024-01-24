@@ -22,6 +22,8 @@ import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -48,18 +50,21 @@ public class ServerSession extends AbstractSession implements Wrapper {
 
     private CacheManager liveObjectCache;
     private StorageAccessor storageAccessor;
+    private final CriteriaBuilder criteriaBuilder;
 
     private Map<EntityTransaction, AbstractEntityManager> runningTransactions;
 
-    ServerSession() {
+    ServerSession(MetamodelImpl metamodel) {
         super(new Configuration());
-        this.metamodel = null;
+        this.metamodel = metamodel;
+        this.criteriaBuilder = new CriteriaBuilderImpl(metamodel);
     }
 
     public ServerSession(OntologyStorageProperties storageProperties, Configuration configuration,
                          MetamodelImpl metamodel) {
         super(configuration);
         this.metamodel = metamodel;
+        this.criteriaBuilder = new CriteriaBuilderImpl(metamodel);
         initialize(storageProperties, configuration, metamodel);
     }
 
@@ -141,6 +146,11 @@ public class ServerSession extends AbstractSession implements Wrapper {
     @Override
     public boolean isEntityType(Class<?> cls) {
         return metamodel.isEntityType(cls);
+    }
+
+    @Override
+    public CriteriaBuilder getCriteriaBuilder() {
+        return criteriaBuilder;
     }
 
     @Override

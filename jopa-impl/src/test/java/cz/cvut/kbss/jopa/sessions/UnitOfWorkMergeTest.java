@@ -80,9 +80,9 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
 
     @Test
     void mergeDetachedEvictsInstanceFromCache() {
-        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
+        when(serverSessionStub.getLiveObjectCache().contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
         mergeDetachedTest();
-        verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
+        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
     }
 
     @Test
@@ -207,12 +207,12 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         final String detachedString = "detachedStringAttribute";
         detached.setStringAttribute(detachedString);
         when(storageMock.contains(managed.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
-        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
+        when(serverSessionStub.getLiveObjectCache().contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
 
         uow.mergeDetached(detached, descriptor);
-        verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), descriptor.getSingleContext().orElse(null));
-        verify(cacheManagerMock).evict(OWLClassD.class);
-        verify(cacheManagerMock).evict(OWLClassC.class);
+        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassA.class, entityA.getUri(), descriptor.getSingleContext().orElse(null));
+        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassD.class);
+        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassC.class);
     }
 
     @Test

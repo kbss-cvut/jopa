@@ -546,7 +546,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     @Override
     public CriteriaBuilder getCriteriaBuilder() {
-        return getCurrentPersistenceContext().criteriaFactory();
+        return getCurrentPersistenceContext().getCriteriaBuilder();
     }
 
     @Override

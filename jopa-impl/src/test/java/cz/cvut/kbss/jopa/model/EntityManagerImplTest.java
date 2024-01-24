@@ -42,7 +42,6 @@ import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import cz.cvut.kbss.jopa.sessions.cache.DisabledCacheManager;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
@@ -109,9 +108,7 @@ class EntityManagerImplTest {
     @BeforeEach
     void setUp() throws Exception {
         final Configuration config = new Configuration();
-        this.serverSessionMock = spy(new ServerSessionStub(connectorMock));
-        when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
-        when(serverSessionMock.getLiveObjectCache()).thenReturn(new DisabledCacheManager());
+        this.serverSessionMock = spy(new ServerSessionStub(metamodelMock, connectorMock));
         this.uow = spy(new UnitOfWorkImpl(serverSessionMock, config));
         doReturn(uow).when(serverSessionMock).acquireUnitOfWork(any());
         when(emfMock.getMetamodel()).thenReturn(metamodelMock);
