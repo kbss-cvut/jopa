@@ -17,7 +17,7 @@
  */
 package cz.cvut.kbss.jopa.query.mapper;
 
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class ResultRowMapper implements SparqlResultMapper {
     }
 
     @Override
-    public Object map(ResultRow resultRow, UnitOfWorkImpl uow) {
+    public Object map(ResultRow resultRow, UnitOfWork uow) {
         if (rowMappers.size() == 1) {
             return rowMappers.get(0).map(resultRow, uow);
         }

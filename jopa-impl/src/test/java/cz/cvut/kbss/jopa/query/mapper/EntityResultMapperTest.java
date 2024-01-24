@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ class EntityResultMapperTest {
     private ResultRow resultRow;
 
     @Mock
-    private UnitOfWorkImpl uowMock;
+    private UnitOfWork uowMock;
 
     @Mock
     private IdentifiableEntityType<OWLClassA> etMock;

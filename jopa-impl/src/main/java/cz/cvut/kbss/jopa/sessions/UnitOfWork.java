@@ -153,6 +153,19 @@ public interface UnitOfWork extends MetamodelProvider, Wrapper {
     <T> T readObject(Class<T> cls, Object identifier, Descriptor descriptor);
 
     /**
+     * Reads an object but does not register it with this persistence context.
+     * <p>
+     * Useful when the caller knows the object will be registered eventually by another routine.
+     *
+     * @param cls        Expected result class
+     * @param identifier Object identifier
+     * @param descriptor Entity descriptor
+     * @return The retrieved object or {@code null} if there is no object with the specified identifier in the specified
+     * repository
+     */
+    <T> T readObjectWithoutRegistration(Class<T> cls, Object identifier, Descriptor descriptor);
+
+    /**
      * Retrieves a reference to an object with the specified identifier.
      * <p>
      * A reference is permitted to have its state fetched lazily.

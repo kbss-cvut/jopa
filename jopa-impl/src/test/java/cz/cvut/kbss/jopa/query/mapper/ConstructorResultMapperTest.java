@@ -20,7 +20,7 @@ package cz.cvut.kbss.jopa.query.mapper;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
@@ -33,8 +33,13 @@ import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ConstructorResultMapperTest {
@@ -43,7 +48,7 @@ class ConstructorResultMapperTest {
     private ResultRow resultRow;
 
     @Mock
-    private UnitOfWorkImpl uowMock;
+    private UnitOfWork uowMock;
 
     @Test
     void mapRetrievesVariableValueAndUsesConstructorToCreateNewInstance() {

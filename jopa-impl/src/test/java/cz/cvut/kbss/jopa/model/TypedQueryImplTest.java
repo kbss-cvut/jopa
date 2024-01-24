@@ -28,7 +28,6 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
-import cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,8 +47,17 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -153,15 +161,6 @@ class TypedQueryImplTest extends QueryTestBase {
         final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         initDataForQuery(5);
         assertThrows(NoUniqueResultException.class, query::getSingleResult);
-    }
-
-    @Test
-    void throwsExceptionWhenLoadingEntityWithoutUoWSet() throws Exception {
-        final TypedQueryImpl<OWLClassA> query = new TypedQueryImpl<>(mock(SparqlQueryHolder.class), OWLClassA.class,
-                connectionWrapperMock, uowMock);
-        query.setEnsureOpenProcedure(ensureOpenProcedure);
-        initDataForQuery(5);
-        assertThrows(IllegalStateException.class, query::getResultList);
     }
 
     @Test

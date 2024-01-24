@@ -25,7 +25,7 @@ import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 import java.util.Objects;
 
@@ -34,13 +34,13 @@ import java.util.Objects;
  */
 public class SparqlQueryFactory {
 
-    private final UnitOfWorkImpl uow;
+    private final UnitOfWork uow;
     private final ConnectionWrapper connection;
 
     private final QueryParser queryParser;
     private final SoqlQueryParser soqlQueryParser;
 
-    public SparqlQueryFactory(UnitOfWorkImpl uow, ConnectionWrapper connection) {
+    public SparqlQueryFactory(UnitOfWork uow, ConnectionWrapper connection) {
         assert uow != null;
         assert connection != null;
         this.uow = uow;
@@ -79,9 +79,7 @@ public class SparqlQueryFactory {
     private <T> TypedQueryImpl<T> createQueryImpl(String query, Class<T> resultClass, QueryParser parser) {
         Objects.requireNonNull(resultClass);
 
-        final TypedQueryImpl<T> tq = new TypedQueryImpl<>(parser.parseQuery(query), resultClass, connection, uow);
-        tq.setUnitOfWork(uow);
-        return tq;
+        return new TypedQueryImpl<>(parser.parseQuery(query), resultClass, connection, uow);
     }
 
     /**

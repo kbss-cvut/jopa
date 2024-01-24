@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
@@ -59,7 +60,7 @@ public class ChangeCalculatorTest {
     @Mock
     private MetamodelProvider providerMock;
     @Mock
-    private Metamodel metamodelMock;
+    private MetamodelImpl metamodelMock;
 
     private MetamodelMocks metamodelMocks;
 

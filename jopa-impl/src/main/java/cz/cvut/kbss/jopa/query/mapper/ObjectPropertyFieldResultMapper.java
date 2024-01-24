@@ -20,7 +20,7 @@ package cz.cvut.kbss.jopa.query.mapper;
 import cz.cvut.kbss.jopa.model.annotations.FieldResult;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
@@ -43,7 +43,7 @@ class ObjectPropertyFieldResultMapper extends FieldResultMapper {
     }
 
     @Override
-    void map(ResultRow resultRow, Object target, UnitOfWorkImpl uow) {
+    void map(ResultRow resultRow, Object target, UnitOfWork uow) {
         final Optional<Object> id = getVariableValue(resultRow);
         id.ifPresent(idValue -> {
             final Object value = resolveValue(uow, idValue);
@@ -51,7 +51,7 @@ class ObjectPropertyFieldResultMapper extends FieldResultMapper {
         });
     }
 
-    private Object resolveValue(UnitOfWorkImpl uow, Object id) {
+    private Object resolveValue(UnitOfWork uow, Object id) {
         if (IdentifierTransformer.isValidIdentifierType(getFieldSpecification().getJavaType())) {
             return IdentifierTransformer.transformToIdentifier(id, getFieldSpecification().getJavaType());
         }

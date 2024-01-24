@@ -123,7 +123,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         this.cacheManager = parent.getLiveObjectCache();
         this.storage = acquireConnection();
         this.queryFactory = new SparqlQueryFactory(this, storage);
-        this.criteriaFactory = new CriteriaBuilderImpl(this);
+        this.criteriaFactory = new CriteriaBuilderImpl(parent.getMetamodel());
         this.mergeManager = new MergeManager(this);
         this.changeCalculator = new ChangeCalculator(this);
         this.inferredAttributeChangeValidator = new InferredAttributeChangeValidator(storage);
@@ -190,17 +190,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Confi
         return isInRepository(descriptor, clone) && !deletedObjects.containsKey(clone) ? cls.cast(clone) : null;
     }
 
-    /**
-     * Reads an object but does not register it with this persistence context.
-     * <p>
-     * Useful when the caller knows the object will be registered eventually by another routine.
-     *
-     * @param cls        Expected result class
-     * @param identifier Object identifier
-     * @param descriptor Entity descriptor
-     * @return The retrieved object or {@code null} if there is no object with the specified identifier in the specified
-     * repository
-     */
+    @Override
     public <T> T readObjectWithoutRegistration(Class<T> cls, Object identifier, Descriptor descriptor) {
         Objects.requireNonNull(cls);
         Objects.requireNonNull(identifier);

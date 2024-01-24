@@ -195,7 +195,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     }
 
     @Override
-    public Metamodel getMetamodel() {
+    public MetamodelImpl getMetamodel() {
         return this;
     }
 

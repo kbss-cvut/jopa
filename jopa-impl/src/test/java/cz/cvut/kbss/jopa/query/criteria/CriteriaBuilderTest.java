@@ -20,13 +20,13 @@ package cz.cvut.kbss.jopa.query.criteria;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.Order;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.Root;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,13 +46,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class CriteriaBuilderTest {
 
     @Mock
-    private UnitOfWorkImpl uowMock;
+    private UnitOfWork uowMock;
 
     private static CriteriaBuilder f;
 
@@ -71,7 +70,7 @@ public class CriteriaBuilderTest {
         when(metamodel.getEntities()).thenReturn(Collections.emptySet());
         when(mpp.isEntityType(any())).thenAnswer(inv -> metamodel.isEntityType(inv.getArgument(0)));
 
-        f = new CriteriaBuilderImpl(uowMock);
+        f = new CriteriaBuilderImpl(metamodel);
     }
 
     @Test
@@ -86,7 +85,7 @@ public class CriteriaBuilderTest {
 
     @Test
     public void testParameterNamedNullExpressionException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> f.parameter(null,"name"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> f.parameter(null, "name"));
     }
 
     @Test
@@ -114,7 +113,7 @@ public class CriteriaBuilderTest {
     public void testAndPredicateBooleanOperator() {
         CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
-        Predicate predicate = f.and(f.equal(root.getAttr("stringAttribute"),"value"));
+        Predicate predicate = f.and(f.equal(root.getAttr("stringAttribute"), "value"));
         assertEquals(Predicate.BooleanOperator.AND, predicate.getOperator());
     }
 
@@ -122,7 +121,7 @@ public class CriteriaBuilderTest {
     public void testOrPredicateBooleanOperator() {
         CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
-        Predicate predicate = f.or(f.equal(root.getAttr("stringAttribute"),"value"));
+        Predicate predicate = f.or(f.equal(root.getAttr("stringAttribute"), "value"));
         assertEquals(Predicate.BooleanOperator.OR, predicate.getOperator());
     }
 
@@ -130,7 +129,7 @@ public class CriteriaBuilderTest {
     public void testPredicateNegated() {
         CriteriaQuery<OWLClassA> query = f.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
-        Predicate predicate = f.not(f.equal(root.getAttr("stringAttribute"),"value"));
+        Predicate predicate = f.not(f.equal(root.getAttr("stringAttribute"), "value"));
         assertTrue(predicate.isNegated());
     }
 }

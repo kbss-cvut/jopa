@@ -17,9 +17,6 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.query.NamedQueryManager;
-import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.util.Objects;
@@ -34,9 +31,6 @@ abstract class AbstractSession implements MetamodelProvider, ConfigurationHolder
     protected AbstractSession(Configuration configuration) {
         this.configuration = Objects.requireNonNull(configuration);
     }
-
-    @Override
-    public abstract MetamodelImpl getMetamodel();
 
     @Override
     public Configuration getConfiguration() {
@@ -58,22 +52,4 @@ abstract class AbstractSession implements MetamodelProvider, ConfigurationHolder
      * @return Connection
      */
     protected abstract ConnectionWrapper acquireConnection();
-
-    /**
-     * Gets {@link NamedQueryManager} for this persistence unit.
-     *
-     * @return {@code NamedQueryManager}
-     */
-    public NamedQueryManager getNamedQueryManager() {
-        return getMetamodel().getNamedQueryManager();
-    }
-
-    /**
-     * Gets the SPARQL result set mapping manager ({@link ResultSetMappingManager}) for this persistence unit.
-     *
-     * @return {@code ResultSetMappingManager}
-     */
-    public ResultSetMappingManager getResultSetMappingManager() {
-        return getMetamodel().getResultSetMappingManager();
-    }
 }

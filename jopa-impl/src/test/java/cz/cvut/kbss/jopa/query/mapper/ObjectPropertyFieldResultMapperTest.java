@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassP;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +50,7 @@ class ObjectPropertyFieldResultMapperTest {
     private ResultRow resultRow;
 
     @Mock
-    private UnitOfWorkImpl uowMock;
+    private UnitOfWork uowMock;
 
     private MetamodelMocks metamodelMocks;
 
