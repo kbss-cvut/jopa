@@ -26,12 +26,6 @@ public enum DriverConfigParam implements ConfigurationParameter {
 
     AUTO_COMMIT(OntoDriverProperties.CONNECTION_AUTO_COMMIT),
     REASONER_FACTORY_CLASS(OntoDriverProperties.REASONER_FACTORY_CLASS),
-    /**
-     * @deprecated Ontology language should be set at persistence unit level. The driver uses language specified per
-     * {@link cz.cvut.kbss.ontodriver.model.Assertion}.
-     */
-    @Deprecated
-    ONTOLOGY_LANGUAGE(OntoDriverProperties.ONTOLOGY_LANGUAGE),
     USE_TRANSACTIONAL_ONTOLOGY(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY),
     MODULE_EXTRACTION_SIGNATURE(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE);
 
