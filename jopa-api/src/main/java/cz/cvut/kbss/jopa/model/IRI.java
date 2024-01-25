@@ -20,7 +20,7 @@ package cz.cvut.kbss.jopa.model;
 import java.net.URI;
 import java.util.Objects;
 
-public class IRI implements AnnotationValue {
+public class IRI {
 
     private final String value;
 

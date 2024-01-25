@@ -26,20 +26,27 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
-import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
-import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
-import cz.cvut.kbss.jopa.utils.*;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
+import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.Wrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
@@ -52,8 +59,8 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     private boolean open;
 
-    private TransactionWrapper transaction;
-    private UnitOfWorkImpl persistenceContext;
+    private final EntityTransactionWrapper transaction;
+    private UnitOfWork persistenceContext;
     private final Configuration configuration;
 
     private Map<Object, Object> cascadingRegistry = new IdentityHashMap<>();
@@ -63,13 +70,9 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         this.serverSession = serverSession;
         this.configuration = configuration;
 
-        setTransactionWrapper();
+        this.transaction = new EntityTransactionWrapper(this);
 
         this.open = true;
-    }
-
-    public enum State {
-        MANAGED, MANAGED_NEW, NOT_MANAGED, REMOVED
     }
 
     @Override
@@ -82,8 +85,8 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     public void persist(final Object entity, final Descriptor descriptor) {
         LOG.trace("Persisting instance of type {}.", entity.getClass());
         try {
-            Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-            Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+            Objects.requireNonNull(entity);
+            Objects.requireNonNull(descriptor);
             ensureOpen();
             checkClassIsValidEntity(entity.getClass());
 
@@ -165,8 +168,8 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     @Override
     public <T> T merge(final T entity, final Descriptor descriptor) {
         try {
-            Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-            Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+            Objects.requireNonNull(entity);
+            Objects.requireNonNull(descriptor);
             ensureOpen();
             checkClassIsValidEntity(entity.getClass());
 
@@ -280,9 +283,9 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     @Override
     public <T> T find(Class<T> cls, Object identifier, Descriptor descriptor) {
         try {
-            Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
-            Objects.requireNonNull(identifier, ErrorUtils.getNPXMessageSupplier("primaryKey"));
-            Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+            Objects.requireNonNull(cls);
+            Objects.requireNonNull(identifier);
+            Objects.requireNonNull(descriptor);
             ensureOpen();
             checkClassIsValidEntity(cls);
 
@@ -543,7 +546,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     @Override
     public CriteriaBuilder getCriteriaBuilder() {
-        return getCurrentPersistenceContext().criteriaFactory();
+        return getCurrentPersistenceContext().getCriteriaBuilder();
     }
 
     @Override
@@ -566,11 +569,11 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         }
     }
 
-    private State getState(Object entity) {
+    private EntityState getState(Object entity) {
         return getCurrentPersistenceContext().getState(entity);
     }
 
-    private State getState(Object entity, Descriptor descriptor) {
+    private EntityState getState(Object entity, Descriptor descriptor) {
         return getCurrentPersistenceContext().getState(entity, descriptor);
     }
 
@@ -583,12 +586,11 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     @Override
-    public UnitOfWorkImpl getCurrentPersistenceContext() {
-        if (this.persistenceContext == null) {
-            this.persistenceContext = (UnitOfWorkImpl) serverSession.acquireUnitOfWork();
-            persistenceContext.setEntityManager(this);
+    public UnitOfWork getCurrentPersistenceContext() {
+        if (persistenceContext == null) {
+            this.persistenceContext = serverSession.acquireUnitOfWork(configuration);
         }
-        return this.persistenceContext;
+        return persistenceContext;
     }
 
     /**
@@ -610,16 +612,6 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     @Override
     public void transactionFinished(EntityTransaction t) {
         this.serverSession.transactionFinished(t);
-    }
-
-    /**
-     * Since we support only EntityTransactions, we set the TransactionWrapper to EntityTransactionWrapper.
-     * <p>
-     * In the future, if JTA transactions are supported, JTATransactionWrapper should be set instead of the
-     * EntityTransactionWrapper.
-     */
-    private void setTransactionWrapper() {
-        this.transaction = new EntityTransactionWrapper(this);
     }
 
     @Override

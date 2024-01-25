@@ -17,21 +17,29 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.model.EntityState;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.model.EntityManagerImpl;
 import cz.cvut.kbss.jopa.model.LoadState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
 
     @BeforeEach
@@ -92,8 +100,8 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         final OWLClassA reference = new OWLClassA(entityA.getUri());
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
-        assertEquals(EntityManagerImpl.State.MANAGED, uow.getState(result));
-        assertEquals(EntityManagerImpl.State.MANAGED, uow.getState(result, descriptor));
+        assertEquals(EntityState.MANAGED, uow.getState(result));
+        assertEquals(EntityState.MANAGED, uow.getState(result, descriptor));
     }
 
     @Test
@@ -104,7 +112,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         assertTrue(uow.contains(result));
         uow.removeObject(result);
         assertFalse(uow.contains(result));
-        assertEquals(EntityManagerImpl.State.REMOVED, uow.getState(result));
+        assertEquals(EntityState.REMOVED, uow.getState(result));
         verify(storageMock).remove(entityA.getUri(), OWLClassA.class, descriptor);
     }
 
@@ -171,13 +179,13 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
         uow.removeObject(result);
         uow.commit();
-        verify(cacheManagerMock).evict(OWLClassA.class, reference.getUri(), descriptor.getSingleContext().orElse(null));
+        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassA.class, reference.getUri(), descriptor.getSingleContext().orElse(null));
     }
 
     @Test
     void getReferenceLoadsOriginalFromSecondLevelCacheWhenPresent() {
-        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
-        when(cacheManagerMock.get(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(entityA);
+        when(serverSessionStub.getLiveObjectCache().contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
+        when(serverSessionStub.getLiveObjectCache().get(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(entityA);
         final OWLClassA reference = new OWLClassA(entityA.getUri());
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
@@ -187,8 +195,8 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
     @Test
     void changesToGetReferenceResultAreMergedIntoOriginalInCache() {
         when(transactionMock.isActive()).thenReturn(true);
-        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
-        when(cacheManagerMock.get(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(entityA);
+        when(serverSessionStub.getLiveObjectCache().contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
+        when(serverSessionStub.getLiveObjectCache().get(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(entityA);
         final OWLClassA reference = new OWLClassA(entityA.getUri());
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassA a = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
@@ -201,14 +209,14 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
     @Test
     void uowCommitEvictsInstanceRetrievedUsingGetReferenceFromCacheWhenItWasNotPresentThereOnRetrieval() {
         when(transactionMock.isActive()).thenReturn(true);
-        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(false);
+        when(serverSessionStub.getLiveObjectCache().contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(false);
         final OWLClassA reference = new OWLClassA(entityA.getUri());
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassA a = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
         final String strValue = "string value";
         a.setStringAttribute(strValue);
         uow.commit();
-        verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), descriptor.getSingleContext().orElse(null));
+        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassA.class, entityA.getUri(), descriptor.getSingleContext().orElse(null));
     }
 
     @Test

@@ -24,7 +24,7 @@ import java.util.Date;
 
 class DateInstanceBuilder extends AbstractInstanceBuilder {
 
-    DateInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
+    DateInstanceBuilder(CloneBuilder builder, UnitOfWork uow) {
         super(builder, uow);
     }
 

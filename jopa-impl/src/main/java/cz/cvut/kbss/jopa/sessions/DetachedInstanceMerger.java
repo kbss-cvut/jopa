@@ -17,6 +17,8 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.sessions.merge.DetachedValueMerger;
 import cz.cvut.kbss.jopa.sessions.merge.ValueMerger;
@@ -25,7 +27,7 @@ class DetachedInstanceMerger {
 
     private final ValueMerger valueMerger;
 
-    DetachedInstanceMerger(UnitOfWorkImpl uow) {
+    DetachedInstanceMerger(UnitOfWork uow) {
         this.valueMerger = new DetachedValueMerger(uow);
     }
 

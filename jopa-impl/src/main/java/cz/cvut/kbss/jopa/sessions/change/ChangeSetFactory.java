@@ -18,8 +18,6 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
 
 public class ChangeSetFactory {
 
@@ -33,7 +31,7 @@ public class ChangeSetFactory {
      * @return New change set
      */
     public static UnitOfWorkChangeSet createUoWChangeSet() {
-        return new UnitOfWorkChangeSetImpl();
+        return new UnitOfWorkChangeSet();
     }
 
     /**

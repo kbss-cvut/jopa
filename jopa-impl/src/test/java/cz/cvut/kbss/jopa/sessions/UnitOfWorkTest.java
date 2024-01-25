@@ -36,7 +36,7 @@ import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
@@ -45,6 +45,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
@@ -52,8 +53,12 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -85,7 +90,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -93,6 +97,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class UnitOfWorkTest extends UnitOfWorkTestBase {
 
     @BeforeEach
@@ -103,19 +109,19 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void readObjectWithNullIdentifierArgumentThrowsNullPointerException() {
         assertThrows(NullPointerException.class, () -> uow.readObject(entityA.getClass(), null, descriptor));
-        verify(cacheManagerMock, never()).get(any(), any(), any());
+        verify(serverSessionStub.getLiveObjectCache(), never()).get(any(), any(), any());
     }
 
     @Test
     void readObjectWithNullClassThrowsNullPointerException() {
         assertThrows(NullPointerException.class, () -> uow.readObject(null, entityB.getUri(), descriptor));
-        verify(cacheManagerMock, never()).get(any(), any(), any());
+        verify(serverSessionStub.getLiveObjectCache(), never()).get(any(), any(), any());
     }
 
     @Test
     void readObjectWithNullDescriptorThrowsNullPointerException() {
         assertThrows(NullPointerException.class, () -> uow.readObject(entityA.getClass(), entityA.getUri(), null));
-        verify(cacheManagerMock, never()).get(any(), any(), any());
+        verify(serverSessionStub.getLiveObjectCache(), never()).get(any(), any(), any());
     }
 
     @Test
@@ -154,7 +160,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.commit();
 
         ArgumentCaptor<Object> pks = ArgumentCaptor.forClass(Object.class);
-        verify(cacheManagerMock, times(3)).add(pks.capture(), any(Object.class), eq(descriptor));
+        verify(serverSessionStub.getLiveObjectCache(), times(3)).add(pks.capture(), any(Object.class), eq(descriptor));
         final Set<URI> uris = pks.getAllValues().stream().map(pk -> URI.create(pk.toString())).collect(
                 Collectors.toSet());
         assertTrue(uris.contains(entityA.getUri()));
@@ -179,7 +185,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.removeObject(toRemove);
         uow.commit();
 
-        verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
+        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
     }
 
     @Test
@@ -200,7 +206,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.commit();
 
         assertEquals(d.getOwlClassA().getUri(), newA.getUri());
-        verify(cacheManagerMock).add(eq(newA.getUri()), any(Object.class), eq(descriptor));
+        verify(serverSessionStub.getLiveObjectCache()).add(eq(newA.getUri()), any(Object.class), eq(descriptor));
     }
 
     @Test
@@ -225,26 +231,26 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
 
     @Test
     void testGetState() {
-        assertEquals(State.NOT_MANAGED, uow.getState(entityA));
+        assertEquals(EntityState.NOT_MANAGED, uow.getState(entityA));
         OWLClassA toRemove = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
-        assertEquals(State.MANAGED, uow.getState(toRemove));
+        assertEquals(EntityState.MANAGED, uow.getState(toRemove));
         uow.removeObject(toRemove);
-        assertEquals(State.REMOVED, uow.getState(toRemove));
+        assertEquals(EntityState.REMOVED, uow.getState(toRemove));
         final OWLClassA stateTest = Generators.generateOwlClassAInstance();
         uow.registerNewObject(stateTest, descriptor);
-        assertEquals(State.MANAGED_NEW, uow.getState(stateTest));
+        assertEquals(EntityState.MANAGED_NEW, uow.getState(stateTest));
     }
 
     @Test
     void testGetStateWithDescriptor() {
-        assertEquals(State.NOT_MANAGED, uow.getState(entityA, descriptor));
+        assertEquals(EntityState.NOT_MANAGED, uow.getState(entityA, descriptor));
         OWLClassA toRemove = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
-        assertEquals(State.MANAGED, uow.getState(toRemove, descriptor));
+        assertEquals(EntityState.MANAGED, uow.getState(toRemove, descriptor));
         uow.removeObject(toRemove);
-        assertEquals(State.REMOVED, uow.getState(toRemove, descriptor));
+        assertEquals(EntityState.REMOVED, uow.getState(toRemove, descriptor));
         final OWLClassA stateTest = Generators.generateOwlClassAInstance();
         uow.registerNewObject(stateTest, descriptor);
-        assertEquals(State.MANAGED_NEW, uow.getState(stateTest, descriptor));
+        assertEquals(EntityState.MANAGED_NEW, uow.getState(stateTest, descriptor));
     }
 
     @Test
@@ -344,7 +350,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void removeObjectFromCacheEvictsObjectFromCacheManager() {
         uow.removeObjectFromCache(entityB, descriptor.getSingleContext().orElse(null));
-        verify(cacheManagerMock).evict(OWLClassB.class, entityB.getUri(), descriptor.getSingleContext().orElse(null));
+        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassB.class, entityB.getUri(), descriptor.getSingleContext().orElse(null));
     }
 
     @Test
@@ -363,7 +369,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassA newOne = Generators.generateOwlClassAInstance();
         uow.registerNewObject(newOne, descriptor);
         assertTrue(uow.contains(newOne));
-        assertEquals(State.MANAGED_NEW, uow.getState(newOne));
+        assertEquals(EntityState.MANAGED_NEW, uow.getState(newOne));
         verify(storageMock, never()).persist(newOne.getUri(), newOne, descriptor);
     }
 
@@ -397,7 +403,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassB toRemove = (OWLClassB) uow.registerExistingObject(entityB, descriptor);
         uow.removeObject(toRemove);
         assertFalse(uow.contains(toRemove));
-        assertEquals(State.REMOVED, uow.getState(toRemove));
+        assertEquals(EntityState.REMOVED, uow.getState(toRemove));
         verify(storageMock).remove(entityB.getUri(), entityB.getClass(), descriptor);
     }
 
@@ -458,14 +464,6 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void exceptionDuringStorageCommitRemovesUoWFromEntityManagerAndRethrowsException() {
-        doThrow(OWLPersistenceException.class).when(storageMock).commit();
-
-        assertThrows(OWLPersistenceException.class, () -> uow.commit());
-        verify(emMock).removeCurrentPersistenceContext();
-    }
-
-    @Test
     void testClearCacheAfterCommit() {
         uow.registerNewObject(entityA, descriptor);
         final Object clone = uow.registerExistingObject(entityB, descriptor);
@@ -474,7 +472,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.setShouldClearAfterCommit(true);
         uow.commit();
 
-        verify(cacheManagerMock).evictAll();
+        verify(serverSessionStub.getLiveObjectCache()).evictAll();
     }
 
     @Test
@@ -561,6 +559,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
 
     @Test
     void attributeChangedOutsideTransactionThrowsIllegalStateException() throws Exception {
+        uow.clear();
         final Field strField = OWLClassA.getStrAttField();
         assertThrows(IllegalStateException.class, () -> uow.attributeChanged(entityA, strField));
         verify(storageMock, never()).merge(any(OWLClassA.class), eq(metamodelMocks.forOwlClassA().stringAttribute()),
@@ -727,7 +726,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         assertNotNull(merged);
         assertEquals(entityA.getStringAttribute(), merged.getStringAttribute());
         uow.commit();
-        verify(cacheManagerMock).add(entityA.getUri(), original, descriptor);
+        verify(serverSessionStub.getLiveObjectCache()).add(entityA.getUri(), original, descriptor);
     }
 
     @Test
@@ -932,7 +931,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.registerExistingObject(entityA, descriptor);
         uow.registerNewObject(entityB, descriptor);
         uow.commit();
-        verify(cacheManagerMock).evictInferredObjects();
+        verify(serverSessionStub.getLiveObjectCache()).evictInferredObjects();
     }
 
     @Test

@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
-import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public abstract class AbstractComparisonExpression extends AbstractExpression<Boolean> {
 

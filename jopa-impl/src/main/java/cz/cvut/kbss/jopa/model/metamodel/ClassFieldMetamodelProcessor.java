@@ -357,9 +357,9 @@ class ClassFieldMetamodelProcessor<X> {
                                                                                 .propertyInfo(property)
                                                                                 .inferred(inference.inferred)
                                                                                 .includeExplicit(inference.includeExplicit)
-                                                                                .owlListClass(IRI.create(resolvePrefix(os.ClassOWLListIRI())))
-                                                                                .hasNextProperty(IRI.create(resolvePrefix(os.ObjectPropertyHasNextIRI())))
-                                                                                .hasContentsProperty(IRI.create(resolvePrefix(os.ObjectPropertyHasContentsIRI())))
+                                                                                .owlListClass(IRI.create(resolvePrefix(os.listClassIRI())))
+                                                                                .hasNextProperty(IRI.create(resolvePrefix(os.hasNextPropertyIRI())))
+                                                                                .hasContentsProperty(IRI.create(resolvePrefix(os.hasContentsPropertyIRI())))
                                                                                 .sequenceType(os.type());
         context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
         return builder.build();

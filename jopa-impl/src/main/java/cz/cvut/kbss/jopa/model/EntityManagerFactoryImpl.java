@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
-import cz.cvut.kbss.jopa.sessions.Cache;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -124,6 +124,13 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         if (serverSession == null) {
             this.serverSession = new ServerSession(storageProperties, configuration, metamodel);
         }
+    }
+
+    @Override
+    public CriteriaBuilder getCriteriaBuilder() {
+        ensureOpen();
+        initServerSession();
+        return serverSession.getCriteriaBuilder();
     }
 
     /**

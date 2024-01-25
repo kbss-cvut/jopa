@@ -24,7 +24,6 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.jopa.utils.Procedure;
 import cz.cvut.kbss.jopa.utils.ThrowingConsumer;
 import cz.cvut.kbss.ontodriver.ResultSet;
@@ -34,7 +33,12 @@ import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -56,8 +60,8 @@ abstract class AbstractQuery implements Query {
     };
 
     AbstractQuery(QueryHolder query, ConnectionWrapper connection) {
-        this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
-        this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
+        this.query = Objects.requireNonNull(query);
+        this.connection = Objects.requireNonNull(connection);
     }
 
     private void logQuery() {

@@ -20,19 +20,20 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.accessors.DefaultStorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
+import cz.cvut.kbss.jopa.model.CacheManager;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.query.NamedQueryManager;
-import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,22 +45,27 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ServerSession extends AbstractSession implements Wrapper {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ServerSession.class);
+
     private final MetamodelImpl metamodel;
 
     private CacheManager liveObjectCache;
     private StorageAccessor storageAccessor;
+    private final CriteriaBuilder criteriaBuilder;
 
     private Map<EntityTransaction, AbstractEntityManager> runningTransactions;
 
-    ServerSession() {
-        super(new Configuration(Collections.emptyMap()));
-        this.metamodel = null;
+    ServerSession(MetamodelImpl metamodel) {
+        super(new Configuration());
+        this.metamodel = metamodel;
+        this.criteriaBuilder = new CriteriaBuilderImpl(metamodel);
     }
 
     public ServerSession(OntologyStorageProperties storageProperties, Configuration configuration,
                          MetamodelImpl metamodel) {
         super(configuration);
         this.metamodel = metamodel;
+        this.criteriaBuilder = new CriteriaBuilderImpl(metamodel);
         initialize(storageProperties, configuration, metamodel);
     }
 
@@ -79,6 +85,17 @@ public class ServerSession extends AbstractSession implements Wrapper {
         this.liveObjectCache = CacheFactory.createCache(configuration.getProperties());
         liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
         this.storageAccessor = new DefaultStorageAccessor(storageProperties, configuration.getProperties());
+    }
+
+    /**
+     * Acquires a {@link UnitOfWork} instance to perform transactional operations.
+     *
+     * @return UnitOfWork instance
+     */
+    public UnitOfWork acquireUnitOfWork(Configuration configuration) {
+        final UnitOfWorkImpl uow = new UnitOfWorkImpl(this, configuration);
+        LOG.trace("UnitOfWork acquired.");
+        return uow;
     }
 
     @Override
@@ -123,11 +140,6 @@ public class ServerSession extends AbstractSession implements Wrapper {
     }
 
     @Override
-    public void removeObjectFromCache(Object object, URI context) {
-        // do nothing
-    }
-
-    @Override
     public MetamodelImpl getMetamodel() {
         return metamodel;
     }
@@ -138,13 +150,8 @@ public class ServerSession extends AbstractSession implements Wrapper {
     }
 
     @Override
-    public NamedQueryManager getNamedQueryManager() {
-        return metamodel.getNamedQueryManager();
-    }
-
-    @Override
-    public ResultSetMappingManager getResultSetMappingManager() {
-        return metamodel.getResultSetMappingManager();
+    public CriteriaBuilder getCriteriaBuilder() {
+        return criteriaBuilder;
     }
 
     @Override

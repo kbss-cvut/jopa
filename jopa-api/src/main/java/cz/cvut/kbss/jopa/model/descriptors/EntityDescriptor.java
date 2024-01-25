@@ -21,12 +21,16 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Describes an entity.
@@ -42,7 +46,7 @@ public class EntityDescriptor extends AbstractDescriptor {
     }
 
     /**
-     * Allows to configure where object property assertions should be stored
+     * Allows configuring where object property assertions should be stored
      *
      * @param assertionsInSubjectContext Whether object property assertions are stored in the subject's. Defaults to
      *                                   {@code true}. If {@code false}, object property assertions are stored in the
@@ -71,8 +75,8 @@ public class EntityDescriptor extends AbstractDescriptor {
 
     @Override
     public EntityDescriptor addAttributeDescriptor(FieldSpecification<?, ?> attribute, Descriptor descriptor) {
-        Objects.requireNonNull(attribute, ErrorUtils.getNPXMessageSupplier("attribute"));
-        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+        Objects.requireNonNull(attribute);
+        Objects.requireNonNull(descriptor);
 
         fieldDescriptors.put(attribute.getJavaField(), descriptor);
         return this;
@@ -80,7 +84,7 @@ public class EntityDescriptor extends AbstractDescriptor {
 
     @Override
     public EntityDescriptor addAttributeContext(FieldSpecification<?, ?> attribute, URI context) {
-        Objects.requireNonNull(attribute, ErrorUtils.getNPXMessageSupplier("attribute"));
+        Objects.requireNonNull(attribute);
 
         fieldDescriptors.putIfAbsent(attribute.getJavaField(),
                 createDescriptor(attribute, context != null ? Collections.singleton(context) : Collections.emptySet()));

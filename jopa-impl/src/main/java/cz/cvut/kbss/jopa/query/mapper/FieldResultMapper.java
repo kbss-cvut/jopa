@@ -25,7 +25,6 @@ import cz.cvut.kbss.jopa.model.metamodel.Converters;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
@@ -68,7 +67,7 @@ class FieldResultMapper {
      * @param resultRow Result set with value to map
      * @param target    Target object on which the field will be set
      */
-    void map(ResultRow resultRow, Object target, UnitOfWorkImpl uow) {
+    void map(ResultRow resultRow, Object target, UnitOfWork uow) {
         final Optional<Object> value = getVariableValue(resultRow);
         value.ifPresent(
                 val -> EntityPropertiesUtils.setFieldValue(fieldSpec.getJavaField(), target, resolveValue(val)));

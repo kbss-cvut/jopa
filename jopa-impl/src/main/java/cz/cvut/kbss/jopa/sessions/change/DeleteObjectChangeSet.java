@@ -18,8 +18,6 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 
 import java.net.URI;
 import java.util.Collections;
@@ -29,8 +27,7 @@ import java.util.Set;
 /**
  * Change set representing object deletion.
  * <p>
- * Supports only a subset of the {@link ObjectChangeSet} operations relevant for object removal during merge into parent
- * session.
+ * Supports only a subset of the {@link ObjectChangeSet} operations relevant for object removal.
  */
 public class DeleteObjectChangeSet implements ObjectChangeSet {
 

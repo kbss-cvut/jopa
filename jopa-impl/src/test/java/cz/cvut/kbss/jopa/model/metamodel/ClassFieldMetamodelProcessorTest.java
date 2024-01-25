@@ -469,7 +469,7 @@ class ClassFieldMetamodelProcessorTest {
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLClassWithRdfList")
     private static class OWLClassWithRdfList {
-        @Sequence(type = SequenceType.referenced, ClassOWLListIRI = "rdf:List",ObjectPropertyHasContentsIRI = "rdf:first", ObjectPropertyHasNextIRI = "rdf:rest")
+        @Sequence(type = SequenceType.referenced, listClassIRI = "rdf:List", hasContentsPropertyIRI = "rdf:first", hasNextPropertyIRI = "rdf:rest")
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "rdflist")
         private List<String> rdfList;
     }

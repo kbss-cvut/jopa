@@ -21,12 +21,10 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.sessions.ChangeManager;
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -40,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-public class ChangeManagerTest {
+public class ChangeCalculatorTest {
 
     private static final URI DEFAULT_CONTEXT = URI.create("http://defaultContext");
 
@@ -62,17 +60,17 @@ public class ChangeManagerTest {
     @Mock
     private MetamodelProvider providerMock;
     @Mock
-    private Metamodel metamodelMock;
+    private MetamodelImpl metamodelMock;
 
     private MetamodelMocks metamodelMocks;
 
-    private ChangeManager manager;
+    private ChangeCalculator manager;
 
     @BeforeEach
     public void setup() throws Exception {
         MockitoAnnotations.openMocks(this);
         initInstances();
-        manager = new ChangeManagerImpl(providerMock);
+        manager = new ChangeCalculator(providerMock);
         when(providerMock.isEntityType(any(Class.class))).thenAnswer(invocation -> {
             final Class<?> cls = (Class<?>) invocation.getArguments()[0];
             return TestEnvironmentUtils.getManagedTypes().contains(cls);

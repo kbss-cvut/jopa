@@ -18,10 +18,15 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.utils.Wrapper;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.function.Consumer;
@@ -30,9 +35,9 @@ import java.util.function.Consumer;
  * Represents a persistence context.
  * <p>
  * All interactions with objects managed in a persistence context are tracked by its corresponding UoW and on commit,
- * the UoW propagates them into the changes into the storage.
+ * the UoW propagates them into the repository.
  */
-public interface UnitOfWork extends Session {
+public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrapper {
 
     /**
      * Clears this Unit of Work.
@@ -40,7 +45,12 @@ public interface UnitOfWork extends Session {
     void clear();
 
     /**
-     * Commit changes to the ontology.
+     * Notifies this Unit of Work that a transaction has begun.
+     */
+    void begin();
+
+    /**
+     * Commit changes to the repository.
      */
     void commit();
 
@@ -52,10 +62,9 @@ public interface UnitOfWork extends Session {
     void rollback();
 
     /**
-     * Returns true if the specified entity is managed in the current persistence context. This method is used by the
-     * EntityManager's contains method.
+     * Checks whether the specified entity is managed in this Unit of Work.
      *
-     * @param entity Object
+     * @param entity Entity to check
      * @return {@literal true} if entity is managed, {@literal false} otherwise
      */
     boolean contains(Object entity);
@@ -68,27 +77,43 @@ public interface UnitOfWork extends Session {
     boolean isActive();
 
     /**
-     * Returns true if this {@code UnitOfWork} represents persistence context of a currently running transaction.
+     * Returns true if this {@code UnitOfWork} represents the persistence context of a currently running transaction.
      *
      * @return True if in an active transaction
      */
     boolean isInTransaction();
 
     /**
-     * Return true if the given entity is managed. This means it is either in the shared session cache or it is a new
-     * object ready for persist.
+     * Returns true if this Unit of Work is currently committing changes to the repository.
      *
-     * @param entity Object
-     * @return boolean
+     * @return {@code true} if the UoW is in commit, {@code false} otherwise
+     */
+    boolean isInCommit();
+
+    /**
+     * Return true if the given entity is managed.
+     * <p>
+     * This means it is tracked by this persistence context either as a new object or an existing object loaded from the
+     * repository.
+     *
+     * @param entity Object to check
+     * @return {@code true} when the entity is managed, {@code false} otherwise
      */
     boolean isObjectManaged(Object entity);
 
     /**
-     * Checks whether context specified by {@code context} is consistent.
-     * <p>
-     * Can be {@code null}, indicating that consistency of the whole repository should be checked.
+     * Checks whether the specified entity has been registered in this Unit of Work as a new object for persist.
      *
-     * @param context Context URI
+     * @param entity Object to check
+     * @return {@code true} when entity is managed and new, {@code false} otherwise
+     * @see #isObjectManaged(Object)
+     */
+    boolean isObjectNew(Object entity);
+
+    /**
+     * Checks whether the specified repository context is consistent.
+     *
+     * @param context Context URI, {@code null} indicates the whole repository should be checked
      * @return {@code true} if the context is consistent, {@code false} otherwise
      * @throws OWLPersistenceException If an ontology access error occurs
      */
@@ -99,11 +124,11 @@ public interface UnitOfWork extends Session {
      * <p>
      * The value is set on the entity.
      *
-     * @param entity The entity to load field for
-     * @param fieldSpec  Metamodel element representing the field to load
+     * @param entity    The entity to load field for
+     * @param fieldSpec Metamodel element representing the field to load
      * @throws NullPointerException    If {@code entity} or {@code field} is {@code null}
-     * @throws OWLPersistenceException If an error occurs, this may be e.g. that the field is not present on the
-     *                                 entity, an ontology access error occurred etc.
+     * @throws OWLPersistenceException If an error occurs, this may be e.g. that the field is not present on the entity,
+     *                                 an ontology access error occurred etc.
      */
     <T> void loadEntityField(T entity, FieldSpecification<? super T, ?> fieldSpec);
 
@@ -135,6 +160,19 @@ public interface UnitOfWork extends Session {
      * @throws OWLPersistenceException If an error occurs during object loading
      */
     <T> T readObject(Class<T> cls, Object identifier, Descriptor descriptor);
+
+    /**
+     * Reads an object but does not register it with this persistence context.
+     * <p>
+     * Useful when the caller knows the object will be registered eventually by another routine.
+     *
+     * @param cls        Expected result class
+     * @param identifier Object identifier
+     * @param descriptor Entity descriptor
+     * @return The retrieved object or {@code null} if there is no object with the specified identifier in the specified
+     * repository
+     */
+    <T> T readObjectWithoutRegistration(Class<T> cls, Object identifier, Descriptor descriptor);
 
     /**
      * Retrieves a reference to an object with the specified identifier.
@@ -189,10 +227,9 @@ public interface UnitOfWork extends Session {
     void registerNewObject(Object object, Descriptor descriptor);
 
     /**
-     * Remove the given object. Calling this method causes the entity to be removed from the shared cache and a delete
-     * query is initiated on the ontology.
+     * Remove the given object from the repository.
      *
-     * @param object Object
+     * @param object Object to remove
      */
     void removeObject(Object object);
 
@@ -206,19 +243,54 @@ public interface UnitOfWork extends Session {
     void restoreRemovedObject(Object entity);
 
     /**
-     * Release the current unit of work. Calling this method disregards any changes made to clones.
+     * Puts the specified object into the live object cache.
+     *
+     * @param identifier Object identifier
+     * @param entity     Object to cache
+     * @param descriptor Descriptor of repository context
      */
-    @Override
+    void putObjectIntoCache(Object identifier, Object entity, Descriptor descriptor);
+
+    /**
+     * Removes the specified object from the live object cache.
+     * <p>
+     * This is particularly meant for merging deleted objects from transactions.
+     *
+     * @param object  Object to remove from cache
+     * @param context Entity context URI
+     */
+    void removeObjectFromCache(Object object, URI context);
+
+    /**
+     * Release the current unit of work.
+     * <p>
+     * Calling this method disregards any changes.
+     */
     void release();
 
     /**
-     * Refreshes state of the object from the storage, overwriting any changes made to it.
+     * Refreshes the state of the specified object from the repository, overwriting any changes made to it.
      *
      * @param object The object to revert
      * @param <T>    Object type
      * @throws IllegalArgumentException If the object is not managed
      */
     <T> void refreshObject(T object);
+
+    /**
+     * Finds clone of the specified original object.
+     *
+     * @param original The original object whose clone we are looking for
+     * @return The clone or null, if there is none
+     */
+    Object getCloneForOriginal(Object original);
+
+    /**
+     * Detaches the specified registered object from this Unit of Work.
+     *
+     * @param object Clone to detach
+     */
+    void unregisterObject(Object object);
 
     /**
      * This method returns true, if the UnitOfWork should be released after the commit call. This is done for inferred
@@ -229,8 +301,7 @@ public interface UnitOfWork extends Session {
     boolean shouldReleaseAfterCommit();
 
     /**
-     * Writes any uncommitted changes into the ontology. This method may be useful when flushing entity manager or
-     * closing sessions, because we don't want to let the changes to get lost.
+     * Writes any uncommitted changes into the ontology.
      */
     void writeUncommittedChanges();
 
@@ -261,6 +332,27 @@ public interface UnitOfWork extends Session {
     LoadState isLoaded(Object entity);
 
     /**
+     * Gets the lifecycle state of the specified entity.
+     * <p>
+     * Note that since no repository is specified we can only determine if the entity is managed or removed. Therefore,
+     * if the case is different this method returns {@link EntityState#NOT_MANAGED}.
+     *
+     * @param entity Entity whose state to resolve
+     * @return Entity state
+     */
+    EntityState getState(Object entity);
+
+    /**
+     * Gets the lifecycle state of the specified entity with respect to a repository context indicated by the specified
+     * descriptor.
+     *
+     * @param entity     Entity whose state to resolve
+     * @param descriptor Descriptor of repository contexts
+     * @return Entity state
+     */
+    EntityState getState(Object entity, Descriptor descriptor);
+
+    /**
      * Checks whether the specified attribute value of the specified entity is inferred in the underlying repository.
      * <p>
      * Note that given the nature of the repository implementation, this method may return true if the corresponding
@@ -273,5 +365,51 @@ public interface UnitOfWork extends Session {
      * @param value     The value whose inference to examine
      * @return {@code true} if the entity attribute value is inferred, {@code false} otherwise
      */
-    <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value);
+    <T>
+
+    boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value);
+
+    /**
+     * Persists changed value of the specified field.
+     *
+     * @param entity Entity with changes (the clone)
+     * @param f      The field whose value has changed
+     * @throws IllegalStateException If this UoW is not in transaction
+     * @see #attributeChanged(Object, FieldSpecification)
+     */
+    void attributeChanged(Object entity, Field f);
+
+    /**
+     * Persists changed value of the specified field.
+     *
+     * @param entity    Entity with changes (the clone)
+     * @param fieldSpec Metamodel element representing the attribute that changed
+     * @throws IllegalStateException If this UoW is not in transaction
+     */
+    void attributeChanged(Object entity, FieldSpecification<?, ?> fieldSpec);
+
+    /**
+     * Creates an indirect collection that wraps the specified collection instance and propagates changes to this
+     * persistence context.
+     *
+     * @param collection Collection to be proxied
+     * @param owner      Collection owner instance
+     * @param field      Field filled with the collection
+     * @return Indirect collection
+     */
+    Object createIndirectCollection(Object collection, Object owner, Field field);
+
+    /**
+     * Gets a {@link SparqlQueryFactory} instance associated with this persistence context.
+     *
+     * @return SPARQL query factory
+     */
+    SparqlQueryFactory sparqlQueryFactory();
+
+    /**
+     * Gets a {@link CriteriaBuilder} instance for building Criteria API queries.
+     *
+     * @return Criteria query builder
+     */
+    CriteriaBuilder getCriteriaBuilder();
 }

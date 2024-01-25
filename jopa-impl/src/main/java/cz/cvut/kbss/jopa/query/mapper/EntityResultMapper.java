@@ -22,7 +22,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
@@ -56,7 +56,7 @@ class EntityResultMapper<T> implements SparqlResultMapper {
     }
 
     @Override
-    public T map(ResultRow resultRow, UnitOfWorkImpl uow) {
+    public T map(ResultRow resultRow, UnitOfWork uow) {
         try {
             final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getJavaType());
             fieldMappers.forEach(m -> m.map(resultRow, instance, uow));

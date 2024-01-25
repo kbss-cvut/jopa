@@ -17,10 +17,14 @@
  */
 package cz.cvut.kbss.jopa.adapters;
 
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.Set;
 
 public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E> {
 
@@ -33,7 +37,7 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
         this.internalSet = new HashSet<>();
     }
 
-    public IndirectSet(Object owner, Field f, UnitOfWorkImpl uow, Set<E> referencedSet) {
+    public IndirectSet(Object owner, Field f, UnitOfWork uow, Set<E> referencedSet) {
         super(owner, f, uow);
         this.internalSet = Objects.requireNonNull(referencedSet);
     }

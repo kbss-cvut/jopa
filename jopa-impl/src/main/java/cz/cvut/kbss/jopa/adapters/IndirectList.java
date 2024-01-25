@@ -17,10 +17,15 @@
  */
 package cz.cvut.kbss.jopa.adapters;
 
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Objects;
 
 public class IndirectList<E> extends IndirectCollection<List<E>> implements List<E> {
 
@@ -42,7 +47,7 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
      * @param referencedList The list to reference
      * @throws NullPointerException If the {@code referencedList} is null
      */
-    public IndirectList(Object owner, Field f, UnitOfWorkImpl uow, List<E> referencedList) {
+    public IndirectList(Object owner, Field f, UnitOfWork uow, List<E> referencedList) {
         super(owner, f, uow);
         this.internalList = Objects.requireNonNull(referencedList);
     }

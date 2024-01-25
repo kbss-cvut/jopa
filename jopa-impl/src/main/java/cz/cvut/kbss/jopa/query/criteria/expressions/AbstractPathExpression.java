@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.query.criteria.Path;
 import cz.cvut.kbss.jopa.query.criteria.PathImpl;
-import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public abstract class AbstractPathExpression<X> extends AbstractExpression<X> implements Path<X> {
 

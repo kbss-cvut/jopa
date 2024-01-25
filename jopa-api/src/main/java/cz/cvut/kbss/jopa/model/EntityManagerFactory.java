@@ -20,15 +20,15 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
-import cz.cvut.kbss.jopa.sessions.Cache;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 
 import java.util.Map;
 
 public interface EntityManagerFactory extends AutoCloseable {
     /**
-     * Create a new application-managed EntityManager. This method returns a new
-     * EntityManager instance each time it is invoked. The isOpen method will
-     * return true on the returned instance.
+     * Create a new application-managed EntityManager. This method returns a new EntityManager instance each time it is
+     * invoked. The isOpen method will return true on the returned instance.
      *
      * @return entity manager instance
      * @throws IllegalStateException if the entity manager factory has been closed
@@ -36,20 +36,24 @@ public interface EntityManagerFactory extends AutoCloseable {
     EntityManager createEntityManager();
 
     /**
-     * Create a new EntityManager with the specified Map of properties. This
-     * method returns a new EntityManager instance each time it is invoked. The
-     * isOpen method will return true on the returned instance.
+     * Create a new EntityManager with the specified Map of properties. This method returns a new EntityManager instance
+     * each time it is invoked. The isOpen method will return true on the returned instance.
      *
      * @param map properties for entity manager
      * @return entity manager instance
      */
     EntityManager createEntityManager(Map<String, String> map);
 
-    // TODO JPA 2.0 getCriteriaBuilder
+    /**
+     * Returns an instance of {@link CriteriaBuilder} which may be used to construct {@link CriteriaQuery} objects.
+     *
+     * @return an instance of {@code CriteriaBuilder}
+     * @throws IllegalStateException if the entity manager factory has been closed
+     */
+    CriteriaBuilder getCriteriaBuilder();
 
     /**
-     * Return an instance of Metamodel interface for access to the metamodel of
-     * the persistence unit.
+     * Return an instance of Metamodel interface for access to the metamodel of the persistence unit.
      *
      * @return Metamodel instance
      * @throws IllegalStateException if the entity manager factory has been closed
@@ -57,19 +61,16 @@ public interface EntityManagerFactory extends AutoCloseable {
     Metamodel getMetamodel();
 
     /**
-     * Close the factory, releasing any resources that it holds. After a factory
-     * instance is closed, all methods invoked on it will throw an
-     * IllegalStateException, except for isOpen, which will return false. Once
-     * an EntityManagerFactory has been closed, all its entity managers are
-     * considered to be in the closed state.
+     * Close the factory, releasing any resources that it holds. After a factory instance is closed, all methods invoked
+     * on it will throw an IllegalStateException, except for isOpen, which will return false. Once an
+     * EntityManagerFactory has been closed, all its entity managers are considered to be in the closed state.
      *
      * @throws IllegalStateException if the entity manager factory has been closed
      */
     void close();
 
     /**
-     * Indicates whether the factory is open. Returns true until the factory has
-     * been closed.
+     * Indicates whether the factory is open. Returns true until the factory has been closed.
      *
      * @return true if the entity manager is open
      * @throws IllegalStateException if the entity manager factory has been closed
@@ -87,8 +88,7 @@ public interface EntityManagerFactory extends AutoCloseable {
     Map<String, String> getProperties();
 
     /**
-     * Access the cache that is associated with the entity manager factory (the
-     * "second level cache").
+     * Access the cache that is associated with the entity manager factory (the "second level cache").
      *
      * @return instance of the Cache interface
      * @throws IllegalStateException if the entity manager factory has been closed

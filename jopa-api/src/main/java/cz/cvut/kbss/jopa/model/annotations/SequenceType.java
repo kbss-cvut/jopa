@@ -38,7 +38,7 @@ public enum SequenceType {
      * Used for referenced sequences. This case is more general, but sequence representation requires more space (linear
      * in the original size)
      * <p>
-     * This means that elements of the sequence are not unique to the sequence owner. Thus these elements might be
+     * This means that elements of the sequence are not unique to the sequence owner. Thus, these elements might be
      * referenced by other sequences.
      * <p>
      * Example:

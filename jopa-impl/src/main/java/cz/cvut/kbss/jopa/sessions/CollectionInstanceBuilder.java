@@ -30,9 +30,13 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Special class for cloning collections. Introduced because some Java collection have no no-argument constructor and
@@ -47,7 +51,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     private static final Class<?> singletonSetClass = Collections.singleton(null).getClass();
     private static final Class<?> arrayAsListClass = Arrays.asList(null, null).getClass();
 
-    CollectionInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
+    CollectionInstanceBuilder(CloneBuilder builder, UnitOfWork uow) {
         super(builder, uow);
     }
 
@@ -118,12 +122,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             throw new OWLPersistenceException(e);
         } catch (IllegalAccessException e) {
             logConstructorAccessException(ctor, e);
-            try {
-                result = (Collection<?>) AccessController.doPrivileged(new PrivilegedInstanceCreator(ctor));
-            } catch (PrivilegedActionException ex) {
-                logPrivilegedConstructorAccessException(ctor, ex);
-                // Do nothing
-            }
+            // Do nothing
         }
         return Optional.ofNullable(result);
     }
@@ -144,7 +143,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                 tg.add(null);
                 continue;
             }
-            if (CloneBuilderImpl.isImmutable(elem)) {
+            if (CloneBuilder.isImmutable(elem)) {
                 tg.addAll(source);
                 break;
             }
@@ -172,7 +171,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             return arrayList;
         } else if (singletonListClass.isInstance(container) || singletonSetClass.isInstance(container)) {
             final Object element = container.iterator().next();
-            final Object elementClone = CloneBuilderImpl.isImmutable(element) ? element :
+            final Object elementClone = CloneBuilder.isImmutable(element) ? element :
                                         cloneCollectionElement(cloneOwner, field, element, configuration);
             return singletonListClass.isInstance(container) ? Collections.singletonList(elementClone) :
                    Collections.singleton(elementClone);

@@ -5,7 +5,7 @@ import cz.cvut.kbss.jopa.model.Manageable;
 import cz.cvut.kbss.jopa.model.metamodel.AnnotatedAccessor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -54,7 +54,7 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
         DynamicType.Unloaded<? extends T> typeDef = byteBuddy.subclass(entityClass)
                                                              .annotateType(entityClass.getAnnotations())
                                                              .annotateType(new GeneratedEntityClassImpl())
-                                                             .defineField("persistenceContext", UnitOfWorkImpl.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
+                                                             .defineField("persistenceContext", UnitOfWork.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
                                                              .implement(Manageable.class)
                                                              .intercept(FieldAccessor.ofBeanProperty())
                                                              .method(isSetter().and(new PersistentPropertySetterMatcher<>(entityClass)))
@@ -84,7 +84,7 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
     public static class SetterInterceptor {
 
         public static void set(@This Manageable instance, @Origin Method setter) throws Exception {
-            final UnitOfWorkImpl pc = instance.getPersistenceContext();
+            final UnitOfWork pc = instance.getPersistenceContext();
             if (pc == null || !pc.isInTransaction()) {
                 return;
             }
@@ -102,7 +102,7 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
     public static class GetterInterceptor {
 
         public static void get(@This Manageable instance, @Origin Method getter) throws Exception {
-            final UnitOfWorkImpl pc = instance.getPersistenceContext();
+            final UnitOfWork pc = instance.getPersistenceContext();
             if (pc == null || !pc.contains(instance)) {
                 return;
             }

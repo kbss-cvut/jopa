@@ -18,9 +18,7 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.sessions.ChangeManager;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,22 +29,34 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class ChangeManagerImpl implements ChangeManager {
+/**
+ * Calculates changes made on objects by comparing a clone with its registered original.
+ */
+public class ChangeCalculator {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ChangeManagerImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ChangeCalculator.class);
 
     private final Map<Object, Object> visitedObjects;
 
     private final MetamodelProvider metamodelProvider;
     private final ChangeDetector changeDetector;
 
-    public ChangeManagerImpl(MetamodelProvider metamodelProvider) {
+    public ChangeCalculator(MetamodelProvider metamodelProvider) {
         this.metamodelProvider = metamodelProvider;
         this.changeDetector = new ChangeDetectors(metamodelProvider);
         visitedObjects = new IdentityHashMap<>();
     }
 
-    @Override
+    /**
+     * Checks whether there are any changes to the clone.
+     * <p>
+     * It does an object value comparison, i.e. it compares each value of the clone against the original value and
+     * returns true if a change is found.
+     *
+     * @param original The original object.
+     * @param clone    The clone, whose changes we are looking for.
+     * @return True if there is a change (at least one) or false, if the values are identical.
+     */
     public boolean hasChanges(Object original, Object clone) {
         boolean res = hasChangesInternal(original, clone);
         visitedObjects.clear();
@@ -61,7 +71,7 @@ public class ChangeManagerImpl implements ChangeManager {
      * @param clone    The clone that may have changed.
      * @return True if the clone is in different state than the original.
      */
-    boolean hasChangesInternal(Object original, Object clone) {
+    private boolean hasChangesInternal(Object original, Object clone) {
         if (clone == null && original == null) {
             return false;
         }
@@ -92,14 +102,25 @@ public class ChangeManagerImpl implements ChangeManager {
         return changeDetector.hasChanges(clone, orig);
     }
 
-    @Override
+    /**
+     * Calculates the changes that happened to the clone object.
+     * <p>
+     * The changes are written into the {@link ObjectChangeSet} passed in as argument.
+     *
+     * @param changeSet Contains references to the original and clone objects. Into this change set the changes should
+     *                  be propagated
+     * @return {@code true} if there were any changes, {@code false} otherwise
+     * @throws NullPointerException If {@code changeSet} is {@code null}
+     */
     public boolean calculateChanges(ObjectChangeSet changeSet) {
         return calculateChangesInternal(Objects.requireNonNull(changeSet));
     }
 
     /**
-     * This internal method does the actual changes calculation. It compares every non-static attribute of the clone to
-     * the original value. If the values are different, a change record is added into the change set.
+     * This internal method does the actual change calculation.
+     * <p>
+     * It compares every non-static attribute of the clone to the original value. If the values are different, a change
+     * record is added into the change set.
      *
      * @param changeSet The change set where change records will be put in. It also contains reference to the clone and
      *                  original object.
@@ -108,7 +129,7 @@ public class ChangeManagerImpl implements ChangeManager {
         LOG.trace("Calculating changes for change set {}.", changeSet);
         Object original = changeSet.getChangedObject();
         Object clone = changeSet.getCloneObject();
-        boolean changes = false;
+        boolean changesFound = false;
         for (FieldSpecification<?, ?> fs : getFields(clone.getClass())) {
             final Field f = fs.getJavaField();
             Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
@@ -118,10 +139,10 @@ public class ChangeManagerImpl implements ChangeManager {
             }
             boolean changed = valueChanged(origVal, clVal);
             if (changed) {
-                changeSet.addChangeRecord(new ChangeRecordImpl(fs, clVal));
-                changes = true;
+                changeSet.addChangeRecord(new ChangeRecord(fs, clVal));
+                changesFound = true;
             }
         }
-        return changes;
+        return changesFound;
     }
 }

@@ -35,8 +35,7 @@ class DateInstanceBuilderTest {
     private Field dateField;
     private Descriptor descriptor;
 
-    private final DateInstanceBuilder builder = new DateInstanceBuilder(mock(CloneBuilderImpl.class),
-            mock(UnitOfWorkImpl.class));
+    private final DateInstanceBuilder builder = new DateInstanceBuilder(mock(CloneBuilder.class), mock(UnitOfWork.class));
 
     @BeforeEach
     void setUp() throws Exception {

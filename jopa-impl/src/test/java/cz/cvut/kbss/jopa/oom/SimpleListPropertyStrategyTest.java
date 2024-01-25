@@ -176,8 +176,8 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class)
                                     .iri(), res.getListProperty().getIdentifier().toString());
         assertEquals(simpleListField.getAnnotation(Sequence.class)
-                                    .ObjectPropertyHasNextIRI(), res.getNextNode().getIdentifier()
-                                                                    .toString());
+                                    .hasNextPropertyIRI(), res.getNextNode().getIdentifier()
+                                                              .toString());
         assertEquals(c.getSimpleList().size(), res.getValues().size());
         for (int i = 0; i < c.getSimpleList().size(); i++) {
             assertEquals(c.getSimpleList().get(i).getUri(), res.getValues()
@@ -202,7 +202,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         final Field simpleListField = OWLClassC.getSimpleListField();
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class).iri(),
                      res.getListProperty().getIdentifier().toString());
-        assertEquals(simpleListField.getAnnotation(Sequence.class).ObjectPropertyHasNextIRI(),
+        assertEquals(simpleListField.getAnnotation(Sequence.class).hasNextPropertyIRI(),
                      res.getNextNode().getIdentifier().toString());
         assertTrue(res.getValues().isEmpty());
     }
@@ -217,7 +217,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         final Field simpleListField = OWLClassC.getSimpleListField();
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class).iri(),
                      res.getListProperty().getIdentifier().toString());
-        assertEquals(simpleListField.getAnnotation(Sequence.class).ObjectPropertyHasNextIRI(),
+        assertEquals(simpleListField.getAnnotation(Sequence.class).hasNextPropertyIRI(),
                      res.getNextNode().getIdentifier().toString());
         assertTrue(res.getValues().isEmpty());
     }

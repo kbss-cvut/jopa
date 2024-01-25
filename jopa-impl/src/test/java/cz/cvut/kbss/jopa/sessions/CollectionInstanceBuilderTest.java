@@ -59,7 +59,7 @@ public class CollectionInstanceBuilderTest {
 
     @BeforeEach
     public void setUp() {
-        CloneBuilderImpl cloneBuilder = new CloneBuilderImpl(uowMock);
+        CloneBuilder cloneBuilder = new CloneBuilder(uowMock);
         this.builder = new CollectionInstanceBuilder(cloneBuilder, uowMock);
         this.descriptor = new EntityDescriptor();
     }

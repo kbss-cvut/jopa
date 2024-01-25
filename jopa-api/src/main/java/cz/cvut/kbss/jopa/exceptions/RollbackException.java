@@ -24,8 +24,6 @@ import cz.cvut.kbss.jopa.transactions.EntityTransaction;
  */
 public class RollbackException extends OWLPersistenceException {
 
-    private static final long serialVersionUID = 8371285315001388603L;
-
     public RollbackException(String message) {
         super(message);
     }

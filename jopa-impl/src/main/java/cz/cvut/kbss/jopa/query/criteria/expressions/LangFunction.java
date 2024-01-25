@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
-import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 /**
  * Represents the SOQL {@link SoqlConstants.Functions#LANG} function.

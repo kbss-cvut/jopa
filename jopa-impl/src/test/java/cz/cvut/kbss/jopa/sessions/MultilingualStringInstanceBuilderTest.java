@@ -40,7 +40,7 @@ class MultilingualStringInstanceBuilderTest {
 
     @BeforeEach
     void setUp() {
-        this.sut = new MultilingualStringInstanceBuilder(mock(CloneBuilderImpl.class), mock(UnitOfWorkImpl.class));
+        this.sut = new MultilingualStringInstanceBuilder(mock(CloneBuilder.class), mock(UnitOfWork.class));
     }
 
     @Test
@@ -74,7 +74,7 @@ class MultilingualStringInstanceBuilderTest {
     void buildCloneBuildsCloneOfWrappedMultilingualStringWhenArgumentIsIndirectMultilingualString() throws Exception {
         final MultilingualString original = MultilingualString.create("building", Generators.LANG);
         final IndirectMultilingualString arg = new IndirectMultilingualString(new OWLClassU(),
-                OWLClassU.getSingularStringAttField(), mock(UnitOfWorkImpl.class), original);
+                OWLClassU.getSingularStringAttField(), mock(UnitOfWork.class), original);
         final Object result = sut.buildClone(new OWLClassU(), OWLClassU.getSingularStringAttField(), arg, new CloneConfiguration(descriptor, false));
         assertThat(result, instanceOf(IndirectMultilingualString.class));
         final IndirectMultilingualString resultIndirect = (IndirectMultilingualString) result;

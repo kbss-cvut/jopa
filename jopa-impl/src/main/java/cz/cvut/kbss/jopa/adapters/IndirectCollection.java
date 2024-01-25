@@ -17,7 +17,7 @@
  */
 package cz.cvut.kbss.jopa.adapters;
 
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 import java.lang.reflect.Field;
 
@@ -29,7 +29,7 @@ public abstract class IndirectCollection<T> implements IndirectWrapper {
 
     protected final transient Object owner;
     protected final transient Field field;
-    protected final transient UnitOfWorkImpl persistenceContext;
+    protected final transient UnitOfWork persistenceContext;
 
     protected IndirectCollection() {
         owner = null;
@@ -47,7 +47,7 @@ public abstract class IndirectCollection<T> implements IndirectWrapper {
      * @param persistenceContext Persistence context the owner belongs to
      * @throws NullPointerException If the persistence context is null
      */
-    protected IndirectCollection(Object owner, Field f, UnitOfWorkImpl persistenceContext) {
+    protected IndirectCollection(Object owner, Field f, UnitOfWork persistenceContext) {
         if (persistenceContext == null) {
             throw new NullPointerException("Null passed in as persistenceContext.");
         }

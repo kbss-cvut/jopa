@@ -17,6 +17,8 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -35,14 +37,30 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
-import java.time.*;
-import java.util.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.Period;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CloneBuilderImpl implements CloneBuilder {
+/**
+ * Builds clones used in transactions for tracking changes.
+ */
+public class CloneBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CloneBuilderImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CloneBuilder.class);
 
     private static final Set<Class<?>> IMMUTABLE_TYPES = getImmutableTypes();
 
@@ -53,13 +71,20 @@ public class CloneBuilderImpl implements CloneBuilder {
 
     private final UnitOfWorkImpl uow;
 
-    public CloneBuilderImpl(UnitOfWorkImpl uow) {
+    public CloneBuilder(UnitOfWorkImpl uow) {
         this.uow = uow;
         this.visitedEntities = new RepositoryMap();
         this.builders = new Builders();
     }
 
-    @Override
+    /**
+     * Builds clone of the given object.
+     *
+     * @param original           Object
+     * @param cloneConfiguration Configuration for the cloning process
+     * @return The clone
+     * @throws NullPointerException If {@code original} is {@code null}
+     */
     public Object buildClone(Object original, CloneConfiguration cloneConfiguration) {
         Objects.requireNonNull(original);
         Objects.requireNonNull(cloneConfiguration);
@@ -70,7 +95,20 @@ public class CloneBuilderImpl implements CloneBuilder {
         return buildCloneImpl(null, null, original, cloneConfiguration);
     }
 
-    @Override
+    /**
+     * Builds clone of the given object.
+     * <p>
+     * This method differs from {@link #buildClone(Object, CloneConfiguration)} in that it accepts another argument
+     * which represents the owner of the built clone. This is useful in situations when we are cloning attributes
+     * directly, e.g. when lazily loading a field value.
+     *
+     * @param cloneOwner  The owner of the created clone
+     * @param clonedField The field whose value is being cloned
+     * @param original    The original to clone
+     * @param descriptor  Entity descriptor
+     * @return The clone
+     * @throws NullPointerException If {@code cloneOwner}, {@code original} or {@code contextUri} is {@code null}
+     */
     public Object buildClone(Object cloneOwner, Field clonedField, Object original, Descriptor descriptor) {
         if (cloneOwner == null || original == null || descriptor == null) {
             throw new NullPointerException();
@@ -109,7 +147,15 @@ public class CloneBuilderImpl implements CloneBuilder {
         return clone;
     }
 
-    @Override
+    /**
+     * Builds a clone of the specified entity reference.
+     * <p>
+     * It is expected that the specified original is an entity, only its identifier is cloned.
+     *
+     * @param original           Entity
+     * @param cloneConfiguration Clone configuration
+     * @return The clone
+     */
     public Object buildReferenceClone(Object original, CloneConfiguration cloneConfiguration) {
         Objects.requireNonNull(original);
         Objects.requireNonNull(cloneConfiguration);
@@ -215,7 +261,11 @@ public class CloneBuilderImpl implements CloneBuilder {
         return object == null || isImmutable(object.getClass());
     }
 
-    @Override
+    /**
+     * Merges the changes on clone into the original object.
+     *
+     * @param changeSet Contains changes to merge
+     */
     public void mergeChanges(ObjectChangeSet changeSet) {
         final Object original = changeSet.getChangedObject();
         try {
@@ -269,12 +319,22 @@ public class CloneBuilderImpl implements CloneBuilder {
         return uow.getMetamodel();
     }
 
-    @Override
+    /**
+     * Resets the clone builder.
+     * <p>
+     * Especially resets the visited objects cache to make sure all the clones are built from scratch and are not
+     * affected by the previously built ones.
+     */
     public void reset() {
         visitedEntities.clear();
     }
 
-    @Override
+    /**
+     * Removes the specified instance from the clone builder's visited entities cache.
+     *
+     * @param instance   The instance to remove (original object).
+     * @param descriptor Instance descriptor
+     */
     public void removeVisited(Object instance, Descriptor descriptor) {
         visitedEntities.remove(descriptor, instance);
     }
@@ -298,30 +358,30 @@ public class CloneBuilderImpl implements CloneBuilder {
 
     private static Set<Class<?>> getImmutableTypes() {
         return Stream.of(Boolean.class,
-                         Character.class,
-                         Byte.class,
-                         Short.class,
-                         Integer.class,
-                         Long.class,
-                         Float.class,
-                         Double.class,
-                         BigInteger.class,
-                         BigDecimal.class,
-                         Void.class,
-                         String.class,
-                         URI.class,
-                         URL.class,
-                         LocalDate.class,
-                         LocalTime.class,
-                         LocalDateTime.class,
-                         ZonedDateTime.class,
-                         OffsetDateTime.class,
-                         OffsetTime.class,
-                         ZoneOffset.class,
-                         Instant.class,
-                         Duration.class,
-                         Period.class,
-                         LangString.class).collect(Collectors.toSet());
+                Character.class,
+                Byte.class,
+                Short.class,
+                Integer.class,
+                Long.class,
+                Float.class,
+                Double.class,
+                BigInteger.class,
+                BigDecimal.class,
+                Void.class,
+                String.class,
+                URI.class,
+                URL.class,
+                LocalDate.class,
+                LocalTime.class,
+                LocalDateTime.class,
+                ZonedDateTime.class,
+                OffsetDateTime.class,
+                OffsetTime.class,
+                ZoneOffset.class,
+                Instant.class,
+                Duration.class,
+                Period.class,
+                LangString.class).collect(Collectors.toSet());
     }
 
     private final class Builders {
@@ -334,10 +394,10 @@ public class CloneBuilderImpl implements CloneBuilder {
         private AbstractInstanceBuilder mapBuilder;
 
         private Builders() {
-            this.defaultBuilder = new DefaultInstanceBuilder(CloneBuilderImpl.this, uow);
-            this.managedInstanceBuilder = new ManagedInstanceBuilder(CloneBuilderImpl.this, uow);
-            this.dateBuilder = new DateInstanceBuilder(CloneBuilderImpl.this, uow);
-            this.multilingualStringBuilder = new MultilingualStringInstanceBuilder(CloneBuilderImpl.this, uow);
+            this.defaultBuilder = new DefaultInstanceBuilder(CloneBuilder.this, uow);
+            this.managedInstanceBuilder = new ManagedInstanceBuilder(CloneBuilder.this, uow);
+            this.dateBuilder = new DateInstanceBuilder(CloneBuilder.this, uow);
+            this.multilingualStringBuilder = new MultilingualStringInstanceBuilder(CloneBuilder.this, uow);
         }
 
         private AbstractInstanceBuilder getBuilder(Object toClone) {
@@ -349,12 +409,12 @@ public class CloneBuilderImpl implements CloneBuilder {
             }
             if (toClone instanceof Map) {
                 if (mapBuilder == null) {
-                    this.mapBuilder = new MapInstanceBuilder(CloneBuilderImpl.this, uow);
+                    this.mapBuilder = new MapInstanceBuilder(CloneBuilder.this, uow);
                 }
                 return mapBuilder;
             } else if (toClone instanceof Collection) {
                 if (collectionBuilder == null) {
-                    this.collectionBuilder = new CollectionInstanceBuilder(CloneBuilderImpl.this, uow);
+                    this.collectionBuilder = new CollectionInstanceBuilder(CloneBuilder.this, uow);
                 }
                 return collectionBuilder;
             } else if (isTypeManaged(toClone.getClass())) {

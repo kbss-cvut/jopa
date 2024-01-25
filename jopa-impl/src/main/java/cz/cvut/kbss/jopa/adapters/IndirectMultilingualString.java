@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.adapters;
 
 import cz.cvut.kbss.jopa.model.MultilingualString;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -33,7 +33,7 @@ public class IndirectMultilingualString extends MultilingualString implements In
 
     private final transient Object owner;
     private final transient Field field;
-    private final transient UnitOfWorkImpl persistenceContext;
+    private final transient UnitOfWork persistenceContext;
 
     private final MultilingualString referencedString;
 
@@ -53,7 +53,7 @@ public class IndirectMultilingualString extends MultilingualString implements In
      * @param referencedString The string to reference
      * @throws NullPointerException If the {@code referencedString} is null
      */
-    public IndirectMultilingualString(Object owner, Field f, UnitOfWorkImpl uow, MultilingualString referencedString) {
+    public IndirectMultilingualString(Object owner, Field f, UnitOfWork uow, MultilingualString referencedString) {
         this.owner = owner;
         this.field = f;
         this.persistenceContext = Objects.requireNonNull(uow);

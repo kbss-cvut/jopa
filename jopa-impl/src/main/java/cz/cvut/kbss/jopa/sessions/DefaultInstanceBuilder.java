@@ -25,8 +25,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -39,7 +37,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultInstanceBuilder.class);
 
-    DefaultInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
+    DefaultInstanceBuilder(CloneBuilder builder, UnitOfWork uow) {
         super(builder, uow);
     }
 
@@ -50,7 +48,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
      */
     @Override
     Object buildClone(Object cloneOwner, Field field, Object original, CloneConfiguration config) {
-        if (CloneBuilderImpl.isImmutable(original)) {
+        if (CloneBuilder.isImmutable(original)) {
             return original;
         }
         final Class<?> javaClass = original.getClass();
@@ -76,14 +74,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
                             return newInstance;
                         } catch (SecurityException e) {
                             logConstructorAccessException(c, e);
-                            try {
-                                newInstance = AccessController.doPrivileged(new PrivilegedInstanceCreator(c));
-                            } catch (PrivilegedActionException ex) {
-                                throw new OWLPersistenceException(ex);
-                            }
-                            if (newInstance != null) {
-                                return newInstance;
-                            }
+                            // Do nothing
                         } catch (NoSuchFieldException e) {
                             throw new OWLPersistenceException(e);
                         }
@@ -98,11 +89,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
                         newInstance = c.newInstance(params);
                     } catch (SecurityException e) {
                         logConstructorAccessException(c, e);
-                        try {
-                            newInstance = AccessController.doPrivileged(new PrivilegedInstanceCreator(c));
-                        } catch (PrivilegedActionException ex) {
-                            throw new OWLPersistenceException(ex);
-                        }
+                        throw new OWLPersistenceException(e);
                     }
                 }
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
@@ -162,13 +149,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
                     newInstance = c.newInstance((Object[]) null);
                 } catch (SecurityException e) {
                     logConstructorAccessException(c, e);
-                    try {
-                        newInstance = AccessController
-                                .doPrivileged(new PrivilegedInstanceCreator(c));
-                    } catch (PrivilegedActionException ex) {
-                        logPrivilegedConstructorAccessException(c, ex);
-                        return null;
-                    }
+                    // Do nothing
                 }
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                 LOG.trace("Class {} does not have a suitable no-arg constructor.", javaClass);

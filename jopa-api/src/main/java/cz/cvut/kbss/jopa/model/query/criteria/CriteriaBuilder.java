@@ -15,13 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.sessions;
-
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
-import cz.cvut.kbss.jopa.model.query.criteria.Expression;
-import cz.cvut.kbss.jopa.model.query.criteria.Order;
-import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
-import cz.cvut.kbss.jopa.model.query.criteria.Path;
+package cz.cvut.kbss.jopa.model.query.criteria;
 
 /**
  * Used to construct criteria queries, compound selections, expressions, predicates, orderings.

@@ -17,45 +17,21 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.query.NamedQueryManager;
-import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
+import cz.cvut.kbss.jopa.model.CacheManager;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.utils.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 /**
- * This is the implementation of the basic Session operations. Other more
- * specific methods are to be implemented in descendants.
+ * Defines common session-related methods.
  */
-public abstract class AbstractSession implements Session, MetamodelProvider, ConfigurationHolder {
-
-    protected static final Logger LOG = LoggerFactory.getLogger(AbstractSession.class);
+abstract class AbstractSession implements MetamodelProvider, ConfigurationHolder {
 
     protected Configuration configuration;
 
     protected AbstractSession(Configuration configuration) {
-        this.configuration = configuration;
-    }
-
-    @Override
-    public UnitOfWork acquireUnitOfWork() {
-        // TODO UoW acquisition needs to be provided with configuration from EntityManager, because it may override the server session config
-        UnitOfWork uow = new UnitOfWorkImpl(this);
-        LOG.trace("UnitOfWork acquired.");
-        return uow;
-    }
-
-    @Override
-    public abstract MetamodelImpl getMetamodel();
-
-    /**
-     * This method just releases the live object cache. Subclasses are free to
-     * make additional cleanup.
-     */
-    @Override
-    public void release() {
-        getLiveObjectCache().evictAll();
+        this.configuration = Objects.requireNonNull(configuration);
     }
 
     @Override
@@ -68,7 +44,7 @@ public abstract class AbstractSession implements Session, MetamodelProvider, Con
      * <p>
      * This manager represents the second level cache.
      *
-     * @return Second level cache
+     * @return Second level cache manager
      */
     public abstract CacheManager getLiveObjectCache();
 
@@ -80,15 +56,9 @@ public abstract class AbstractSession implements Session, MetamodelProvider, Con
     protected abstract ConnectionWrapper acquireConnection();
 
     /**
-     * Gets an object managing named queries in this persistence unit.
+     * Gets a {@link CriteriaBuilder} instance for building Criteria API queries.
      *
-     * @return {@link NamedQueryManager}
+     * @return Criteria query builder
      */
-    public abstract NamedQueryManager getNamedQueryManager();
-
-    /**
-     * Gets the manager of SPARQL result set mapping instances.
-     * @return {@link ResultSetMappingManager}
-     */
-    public abstract ResultSetMappingManager getResultSetMappingManager();
+    public abstract CriteriaBuilder getCriteriaBuilder();
 }

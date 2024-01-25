@@ -18,7 +18,6 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.NonJPA;
-import cz.cvut.kbss.jopa.UnusedJPA;
 
 import java.util.Set;
 
@@ -29,7 +28,6 @@ import java.util.Set;
  * @param <X>
  *            The represented entity or mapped superclass type.
  */
-@UnusedJPA
 public interface IdentifiableType<X> extends ManagedType<X> {
 
     /**

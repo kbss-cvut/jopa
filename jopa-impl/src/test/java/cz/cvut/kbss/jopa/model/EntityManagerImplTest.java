@@ -40,8 +40,8 @@ import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import cz.cvut.kbss.jopa.sessions.cache.DisabledCacheManager;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,7 +94,7 @@ class EntityManagerImplTest {
     @Mock
     private ConnectionWrapper connectorMock;
 
-    private UnitOfWorkImpl uow;
+    private UnitOfWork uow;
 
     @Mock
     private MetamodelImpl metamodelMock;
@@ -107,15 +107,14 @@ class EntityManagerImplTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        this.serverSessionMock = spy(new ServerSessionStub(connectorMock));
-        when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
-        when(serverSessionMock.getLiveObjectCache()).thenReturn(new DisabledCacheManager());
-        this.uow = spy(new UnitOfWorkImpl(serverSessionMock));
-        doReturn(uow).when(serverSessionMock).acquireUnitOfWork();
+        final Configuration config = new Configuration();
+        this.serverSessionMock = spy(new ServerSessionStub(metamodelMock, connectorMock));
+        this.uow = spy(new UnitOfWorkImpl(serverSessionMock, config));
+        doReturn(uow).when(serverSessionMock).acquireUnitOfWork(any());
         when(emfMock.getMetamodel()).thenReturn(metamodelMock);
         this.mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
-        this.em = new EntityManagerImpl(emfMock, new Configuration(Collections.emptyMap()), serverSessionMock);
+        this.em = new EntityManagerImpl(emfMock, config, serverSessionMock);
     }
 
     @Test
@@ -343,7 +342,7 @@ class EntityManagerImplTest {
     @Test
     void exceptionInDetachMarksTransactionForRollbackOnly() {
         final OWLClassA a = Generators.generateOwlClassAInstance();
-        doReturn(EntityManagerImpl.State.MANAGED).when(uow).getState(a);
+        doReturn(EntityState.MANAGED).when(uow).getState(a);
         doThrow(OWLPersistenceException.class).when(uow).unregisterObject(a);
         final EntityTransaction tx = em.getTransaction();
         try {
@@ -396,10 +395,10 @@ class EntityManagerImplTest {
         final CascadeCycleTwo cloneTwo = new CascadeCycleTwo(cTwo.uri);
         cloneOne.two = cloneTwo;
         cloneTwo.one = cloneOne;
-        doReturn(EntityManagerImpl.State.NOT_MANAGED).when(uow).getState(cOne);
-        doReturn(EntityManagerImpl.State.NOT_MANAGED).when(uow).getState(cTwo);
-        doReturn(EntityManagerImpl.State.MANAGED).when(uow).getState(cloneOne);
-        doReturn(EntityManagerImpl.State.MANAGED).when(uow).getState(cloneTwo);
+        doReturn(EntityState.NOT_MANAGED).when(uow).getState(cOne);
+        doReturn(EntityState.NOT_MANAGED).when(uow).getState(cTwo);
+        doReturn(EntityState.MANAGED).when(uow).getState(cloneOne);
+        doReturn(EntityState.MANAGED).when(uow).getState(cloneTwo);
         doReturn(cloneOne).when(uow).mergeDetached(eq(cOne), any());
         doReturn(cloneTwo).when(uow).mergeDetached(eq(cTwo), any());
         doReturn(cloneOne).when(uow).getCloneForOriginal(cOne);
@@ -474,10 +473,10 @@ class EntityManagerImplTest {
         cOne.two = cTwo;
         cTwo.one = cOne;
         metamodelForCascadingTest();
-        doReturn(EntityManagerImpl.State.NOT_MANAGED).doReturn(EntityManagerImpl.State.MANAGED_NEW).when(uow)
-                .getState(cOne);
-        doReturn(EntityManagerImpl.State.NOT_MANAGED).doReturn(EntityManagerImpl.State.MANAGED_NEW).when(uow)
-                .getState(cTwo);
+        doReturn(EntityState.NOT_MANAGED).doReturn(EntityState.MANAGED_NEW).when(uow)
+                                         .getState(cOne);
+        doReturn(EntityState.NOT_MANAGED).doReturn(EntityState.MANAGED_NEW).when(uow)
+                                         .getState(cTwo);
         doReturn(cOne).when(uow).mergeDetached(eq(cOne), any());
         doReturn(cTwo).when(uow).mergeDetached(eq(cTwo), any());
         doReturn(cOne).when(uow).getCloneForOriginal(cOne);
@@ -499,12 +498,8 @@ class EntityManagerImplTest {
         final CascadeCycleTwo cloneTwo = new CascadeCycleTwo(cTwo.uri);
         cloneOne.two = cloneTwo;
         cloneTwo.one = cloneOne;
-        doReturn(EntityManagerImpl.State.MANAGED).doReturn(EntityManagerImpl.State.REMOVED).when(uow)
-                .getState(cloneOne);
-        doReturn(EntityManagerImpl.State.MANAGED).doReturn(EntityManagerImpl.State.REMOVED).when(uow)
-                .getState(cloneTwo);
-        doReturn(cOne).when(uow).getOriginal(cloneOne);
-        doReturn(cTwo).when(uow).getOriginal(cloneTwo);
+        doReturn(EntityState.MANAGED).doReturn(EntityState.REMOVED).when(uow).getState(cloneOne);
+        doReturn(EntityState.MANAGED).doReturn(EntityState.REMOVED).when(uow).getState(cloneTwo);
         doNothing().when(uow).removeObject(any());
         em.remove(cloneOne);
         verify(uow).removeObject(cloneOne);
