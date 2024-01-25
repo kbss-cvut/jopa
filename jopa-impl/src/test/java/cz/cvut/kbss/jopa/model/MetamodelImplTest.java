@@ -230,9 +230,9 @@ class MetamodelImplTest {
                                  simpleListField, simpleListProperty.fetch(), false, simpleListProperty.iri(),
                                  OWLClassA.class, CollectionType.LIST, simpleListProperty.cascade(),
                                  SequenceType.simple,
-                                 simpleListSequence.ClassOWLListIRI(),
-                                 simpleListSequence.ObjectPropertyHasContentsIRI(),
-                                 simpleListSequence.ObjectPropertyHasNextIRI());
+                                 simpleListSequence.listClassIRI(),
+                                 simpleListSequence.hasContentsPropertyIRI(),
+                                 simpleListSequence.hasNextPropertyIRI());
     }
 
     private void checkPluralListAttribute(FieldSpecification<?, ?> attribute, EntityType<?> declaringType, String name,
@@ -267,9 +267,9 @@ class MetamodelImplTest {
                                  referencedListProperty.fetch(), false,
                                  referencedListProperty.iri(), OWLClassA.class, CollectionType.LIST,
                                  referencedListProperty.cascade(), SequenceType.referenced,
-                                 referencedListSequence.ClassOWLListIRI(),
-                                 referencedListSequence.ObjectPropertyHasContentsIRI(),
-                                 referencedListSequence.ObjectPropertyHasNextIRI());
+                                 referencedListSequence.listClassIRI(),
+                                 referencedListSequence.hasContentsPropertyIRI(),
+                                 referencedListSequence.hasNextPropertyIRI());
     }
 
     @Test

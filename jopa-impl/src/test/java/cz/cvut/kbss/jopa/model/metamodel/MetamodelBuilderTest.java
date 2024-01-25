@@ -498,8 +498,8 @@ class MetamodelBuilderTest {
         @Id
         private URI uri;
 
-        @Sequence(type = SequenceType.referenced, ObjectPropertyHasNextIRI = RDF.REST,
-                  ObjectPropertyHasContentsIRI = RDF.FIRST)
+        @Sequence(type = SequenceType.referenced, hasNextPropertyIRI = RDF.REST,
+                  hasContentsPropertyIRI = RDF.FIRST)
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "dp-referenced-list")
         private List<MultilingualString> altLabels;
     }
