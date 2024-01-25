@@ -24,13 +24,12 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 class MapInstanceBuilder extends AbstractInstanceBuilder {
 
@@ -57,8 +56,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
                 clone = buildSingletonClone(cloneOwner, field, orig, configuration);
             } else if (Collections.emptyMap().equals(orig)) {
                 clone = orig;
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("Unsupported map type " + origCls);
             }
         }
@@ -69,14 +67,12 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 
     private Map<?, ?> cloneUsingDefaultConstructor(Object cloneOwner, Field field, Class<?> origCls, Map<?, ?> original,
                                                    CloneConfiguration configuration) {
-        Map<?, ?> result = createNewInstance(origCls, original.size());
-        if (result != null) {
-            cloneMapContent(cloneOwner, field, original, result, configuration);
-        }
-        return result;
+        Optional<Map<?, ?>> result = createNewInstance(origCls, original.size());
+        result.ifPresent(r -> cloneMapContent(cloneOwner, field, original, r, configuration));
+        return result.orElse(null);
     }
 
-    private static Map<?, ?> createNewInstance(Class<?> type, int size) {
+    private static Optional<Map<?, ?>> createNewInstance(Class<?> type, int size) {
         Map<?, ?> result = null;
         final Class<?>[] types = {int.class};
         Object[] params;
@@ -89,7 +85,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
             params = null;
         }
         if (c == null) {
-            return null;
+            return Optional.empty();
         }
         try {
             result = (Map<?, ?>) c.newInstance(params);
@@ -97,23 +93,18 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
             throw new OWLPersistenceException(e);
         } catch (IllegalAccessException e) {
             logConstructorAccessException(c, e);
-            try {
-                result = (Map<?, ?>) AccessController.doPrivileged(new PrivilegedInstanceCreator(c));
-            } catch (PrivilegedActionException ex) {
-                logPrivilegedConstructorAccessException(c, ex);
-                // Do nothing
-            }
+            // Do nothing
         }
-        return result;
+        return Optional.ofNullable(result);
     }
 
     private Map<?, ?> buildSingletonClone(Object cloneOwner, Field field, Map<?, ?> orig,
                                           CloneConfiguration configuration) {
         Entry<?, ?> e = orig.entrySet().iterator().next();
         Object key = CloneBuilder.isImmutable(e.getKey()) ? e.getKey() :
-                     cloneObject(cloneOwner, field, e.getKey(), configuration);
+                cloneObject(cloneOwner, field, e.getKey(), configuration);
         Object value = CloneBuilder.isImmutable(e.getValue()) ? e.getValue() :
-                       cloneObject(cloneOwner, field, e.getValue(), configuration);
+                cloneObject(cloneOwner, field, e.getValue(), configuration);
         if ((value instanceof Collection || value instanceof Map) && !(value instanceof IndirectCollection)) {
             value = uow.createIndirectCollection(value, cloneOwner, field);
         }
@@ -166,15 +157,10 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         assert cloneValue instanceof Map;
 
         Map<Object, Object> orig = (Map<Object, Object>) originalValue;
-        Map<Object, Object> clone = (Map<Object, Object>) cloneValue;
-        if (clone instanceof IndirectCollection) {
-            clone = ((IndirectCollection<Map<Object, Object>>) clone).unwrap();
-        }
+        final Map<Object, Object> clone = cloneValue instanceof IndirectCollection ?
+                ((IndirectCollection<Map<Object, Object>>) cloneValue).unwrap() : (Map<Object, Object>) cloneValue;
         if (orig == null) {
-            orig = (Map<Object, Object>) createNewInstance(clone.getClass(), clone.size());
-            if (orig == null) {
-                orig = createDefaultMap(clone.size());
-            }
+            orig = (Map<Object, Object>) createNewInstance(clone.getClass(), clone.size()).orElseGet(() -> createDefaultMap(clone.size()));
             EntityPropertiesUtils.setFieldValue(field, target, orig);
         }
         orig.clear();

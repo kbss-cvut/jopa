@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.security.PrivilegedActionException;
 
 abstract class AbstractInstanceBuilder {
 
@@ -98,10 +97,5 @@ abstract class AbstractInstanceBuilder {
 
     protected static void logConstructorAccessException(Constructor<?> constructor, Exception e) {
         LOG.warn("Exception caught when invoking constructor " + constructor + ". Exception: " + e);
-    }
-
-    protected static void logPrivilegedConstructorAccessException(Constructor<?> constructor,
-                                                                  PrivilegedActionException e) {
-        LOG.warn("Exception caught on privileged invocation of constructor " + constructor + ". Exception: " + e);
     }
 }

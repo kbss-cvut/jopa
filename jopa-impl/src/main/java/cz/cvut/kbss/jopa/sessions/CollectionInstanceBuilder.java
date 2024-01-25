@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -124,12 +122,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             throw new OWLPersistenceException(e);
         } catch (IllegalAccessException e) {
             logConstructorAccessException(ctor, e);
-            try {
-                result = (Collection<?>) AccessController.doPrivileged(new PrivilegedInstanceCreator(ctor));
-            } catch (PrivilegedActionException ex) {
-                logPrivilegedConstructorAccessException(ctor, ex);
-                // Do nothing
-            }
+            // Do nothing
         }
         return Optional.ofNullable(result);
     }
