@@ -40,28 +40,67 @@ public final class Configuration {
         this.properties = new HashMap<>(properties);
     }
 
+    /**
+     * Gets the configured value of the specified property.
+     *
+     * @param property Property whose value to get
+     * @return Configured value, {@code null} if property is not configured
+     */
     public String get(String property) {
         return get(property, null);
     }
 
+    /**
+     * Gets the configured value of the specified property.
+     * <p>
+     * The specified default value is returned if the property is not configured.
+     *
+     * @param property     Property whose value to get
+     * @param defaultValue Default value to return if no value is configured
+     * @return Configured value, {@code defaultValue} if property is not configured
+     */
     public String get(String property, String defaultValue) {
         return properties.getOrDefault(property, defaultValue);
     }
 
+    /**
+     * Gets the configured value of the specified boolean-valued property.
+     *
+     * @param property Property whose value to get
+     * @return {@code true} if the specified property is configured and its value is the boolean true, {@code false}
+     * otherwise
+     */
     public boolean is(String property) {
         final String propertyValue = get(property, null);
         return Boolean.parseBoolean(propertyValue);
     }
 
+    /**
+     * Sets the specified value for the specified property.
+     *
+     * @param property Property whose value to set
+     * @param value    Value to set
+     */
     public synchronized void set(String property, String value) {
         Objects.requireNonNull(property);
         properties.put(property, value);
     }
 
+    /**
+     * Checks whether this configuration contains an explicitly set value of the specified property.
+     *
+     * @param property Property whose presence to check
+     * @return {@code true} if the specified property is configured, {@code false} otherwise
+     */
     public boolean contains(String property) {
         return properties.containsKey(property);
     }
 
+    /**
+     * Gets an unmodifiable view of the underlying map of configuration.
+     *
+     * @return Unmodifiable Map
+     */
     public Map<String, String> getProperties() {
         return Collections.unmodifiableMap(properties);
     }

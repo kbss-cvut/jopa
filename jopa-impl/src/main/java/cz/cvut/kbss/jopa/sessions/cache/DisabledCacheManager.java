@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
+import cz.cvut.kbss.jopa.model.CacheManager;
 
 import java.net.URI;
 import java.util.Set;

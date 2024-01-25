@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
+import cz.cvut.kbss.jopa.model.CacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

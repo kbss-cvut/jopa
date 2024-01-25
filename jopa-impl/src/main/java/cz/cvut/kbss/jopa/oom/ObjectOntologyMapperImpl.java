@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
+import cz.cvut.kbss.jopa.model.CacheManager;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;

@@ -18,7 +18,6 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.NonJPA;
-import cz.cvut.kbss.jopa.UnusedJPA;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 
 /**
@@ -50,7 +49,6 @@ public interface QueryAttribute<X, Y> extends FieldSpecification<X, Y> {
      *
      * @return corresponding java.lang.reflect.Member
      */
-    @UnusedJPA
     java.lang.reflect.Member getJavaMember();
 
     /**
