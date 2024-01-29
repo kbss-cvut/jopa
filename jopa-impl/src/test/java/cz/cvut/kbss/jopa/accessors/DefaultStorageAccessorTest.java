@@ -17,28 +17,27 @@
  */
 package cz.cvut.kbss.jopa.accessors;
 
+import cz.cvut.kbss.jopa.exception.DataSourceCreationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DefaultStorageAccessorTest {
 
     private static final String DATA_SOURCE_CLASS = DataSourceStub.class.getName();
     private static final String INVALID_DATA_SOURCE_CLASS = InvalidDataSource.class.getName();
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void createsDataSourceFromClassName() {
@@ -46,7 +45,7 @@ class DefaultStorageAccessorTest {
                 new DefaultStorageAccessor(storageProperties(DATA_SOURCE_CLASS), Collections.emptyMap());
         assertNotNull(a);
         assertTrue(a.isOpen());
-        assertTrue(a.acquireConnection() instanceof DataSourceStub.ConnectionStub);
+        assertInstanceOf(DataSourceStub.ConnectionStub.class, a.acquireConnection());
     }
 
     private OntologyStorageProperties storageProperties(String driverClass) {
@@ -65,7 +64,7 @@ class DefaultStorageAccessorTest {
     void throwsExceptionWhenUnknownClassIsSpecifiedAsDataSource() {
         final String unknownClass = "cz.cvut.kbss.jopa.UnknownDataSource";
         final DataSourceCreationException ex = assertThrows(DataSourceCreationException.class,
-                () -> new DefaultStorageAccessor(storageProperties(unknownClass), Collections.emptyMap()));
+                                                            () -> new DefaultStorageAccessor(storageProperties(unknownClass), Collections.emptyMap()));
         assertEquals("Unable to find OntoDriver data source class " + unknownClass, ex.getMessage());
     }
 

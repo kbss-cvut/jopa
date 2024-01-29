@@ -15,17 +15,18 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.oom.exceptions;
-
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+package cz.cvut.kbss.jopa.oom.exception;
 
 /**
- * Thrown when a polymorphic entity cannot be loaded because its types are ambiguous, i.e. there are multiple entity
- * types which match types of the individual.
+ * Thrown when an unpersisted change is found on commit.
+ * <p>
+ * This exception is thrown when the application tries to commit a transaction
+ * and there are changes that were neither cascaded nor explicitly applied using
+ * the EntityManager.
  */
-public class AmbiguousEntityTypeException extends OWLPersistenceException {
+public class UnpersistedChangeException extends RuntimeException {
 
-    public AmbiguousEntityTypeException(String message) {
+    public UnpersistedChangeException(String message) {
         super(message);
     }
 }

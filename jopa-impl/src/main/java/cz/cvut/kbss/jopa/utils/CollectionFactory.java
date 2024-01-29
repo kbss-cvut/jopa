@@ -53,15 +53,11 @@ public final class CollectionFactory {
      * @return Collection implementation instance
      */
     public static <T> Collection<T> createDefaultCollection(CollectionType collectionType) {
-        switch (collectionType) {
-            case LIST:
-                return new ArrayList<>();
-            case SET:
-            case COLLECTION:    // Intentional fall-through
-                return new HashSet<>();
-            default:
-                throw new IllegalArgumentException("Collection type " + collectionType + " is not supported.");
-        }
+        return switch (collectionType) {
+            case LIST -> new ArrayList<>();
+            case SET, COLLECTION -> new HashSet<>();
+            default -> throw new IllegalArgumentException("Collection type " + collectionType + " is not supported.");
+        };
     }
 
     /**

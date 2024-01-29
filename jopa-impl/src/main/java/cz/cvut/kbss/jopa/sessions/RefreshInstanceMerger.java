@@ -51,10 +51,8 @@ class RefreshInstanceMerger {
         for (ChangeRecord change : changeSet.getChanges()) {
             final FieldSpecification<?, ?> att = change.getAttribute();
             final Object sourceValue = EntityPropertiesUtils.getAttributeValue(att, source);
-            if (sourceValue instanceof IndirectCollection) {
-                final IndirectCollection<?> col = (IndirectCollection<?>) sourceValue;
-                final Object ic = indirectWrapperHelper
-                        .createIndirectWrapper(col.unwrap(), target, att.getJavaField());
+            if (sourceValue instanceof IndirectCollection<?> col) {
+                final Object ic = indirectWrapperHelper.createIndirectWrapper(col.unwrap(), target, att.getJavaField());
                 merger.mergeValue(att, target, ic);
             } else {
                 merger.mergeValue(att, target, sourceValue);

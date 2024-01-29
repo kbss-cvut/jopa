@@ -15,18 +15,22 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.oom.exceptions;
+package cz.cvut.kbss.jopa.oom.exception;
 
 /**
- * Thrown when an unpersisted change is found on commit.
- * <p>
- * This exception is thrown when the application tries to commit a transaction
- * and there are changes that were neither cascaded nor explicitly applied using
- * the EntityManager.
+ * Indicates and error during the process of mapping an entity to axioms.
  */
-public class UnpersistedChangeException extends RuntimeException {
+public class EntityDeconstructionException extends RuntimeException {
 
-    public UnpersistedChangeException(String message) {
+    public EntityDeconstructionException(String message) {
         super(message);
+    }
+
+    public EntityDeconstructionException(Throwable cause) {
+        super(cause);
+    }
+
+    public EntityDeconstructionException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

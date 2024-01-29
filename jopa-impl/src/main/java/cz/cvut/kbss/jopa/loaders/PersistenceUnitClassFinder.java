@@ -47,12 +47,14 @@ public class PersistenceUnitClassFinder {
      * relevant for the persistence provider.
      * <p>
      * These classes include:
-     * <ul> <li>Entities, i.e. classes annotated with {@link cz.cvut.kbss.jopa.model.annotations.OWLClass},</li>
-     * <li>Result result mapping classes, i.e. classes annotated with {@link cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping}
-     * or {@link cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMappings}</li> </ul>
+     * <ul>
+     *     <li>Entities, i.e. classes annotated with {@link cz.cvut.kbss.jopa.model.annotations.OWLClass},</li>
+     *     <li>Result result mapping classes, i.e. classes annotated with {@link cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping}
+     * or {@link cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMappings}</li>
+     * </ul>
      *
-     * @param configuration Persistence configuration, should contain value for the {@link
-     *                      JOPAPersistenceProperties#SCAN_PACKAGE} property
+     * @param configuration Persistence configuration, should contain value for the
+     *                      {@link JOPAPersistenceProperties#SCAN_PACKAGE} property
      * @throws IllegalArgumentException If {@link JOPAPersistenceProperties#SCAN_PACKAGE} values is missing
      */
     public void scanClasspath(Configuration configuration) {
@@ -70,7 +72,7 @@ public class PersistenceUnitClassFinder {
     private static ClasspathScanner resolveClasspathScanner(Configuration config) {
         try {
             final String scannerType = config.get(JOPAPersistenceProperties.CLASSPATH_SCANNER_CLASS,
-                                                  DefaultClasspathScanner.class.getName());
+                    DefaultClasspathScanner.class.getName());
             final Class<?> scannerCls = Class.forName(scannerType);
             return (ClasspathScanner) ReflectionUtils.instantiateUsingDefaultConstructor(scannerCls);
         } catch (ClassNotFoundException | cz.cvut.kbss.jopa.exception.InstantiationException e) {
@@ -100,9 +102,10 @@ public class PersistenceUnitClassFinder {
 
     /**
      * Gets {@link cz.cvut.kbss.jopa.model.AttributeConverter} implementations found during classpath scanning.
-     *
+     * <p>
      * The converters are wrapped in an internal helper class {@link ConverterWrapper}.
-     * @return Set of custom converters
+     *
+     * @return Map of classes to custom converters
      */
     public Map<Class<?>, ConverterWrapper<?, ?>> getAttributeConverters() {
         assert scanned;

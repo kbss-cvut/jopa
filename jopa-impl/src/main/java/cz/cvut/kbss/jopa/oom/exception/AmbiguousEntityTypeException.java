@@ -15,21 +15,17 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.oom.exceptions;
+package cz.cvut.kbss.jopa.oom.exception;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 
-public class EntityReconstructionException extends OWLPersistenceException {
+/**
+ * Thrown when a polymorphic entity cannot be loaded because its types are ambiguous, i.e. there are multiple entity
+ * types which match types of the individual.
+ */
+public class AmbiguousEntityTypeException extends OWLPersistenceException {
 
-    public EntityReconstructionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public EntityReconstructionException(String message) {
+    public AmbiguousEntityTypeException(String message) {
         super(message);
-    }
-
-    public EntityReconstructionException(Throwable cause) {
-        super(cause);
     }
 }

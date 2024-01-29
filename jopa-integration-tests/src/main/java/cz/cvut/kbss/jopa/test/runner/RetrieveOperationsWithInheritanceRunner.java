@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.oom.exceptions.AmbiguousEntityTypeException;
+import cz.cvut.kbss.jopa.oom.exception.AmbiguousEntityTypeException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;

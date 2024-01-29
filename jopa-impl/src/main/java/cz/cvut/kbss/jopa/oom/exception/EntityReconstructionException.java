@@ -15,22 +15,21 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.accessors;
+package cz.cvut.kbss.jopa.oom.exception;
 
-/**
- * Indicates that a data source cannot be created.
- */
-public class DataSourceCreationException extends RuntimeException {
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 
-    public DataSourceCreationException(String message) {
-        super(message);
-    }
+public class EntityReconstructionException extends OWLPersistenceException {
 
-    public DataSourceCreationException(String message, Throwable cause) {
+    public EntityReconstructionException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public DataSourceCreationException(Throwable cause) {
+    public EntityReconstructionException(String message) {
+        super(message);
+    }
+
+    public EntityReconstructionException(Throwable cause) {
         super(cause);
     }
 }

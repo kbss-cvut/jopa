@@ -57,9 +57,10 @@ public class MetamodelUtils {
 
     /**
      * Gets an entity class corresponding to the specified class.
-     *
+     * <p>
      * This method returns either the provided class or its superclass in case when the provided class is a generated
      * subclass created by JOPA.
+     *
      * @param cls Class to process
      * @param <T> Type
      * @return Entity class

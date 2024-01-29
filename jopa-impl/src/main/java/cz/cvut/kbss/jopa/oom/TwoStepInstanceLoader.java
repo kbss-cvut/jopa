@@ -20,7 +20,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.exception.InstantiationException;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
+import cz.cvut.kbss.jopa.oom.exception.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.metamodel.PolymorphicEntityTypeResolver;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;

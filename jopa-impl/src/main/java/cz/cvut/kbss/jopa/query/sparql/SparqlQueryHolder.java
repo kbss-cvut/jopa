@@ -195,7 +195,7 @@ public class SparqlQueryHolder implements QueryHolder {
         final StringBuilder variables = new StringBuilder();
         final StringBuilder data = new StringBuilder();
         for (QueryParameter<?> qp : parameters) {
-            if (variables.length() > 0) {
+            if (!variables.isEmpty()) {
                 variables.append(' ');
             }
             variables.append(qp.getIdentifierAsQueryString());

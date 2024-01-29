@@ -23,9 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -56,7 +54,7 @@ public class DefaultClasspathScanner implements ClasspathScanner {
     protected final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     protected String pathPattern;
-    protected Set<URL> visited;
+    protected Set<String> visited;
 
     @Override
     public void addListener(Consumer<Class<?>> listener) {
@@ -64,7 +62,8 @@ public class DefaultClasspathScanner implements ClasspathScanner {
     }
 
     /**
-     * Inspired by https://github.com/ddopson/java-class-enumerator
+     * Inspired by <a
+     * href="https://github.com/ddopson/java-class-enumerator">https://github.com/ddopson/java-class-enumerator</a>
      */
     @Override
     public void processClasses(String scanPackage) {
@@ -84,15 +83,16 @@ public class DefaultClasspathScanner implements ClasspathScanner {
     protected void processElements(Enumeration<URL> urls, String scanPath) throws IOException {
         while (urls.hasMoreElements()) {
             final URL url = urls.nextElement();
-            if (visited.contains(url)) {
+            final String elemUri = url.toString();
+            if (visited.contains(elemUri)) {
                 continue;
             }
-            visited.add(url);
+            visited.add(elemUri);
             LOG.trace("Processing classpath element {}", url);
-            if (isJar(url.toString())) {
+            if (isJar(elemUri)) {
                 processJarFile(createJarFile(url));
             } else {
-                processDirectory(new File(getUrlAsUri(url).getPath()), scanPath);
+                processDirectory(new File(URI.create(elemUri).getPath()), scanPath);
             }
         }
     }
@@ -102,10 +102,9 @@ public class DefaultClasspathScanner implements ClasspathScanner {
      *
      * @param url Resource URL (presumably leading to a local file)
      * @return Decoded argument
-     * @throws UnsupportedEncodingException Should not happen, using standard UTF-8 encoding
      */
-    protected static String sanitizePath(URL url) throws UnsupportedEncodingException {
-        return URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8.toString());
+    protected static String sanitizePath(URL url) {
+        return URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
     }
 
     protected static boolean isJar(String filePath) {
@@ -116,16 +115,6 @@ public class DefaultClasspathScanner implements ClasspathScanner {
         final String jarPath = sanitizePath(elementUrl).replaceFirst("[.]jar[!].*", JAR_FILE_SUFFIX)
                                                        .replaceFirst("file:", "");
         return new JarFile(jarPath);
-    }
-
-    protected static URI getUrlAsUri(URL url) {
-        try {
-            // Transformation to URI handles encoding, e.g. of whitespaces in the path
-            return url.toURI();
-        } catch (URISyntaxException ex) {
-            throw new OWLPersistenceException(
-                    "Unable to scan resource " + url + ". It is not a valid URI.", ex);
-        }
     }
 
     /**
@@ -164,7 +153,7 @@ public class DefaultClasspathScanner implements ClasspathScanner {
             listeners.forEach(listener -> listener.accept(cls));
         } catch (Exception | NoClassDefFoundError e) {
             LOG.debug("Unable to load class {}, got error {}: {}. Skipping the class. If it is an entity class, ensure it is available on classpath and is built with supported Java version.", className, e.getClass()
-                                                                                                                                                                                                           .getName(), e.getMessage());
+                                                                                                                                                                                                            .getName(), e.getMessage());
         }
     }
 

@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
-import cz.cvut.kbss.jopa.oom.exceptions.AmbiguousEntityTypeException;
+import cz.cvut.kbss.jopa.oom.exception.AmbiguousEntityTypeException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
