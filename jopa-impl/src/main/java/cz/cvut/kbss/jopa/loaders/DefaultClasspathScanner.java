@@ -105,7 +105,7 @@ public class DefaultClasspathScanner implements ClasspathScanner {
      * @throws UnsupportedEncodingException Should not happen, using standard UTF-8 encoding
      */
     protected static String sanitizePath(URL url) throws UnsupportedEncodingException {
-        return URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8.toString());
+        return URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
     }
 
     protected static boolean isJar(String filePath) {
@@ -113,8 +113,9 @@ public class DefaultClasspathScanner implements ClasspathScanner {
     }
 
     protected static JarFile createJarFile(URL elementUrl) throws IOException {
-        final String jarPath = sanitizePath(elementUrl).replaceFirst("[.]jar[!].*", JAR_FILE_SUFFIX)
-                                                       .replaceFirst("file:", "");
+        final String jarPath = sanitizePath(elementUrl).replaceFirst("[.]jar/?!.*", JAR_FILE_SUFFIX)
+                                                       .replaceFirst("file:", "")
+                                                       .replaceFirst("nested:", "");
         return new JarFile(jarPath);
     }
 
