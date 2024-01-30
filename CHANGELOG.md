@@ -1,5 +1,8 @@
 # JOPA - Change Log
 
+## 1.2.2 - 2024-01-30
+- Modify `DefaultClasspathScanner` to handle Spring Boot nested JAR introduced in 3.2.0 (Bug #227).
+
 ## 1.2.1 - 2024-01-22
 - Unwrap `IndirectMultilingualString` instances when owner entity is detached from the persistence context.
 
