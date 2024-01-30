@@ -246,9 +246,9 @@ class MetamodelImplTest {
         assertThat(attribute, instanceOf(ListAttribute.class));
         final ListAttribute<?, ?> listAttribute = (ListAttribute<?, ?>) attribute;
         assertEquals(sequenceType, listAttribute.getSequenceType());
-        assertEquals(owlListClass, listAttribute.getOWLListClass().toString());
-        assertEquals(hasContents, listAttribute.getOWLPropertyHasContentsIRI().toString());
-        assertEquals(hasNext, listAttribute.getOWLObjectPropertyHasNextIRI().toString());
+        assertEquals(owlListClass, listAttribute.getListClassIRI().toString());
+        assertEquals(hasContents, listAttribute.getHasContentsPropertyIRI().toString());
+        assertEquals(hasNext, listAttribute.getHasNextPropertyIRI().toString());
     }
 
     @Test

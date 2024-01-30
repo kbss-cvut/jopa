@@ -134,7 +134,7 @@ public class EntityConstructorPluralAttributesTest {
     }
 
     private Collection<Axiom<NamedResource>> initSimpleListAxioms() {
-        final URI nextElemProperty = simpleListMock.getOWLObjectPropertyHasNextIRI().toURI();
+        final URI nextElemProperty = simpleListMock.getHasNextPropertyIRI().toURI();
         final Collection<Axiom<NamedResource>> axioms = new ArrayList<>(LIST_CONTENT.size());
         boolean first = true;
         URI previous = null;

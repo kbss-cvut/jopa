@@ -101,9 +101,9 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         final ReferencedListDescriptor listDescriptor = captor.getValue();
         assertEquals(IDENTIFIER, listDescriptor.getListOwner().getIdentifier());
         assertEquals(refListMock.getIRI().toURI(), listDescriptor.getListProperty().getIdentifier());
-        assertEquals(refListMock.getOWLObjectPropertyHasNextIRI().toURI(), listDescriptor.getNextNode()
-                                                                                         .getIdentifier());
-        assertEquals(refListMock.getOWLPropertyHasContentsIRI().toURI(), listDescriptor
+        assertEquals(refListMock.getHasNextPropertyIRI().toURI(), listDescriptor.getNextNode()
+                                                                                .getIdentifier());
+        assertEquals(refListMock.getHasContentsPropertyIRI().toURI(), listDescriptor
                 .getNodeContent().getIdentifier());
     }
 
@@ -124,7 +124,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
                     node = new AxiomImpl<>(
                             previous,
                             Assertion.createObjectPropertyAssertion(refListMock
-                                            .getOWLObjectPropertyHasNextIRI().toURI(),
+                                            .getHasNextPropertyIRI().toURI(),
                                     refListMock.isInferred()),
                             new Value<>(nodeUri));
                 }
@@ -132,7 +132,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
             }
             final Axiom<NamedResource> content = new AxiomImpl<>(nodeUri,
                     Assertion.createObjectPropertyAssertion(
-                            refListMock.getOWLPropertyHasContentsIRI()
+                            refListMock.getHasContentsPropertyIRI()
                                        .toURI(), refListMock.isInferred()),
                     new Value<>(NamedResource.create(a.getUri())));
             when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, a.getUri(),
@@ -195,11 +195,11 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
                         URI.create(OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).iri()),
                         refListMock.isInferred()));
         assertEquals(res.getNextNode(), Assertion.createObjectPropertyAssertion(refListMock
-                        .getOWLObjectPropertyHasNextIRI()
+                        .getHasNextPropertyIRI()
                         .toURI(),
                 refListMock.isInferred()));
         assertEquals(res.getNodeContent(), Assertion.createObjectPropertyAssertion(refListMock
-                        .getOWLPropertyHasContentsIRI()
+                        .getHasContentsPropertyIRI()
                         .toURI(),
                 refListMock.isInferred()));
         final List<URI> expected = list.stream().map(OWLClassA::getUri).collect(Collectors.toList());

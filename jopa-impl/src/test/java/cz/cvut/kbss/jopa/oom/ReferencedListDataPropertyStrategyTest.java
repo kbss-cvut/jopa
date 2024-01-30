@@ -84,8 +84,8 @@ class ReferencedListDataPropertyStrategyTest extends ListPropertyStrategyTestBas
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "hasDataList"));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);
         when(att.getJavaField()).thenReturn(DataPropertyReferencedList.class.getDeclaredField("list"));
-        when(att.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasNext));
-        when(att.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasContents));
+        when(att.getHasNextPropertyIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasNext));
+        when(att.getHasContentsPropertyIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasContents));
         when(att.getConverter()).thenReturn(Converters.getDefaultConverter(Integer.class).get());
         return att;
     }

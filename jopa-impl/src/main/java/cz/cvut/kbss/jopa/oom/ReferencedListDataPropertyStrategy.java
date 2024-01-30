@@ -36,7 +36,7 @@ class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Li
         final Collection<Axiom<?>> sequence = mapper.loadReferencedList(listDescriptor);
         sequence.stream()
                 .filter(item -> item.getAssertion().getIdentifier()
-                                    .equals(attribute.getOWLPropertyHasContentsIRI().toURI()))
+                                    .equals(attribute.getHasContentsPropertyIRI().toURI()))
                 .forEach(item -> {
                     final Object value = item.getValue().getValue();
                     if (isValidRange(value)) {
@@ -51,8 +51,8 @@ class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Li
         final boolean inferred = attribute.isInferred();
         final Assertion listProperty = Assertion.createObjectPropertyAssertion(attribute.getIRI().toURI(), inferred);
         final Assertion nextNodeProperty = Assertion
-                .createObjectPropertyAssertion(attribute.getOWLObjectPropertyHasNextIRI().toURI(), inferred);
-        final Assertion nodeContentProperty = Assertion.createDataPropertyAssertion(attribute.getOWLPropertyHasContentsIRI()
+                .createObjectPropertyAssertion(attribute.getHasNextPropertyIRI().toURI(), inferred);
+        final Assertion nodeContentProperty = Assertion.createDataPropertyAssertion(attribute.getHasContentsPropertyIRI()
                                                                                              .toURI(), inferred);
         final ReferencedListDescriptor listDescriptor = new ReferencedListDescriptorImpl(owner, listProperty,
                 nextNodeProperty, nodeContentProperty);
@@ -92,8 +92,8 @@ class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Li
         final Assertion hasList = Assertion
                 .createObjectPropertyAssertion(attribute.getIRI().toURI(), inferred);
         final Assertion hasNext = Assertion.createObjectPropertyAssertion(attribute
-                .getOWLObjectPropertyHasNextIRI().toURI(), inferred);
-        final Assertion hasContent = Assertion.createDataPropertyAssertion(attribute.getOWLPropertyHasContentsIRI()
+                .getHasNextPropertyIRI().toURI(), inferred);
+        final Assertion hasContent = Assertion.createDataPropertyAssertion(attribute.getHasContentsPropertyIRI()
                                                                                     .toURI(), inferred);
         final ReferencedListValueDescriptor<V> descriptor = new ReferencedListValueDescriptor<>(
                 NamedResource.create(owner), hasList, hasNext, hasContent);

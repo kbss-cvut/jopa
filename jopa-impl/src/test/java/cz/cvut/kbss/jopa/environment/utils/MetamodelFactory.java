@@ -274,10 +274,10 @@ public class MetamodelFactory {
                                         .listClassIRI();
         when(simpleListMock.getSequenceType()).thenReturn(SequenceType.simple);
         when(simpleListMock.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(simpleListMock.getOWLListClass()).thenReturn(IRI.create(hasListAttIri));
+        when(simpleListMock.getListClassIRI()).thenReturn(IRI.create(hasListAttIri));
         String hasNextIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
                                      .hasNextPropertyIRI();
-        when(simpleListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
+        when(simpleListMock.getHasNextPropertyIRI()).thenReturn(IRI.create(hasNextIri));
         when(simpleListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(simpleListMock.getPersistentAttributeType())
                 .thenReturn(Attribute.PersistentAttributeType.OBJECT);
@@ -294,15 +294,15 @@ public class MetamodelFactory {
         when(refListMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(refListMock.getSequenceType()).thenReturn(SequenceType.referenced);
         when(refListMock.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(refListMock.getOWLListClass()).thenReturn(IRI.create(hasListAttIri));
+        when(refListMock.getListClassIRI()).thenReturn(IRI.create(hasListAttIri));
         when(refListMock.getName()).thenReturn(OWLClassC.getRefListField().getName());
         when(etMock.getFieldSpecification(refListMock.getName())).thenReturn(refListMock);
         hasNextIri = OWLClassC.getRefListField().getAnnotation(Sequence.class)
                               .hasNextPropertyIRI();
-        when(refListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
+        when(refListMock.getHasNextPropertyIRI()).thenReturn(IRI.create(hasNextIri));
         final String contentIri = OWLClassC.getRefListField().getAnnotation(Sequence.class)
                                            .hasContentsPropertyIRI();
-        when(refListMock.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(contentIri));
+        when(refListMock.getHasContentsPropertyIRI()).thenReturn(IRI.create(contentIri));
         attIri = OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).iri();
         when(refListMock.getIRI()).thenReturn(IRI.create(attIri));
         when(refListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
@@ -631,9 +631,9 @@ public class MetamodelFactory {
         when(refListMock.getSequenceType()).thenReturn(SequenceType.referenced);
         when(refListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(refListMock.isCollection()).thenReturn(true);
-        when(refListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(
+        when(refListMock.getHasNextPropertyIRI()).thenReturn(IRI.create(
                 OWLClassL.getReferencedListField().getAnnotation(Sequence.class).hasNextPropertyIRI()));
-        when(refListMock.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(
+        when(refListMock.getHasContentsPropertyIRI()).thenReturn(IRI.create(
                 OWLClassL.getReferencedListField().getAnnotation(Sequence.class).hasContentsPropertyIRI()));
         when(etMock.getFieldSpecification(OWLClassL.getReferencedListField().getName())).thenReturn(refListMock);
         when(etMock.getAttribute(OWLClassL.getReferencedListField().getName())).thenReturn(refListMock);
@@ -650,7 +650,7 @@ public class MetamodelFactory {
         when(simpleListMock.getSequenceType()).thenReturn(SequenceType.simple);
         when(simpleListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(simpleListMock.isCollection()).thenReturn(true);
-        when(simpleListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(
+        when(simpleListMock.getHasNextPropertyIRI()).thenReturn(
                 IRI.create(OWLClassL.getSimpleListField().getAnnotation(OWLObjectProperty.class).iri()));
         when(etMock.getFieldSpecification(OWLClassL.getSimpleListField().getName())).thenReturn(simpleListMock);
         when(etMock.getAttribute(OWLClassL.getSimpleListField().getName())).thenReturn(simpleListMock);
@@ -1083,9 +1083,9 @@ public class MetamodelFactory {
         final Field simpleListField = OWLClassP.getSimpleListField();
         when(simpleListAtt.getIRI())
                 .thenReturn(IRI.create(simpleListField.getAnnotation(OWLObjectProperty.class).iri()));
-        when(simpleListAtt.getOWLListClass())
+        when(simpleListAtt.getListClassIRI())
                 .thenReturn(IRI.create(simpleListField.getAnnotation(Sequence.class).listClassIRI()));
-        when(simpleListAtt.getOWLObjectPropertyHasNextIRI())
+        when(simpleListAtt.getHasNextPropertyIRI())
                 .thenReturn(IRI.create(simpleListField.getAnnotation(Sequence.class).hasNextPropertyIRI()));
 
         when(refListAtt.getName()).thenReturn(OWLClassP.getReferencedListField().getName());
@@ -1100,11 +1100,11 @@ public class MetamodelFactory {
         when(refListAtt.getSequenceType()).thenReturn(SequenceType.referenced);
         final Field refListField = OWLClassP.getReferencedListField();
         when(refListAtt.getIRI()).thenReturn(IRI.create(refListField.getAnnotation(OWLObjectProperty.class).iri()));
-        when(refListAtt.getOWLListClass())
+        when(refListAtt.getListClassIRI())
                 .thenReturn(IRI.create(refListField.getAnnotation(Sequence.class).listClassIRI()));
-        when(refListAtt.getOWLObjectPropertyHasNextIRI())
+        when(refListAtt.getHasNextPropertyIRI())
                 .thenReturn(IRI.create(refListField.getAnnotation(Sequence.class).hasNextPropertyIRI()));
-        when(refListAtt.getOWLPropertyHasContentsIRI())
+        when(refListAtt.getHasContentsPropertyIRI())
                 .thenReturn(IRI.create(refListField.getAnnotation(Sequence.class).hasContentsPropertyIRI()));
         when(et.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }

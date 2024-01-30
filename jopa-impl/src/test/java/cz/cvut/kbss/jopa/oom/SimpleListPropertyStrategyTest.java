@@ -108,7 +108,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         for (OWLClassA item : lst) {
             final Axiom<NamedResource> a = new AxiomImpl<>(
                     NamedResource.create(previous),
-                    Assertion.createObjectPropertyAssertion(la.getOWLObjectPropertyHasNextIRI().toURI(), false),
+                    Assertion.createObjectPropertyAssertion(la.getHasNextPropertyIRI().toURI(), false),
                     new Value<>(NamedResource.create(item.getUri())));
             axioms.add(a);
             when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, item.getUri(),
@@ -160,7 +160,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         final SimpleListDescriptor res = captor.getValue();
         assertEquals(IDENTIFIER, res.getListOwner().getIdentifier());
         assertEquals(simpleList.getIRI().toURI(), res.getListProperty().getIdentifier());
-        assertEquals(simpleList.getOWLObjectPropertyHasNextIRI().toURI(), res
+        assertEquals(simpleList.getHasNextPropertyIRI().toURI(), res
                 .getNextNode().getIdentifier());
         assertNull(res.getContext());
     }

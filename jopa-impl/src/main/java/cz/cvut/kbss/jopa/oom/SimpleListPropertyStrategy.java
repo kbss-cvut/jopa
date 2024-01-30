@@ -50,7 +50,7 @@ class SimpleListPropertyStrategy<X> extends
         final Assertion listProperty = Assertion
                 .createObjectPropertyAssertion(attribute.getIRI().toURI(), attribute.isInferred());
         final Assertion nextNodeProperty = Assertion
-                .createObjectPropertyAssertion(attribute.getOWLObjectPropertyHasNextIRI().toURI(),
+                .createObjectPropertyAssertion(attribute.getHasNextPropertyIRI().toURI(),
                         attribute.isInferred());
         final SimpleListDescriptor listDescriptor = new SimpleListDescriptorImpl(owner, listProperty, nextNodeProperty);
         listDescriptor.setContext(getAttributeWriteContext());
@@ -74,7 +74,7 @@ class SimpleListPropertyStrategy<X> extends
         final Assertion listProperty = Assertion
                 .createObjectPropertyAssertion(attribute.getIRI().toURI(), attribute.isInferred());
         final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(attribute
-                .getOWLObjectPropertyHasNextIRI().toURI(), attribute.isInferred());
+                                                                                           .getHasNextPropertyIRI().toURI(), attribute.isInferred());
         final SimpleListValueDescriptor listDescriptor = new SimpleListValueDescriptor(owner, listProperty,
                 nextNodeProperty);
         listDescriptor.setContext(getAttributeWriteContext());

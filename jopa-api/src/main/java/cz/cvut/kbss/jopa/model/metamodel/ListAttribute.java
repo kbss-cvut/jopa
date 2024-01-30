@@ -22,18 +22,16 @@ import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 
 /**
- * Instances of the type ListAttribute represent persistent
- * java.util.List-valued attributes.
+ * Instances of the type ListAttribute represent persistent {@link java.util.List}-valued attributes.
  *
- * @param <X>
- *            The type the represented List belongs to
- * @param <E>
- *            The element type of the represented List
+ * @param <X> The type the represented List belongs to
+ * @param <E> The element type of the represented List
  */
 public interface ListAttribute<X, E> extends PluralAttribute<X, java.util.List<E>, E> {
 
     /**
      * Gets the type of the sequence.
+     *
      * @return List type
      */
     @NonJPA
@@ -41,26 +39,29 @@ public interface ListAttribute<X, E> extends PluralAttribute<X, java.util.List<E
 
     /**
      * Gets the IRI of the class that represents the 'OWLList' concept.
-     *
+     * <p>
      * This is relevant only for referenced lists.
+     *
      * @return List type IRI
      */
     @NonJPA
-    IRI getOWLListClass();
+    IRI getListClassIRI();
 
     /**
      * Gets IRI of the property representing the relation between a list node and its content (value).
-     *
+     * <p>
      * Relevant only for referenced lists.
+     *
      * @return Property IRI
      */
     @NonJPA
-    IRI getOWLPropertyHasContentsIRI();
+    IRI getHasContentsPropertyIRI();
 
     /**
      * Gets IRI of the property representing next node in the list.
+     *
      * @return Property IRI
      */
     @NonJPA
-    IRI getOWLObjectPropertyHasNextIRI();
+    IRI getHasNextPropertyIRI();
 }

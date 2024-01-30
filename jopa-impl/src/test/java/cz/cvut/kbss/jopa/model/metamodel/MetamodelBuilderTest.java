@@ -487,8 +487,8 @@ class MetamodelBuilderTest {
         final AbstractIdentifiableType<ClassWithDataPropertyReferencedList> et = builder.entity(ClassWithDataPropertyReferencedList.class);
         final ListAttribute<? super ClassWithDataPropertyReferencedList, MultilingualString> att = et.getList("altLabels", MultilingualString.class);
         assertEquals(SequenceType.referenced, att.getSequenceType());
-        assertEquals(RDF.REST, att.getOWLObjectPropertyHasNextIRI().toString());
-        assertEquals(RDF.FIRST, att.getOWLPropertyHasContentsIRI().toString());
+        assertEquals(RDF.REST, att.getHasNextPropertyIRI().toString());
+        assertEquals(RDF.FIRST, att.getHasContentsPropertyIRI().toString());
 
     }
 
