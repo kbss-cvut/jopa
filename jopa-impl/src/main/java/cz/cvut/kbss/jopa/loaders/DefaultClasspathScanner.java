@@ -112,8 +112,9 @@ public class DefaultClasspathScanner implements ClasspathScanner {
     }
 
     protected static JarFile createJarFile(URL elementUrl) throws IOException {
-        final String jarPath = sanitizePath(elementUrl).replaceFirst("[.]jar[!].*", JAR_FILE_SUFFIX)
-                                                       .replaceFirst("file:", "");
+        final String jarPath = sanitizePath(elementUrl).replaceFirst("[.]jar/?!.*", JAR_FILE_SUFFIX)
+                                                       .replaceFirst("file:", "")
+                                                       .replaceFirst("nested:", "");
         return new JarFile(jarPath);
     }
 
