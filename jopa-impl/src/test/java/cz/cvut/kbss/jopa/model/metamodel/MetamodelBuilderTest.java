@@ -40,6 +40,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.PrePersist;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.model.annotations.RDFCollection;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
@@ -521,5 +522,25 @@ class MetamodelBuilderTest {
         @Sequence(type = SequenceType.simple)
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "dp-referenced-list")
         private List<MultilingualString> altLabels;
+    }
+
+    @Test
+    void buildMetamodelSupportsRDFCollectionAttributes() {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(ClassWithRDFCollectionAttribute.class));
+        builder.buildMetamodel(finderMock);
+        final AbstractIdentifiableType<ClassWithRDFCollectionAttribute> et = builder.entity(ClassWithRDFCollectionAttribute.class);
+        final ListAttribute<? super ClassWithRDFCollectionAttribute, Integer> result = et.getList("rdfCollection", Integer.class);
+        assertInstanceOf(RDFCollectionAttribute.class, result);
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithRDFCollection")
+    public static class ClassWithRDFCollectionAttribute {
+        @Id
+        private URI uri;
+
+        @RDFCollection
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "rdf-collection")
+        private List<Integer> rdfCollection;
     }
 }

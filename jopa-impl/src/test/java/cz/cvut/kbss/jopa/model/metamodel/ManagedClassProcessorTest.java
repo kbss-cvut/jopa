@@ -46,7 +46,7 @@ class ManagedClassProcessorTest {
     }
 
     @TestLocal
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithoutNoArgConstructor")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithoutNoArgConstructor")
     private static class ClassWithoutNoArgConstructor {
         private String name;
 

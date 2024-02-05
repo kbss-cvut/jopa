@@ -184,7 +184,7 @@ public class MetamodelBuilder {
                                                              .filter(superType -> superType.getPersistenceType() == Type.PersistenceType.ENTITY)
                                                              .map(abstractIdentifiableType -> ((IdentifiableEntityType<?>) abstractIdentifiableType).getInheritanceType())
                                                              .distinct()
-                                                             .collect(Collectors.toList());
+                                                             .toList();
         if (superTypesInheritanceTypes.size() == 1) { /// there is an agreement from all parents on inheritance type
             return superTypesInheritanceTypes.get(0);
         } else {

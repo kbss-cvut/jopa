@@ -31,6 +31,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.model.annotations.RDFCollection;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.Sparql;
 import cz.cvut.kbss.jopa.model.annotations.Types;
@@ -128,9 +129,9 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
     /**
-     * Do a bottom top search of hierarchy in order to find annotated accessor belonging to given field.
-     * This is used when a property annotation ( {@link OWLDataProperty,OWLObjectProperty,OWLAnnotationProperty)
-     * is declared on method, not on field.
+     * Do a bottom top search of hierarchy in order to find annotated accessor belonging to given field. This is used
+     * when a property annotation (
+     * {@link OWLDataProperty,OWLObjectProperty,OWLAnnotationProperty) is declared on method, not on field.
      */
     private AnnotatedAccessor findAnnotatedMethodBelongingToField(Field field) {
         LOG.debug("finding property definition to field {} ", field);
@@ -348,6 +349,9 @@ class ClassFieldMetamodelProcessor<X> {
 
     private AbstractAttribute<X, ?> createListAttribute(PropertyInfo property, InferenceInfo
             inference, PropertyAttributes propertyAttributes) {
+        if (property.getAnnotation(RDFCollection.class) != null) {
+            return createRdfCollectionAttribute(property, inference, propertyAttributes);
+        }
         final Sequence os = property.getAnnotation(Sequence.class);
         if (os == null) {
             throw new MetamodelInitializationException("Expected Sequence annotation.");
@@ -361,6 +365,17 @@ class ClassFieldMetamodelProcessor<X> {
                                                                                 .hasNextProperty(IRI.create(resolvePrefix(os.hasNextPropertyIRI())))
                                                                                 .hasContentsProperty(IRI.create(resolvePrefix(os.hasContentsPropertyIRI())))
                                                                                 .sequenceType(os.type());
+        context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
+        return builder.build();
+    }
+
+    private AbstractAttribute<X, ?> createRdfCollectionAttribute(PropertyInfo property, InferenceInfo inference,
+                                                                 PropertyAttributes propertyAttributes) {
+        final RDFCollectionAttribute.RDFCollectionAttributeBuilder builder = RDFCollectionAttribute.builder(propertyAttributes)
+                                                                                                   .declaringType(et)
+                                                                                                   .propertyInfo(property)
+                                                                                                   .inferred(inference.inferred)
+                                                                                                   .includeExplicit(inference.includeExplicit);
         context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
         return builder.build();
     }
