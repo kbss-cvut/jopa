@@ -13,6 +13,11 @@ public class RDFCollectionAttribute<X, V> extends ListAttributeImpl<X, V> {
     }
 
     @Override
+    public boolean isRDFCollection() {
+        return true;
+    }
+
+    @Override
     public String toString() {
         return "RDFCollectionAttribute[" + getName() + "]";
     }
