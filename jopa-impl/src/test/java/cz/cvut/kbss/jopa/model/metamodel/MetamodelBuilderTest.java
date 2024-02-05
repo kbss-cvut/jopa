@@ -531,6 +531,7 @@ class MetamodelBuilderTest {
         final AbstractIdentifiableType<ClassWithRDFCollectionAttribute> et = builder.entity(ClassWithRDFCollectionAttribute.class);
         final ListAttribute<? super ClassWithRDFCollectionAttribute, Integer> result = et.getList("rdfCollection", Integer.class);
         assertInstanceOf(RDFCollectionAttribute.class, result);
+        assertEquals(SequenceType.referenced, result.getSequenceType());
     }
 
     @TestLocal

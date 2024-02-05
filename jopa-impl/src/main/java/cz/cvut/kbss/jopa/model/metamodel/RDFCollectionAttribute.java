@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 
@@ -32,6 +33,7 @@ public class RDFCollectionAttribute<X, V> extends ListAttributeImpl<X, V> {
             owlListClass(IRI.create(RDF.LIST));
             hasNextProperty(IRI.create(RDF.REST));
             hasContentsProperty(IRI.create(RDF.FIRST));
+            sequenceType(SequenceType.referenced);
         }
 
         @Override
