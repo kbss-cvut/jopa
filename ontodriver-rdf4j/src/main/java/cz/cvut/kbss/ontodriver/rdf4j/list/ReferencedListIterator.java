@@ -32,6 +32,7 @@ import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,7 +68,12 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
 
     @Override
     public boolean hasNext() {
-        return !next.isEmpty();
+        return !next.isEmpty() && !isNextNil();
+    }
+
+    private boolean isNextNil() {
+        assert next != null;
+        return RDF.NIL.equals(next.iterator().next().getObject());
     }
 
     @Override
