@@ -27,17 +27,27 @@ import java.util.Objects;
  * Represents singly-linked referenced list.
  * <p>
  * In referenced list each node has content linked to it by a separate property. In addition, each node points to its
- * successor in the sequence (with the exception of the last node, which has no successor).
+ * successor in the sequence. The last node may point to {@literal rdf:nil} or it may just lack a successor.
  */
 public class ReferencedListDescriptorImpl implements ReferencedListDescriptor {
 
     protected final ListDescriptor descriptor;
     private final Assertion nodeContent;
 
+    private final boolean terminatedByNil;
+
     public ReferencedListDescriptorImpl(NamedResource listOwner, Assertion listProperty,
                                         Assertion nextNode, Assertion nodeContent) {
         this.descriptor = new BaseListDescriptorImpl(listOwner, listProperty, nextNode);
         this.nodeContent = Objects.requireNonNull(nodeContent);
+        this.terminatedByNil = false;
+    }
+
+    public ReferencedListDescriptorImpl(NamedResource listOwner, Assertion listProperty,
+                                        Assertion nextNode, Assertion nodeContent, boolean terminatedByNil) {
+        this.descriptor = new BaseListDescriptorImpl(listOwner, listProperty, nextNode);
+        this.nodeContent = Objects.requireNonNull(nodeContent);
+        this.terminatedByNil = terminatedByNil;
     }
 
     @Override
@@ -71,24 +81,27 @@ public class ReferencedListDescriptorImpl implements ReferencedListDescriptor {
     }
 
     @Override
+    public boolean isTerminatedByNil() {
+        return terminatedByNil;
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + descriptor.hashCode();
         result = prime * result + nodeContent.hashCode();
+        result = prime * result + Boolean.hashCode(terminatedByNil);
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) {return true;}
+        if (obj == null) {return false;}
+        if (getClass() != obj.getClass()) {return false;}
         ReferencedListDescriptorImpl other = (ReferencedListDescriptorImpl) obj;
-        return descriptor.equals(other.descriptor) && nodeContent.equals(other.nodeContent);
+        return descriptor.equals(other.descriptor) && nodeContent.equals(other.nodeContent) && terminatedByNil == other.terminatedByNil;
     }
 
     @Override

@@ -39,7 +39,7 @@ class ListDescriptorFactory {
         final Assertion nextNodeProperty = Assertion
                 .createObjectPropertyAssertion(attribute.getHasNextPropertyIRI().toURI(), inferred);
         final Assertion nodeContentProperty = nodeContentProperty(attribute);
-        return new ReferencedListDescriptorImpl(owner, listProperty, nextNodeProperty, nodeContentProperty);
+        return new ReferencedListDescriptorImpl(owner, listProperty, nextNodeProperty, nodeContentProperty, attribute.isRDFCollection());
     }
 
     private static Assertion nodeContentProperty(ListAttribute<?, ?> attribute) {
@@ -57,6 +57,6 @@ class ListDescriptorFactory {
         final Assertion nextNodeProperty = Assertion
                 .createObjectPropertyAssertion(attribute.getHasNextPropertyIRI().toURI(), inferred);
         final Assertion nodeContentProperty = nodeContentProperty(attribute);
-        return new ReferencedListValueDescriptor<>(owner, listProperty, nextNodeProperty, nodeContentProperty);
+        return new ReferencedListValueDescriptor<>(owner, listProperty, nextNodeProperty, nodeContentProperty, attribute.isRDFCollection());
     }
 }
