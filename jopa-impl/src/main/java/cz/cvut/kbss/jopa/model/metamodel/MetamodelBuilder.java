@@ -21,7 +21,11 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.TypeReferenceMap;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Inheritance;
+import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.mapper.ResultSetMappingProcessor;
@@ -32,8 +36,13 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MetamodelBuilder {
 
