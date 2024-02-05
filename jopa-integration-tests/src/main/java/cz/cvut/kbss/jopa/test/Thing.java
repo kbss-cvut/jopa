@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 
@@ -33,7 +34,7 @@ public class Thing {
     @OWLAnnotationProperty(iri = RDFS.LABEL)
     private String name;
 
-    @OWLAnnotationProperty(iri = Vocabulary.DC_DESCRIPTION)
+    @OWLAnnotationProperty(iri = DC.Terms.DESCRIPTION)
     private String description;
 
     @Types

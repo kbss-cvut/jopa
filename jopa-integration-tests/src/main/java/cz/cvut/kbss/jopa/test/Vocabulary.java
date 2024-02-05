@@ -122,13 +122,10 @@ public class Vocabulary {
 
     public static final String V_HAS_THING = ATTRIBUTE_IRI_BASE + "hasThing";
 
-    public static final String DC_DESCRIPTION = "http://purl.org/dc/terms/description";
-    public static final String DC_SOURCE = "http://purl.org/dc/terms/source";
+    public static final String P_HAS_SIMPLE_LIST = ATTRIBUTE_IRI_BASE + "hasSimpleSequence";
+    public static final String P_HAS_REFERENCED_LIST = ATTRIBUTE_IRI_BASE + "hasReferencedSequence";
 
-    public static final String P_HAS_SIMPLE_LIST =
-            "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";
-    public static final String P_HAS_REFERENCED_LIST =
-            "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence";
+    public static final String P_HAS_RDF_COLLECTION = ATTRIBUTE_IRI_BASE + "hasRdfCollection";
 
     public static final String P_X_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDate";
     public static final String P_X_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDateTime";

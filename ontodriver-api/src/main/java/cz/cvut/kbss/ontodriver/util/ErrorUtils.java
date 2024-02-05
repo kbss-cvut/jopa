@@ -19,6 +19,7 @@ package cz.cvut.kbss.ontodriver.util;
 
 import java.util.function.Supplier;
 
+// TODO Remove
 public class ErrorUtils {
 
     /**
