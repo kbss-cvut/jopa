@@ -62,7 +62,21 @@ public class ReferencedListHandler {
         if (descriptor.getValues().isEmpty()) {
             return;
         }
+        verifyNotRdfList(descriptor);
         owlapiAdapter.addTransactionalChanges(snapshot.applyChanges(createListAxioms(descriptor)));
+    }
+
+    /**
+     * OWL does no support RDF lists because it uses them internally, and it would not be possible to distinguish
+     * internal RDF lists from user-defined ones.
+     *
+     * @param descriptor Value descriptor
+     * @throws IllegalArgumentException When the descriptor describes an RDF list terminated by RDF nil
+     */
+    private static void verifyNotRdfList(ReferencedListValueDescriptor<?> descriptor) {
+        if (descriptor.isTerminatedByNil()) {
+            throw new IllegalArgumentException("RDF nil-terminated lists are not supported by the OWL API driver.");
+        }
     }
 
     <V> ReferencedListIterator<V> iterator(ListDescriptor descriptor) {
@@ -93,6 +107,7 @@ public class ReferencedListHandler {
         } else if (isOrigEmpty(descriptor)) {
             persistList(descriptor);
         } else {
+            verifyNotRdfList(descriptor);
             mergeLists(descriptor);
         }
     }

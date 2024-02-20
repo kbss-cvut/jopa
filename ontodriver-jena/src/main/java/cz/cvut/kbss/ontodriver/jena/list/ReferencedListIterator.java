@@ -31,6 +31,7 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.RDF;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -50,6 +51,16 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         super(descriptor, connector);
         this.hasContentAssertion = descriptor.getNodeContent();
         this.hasContent = createProperty(hasContentAssertion.getIdentifier().toString());
+    }
+
+    @Override
+    boolean hasNext() {
+        return super.hasNext() && !isNextNil();
+    }
+
+    private boolean isNextNil() {
+        assert cursor != null;
+        return !cursor.isEmpty() && RDF.nil.equals(cursor.iterator().next().getObject());
     }
 
     @Override

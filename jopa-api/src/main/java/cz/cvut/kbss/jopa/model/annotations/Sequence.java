@@ -30,7 +30,7 @@ import cz.cvut.kbss.jopa.model.SequencesVocabulary;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD,ElementType.METHOD})
+@Target({ElementType.FIELD, ElementType.METHOD})
 public @interface Sequence {
 
     /**
@@ -42,7 +42,7 @@ public @interface Sequence {
 
     /**
      * IRI of the class that represents the 'OWLList' concept.
-     *
+     * <p>
      * Relevant only for {@link SequenceType#referenced} type.
      *
      * @return OWLList class IRI
@@ -51,7 +51,7 @@ public @interface Sequence {
 
     /**
      * IRI of the object property that represents the 'hasContents' role.
-     *
+     * <p>
      * Relevant only for {@link SequenceType#referenced} type.
      *
      * @return hasContents property IRI

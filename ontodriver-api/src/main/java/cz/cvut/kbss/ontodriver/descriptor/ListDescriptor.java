@@ -23,7 +23,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import java.net.URI;
 
 /**
- * This interface declares the basic methods for working with sequences in JOPA.
+ * Describes storage of a list.
  */
 public interface ListDescriptor {
 
@@ -44,8 +44,7 @@ public interface ListDescriptor {
     /**
      * Gets owner of the list.
      * <p>
-     * That is, the named resource which is at the head of the list. In object
-     * model, it is the owning entity.
+     * That is, the named resource which is at the head of the list. In object model, it is the owning entity.
      *
      * @return List owner
      */

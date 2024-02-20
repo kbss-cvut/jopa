@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -465,7 +466,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
 
         assertTrue(em.createNativeQuery("SELECT * WHERE { ?x ?hasSource ?source . }")
-                     .setParameter("hasSource", URI.create(Vocabulary.DC_SOURCE)).getResultList().isEmpty());
+                     .setParameter("hasSource", URI.create(DC.Terms.SOURCE)).getResultList().isEmpty());
     }
 
     @Test

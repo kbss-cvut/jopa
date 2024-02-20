@@ -231,7 +231,7 @@ public class ReferencedListHandlerTest {
         for (Object change : changes) {
             final AddAxiom ax = (AddAxiom) change;
             final OWLAxiom axiom = ax.getAxiom();
-            assertTrue(axiom instanceof OWLObjectPropertyAssertionAxiom);
+            assertInstanceOf(OWLObjectPropertyAssertionAxiom.class, axiom);
             final OWLObjectPropertyAssertionAxiom assertion = (OWLObjectPropertyAssertionAxiom) axiom;
             OWLObjectProperty property = axiom.objectPropertiesInSignature().iterator().next();
             if (property.equals(hasContentProperty)) {
@@ -408,5 +408,23 @@ public class ReferencedListHandlerTest {
                                                                                                    .equals(value)));
             }
         }
+    }
+
+    @Test
+    void persistListThrowsIllegalArgumentExceptionForDescriptorRequestingNilTermination() {
+        this.valueDescriptor = new ReferencedListValueDescriptor<>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, ListTestHelper.HAS_CONTENT, true);
+        ListTestHelper.LIST_ITEMS.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+
+        assertThrows(IllegalArgumentException.class, () -> sut.persistList(valueDescriptor));
+    }
+
+    @Test
+    void updateListThrowsIllegalArgumentExceptionForDescriptorRequestingNilTermination() {
+        testHelper.persistList(ListTestHelper.LIST_ITEMS);
+        this.valueDescriptor = new ReferencedListValueDescriptor<>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, ListTestHelper.HAS_CONTENT, true);
+        final List<URI> subList = ListTestHelper.LIST_ITEMS.subList(0, 5);
+        subList.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+
+        assertThrows(IllegalArgumentException.class, () -> sut.updateList(valueDescriptor));
     }
 }

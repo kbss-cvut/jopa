@@ -252,6 +252,9 @@ public abstract class BaseRunner {
             if (instance.getReferencedList() != null) {
                 instance.getReferencedList().forEach(em::persist);
             }
+            if (instance.getRdfCollection() != null) {
+                instance.getRdfCollection().forEach(em::persist);
+            }
         });
     }
 

@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.Test;
@@ -99,7 +100,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         entityT.setUri(Generators.generateUri());
         data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_T)));
         data.add(new Quad(entityT.getUri(), URI.create(RDFS.LABEL), entityT.getName()));
-        data.add(new Quad(entityT.getUri(), URI.create(Vocabulary.DC_DESCRIPTION), entityT.getDescription()));
+        data.add(new Quad(entityT.getUri(), URI.create(DC.Terms.DESCRIPTION), entityT.getDescription()));
         data.add(new Quad(entityT.getUri(), URI.create(Vocabulary.P_T_INTEGER_ATTRIBUTE), entityT.getIntAttribute()));
         data.addAll(triplesForA());
         data.add(new Quad(entityT.getUri(), URI.create(Vocabulary.P_HAS_OWL_CLASS_A), entityA.getUri()));
@@ -132,7 +133,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
         final OWLClassS result = em.find(OWLClassS.class, entityT.getUri());
         assertNotNull(result);
-        assertTrue(result instanceof OWLClassT);
+        assertInstanceOf(OWLClassT.class, result);
         verifyEntityTAttributes((OWLClassT) result);
     }
 
@@ -149,14 +150,14 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         entityT.setUri(Generators.generateUri());
         data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
         data.add(new Quad(entityT.getUri(), URI.create(RDFS.LABEL), entityT.getName()));
-        data.add(new Quad(entityT.getUri(), URI.create(Vocabulary.DC_DESCRIPTION), entityT.getDescription()));
+        data.add(new Quad(entityT.getUri(), URI.create(DC.Terms.DESCRIPTION), entityT.getDescription()));
 
         final EntityManager em = getEntityManager("findLoadsSubclassOfAbstractParent", false);
         persistTestData(data, em);
 
         final OWLClassSParent result = em.find(OWLClassSParent.class, entityT.getUri());
         assertNotNull(result);
-        assertTrue(result instanceof OWLClassS);
+        assertInstanceOf(OWLClassS.class, result);
         final OWLClassS sResult = (OWLClassS) result;
         assertEquals(entityT.getName(), sResult.getName());
         assertEquals(entityT.getDescription(), sResult.getDescription());
@@ -172,7 +173,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
         final OWLClassSParent result = em.find(OWLClassSParent.class, entityT.getUri());
         assertNotNull(result);
-        assertTrue(result instanceof OWLClassT);
+        assertInstanceOf(OWLClassT.class, result);
         verifyEntityTAttributes((OWLClassT) result);
     }
 
@@ -200,7 +201,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
         final OWLClassSParent result = em.find(OWLClassSParent.class, entityT.getUri());
         assertNotNull(result);
-        assertTrue(result instanceof OWLClassT);
+        assertInstanceOf(OWLClassT.class, result);
         verifyEntityTAttributes((OWLClassT) result);
     }
 
@@ -211,7 +212,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
         final OWLClassSParent result = em.find(OWLClassSParent.class, entityT.getUri());
         assertNotNull(result);
-        assertTrue(result instanceof OWLClassT);
+        assertInstanceOf(OWLClassT.class, result);
         verifyEntityTAttributes((OWLClassT) result);
     }
 
@@ -278,7 +279,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
         final OWLClassU result = em.find(OWLClassU.class, entityU.getUri());
         assertNotNull(result.getOwlClassS());
-        assertTrue(result.getOwlClassS() instanceof OWLClassT);
+        assertInstanceOf(OWLClassT.class, result.getOwlClassS());
         final OWLClassT tResult = (OWLClassT) result.getOwlClassS();
         verifyEntityTAttributes(tResult);
         assertNotNull(tResult.getOwlClassA());

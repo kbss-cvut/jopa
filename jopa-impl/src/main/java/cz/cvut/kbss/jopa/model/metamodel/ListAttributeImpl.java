@@ -34,7 +34,7 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
 
     private final SequenceType owlSequenceType;
 
-    private ListAttributeImpl(ListAttributeBuilder<X, V> builder) {
+    ListAttributeImpl(ListAttributeBuilder<X, V> builder) {
         super(builder);
         this.listClass = builder.listClass;
         this.hasNextProperty = builder.hasNextProperty;
@@ -68,15 +68,20 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
     }
 
     @Override
+    public boolean isRDFCollection() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return "ListAttribute[" + getName() + "]";
     }
 
-    public static ListAttributeBuilder builder(PropertyAttributes config) {
+    static ListAttributeBuilder builder(PropertyAttributes config) {
         return new ListAttributeBuilder().collectionType(List.class).config(config);
     }
 
-    public static class ListAttributeBuilder<X, V> extends PluralAttributeBuilder<X, List<V>, V> {
+    static class ListAttributeBuilder<X, V> extends PluralAttributeBuilder<X, List<V>, V> {
         private IRI listClass;
         private IRI hasNextProperty;
         private IRI hasContentsProperty;
