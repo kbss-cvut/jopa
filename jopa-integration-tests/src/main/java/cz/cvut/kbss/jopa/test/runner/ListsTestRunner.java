@@ -694,7 +694,7 @@ public abstract class ListsTestRunner extends BaseRunner {
     }
 
     @Test
-    void persistSavesRdfCollectionTerminatedByNil() {
+    public void persistSavesRdfCollectionTerminatedByNil() {
         this.em = getEntityManager("persistSavesRdfCollectionTerminatedByNil", false);
         entityC.setRdfCollection(Generators.createRDFCollection(5));
         persistCWithLists(entityC);
@@ -707,7 +707,7 @@ public abstract class ListsTestRunner extends BaseRunner {
     }
 
     @Test
-    void updateUpdatesRdfCollectionTerminatedByNilAndMaintainsCorrectListEnding() {
+    public void updateUpdatesRdfCollectionTerminatedByNilAndMaintainsCorrectListEnding() {
         this.em = getEntityManager("updateUpdatesRdfCollectionTerminatedByNilAndMaintainsCorrectListEnding", false);
         entityC.setRdfCollection(Generators.createRDFCollection(5));
         persistCWithLists(entityC);
