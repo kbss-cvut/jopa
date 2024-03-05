@@ -26,7 +26,7 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
 import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.list.ReferencedListHandler;
@@ -55,14 +55,14 @@ class Rdf4jAdapter implements Closeable, Wrapper {
      */
     private static final int ID_GENERATION_THRESHOLD = 64;
 
-    private final Connector connector;
+    private final RepoConnection connector;
     private final ValueFactory valueFactory;
     private final RuntimeConfiguration config;
     private final Transaction transaction;
 
     private boolean open = true;
 
-    public Rdf4jAdapter(Connector connector, RuntimeConfiguration config) {
+    public Rdf4jAdapter(RepoConnection connector, RuntimeConfiguration config) {
         assert connector != null;
 
         this.connector = connector;
@@ -71,7 +71,7 @@ class Rdf4jAdapter implements Closeable, Wrapper {
         this.transaction = new Transaction();
     }
 
-    Connector getConnector() {
+    RepoConnection getConnector() {
         return connector;
     }
 
@@ -147,6 +147,7 @@ class Rdf4jAdapter implements Closeable, Wrapper {
     }
 
     private void startTransactionIfNotActive() throws Rdf4jDriverException {
+        // TODO Consider whether a transaction should be started for read operations
         if (!transaction.isActive()) {
             connector.begin();
             transaction.begin();

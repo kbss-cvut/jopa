@@ -24,7 +24,7 @@ import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -53,7 +53,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
     private Collection<Statement> currentContent;
     private Collection<Statement> next;
 
-    public ReferencedListIterator(ReferencedListDescriptor listDescriptor, Connector connector, ValueFactory vf)
+    public ReferencedListIterator(ReferencedListDescriptor listDescriptor, RepoConnection connector, ValueFactory vf)
             throws Rdf4jDriverException {
         super(listDescriptor, connector, vf);
         this.listDescriptor = listDescriptor;

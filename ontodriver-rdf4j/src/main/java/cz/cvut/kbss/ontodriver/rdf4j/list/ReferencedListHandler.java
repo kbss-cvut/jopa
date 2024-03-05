@@ -21,7 +21,7 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import org.eclipse.rdf4j.model.IRI;
@@ -45,7 +45,7 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
 
     private final ValueConverter valueConverter;
 
-    public ReferencedListHandler(Connector connector, ValueFactory vf) {
+    public ReferencedListHandler(RepoConnection connector, ValueFactory vf) {
         super(connector, vf);
         this.valueConverter = new ValueConverter(vf);
     }

@@ -20,7 +20,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.loader;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.AxiomBuilder;
 import org.eclipse.rdf4j.model.Resource;
@@ -50,7 +50,7 @@ public class GraphDBStatementLoader extends StatementLoader {
      */
     static final URI GRAPHDB_EXPLICIT_CONTEXT = URI.create("http://www.ontotext.com/explicit");
 
-    public GraphDBStatementLoader(Connector connector, Resource subject, AxiomBuilder axiomBuilder) {
+    public GraphDBStatementLoader(RepoConnection connector, Resource subject, AxiomBuilder axiomBuilder) {
         super(connector, subject, axiomBuilder);
     }
 

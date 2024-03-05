@@ -26,7 +26,7 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Vocabulary;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
@@ -100,7 +100,7 @@ public class ReferencedListHandlerTest {
             URI.create(ListHandlerTestHelper.NODE_CONTENT_PROPERTY), false);
 
     @Mock
-    private Connector connector;
+    private RepoConnection connector;
 
     private ReferencedListDescriptor listDescriptor;
 

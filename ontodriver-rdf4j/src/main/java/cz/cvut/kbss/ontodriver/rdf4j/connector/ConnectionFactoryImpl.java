@@ -20,21 +20,31 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.eclipse.rdf4j.repository.Repository;
 
-public final class ConnectorFactoryImpl implements ConnectorFactory {
+public final class ConnectionFactoryImpl implements ConnectionFactory {
 
     private boolean open;
 
-    private StorageConnector centralConnector;
+    private final StorageConnector connector;
+    private final boolean isGraphDB;
 
-    public ConnectorFactoryImpl(StorageConnector connector) {
+    public ConnectionFactoryImpl(StorageConnector connector) {
+        this(connector, false);
+    }
+
+    public ConnectionFactoryImpl(StorageConnector connector, boolean isGraphDB) {
         this.open = true;
-        this.centralConnector = connector;
+        this.connector = connector;
+        this.isGraphDB = isGraphDB;
     }
 
     @Override
-    public Connector createStorageConnector() {
+    public RepoConnection createStorageConnection() {
         ensureOpen();
-        return new PoolingStorageConnector(centralConnector);
+        if (isGraphDB) {
+            return new GraphDBStorageConnection(connector);
+        } else {
+            return new StorageConnection(connector);
+        }
     }
 
     private void ensureOpen() {
@@ -46,7 +56,7 @@ public final class ConnectorFactoryImpl implements ConnectorFactory {
     @Override
     public void setRepository(Repository repository) {
         ensureOpen();
-        centralConnector.setRepository(repository);
+        connector.setRepository(repository);
     }
 
     @Override
@@ -54,9 +64,8 @@ public final class ConnectorFactoryImpl implements ConnectorFactory {
         if (!open) {
             return;
         }
-        if (centralConnector != null) {
-            centralConnector.close();
-            this.centralConnector = null;
+        if (connector != null) {
+            connector.close();
         }
         this.open = false;
     }

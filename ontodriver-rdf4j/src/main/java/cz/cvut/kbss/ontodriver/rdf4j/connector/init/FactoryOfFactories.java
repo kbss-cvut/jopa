@@ -19,9 +19,8 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector.init;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactory;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactoryImpl;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.GraphDBStorageConnector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectionFactory;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectionFactoryImpl;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.loader.DefaultContextInferenceStatementLoaderFactory;
@@ -30,7 +29,6 @@ import cz.cvut.kbss.ontodriver.rdf4j.loader.GraphDBStatementLoaderFactory;
 import cz.cvut.kbss.ontodriver.rdf4j.loader.StatementLoaderFactory;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.query.BooleanQuery;
-import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 /**
@@ -44,29 +42,26 @@ public class FactoryOfFactories {
     static final String GRAPHDB_INTERNAL_ID_PROPERTY = "http://www.ontotext.com/owlim/entity#id";
 
     private final DriverConfiguration config;
-    private final RepositoryConnectorInitializer connectorInitializer;
+    private final StorageConnector connector;
+
+    private final boolean isGraphDB;
 
     public FactoryOfFactories(DriverConfiguration config) throws Rdf4jDriverException {
         this.config = config;
-        this.connectorInitializer = new RepositoryConnectorInitializer(config);
-        connectorInitializer.initializeRepository();
+        this.connector = new StorageConnector(config);
+        connector.initializeRepository();
+        this.isGraphDB = isRepositoryGraphDB();
     }
 
-    public ConnectorFactory createConnectorFactory() throws Rdf4jDriverException {
-        final StorageConnector connector;
-        if (isRepositoryGraphDB(connectorInitializer.getRepository())) {
-            connector = new GraphDBStorageConnector(connectorInitializer);
-        } else {
-            connector = new StorageConnector(connectorInitializer);
-        }
-        return new ConnectorFactoryImpl(connector);
+    public ConnectionFactory createConnectorFactory() {
+        return new ConnectionFactoryImpl(connector, isGraphDB);
     }
 
-    public StatementLoaderFactory createStatementLoaderFactory() throws Rdf4jDriverException {
+    public StatementLoaderFactory createStatementLoaderFactory() {
         if (config.is(Rdf4jConfigParam.INFERENCE_IN_DEFAULT_CONTEXT)) {
             return new DefaultContextInferenceStatementLoaderFactory();
         }
-        if (isRepositoryGraphDB(connectorInitializer.getRepository())) {
+        if (isGraphDB) {
             return new GraphDBStatementLoaderFactory();
         }
         return new DefaultStatementLoaderFactory();
@@ -80,12 +75,11 @@ public class FactoryOfFactories {
      * If, for some reason, data stored in a non-GraphDB repository explicitly use these identifiers, this method will
      * return false positive result.
      *
-     * @param repository RDF4J repository
      * @return {@code true} if repository is determined to be GraphDB, {@code false} otherwise
      */
-    static boolean isRepositoryGraphDB(Repository repository) throws Rdf4jDriverException {
+    private boolean isRepositoryGraphDB() throws Rdf4jDriverException {
         try {
-            try (final RepositoryConnection connection = repository.getConnection()) {
+            try (final RepositoryConnection connection = connector.acquireConnection()) {
                 final ValueFactory vf = connection.getValueFactory();
                 // Have to use a SPARQL query, because RDF4J API hasStatement call ended with an error
                 // See https://graphdb.ontotext.com/documentation/standard/query-behaviour.html#how-to-access-internal-identifiers-for-entities

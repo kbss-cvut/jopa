@@ -25,12 +25,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-public class ConnectorFactoryImplTest {
+public class ConnectionFactoryImplTest {
 
     @Test
     public void setRepositoryThrowsIllegalStateWhenCalledOnClosedFactory() throws Exception {
         final StorageConnector connector = mock(StorageConnector.class);
-        final ConnectorFactory sut = new ConnectorFactoryImpl(connector);
+        final ConnectionFactory sut = new ConnectionFactoryImpl(connector);
         sut.close();
         final Repository repo = new SailRepository(new MemoryStore());
         try {

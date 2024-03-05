@@ -23,32 +23,31 @@ import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.Rdf4jDataSource;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactory;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactoryImpl;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectionFactory;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectionFactoryImpl;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StorageConnector;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 
 import java.net.URI;
 
 public class TestRepositoryProvider {
 
-    private ConnectorFactory factory;
+    private ConnectionFactory factory;
 
     public TestRepositoryProvider() {
     }
 
-    public Connector createConnector(boolean useInference) throws Rdf4jDriverException {
+    public RepoConnection createConnector(boolean useInference) throws Rdf4jDriverException {
         final DriverConfiguration configuration = new DriverConfiguration(storageProperties());
 
         configuration.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         configuration.setProperty(Rdf4jConfigParam.USE_INFERENCE, Boolean.toString(useInference));
         configuration.setProperty(DriverConfigParam.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-        final RepositoryConnectorInitializer connectorInitializer = new RepositoryConnectorInitializer(configuration);
+        final StorageConnector connectorInitializer = new StorageConnector(configuration);
         connectorInitializer.initializeRepository();
-        this.factory = new ConnectorFactoryImpl(new StorageConnector(connectorInitializer));
-        return factory.createStorageConnector();
+        this.factory = new ConnectionFactoryImpl(connectorInitializer);
+        return factory.createStorageConnection();
     }
 
     public void close() throws OntoDriverException {

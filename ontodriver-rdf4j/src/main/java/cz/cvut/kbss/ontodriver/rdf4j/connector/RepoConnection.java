@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * A RDF4J repository connection wrapper.
  */
-public interface Connector extends Closeable, StatementExecutor, Wrapper {
+public interface RepoConnection extends Closeable, StatementExecutor, Wrapper {
 
     /**
      * Explicitly starts a transaction.

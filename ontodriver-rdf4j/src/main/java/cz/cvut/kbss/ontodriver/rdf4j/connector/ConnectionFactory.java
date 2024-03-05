@@ -21,16 +21,14 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.repository.Repository;
 
-public interface ConnectorFactory {
+public interface ConnectionFactory {
 
     /**
-     * Creates a storage connector.
-     * <p>
-     * It is possible that the underlying implementation will return some sort of proxy for a single storage connector.
+     * Creates a storage connection.
      *
-     * @return New storage connector
+     * @return New storage connection
      */
-    Connector createStorageConnector();
+    RepoConnection createStorageConnection();
 
     /**
      * Closes this factory
@@ -51,7 +49,7 @@ public interface ConnectorFactory {
      * <p>
      * Note that this functionality is supported only for in-memory stores.
      *
-     * @param repository    The new repository
+     * @param repository The new repository
      * @throws Rdf4jDriverException In case setting the repository fails
      */
     void setRepository(Repository repository) throws Rdf4jDriverException;

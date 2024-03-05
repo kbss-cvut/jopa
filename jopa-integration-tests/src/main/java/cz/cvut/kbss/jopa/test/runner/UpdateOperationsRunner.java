@@ -1150,7 +1150,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
      * Bug #202
      */
     @Test
-    void concurrentTransactionsLeaveDataInConsistentState() {
+    public void concurrentTransactionsLeaveDataInConsistentState() {
         final String a1String = "a1String";
         final String a2String = "a2String";
         this.em= getEntityManager("concurrentTransactionsLeaveDataInConsistentState", false);
