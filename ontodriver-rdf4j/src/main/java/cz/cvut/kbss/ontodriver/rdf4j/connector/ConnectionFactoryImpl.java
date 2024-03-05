@@ -18,6 +18,7 @@
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import org.eclipse.rdf4j.common.transaction.IsolationLevel;
 import org.eclipse.rdf4j.repository.Repository;
 
 public final class ConnectionFactoryImpl implements ConnectionFactory {
@@ -26,24 +27,26 @@ public final class ConnectionFactoryImpl implements ConnectionFactory {
 
     private final StorageConnector connector;
     private final boolean isGraphDB;
+    private final IsolationLevel txIsolationLevel;
 
     public ConnectionFactoryImpl(StorageConnector connector) {
-        this(connector, false);
+        this(connector, new ConnectionFactoryConfig(false, null));
     }
 
-    public ConnectionFactoryImpl(StorageConnector connector, boolean isGraphDB) {
+    public ConnectionFactoryImpl(StorageConnector connector, ConnectionFactoryConfig config) {
         this.open = true;
         this.connector = connector;
-        this.isGraphDB = isGraphDB;
+        this.isGraphDB = config.isGraphDB();
+        this.txIsolationLevel = config.txIsolationLevel();
     }
 
     @Override
     public RepoConnection createStorageConnection() {
         ensureOpen();
         if (isGraphDB) {
-            return new GraphDBStorageConnection(connector);
+            return new GraphDBStorageConnection(connector, txIsolationLevel);
         } else {
-            return new StorageConnection(connector);
+            return new StorageConnection(connector, txIsolationLevel);
         }
     }
 

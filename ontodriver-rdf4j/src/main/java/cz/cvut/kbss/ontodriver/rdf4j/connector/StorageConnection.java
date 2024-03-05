@@ -21,6 +21,7 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ThrowingFunction;
+import org.eclipse.rdf4j.common.transaction.IsolationLevel;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -45,10 +46,12 @@ public class StorageConnection implements RepoConnection {
     private boolean open;
 
     final StorageConnector storageConnector;
+    private final IsolationLevel isolationLevel;
     private RepositoryConnection connection;
 
-    public StorageConnection(StorageConnector storageConnector) {
+    public StorageConnection(StorageConnector storageConnector, IsolationLevel isolationLevel) {
         this.storageConnector = storageConnector;
+        this.isolationLevel = isolationLevel;
         this.open = true;
     }
 
@@ -129,7 +132,7 @@ public class StorageConnection implements RepoConnection {
     public void begin() throws Rdf4jDriverException {
         this.connection = storageConnector.acquireConnection();
         try {
-            connection.begin();
+            connection.begin(isolationLevel);
         } catch (RepositoryException e) {
             throw new Rdf4jDriverException(e);
         }

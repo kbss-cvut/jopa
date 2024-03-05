@@ -18,6 +18,7 @@
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import org.eclipse.rdf4j.common.transaction.IsolationLevel;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -27,8 +28,8 @@ import java.util.Set;
 
 public class GraphDBStorageConnection extends StorageConnection {
 
-    public GraphDBStorageConnection(StorageConnector storageConnector) {
-        super(storageConnector);
+    public GraphDBStorageConnection(StorageConnector storageConnector, IsolationLevel isolationLevel) {
+        super(storageConnector, isolationLevel);
     }
 
     @Override

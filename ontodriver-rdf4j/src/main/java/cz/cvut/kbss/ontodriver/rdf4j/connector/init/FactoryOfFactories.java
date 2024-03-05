@@ -20,6 +20,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector.init;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectionFactory;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectionFactoryConfig;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectionFactoryImpl;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
@@ -27,14 +28,22 @@ import cz.cvut.kbss.ontodriver.rdf4j.loader.DefaultContextInferenceStatementLoad
 import cz.cvut.kbss.ontodriver.rdf4j.loader.DefaultStatementLoaderFactory;
 import cz.cvut.kbss.ontodriver.rdf4j.loader.GraphDBStatementLoaderFactory;
 import cz.cvut.kbss.ontodriver.rdf4j.loader.StatementLoaderFactory;
+import org.eclipse.rdf4j.common.transaction.IsolationLevels;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Builds factories for the driver.
  */
 public class FactoryOfFactories {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FactoryOfFactories.class);
 
     /**
      * Property representing internal entity IDs in GraphDB.
@@ -53,8 +62,8 @@ public class FactoryOfFactories {
         this.isGraphDB = isRepositoryGraphDB();
     }
 
-    public ConnectionFactory createConnectorFactory() {
-        return new ConnectionFactoryImpl(connector, isGraphDB);
+    public ConnectionFactory createConnectorFactory() throws Rdf4jDriverException {
+        return new ConnectionFactoryImpl(connector, resolveFactoryConfig());
     }
 
     public StatementLoaderFactory createStatementLoaderFactory() {
@@ -67,13 +76,29 @@ public class FactoryOfFactories {
         return new DefaultStatementLoaderFactory();
     }
 
+    ConnectionFactoryConfig resolveFactoryConfig() throws Rdf4jDriverException {
+        final String isolationLevelConfig = config.getProperty(Rdf4jConfigParam.TRANSACTION_ISOLATION_LEVEL);
+        if (isolationLevelConfig != null) {
+            final Optional<IsolationLevels> optionalLevel = Stream.of(IsolationLevels.values())
+                                                                  .filter(level -> level.toString()
+                                                                                        .equals(isolationLevelConfig))
+                                                                  .findAny();
+            if (optionalLevel.isEmpty()) {
+                throw new Rdf4jDriverException("Unsupported transaction isolation level value '" + isolationLevelConfig + "'.");
+            }
+            LOG.debug("Configured to use RDF4J transaction isolation level '{}'.", optionalLevel.get());
+            return new ConnectionFactoryConfig(isGraphDB, optionalLevel.get());
+        }
+        return new ConnectionFactoryConfig(isGraphDB, null);
+    }
+
     /**
      * Checks whether the underlying repository is in fact GraphDB.
      * <p>
-     * It asks the repository if any subject has an internal GraphDB entity ID (represented by the {@link
-     * #GRAPHDB_INTERNAL_ID_PROPERTY}). Such a triple does not normally show in the data, but is accessing in GraphDB.
-     * If, for some reason, data stored in a non-GraphDB repository explicitly use these identifiers, this method will
-     * return false positive result.
+     * It asks the repository if any subject has an internal GraphDB entity ID (represented by the
+     * {@link #GRAPHDB_INTERNAL_ID_PROPERTY}). Such a triple does not normally show in the data, but is accessing in
+     * GraphDB. If, for some reason, data stored in a non-GraphDB repository explicitly use these identifiers, this
+     * method will return false positive result.
      *
      * @return {@code true} if repository is determined to be GraphDB, {@code false} otherwise
      */
@@ -85,7 +110,11 @@ public class FactoryOfFactories {
                 // See https://graphdb.ontotext.com/documentation/standard/query-behaviour.html#how-to-access-internal-identifiers-for-entities
                 final BooleanQuery query = connection.prepareBooleanQuery("ASK { ?x ?internalId ?y }");
                 query.setBinding("internalId", vf.createIRI(GRAPHDB_INTERNAL_ID_PROPERTY));
-                return query.evaluate();
+                final boolean result = query.evaluate();
+                if (result) {
+                    LOG.debug("Underlying repository is GraphDB.");
+                }
+                return result;
             }
         } catch (RuntimeException e) {
             throw new Rdf4jDriverException(e);
