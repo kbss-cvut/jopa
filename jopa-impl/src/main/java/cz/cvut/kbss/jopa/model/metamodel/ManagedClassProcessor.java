@@ -125,7 +125,7 @@ public class ManagedClassProcessor {
         try {
             cls.getDeclaredConstructor();
         } catch (NoSuchMethodException e) {
-            throw new MetamodelInitializationException("Class " + cls + " is missing required no-arg constructor.", e);
+            throw new MetamodelInitializationException("Entity " + cls + " is missing required no-arg constructor.", e);
         }
     }
 

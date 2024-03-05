@@ -41,7 +41,7 @@ class ManagedClassProcessorTest {
     void processManagedTypeThrowsInitializationExceptionWhenClassIsMissingNoArgConstructor() {
         final MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class,
                 () -> ManagedClassProcessor.processManagedType(ClassWithoutNoArgConstructor.class, new Configuration()));
-        assertEquals("Class " + ClassWithoutNoArgConstructor.class + " is missing required no-arg constructor.",
+        assertEquals("Entity " + ClassWithoutNoArgConstructor.class + " is missing required no-arg constructor.",
                 ex.getMessage());
     }
 
