@@ -70,18 +70,6 @@ class EntityTransactionWrapperTest {
     }
 
     @Test
-    void transactionFinishedReleasesCurrentUoWWhenConfiguredTo() {
-        when(em.getCurrentPersistenceContext()).thenReturn(uow);
-        when(uow.shouldReleaseAfterCommit()).thenReturn(true);
-        final EntityTransaction transaction = sut.getTransaction();
-        sut.begin();
-        sut.commit();
-        sut.transactionFinished();
-        verify(em).removeCurrentPersistenceContext();
-        verify(em).transactionFinished(transaction);
-    }
-
-    @Test
     void rollbackReleasesCurrentUoW() {
         when(em.getCurrentPersistenceContext()).thenReturn(uow);
         sut.getTransaction();

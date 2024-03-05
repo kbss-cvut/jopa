@@ -69,9 +69,9 @@ public class CloneBuilder {
 
     private final Builders builders;
 
-    private final UnitOfWorkImpl uow;
+    private final AbstractUnitOfWork uow;
 
-    public CloneBuilder(UnitOfWorkImpl uow) {
+    public CloneBuilder(AbstractUnitOfWork uow) {
         this.uow = uow;
         this.visitedEntities = new RepositoryMap();
         this.builders = new Builders();

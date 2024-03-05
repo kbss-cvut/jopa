@@ -62,7 +62,7 @@ public class CloneBuilderTest {
     private static EntityDescriptor defaultDescriptor;
 
     @Mock
-    private UnitOfWorkImpl uow;
+    private AbstractUnitOfWork uow;
 
     @Mock
     private MetamodelImpl metamodel;

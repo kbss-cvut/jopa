@@ -93,7 +93,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
      * @return UnitOfWork instance
      */
     public UnitOfWork acquireUnitOfWork(Configuration configuration) {
-        final UnitOfWorkImpl uow = new UnitOfWorkImpl(this, configuration);
+        final AbstractUnitOfWork uow = new ChangeTrackingUnitOfWork(this, configuration);
         LOG.trace("UnitOfWork acquired.");
         return uow;
     }

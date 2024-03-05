@@ -38,7 +38,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
@@ -111,7 +111,7 @@ class ObjectOntologyMapperTest {
     private static AxiomDescriptor axiomDescriptor;
 
     @Mock
-    private UnitOfWorkImpl uowMock;
+    private AbstractUnitOfWork uowMock;
 
     @Mock
     private Connection connectionMock;

@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
+import cz.cvut.kbss.jopa.adapters.IndirectMap;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
@@ -60,7 +61,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
                 throw new IllegalArgumentException("Unsupported map type " + origCls);
             }
         }
-        clone = (Map<?, ?>) uow.createIndirectCollection(clone, cloneOwner, field);
+        clone = new IndirectMap<>(cloneOwner, field, uow, clone);
         return clone;
 
     }

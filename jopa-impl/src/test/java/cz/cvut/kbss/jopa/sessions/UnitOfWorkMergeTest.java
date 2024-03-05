@@ -107,7 +107,7 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         uow.mergeDetached(clone, descriptor);
 
         assertTrue(uow.hasChanges());
-        final UnitOfWorkChangeSet changeSet = uow.getUowChangeSet();
+        final UnitOfWorkChangeSet changeSet = uow.uowChangeSet;
         final ObjectChangeSet objectChanges = changeSet.getExistingObjectChanges(entityA);
         assertNotNull(objectChanges);
         assertEquals(2, objectChanges.getChanges().size());
@@ -184,15 +184,15 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         when(transactionMock.isActive()).thenReturn(true);
         when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
         uow.attributeChanged(managed, OWLClassD.getOwlClassAField());
-        assertTrue(uow.getUowChangeSet().hasChanges());
-        final ObjectChangeSet originalChangeSet = uow.getUowChangeSet().getExistingObjectChanges(entityD);
+        assertTrue(uow.uowChangeSet.hasChanges());
+        final ObjectChangeSet originalChangeSet = uow.uowChangeSet.getExistingObjectChanges(entityD);
         assertTrue(originalChangeSet.hasChanges());
         final OWLClassD detached = new OWLClassD(managed.getUri());
         detached.setOwlClassA(a2Clone);
 
         uow.mergeDetached(detached, descriptor);
-        assertTrue(uow.getUowChangeSet().hasChanges());
-        final ObjectChangeSet result = uow.getUowChangeSet().getExistingObjectChanges(entityD);
+        assertTrue(uow.uowChangeSet.hasChanges());
+        final ObjectChangeSet result = uow.uowChangeSet.getExistingObjectChanges(entityD);
         assertEquals(originalChangeSet, result);
         assertTrue(result.hasChanges());
     }

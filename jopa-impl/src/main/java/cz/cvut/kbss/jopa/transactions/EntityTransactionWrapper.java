@@ -58,9 +58,6 @@ public class EntityTransactionWrapper {
     }
 
     void transactionFinished() {
-        if (transactionUOW.shouldReleaseAfterCommit()) {
-            entityManager.removeCurrentPersistenceContext();
-        }
         entityManager.transactionFinished(entityTransaction);
         this.transactionUOW = null;
     }

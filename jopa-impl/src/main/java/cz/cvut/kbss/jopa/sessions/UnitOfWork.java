@@ -262,9 +262,9 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
     void removeObjectFromCache(Object object, URI context);
 
     /**
-     * Release the current unit of work.
+     * Releases this unit of work.
      * <p>
-     * Calling this method disregards any changes.
+     * Releasing an active Unit of Work with uncommitted changes causes all pending changes to be discarded.
      */
     void release();
 
@@ -291,14 +291,6 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * @param object Clone to detach
      */
     void unregisterObject(Object object);
-
-    /**
-     * This method returns true, if the UnitOfWork should be released after the commit call. This is done for inferred
-     * attributes, which cause the whole session cache to be invalidated.
-     *
-     * @return True if the UnitOfWork should be released after commit.
-     */
-    boolean shouldReleaseAfterCommit();
 
     /**
      * Writes any uncommitted changes into the ontology.

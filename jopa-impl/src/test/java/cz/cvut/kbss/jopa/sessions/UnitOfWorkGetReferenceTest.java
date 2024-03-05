@@ -156,7 +156,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
         when(storageMock.getReference(any(LoadingParameters.class))).thenReturn(reference);
         final OWLClassA result = uow.getReference(OWLClassA.class, entityA.getUri(), descriptor);
         uow.attributeChanged(result, OWLClassA.getStrAttField());
-        assertFalse(uow.getUowChangeSet().hasChanges());
+        assertFalse(uow.uowChangeSet.hasChanges());
     }
 
     @Test
@@ -232,7 +232,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
 
         uow.attributeChanged(changed, OWLClassD.getOwlClassAField());
 
-        final ObjectChangeSet changeSet = uow.getUowChangeSet().getExistingObjectChanges(owner);
+        final ObjectChangeSet changeSet = uow.uowChangeSet.getExistingObjectChanges(owner);
         assertFalse(changeSet.getChanges().isEmpty());
         final Optional<ChangeRecord> changeRecord =
                 changeSet.getChanges().stream().filter(chr -> chr.getNewValue().equals(ref)).findFirst();
@@ -254,7 +254,7 @@ public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
 
         uow.mergeDetached(toMerge, descriptor);
 
-        final ObjectChangeSet changeSet = uow.getUowChangeSet().getExistingObjectChanges(owner);
+        final ObjectChangeSet changeSet = uow.uowChangeSet.getExistingObjectChanges(owner);
         assertFalse(changeSet.getChanges().isEmpty());
         final Optional<ChangeRecord> changeRecord =
                 changeSet.getChanges().stream().filter(chr -> chr.getNewValue().equals(ref)).findFirst();

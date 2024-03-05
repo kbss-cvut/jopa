@@ -43,7 +43,7 @@ public class ConnectionWrapper implements Wrapper {
         this.connection = connection;
     }
 
-    void setUnitOfWork(UnitOfWorkImpl uow) {
+    void setUnitOfWork(AbstractUnitOfWork uow) {
         this.mapper = new ObjectOntologyMapperImpl(uow, connection);
     }
 

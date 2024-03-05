@@ -45,7 +45,6 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
@@ -464,18 +463,6 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void testClearCacheAfterCommit() {
-        uow.registerNewObject(entityA, descriptor);
-        final Object clone = uow.registerExistingObject(entityB, descriptor);
-        assertTrue(uow.contains(entityA));
-        assertTrue(uow.contains(clone));
-        uow.setShouldClearAfterCommit(true);
-        uow.commit();
-
-        verify(serverSessionStub.getLiveObjectCache()).evictAll();
-    }
-
-    @Test
     void loadFieldLoadsLiteralValueAttribute() {
         final OWLClassB b = new OWLClassB();
         b.setUri(URI.create("http://bUri"));
@@ -646,22 +633,12 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         uow.removeObject(toRemove);
 
         uow.clear();
-        assertTrue(getMap("cloneToOriginals") == null || getMap("cloneToOriginals").isEmpty());
-        assertTrue(getMap("keysToClones") == null || getMap("keysToClones").isEmpty());
-        assertTrue(getMap("deletedObjects") == null || getMap("deletedObjects").isEmpty());
-        assertTrue(getMap("newObjectsCloneToOriginal") == null || getMap("newObjectsCloneToOriginal").isEmpty());
-        assertTrue(getMap("newObjectsKeyToClone") == null || getMap("newObjectsKeyToClone").isEmpty());
-        assertFalse(getBoolean("hasChanges"));
-        assertFalse(getBoolean("hasNew"));
-        assertFalse(getBoolean("hasDeleted"));
-    }
-
-    private Map<?, ?> getMap(String fieldName) throws Exception {
-        final Field field = uow.getClass().getDeclaredField(fieldName);
-        if (!field.canAccess(uow)) {
-            field.setAccessible(true);
-        }
-        return (Map<?, ?>) field.get(uow);
+        assertTrue(uow.cloneToOriginals.isEmpty());
+        assertTrue(uow.keysToClones.isEmpty());
+        assertTrue(uow.deletedObjects.isEmpty());
+        assertTrue(uow.newObjectsCloneToOriginal.isEmpty());
+        assertTrue(uow.newObjectsKeyToClone.isEmpty());
+        assertFalse(uow.hasChanges());
     }
 
 
@@ -856,11 +833,10 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         original.setStringAttribute(entityA.getStringAttribute());
         original.setTypes(new HashSet<>(entityA.getTypes()));
         when(storageMock.find(any())).thenReturn(original);
-        final UnitOfWorkChangeSet uowChangeSet = uow.getUowChangeSet();
-        assertNotNull(uowChangeSet.getExistingObjectChanges(entityA));
+        assertNotNull(uow.uowChangeSet.getExistingObjectChanges(entityA));
         uow.refreshObject(a);
-        assertNull(uowChangeSet.getExistingObjectChanges(entityA));
-        assertNull(uowChangeSet.getExistingObjectChanges(original));
+        assertNull(uow.uowChangeSet.getExistingObjectChanges(entityA));
+        assertNull(uow.uowChangeSet.getExistingObjectChanges(original));
     }
 
     @Test
@@ -1037,10 +1013,9 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         instance.setStringAttribute("update");
         uow.attributeChanged(instance, OWLClassA.getStrAttField());
         uow.removeObject(instance);
-        final UnitOfWorkChangeSet changeSet = uow.getUowChangeSet();
-        assertFalse(changeSet.getExistingObjectsChanges().isEmpty());
+        assertFalse(uow.uowChangeSet.getExistingObjectsChanges().isEmpty());
         uow.commit();
-        assertTrue(changeSet.getExistingObjectsChanges().isEmpty());
+        assertTrue(uow.uowChangeSet.getExistingObjectsChanges().isEmpty());
     }
 
     @Test

@@ -26,7 +26,7 @@ import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.model.CacheManager;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
@@ -45,8 +45,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     private static final Logger LOG = LoggerFactory.getLogger(ObjectOntologyMapperImpl.class);
 
-    private final UnitOfWorkImpl uow;
-    private final CacheManager cache;
+    private final AbstractUnitOfWork uow;
     private final Connection storageConnection;
 
     private final AxiomDescriptorFactory descriptorFactory;
@@ -58,9 +57,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     private final EntityInstanceLoader defaultInstanceLoader;
     private final EntityInstanceLoader twoStepInstanceLoader;
 
-    public ObjectOntologyMapperImpl(UnitOfWorkImpl uow, Connection connection) {
+    public ObjectOntologyMapperImpl(AbstractUnitOfWork uow, Connection connection) {
         this.uow = Objects.requireNonNull(uow);
-        this.cache = uow.getLiveObjectCache();
         this.storageConnection = Objects.requireNonNull(connection);
         this.descriptorFactory = new AxiomDescriptorFactory();
         this.instanceRegistry = new HashMap<>();
@@ -71,11 +69,15 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         this.defaultInstanceLoader = DefaultInstanceLoader.builder().connection(storageConnection)
                                                           .metamodel(uow.getMetamodel())
                                                           .descriptorFactory(descriptorFactory)
-                                                          .entityBuilder(entityBuilder).cache(cache).build();
+                                                          .entityBuilder(entityBuilder).cache(getCache()).build();
         this.twoStepInstanceLoader = TwoStepInstanceLoader.builder().connection(storageConnection)
                                                           .metamodel(uow.getMetamodel())
                                                           .descriptorFactory(descriptorFactory)
-                                                          .entityBuilder(entityBuilder).cache(cache).build();
+                                                          .entityBuilder(entityBuilder).cache(getCache()).build();
+    }
+
+    private CacheManager getCache() {
+        return uow.getLiveObjectCache();
     }
 
     @Override
@@ -112,7 +114,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             result = defaultInstanceLoader.loadEntity(loadingParameters);
         }
         if (result != null) {
-            cache.add(loadingParameters.getIdentifier(), result, loadingParameters.getDescriptor());
+            getCache().add(loadingParameters.getIdentifier(), result, loadingParameters.getDescriptor());
         }
         return result;
     }
@@ -227,7 +229,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         if (orig != null) {
             return orig;
         }
-        if (cache.contains(cls, identifier, descriptor)) {
+        if (getCache().contains(cls, identifier, descriptor)) {
             return defaultInstanceLoader.loadCached(getEntityType(cls), identifier, descriptor);
         } else if (instanceRegistry.containsKey(identifier)) {
             final Object existing = instanceRegistry.get(identifier);

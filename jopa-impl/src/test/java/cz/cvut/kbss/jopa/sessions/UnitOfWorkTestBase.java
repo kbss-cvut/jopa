@@ -66,7 +66,7 @@ public abstract class UnitOfWorkTestBase {
 
     CloneBuilder cloneBuilder;
 
-    protected UnitOfWorkImpl uow;
+    protected AbstractUnitOfWork uow;
 
     protected void setUp() throws Exception {
         this.descriptor = new EntityDescriptor(CONTEXT_URI);
@@ -76,9 +76,9 @@ public abstract class UnitOfWorkTestBase {
         when(emMock.getConfiguration()).thenReturn(config);
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodelMock);
-        this.uow = new UnitOfWorkImpl(serverSessionStub, config);
+        this.uow = new ChangeTrackingUnitOfWork(serverSessionStub, config);
         uow.begin();
-        final Field cbField = UnitOfWorkImpl.class.getDeclaredField("cloneBuilder");
+        final Field cbField = AbstractUnitOfWork.class.getDeclaredField("cloneBuilder");
         cbField.setAccessible(true);
         this.cloneBuilder = spy((CloneBuilder) cbField.get(uow));
         cbField.set(uow, cloneBuilder);

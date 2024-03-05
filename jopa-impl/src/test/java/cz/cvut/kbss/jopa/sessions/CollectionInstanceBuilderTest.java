@@ -51,7 +51,7 @@ import static org.mockito.Mockito.when;
 public class CollectionInstanceBuilderTest {
 
     @Mock
-    private UnitOfWorkImpl uowMock;
+    private AbstractUnitOfWork uowMock;
 
     private Descriptor descriptor;
 
@@ -86,7 +86,7 @@ public class CollectionInstanceBuilderTest {
         final Object result =
                 builder.buildClone(owner, CollectionOwner.listField(), owner.list, new CloneConfiguration(descriptor, false));
         assertNotNull(result);
-        assertTrue(result instanceof List);
+        assertInstanceOf(List.class, result);
         final List<?> lstResult = (List<?>) result;
         owner.list.forEach(e -> assertTrue(lstResult.contains(e)));
     }
@@ -100,7 +100,7 @@ public class CollectionInstanceBuilderTest {
         final Object result =
                 builder.buildClone(owner, CollectionOwner.setField(), owner.set, new CloneConfiguration(descriptor, false));
         assertNotNull(result);
-        assertTrue(result instanceof Set);
+        assertInstanceOf(Set.class, result);
         final Set<?> setResult = (Set<?>) result;
         owner.set.forEach(e -> assertTrue(setResult.contains(e)));
     }
