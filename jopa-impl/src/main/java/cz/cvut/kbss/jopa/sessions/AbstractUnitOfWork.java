@@ -67,7 +67,7 @@ import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 public abstract class AbstractUnitOfWork extends AbstractSession implements UnitOfWork {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractUnitOfWork.class);
-    protected final IndirectWrapperHelper indirectWrapperHelper;
+    final IndirectWrapperHelper indirectWrapperHelper;
 
     // Read-only!!! It is just the keyset of cloneToOriginals
     final Set<Object> cloneMapping;
@@ -771,7 +771,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         final Descriptor fieldDescriptor = getFieldDescriptor(entity, field, entityDescriptor);
         final Object clone = cloneLoadedFieldValue(entity, field, fieldDescriptor, orig);
         EntityPropertiesUtils.setFieldValue(field, entity, clone);
-        instanceDescriptors.get(entity).setLoaded(fieldSpec, LoadState.LOADED);
+        instanceDescriptor.setLoaded((FieldSpecification) fieldSpec, LoadState.LOADED);
     }
 
     private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {

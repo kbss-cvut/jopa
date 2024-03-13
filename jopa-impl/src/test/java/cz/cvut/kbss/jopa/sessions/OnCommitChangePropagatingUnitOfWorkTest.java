@@ -1,11 +1,11 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.environment.NoopInstantiableTypeGenerator;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelFactory;
 import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
-import cz.cvut.kbss.jopa.model.metamodel.gen.PersistenceContextAwareClassGenerator;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.AfterAll;
@@ -28,24 +28,22 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class OnCommitChangePropagatingUnitOfWorkTest extends UnitOfWorkTestBase {
+class OnCommitChangePropagatingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
 
     @BeforeAll
     static void setUpBeforeAll() {
-        MetamodelFactory.setInstantiableTypeGenerator(new PersistenceContextAwareClassGenerator() {
-            @Override
-            public <T> Class<? extends T> generate(Class<T> entityClass) {
-                return entityClass;
-            }
-        });
+        MetamodelFactory.setInstantiableTypeGenerator(NoopInstantiableTypeGenerator.INSTANCE);
     }
 
     @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.uow = new OnCommitChangePropagatingUnitOfWork(serverSessionStub, new Configuration());
-        uow.begin();
+    }
+
+    @Override
+    protected AbstractUnitOfWork initUnitOfWork() {
+        return new OnCommitChangePropagatingUnitOfWork(serverSessionStub, new Configuration());
     }
 
     @AfterAll

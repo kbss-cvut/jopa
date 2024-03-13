@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassL;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.LoadState;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,9 +43,16 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
 
+    // TODO Support ChangeTrackingUoW and OnCommitChangePropagatingUoW
+
     @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
+    }
+
+    @Override
+    protected AbstractUnitOfWork initUnitOfWork() {
+        return new ChangeTrackingUnitOfWork(serverSessionStub, new Configuration());
     }
 
     @Test

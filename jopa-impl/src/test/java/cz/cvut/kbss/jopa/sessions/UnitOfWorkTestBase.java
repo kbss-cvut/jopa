@@ -27,7 +27,6 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
-import cz.cvut.kbss.jopa.utils.Configuration;
 import org.mockito.Mock;
 
 import java.lang.reflect.Field;
@@ -66,10 +65,9 @@ public abstract class UnitOfWorkTestBase {
     protected void setUp() throws Exception {
         this.descriptor = new EntityDescriptor(CONTEXT_URI);
         this.serverSessionStub = spy(new ServerSessionStub(metamodelMock, storageMock));
-        final Configuration config = new Configuration();
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodelMock);
-        this.uow = new ChangeTrackingUnitOfWork(serverSessionStub, config);
+        this.uow = initUnitOfWork();
         uow.begin();
         final Field cbField = AbstractUnitOfWork.class.getDeclaredField("cloneBuilder");
         cbField.setAccessible(true);
@@ -77,6 +75,8 @@ public abstract class UnitOfWorkTestBase {
         cbField.set(uow, cloneBuilder);
         initEntities();
     }
+
+    protected abstract AbstractUnitOfWork initUnitOfWork();
 
     private void initEntities() {
         this.entityA = Generators.generateOwlClassAInstance();

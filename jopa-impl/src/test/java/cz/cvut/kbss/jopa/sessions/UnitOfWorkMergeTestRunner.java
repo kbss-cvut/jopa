@@ -17,47 +17,47 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
-import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassF;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
+abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
 
-    @BeforeEach
-    public void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Test
-    void testMergeDetachedExisting() {
-        mergeDetachedTest();
-    }
-
-    private void mergeDetachedTest() {
+    OWLClassA mergeDetached() {
         when(storageMock.contains(entityA.getUri(), entityA.getClass(), descriptor)).thenReturn(Boolean.TRUE);
         final OWLClassA orig = new OWLClassA();
         orig.setUri(entityA.getUri());
@@ -68,20 +68,13 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
         it.remove();
         when(storageMock.find(any())).thenReturn(orig);
 
-        final OWLClassA res = uow.mergeDetached(entityA, descriptor);
-        assertNotNull(res);
-        assertEquals(entityA.getUri(), res.getUri());
-        final ArgumentCaptor<FieldSpecification> ac = ArgumentCaptor.forClass(FieldSpecification.class);
-        verify(storageMock, atLeastOnce()).merge(any(Object.class), ac.capture(), eq(descriptor));
-        final List<FieldSpecification> mergedFields = ac.getAllValues();
-        assertTrue(mergedFields.contains(metamodelMocks.forOwlClassA().stringAttribute()));
-        assertTrue(mergedFields.contains(metamodelMocks.forOwlClassA().typesSpec()));
+        return uow.mergeDetached(entityA, descriptor);
     }
 
     @Test
     void mergeDetachedEvictsInstanceFromCache() {
         when(serverSessionStub.getLiveObjectCache().contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
-        mergeDetachedTest();
+        mergeDetached();
         verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
     }
 
@@ -175,26 +168,15 @@ public class UnitOfWorkMergeTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void mergeDoesNotAddChangeSetToUoWChangeSetWhenItContainsNoChanges() throws Exception {
+    void mergeDoesNotAddChangeSetToUoWChangeSetWhenItContainsNoChanges() {
         final OWLClassD managed = (OWLClassD) uow.registerExistingObject(entityD, descriptor);
-        final OWLClassA a2 = new OWLClassA(Generators.createIndividualIdentifier());
-        a2.setStringAttribute("a2");
-        final OWLClassA a2Clone = (OWLClassA) uow.registerExistingObject(a2, descriptor);
-        managed.setOwlClassA(a2Clone);
         when(transactionMock.isActive()).thenReturn(true);
         when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
-        uow.attributeChanged(managed, OWLClassD.getOwlClassAField());
-        assertTrue(uow.uowChangeSet.hasChanges());
-        final ObjectChangeSet originalChangeSet = uow.uowChangeSet.getExistingObjectChanges(entityD);
-        assertTrue(originalChangeSet.hasChanges());
         final OWLClassD detached = new OWLClassD(managed.getUri());
-        detached.setOwlClassA(a2Clone);
+        detached.setOwlClassA(entityA);
 
         uow.mergeDetached(detached, descriptor);
-        assertTrue(uow.uowChangeSet.hasChanges());
-        final ObjectChangeSet result = uow.uowChangeSet.getExistingObjectChanges(entityD);
-        assertEquals(originalChangeSet, result);
-        assertTrue(result.hasChanges());
+        assertNull(uow.uowChangeSet.getExistingObjectChanges(entityD));
     }
 
     @Test
