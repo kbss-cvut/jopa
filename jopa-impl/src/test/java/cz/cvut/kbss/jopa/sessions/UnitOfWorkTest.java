@@ -100,6 +100,8 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class UnitOfWorkTest extends UnitOfWorkTestBase {
 
+    // TODO Subclass ChangeTrackingUnitOfWorkTest and OnCommitChangePropagatingUnitOfWorkTest, keep common tests here
+
     @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
@@ -407,12 +409,12 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     }
 
     @Test
-    void removeManagedNewObjectRemovesItFromPersistenceContext() {
+    void removeObjectRemovesNewlyRegisteredObjectFromPersistenceContext() {
         final OWLClassB newOne = new OWLClassB(Generators.createIndividualIdentifier());
         newOne.setStringAttribute("strAtt");
-        this.uow.registerNewObject(newOne, descriptor);
+        uow.registerNewObject(newOne, descriptor);
         assertTrue(uow.contains(newOne));
-        // Now try to remove it
+
         uow.removeObject(newOne);
         assertFalse(uow.contains(newOne));
     }
@@ -641,15 +643,6 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         assertFalse(uow.hasChanges());
     }
 
-
-    private boolean getBoolean(String fieldName) throws Exception {
-        final Field field = uow.getClass().getDeclaredField(fieldName);
-        if (!field.canAccess(uow)) {
-            field.setAccessible(true);
-        }
-        return (boolean) field.get(uow);
-    }
-
     @Test
     void unwrapReturnsItselfWhenClassMatches() {
         assertSame(uow, uow.unwrap(UnitOfWork.class));
@@ -661,9 +654,9 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
                 .thenReturn(entityA);
         final OWLClassA result = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         assertNotNull(result);
-        assertTrue(result.getTypes() instanceof IndirectSet);
+        assertInstanceOf(IndirectSet.class, result.getTypes());
         uow.release();
-        assertFalse(result.getTypes() instanceof IndirectSet);
+        assertThat(result.getTypes(), not(instanceOf(IndirectSet.class)));
     }
 
     @Test
@@ -673,11 +666,11 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final OWLClassA result = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         entityB.setProperties(new HashMap<>());
         uow.registerNewObject(entityB, descriptor);
-        assertTrue(result.getTypes() instanceof IndirectSet);
-        assertTrue(entityB.getProperties() instanceof IndirectMap);
+        assertInstanceOf(IndirectSet.class, result.getTypes());
+        assertInstanceOf(IndirectMap.class, entityB.getProperties());
         uow.rollback();
-        assertFalse(result.getTypes() instanceof IndirectSet);
-        assertFalse(entityB.getProperties() instanceof IndirectMap);
+        assertThat(result.getTypes(), not(instanceOf(IndirectSet.class)));
+        assertThat(entityB.getProperties(), not(instanceOf(IndirectMap.class)));
         assertFalse(uow.contains(result));
         assertFalse(uow.contains(entityB));
     }
@@ -689,7 +682,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         when(storageMock.find(new LoadingParameters<>(OWLClassR.class, entityR.getUri(), descriptor)))
                 .thenReturn(entityR);
         final OWLClassR clone = uow.readObject(OWLClassR.class, entityR.getUri(), descriptor);
-        assertTrue(clone.getTypes() instanceof IndirectSet);
+        assertInstanceOf(IndirectSet.class, clone.getTypes());
     }
 
     @Test
@@ -874,7 +867,7 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void commitDetachesPersistedInstance() {
         uow.registerNewObject(entityA, descriptor);
-        assertTrue(entityA.getTypes() instanceof IndirectSet);
+        assertInstanceOf(IndirectSet.class, entityA.getTypes());
         assertTrue(uow.contains(entityA));
         uow.commit();
         assertFalse(uow.contains(entityA));
@@ -883,9 +876,9 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
     @Test
     void commitReplacesIndirectCollectionsWithRegularOnesInDetachedInstances() {
         uow.registerNewObject(entityA, descriptor);
-        assertTrue(entityA.getTypes() instanceof IndirectSet);
+        assertInstanceOf(IndirectSet.class, entityA.getTypes());
         uow.commit();
-        assertFalse(entityA.getTypes() instanceof IndirectSet);
+        assertThat(entityA.getTypes(), not(instanceOf(IndirectSet.class)));
     }
 
     @Test
@@ -895,10 +888,10 @@ class UnitOfWorkTest extends UnitOfWorkTestBase {
         final Set<String> types = Generators.generateTypes(3);
         entityR.setTypes(types);
         uow.registerNewObject(entityR, descriptor);
-        assertTrue(entityR.getTypes() instanceof IndirectSet);
+        assertInstanceOf(IndirectSet.class, entityR.getTypes());
         assertEquals(types, entityR.getTypes());
         uow.commit();
-        assertFalse(entityR.getTypes() instanceof IndirectSet);
+        assertThat(entityR.getTypes(), not(instanceOf(IndirectSet.class)));
         assertEquals(types, entityR.getTypes());
     }
 

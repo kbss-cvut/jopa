@@ -1,9 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectWrapper;
-import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.Manageable;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -24,13 +22,10 @@ import java.util.Objects;
 
 import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
-public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork{
-
-    private final IndirectWrapperHelper indirectWrapperHelper;
+public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
 
     public ChangeTrackingUnitOfWork(AbstractSession parent, Configuration configuration) {
         super(parent, configuration);
-        this.indirectWrapperHelper = new IndirectWrapperHelper(this);
     }
 
     @Override
@@ -59,8 +54,8 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork{
     /**
      * Create and set indirect collection on the specified entity field.
      * <p>
-     * If the specified field is of Collection type, and it is not already an indirect collection, create new one and set
-     * it as the value of the specified field on the specified entity.
+     * If the specified field is of Collection type, and it is not already an indirect collection, create new one and
+     * set it as the value of the specified field on the specified entity.
      *
      * @param entity The entity collection will be set on
      * @param field  The field to set
@@ -231,10 +226,10 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork{
 
         final T clone = getInstanceForMerge(idUri, et, descriptor);
         try {
-            // Merge only the changed attributes
             ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
-            // Have to check for inferred attribute changes before the actual merge
+            // Merge only the changed attributes
             changeCalculator.calculateChanges(chSet);
+            // Have to check for inferred attribute changes before the actual merge
             chSet = processInferredValueChanges(chSet);
             if (chSet.hasChanges()) {
                 et.getLifecycleListenerManager().invokePreUpdateCallbacks(clone);
@@ -258,84 +253,6 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork{
         return et.getJavaType().cast(clone);
     }
 
-    private <T> T getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
-        if (keysToClones.containsKey(identifier)) {
-            return (T) keysToClones.get(identifier);
-        }
-        final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), identifier, descriptor, true);
-        T original = storage.find(params);
-        assert original != null;
-
-        return (T) registerExistingObject(original, descriptor);
-    }
-
-    private ObjectChangeSet processInferredValueChanges(ObjectChangeSet changeSet) {
-        if (getConfiguration().is(JOPAPersistenceProperties.IGNORE_INFERRED_VALUE_REMOVAL_ON_MERGE)) {
-            final ObjectChangeSet copy = ChangeSetFactory.createObjectChangeSet(changeSet.getChangedObject(), changeSet.getCloneObject(), changeSet.getEntityDescriptor());
-            changeSet.getChanges().stream().filter(chr -> !(chr.getAttribute().isInferred() &&
-                    inferredAttributeChangeValidator.isInferredValueRemoval(changeSet.getCloneObject(), changeSet.getChangedObject(),
-                            (FieldSpecification) chr.getAttribute(),
-                            changeSet.getEntityDescriptor()))).forEach(copy::addChangeRecord);
-            return copy;
-        } else {
-            changeSet.getChanges().stream().filter(chr -> chr.getAttribute().isInferred()).forEach(
-                    chr -> inferredAttributeChangeValidator.validateChange(changeSet.getCloneObject(), changeSet.getChangedObject(),
-                            (FieldSpecification) chr.getAttribute(),
-                            changeSet.getEntityDescriptor()));
-            return changeSet;
-        }
-    }
-
-    private static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
-                                                 Descriptor descriptor) {
-        final ObjectChangeSet newChangeSet = ChangeSetFactory.createObjectChangeSet(original, clone, descriptor);
-        changeSet.getChanges().forEach(newChangeSet::addChangeRecord);
-        return newChangeSet;
-    }
-
-    private void evictAfterMerge(EntityType<?> et, URI identifier, Descriptor descriptor) {
-        if (getLiveObjectCache().contains(et.getJavaType(), identifier, descriptor)) {
-            getLiveObjectCache().evict(et.getJavaType(), identifier, descriptor.getSingleContext().orElse(null));
-        }
-        getMetamodel().getReferringTypes(et.getJavaType()).forEach(getLiveObjectCache()::evict);
-    }
-
-    @Override
-    public <T> void refreshObject(T object) {
-        Objects.requireNonNull(object);
-        ensureManaged(object);
-
-        final IdentifiableEntityType<T> et = entityType((Class<T>) object.getClass());
-        final URI idUri = EntityPropertiesUtils.getIdentifier(object, et);
-        final Descriptor descriptor = getDescriptor(object);
-
-        final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true);
-        params.bypassCache();
-        final ConnectionWrapper connection = acquireConnection();
-        try {
-            uowChangeSet.cancelObjectChanges(getOriginal(object));
-            T original = connection.find(params);
-            if (original == null) {
-                throw new EntityNotFoundException("Entity " + object + " no longer exists in the repository.");
-            }
-            T source = (T) cloneBuilder.buildClone(original, new CloneConfiguration(descriptor, false));
-            final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(source, object, descriptor);
-            changeCalculator.calculateChanges(chSet);
-            new RefreshInstanceMerger(indirectWrapperHelper).mergeChanges(chSet);
-            revertTransactionalChanges(object, descriptor, chSet);
-            registerClone(object, original, descriptor);
-            et.getLifecycleListenerManager().invokePostLoadCallbacks(object);
-        } finally {
-            connection.close();
-        }
-    }
-
-    private <T> void revertTransactionalChanges(T object, Descriptor descriptor, ObjectChangeSet chSet) {
-        for (ChangeRecord change : chSet.getChanges()) {
-            storage.merge(object, (FieldSpecification<? super T, ?>) change.getAttribute(), descriptor.getAttributeDescriptor(change.getAttribute()));
-        }
-    }
-
     @Override
     public void registerNewObject(Object entity, Descriptor descriptor) {
         super.registerNewObject(entity, descriptor);
@@ -347,5 +264,21 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork{
         super.unregisterObject(object);
         removeIndirectWrappers(object);
         deregisterEntityFromPersistenceContext(object);
+    }
+
+    @Override
+    public void removeObject(Object entity) {
+        assert entity != null;
+        ensureManaged(entity);
+
+        final IdentifiableEntityType<?> et = entityType(entity.getClass());
+        et.getLifecycleListenerManager().invokePreRemoveCallbacks(entity);
+        final Object identifier = getIdentifier(entity);
+        // Get the descriptor before clone is removed
+        final Descriptor descriptor = getDescriptor(entity);
+
+        markCloneForDeletion(entity, identifier);
+        storage.remove(identifier, et.getJavaType(), descriptor);
+        et.getLifecycleListenerManager().invokePostRemoveCallbacks(entity);
     }
 }

@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
+import cz.cvut.kbss.jopa.utils.ChangeTrackingMode;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
@@ -93,9 +94,17 @@ public class ServerSession extends AbstractSession implements Wrapper {
      * @return UnitOfWork instance
      */
     public UnitOfWork acquireUnitOfWork(Configuration configuration) {
-        final AbstractUnitOfWork uow = new ChangeTrackingUnitOfWork(this, configuration);
-        LOG.trace("UnitOfWork acquired.");
-        return uow;
+        final ChangeTrackingMode mode = ChangeTrackingMode.resolve(configuration);
+        return switch (mode) {
+            case IMMEDIATE -> {
+                LOG.trace("Acquiring change tracking UnitOfWork.");
+                yield new ChangeTrackingUnitOfWork(this, configuration);
+            }
+            case ON_COMMIT -> {
+                LOG.trace("Acquiring on commit change calculating UnitOfWork.");
+                yield new OnCommitChangePropagatingUnitOfWork(this, configuration);
+            }
+        };
     }
 
     @Override

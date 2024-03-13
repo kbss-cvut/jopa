@@ -17,10 +17,12 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.CacheManager;
 import cz.cvut.kbss.jopa.model.EntityState;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -65,6 +67,7 @@ import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 public abstract class AbstractUnitOfWork extends AbstractSession implements UnitOfWork {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractUnitOfWork.class);
+    protected final IndirectWrapperHelper indirectWrapperHelper;
 
     // Read-only!!! It is just the keyset of cloneToOriginals
     final Set<Object> cloneMapping;
@@ -111,6 +114,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         this.changeCalculator = new ChangeCalculator(this);
         this.inferredAttributeChangeValidator = new InferredAttributeChangeValidator(storage);
         this.isActive = true;
+        this.indirectWrapperHelper = new IndirectWrapperHelper(this);
     }
 
     @Override
@@ -366,7 +370,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         }
     }
 
-    private Object getIdentifier(Object entity) {
+    Object getIdentifier(Object entity) {
         return EntityPropertiesUtils.getIdentifier(entity, getMetamodel());
     }
 
@@ -551,6 +555,84 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         }
     }
 
+    protected ObjectChangeSet processInferredValueChanges(ObjectChangeSet changeSet) {
+        if (getConfiguration().is(JOPAPersistenceProperties.IGNORE_INFERRED_VALUE_REMOVAL_ON_MERGE)) {
+            final ObjectChangeSet copy = ChangeSetFactory.createObjectChangeSet(changeSet.getChangedObject(), changeSet.getCloneObject(), changeSet.getEntityDescriptor());
+            changeSet.getChanges().stream().filter(chr -> !(chr.getAttribute().isInferred() &&
+                    inferredAttributeChangeValidator.isInferredValueRemoval(changeSet.getCloneObject(), changeSet.getChangedObject(),
+                            (FieldSpecification) chr.getAttribute(),
+                            changeSet.getEntityDescriptor()))).forEach(copy::addChangeRecord);
+            return copy;
+        } else {
+            changeSet.getChanges().stream().filter(chr -> chr.getAttribute().isInferred()).forEach(
+                    chr -> inferredAttributeChangeValidator.validateChange(changeSet.getCloneObject(), changeSet.getChangedObject(),
+                            (FieldSpecification) chr.getAttribute(),
+                            changeSet.getEntityDescriptor()));
+            return changeSet;
+        }
+    }
+
+    protected <T> T getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
+        if (keysToClones.containsKey(identifier)) {
+            return (T) keysToClones.get(identifier);
+        }
+        final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), identifier, descriptor, true);
+        T original = storage.find(params);
+        assert original != null;
+
+        return (T) registerExistingObject(original, descriptor);
+    }
+
+    protected void evictAfterMerge(EntityType<?> et, URI identifier, Descriptor descriptor) {
+        if (getLiveObjectCache().contains(et.getJavaType(), identifier, descriptor)) {
+            getLiveObjectCache().evict(et.getJavaType(), identifier, descriptor.getSingleContext().orElse(null));
+        }
+        getMetamodel().getReferringTypes(et.getJavaType()).forEach(getLiveObjectCache()::evict);
+    }
+
+    protected static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
+                                                   Descriptor descriptor) {
+        final ObjectChangeSet newChangeSet = ChangeSetFactory.createObjectChangeSet(original, clone, descriptor);
+        changeSet.getChanges().forEach(newChangeSet::addChangeRecord);
+        return newChangeSet;
+    }
+
+    @Override
+    public <T> void refreshObject(T object) {
+        Objects.requireNonNull(object);
+        ensureManaged(object);
+
+        final IdentifiableEntityType<T> et = entityType((Class<T>) object.getClass());
+        final URI idUri = EntityPropertiesUtils.getIdentifier(object, et);
+        final Descriptor descriptor = getDescriptor(object);
+
+        final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true);
+        params.bypassCache();
+        final ConnectionWrapper connection = acquireConnection();
+        try {
+            uowChangeSet.cancelObjectChanges(getOriginal(object));
+            T original = connection.find(params);
+            if (original == null) {
+                throw new EntityNotFoundException("Entity " + object + " no longer exists in the repository.");
+            }
+            T source = (T) cloneBuilder.buildClone(original, new CloneConfiguration(descriptor, false));
+            final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(source, object, descriptor);
+            changeCalculator.calculateChanges(chSet);
+            new RefreshInstanceMerger(indirectWrapperHelper).mergeChanges(chSet);
+            revertTransactionalChanges(object, descriptor, chSet);
+            registerClone(object, original, descriptor);
+            et.getLifecycleListenerManager().invokePostLoadCallbacks(object);
+        } finally {
+            connection.close();
+        }
+    }
+
+    private <T> void revertTransactionalChanges(T object, Descriptor descriptor, ObjectChangeSet chSet) {
+        for (ChangeRecord change : chSet.getChanges()) {
+            storage.merge(object, (FieldSpecification<? super T, ?>) change.getAttribute(), descriptor.getAttributeDescriptor(change.getAttribute()));
+        }
+    }
+
     @Override
     public void registerNewObject(Object entity, Descriptor descriptor) {
         Objects.requireNonNull(entity);
@@ -592,26 +674,6 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         return keysToClones.containsKey(identifier) || newObjectsKeyToClone.containsKey(identifier) && !cloneMapping.contains(entity);
     }
 
-    @Override
-    public void removeObject(Object entity) {
-        assert entity != null;
-        ensureManaged(entity);
-
-        final IdentifiableEntityType<?> et = entityType(entity.getClass());
-        et.getLifecycleListenerManager().invokePreRemoveCallbacks(entity);
-        final Object primaryKey = getIdentifier(entity);
-        final Descriptor descriptor = getDescriptor(entity);
-
-        if (hasNew && newObjectsCloneToOriginal.containsKey(entity)) {
-            unregisterObject(entity);
-            newObjectsKeyToClone.remove(primaryKey);
-        } else {
-            deletedObjects.put(entity, entity);
-            this.hasDeleted = true;
-        }
-        storage.remove(primaryKey, et.getJavaType(), descriptor);
-        et.getLifecycleListenerManager().invokePostRemoveCallbacks(entity);
-    }
 
     <T> void ensureManaged(T object) {
         if (!isObjectManaged(object)) {
@@ -813,5 +875,15 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             return cls.cast(this);
         }
         return storage.unwrap(cls);
+    }
+
+    protected void markCloneForDeletion(Object entity, Object identifier) {
+        if (hasNew && newObjectsCloneToOriginal.containsKey(entity)) {
+            unregisterObject(entity);
+            newObjectsKeyToClone.remove(identifier);
+        } else {
+            deletedObjects.put(entity, entity);
+            this.hasDeleted = true;
+        }
     }
 }

@@ -23,7 +23,6 @@ import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
-import cz.cvut.kbss.jopa.model.EntityManagerImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -35,7 +34,6 @@ import java.lang.reflect.Field;
 import java.net.URI;
 
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 public abstract class UnitOfWorkTestBase {
 
@@ -55,9 +53,6 @@ public abstract class UnitOfWorkTestBase {
     ConnectionWrapper storageMock;
 
     @Mock
-    protected EntityManagerImpl emMock;
-
-    @Mock
     protected EntityTransaction transactionMock;
 
     protected MetamodelMocks metamodelMocks;
@@ -71,9 +66,7 @@ public abstract class UnitOfWorkTestBase {
     protected void setUp() throws Exception {
         this.descriptor = new EntityDescriptor(CONTEXT_URI);
         this.serverSessionStub = spy(new ServerSessionStub(metamodelMock, storageMock));
-        when(emMock.getTransaction()).thenReturn(transactionMock);
         final Configuration config = new Configuration();
-        when(emMock.getConfiguration()).thenReturn(config);
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodelMock);
         this.uow = new ChangeTrackingUnitOfWork(serverSessionStub, config);
