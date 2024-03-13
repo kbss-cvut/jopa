@@ -15,29 +15,21 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters;
+package cz.cvut.kbss.jopa.adapters.change;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 
-public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E> {
+public class ChangeTrackingIndirectSet<E> extends ChangeTrackingIndirectCollection<Set<E>> implements Set<E> {
 
     private final Set<E> internalSet;
 
-    /**
-     * No-arg constructor to allow clone building.
-     */
-    IndirectSet() {
-        this.internalSet = new HashSet<>();
-    }
-
-    public IndirectSet(Object owner, Field f, UnitOfWork uow, Set<E> referencedSet) {
+    public ChangeTrackingIndirectSet(Object owner, Field f, UnitOfWork uow, Set<E> referencedSet) {
         super(owner, f, uow);
         this.internalSet = Objects.requireNonNull(referencedSet);
     }
@@ -150,7 +142,7 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
         @Override
         public void remove() {
             iterator.remove();
-            IndirectSet.this.persistChange();
+            ChangeTrackingIndirectSet.this.persistChange();
         }
     }
 
@@ -162,8 +154,8 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
     @Override
     public boolean equals(Object o) {
         if (o instanceof Set) {
-            if (o instanceof IndirectSet) {
-                return internalSet.equals(((IndirectSet) o).internalSet);
+            if (o instanceof ChangeTrackingIndirectSet) {
+                return internalSet.equals(((ChangeTrackingIndirectSet) o).internalSet);
             }
             return internalSet.equals(o);
         }

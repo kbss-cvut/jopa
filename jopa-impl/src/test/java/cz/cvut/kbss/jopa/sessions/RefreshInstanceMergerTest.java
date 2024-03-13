@@ -17,9 +17,9 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
-import cz.cvut.kbss.jopa.adapters.IndirectList;
-import cz.cvut.kbss.jopa.adapters.IndirectSet;
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectCollection;
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectList;
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
@@ -79,7 +79,7 @@ public class RefreshInstanceMergerTest {
     @Test
     public void mergeChangesReplacesCollectionWithNewOneWithSourceValues() throws Exception {
         final OWLClassA original = Generators.generateOwlClassAInstance();
-        original.setTypes(new IndirectSet<>(original, OWLClassA.getTypesField(), uowMock, original.getTypes()));
+        original.setTypes(new ChangeTrackingIndirectSet<>(original, OWLClassA.getTypesField(), uowMock, original.getTypes()));
         final OWLClassA clone = new OWLClassA(original.getUri());
         clone.setTypes(new HashSet<>(original.getTypes()));
         final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(original, clone, new EntityDescriptor());
@@ -88,9 +88,9 @@ public class RefreshInstanceMergerTest {
         changeSet.addChangeRecord(new ChangeRecord(fieldSpec, clone.getTypes()));
 
         sut.mergeChanges(changeSet);
-        assertTrue(clone.getTypes() instanceof IndirectSet);
+        assertTrue(clone.getTypes() instanceof ChangeTrackingIndirectSet);
         assertEquals(original.getTypes(), clone.getTypes());
-        final Field ownerField = IndirectCollection.class.getDeclaredField("owner");
+        final Field ownerField = ChangeTrackingIndirectCollection.class.getDeclaredField("owner");
         ownerField.setAccessible(true);
         assertEquals(clone, ownerField.get(clone.getTypes()));
     }
@@ -102,8 +102,8 @@ public class RefreshInstanceMergerTest {
         final List<OWLClassA> refList = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassAInstance())
                 .collect(Collectors.toList());
         final List<OWLClassA> refListClone = new ArrayList<>(refList);
-        original.setReferencedList(new IndirectList<>(original, OWLClassC.getRefListField(), uowMock, refList));
-        clone.setReferencedList(new IndirectList<>(clone, OWLClassC.getRefListField(), uowMock, refListClone));
+        original.setReferencedList(new ChangeTrackingIndirectList<>(original, OWLClassC.getRefListField(), uowMock, refList));
+        clone.setReferencedList(new ChangeTrackingIndirectList<>(clone, OWLClassC.getRefListField(), uowMock, refListClone));
         clone.getReferencedList().add(Generators.generateOwlClassAInstance());
         final Attribute<?, ?> att = mock(Attribute.class);
         when(att.getJavaField()).thenReturn(OWLClassC.getRefListField());
@@ -112,8 +112,8 @@ public class RefreshInstanceMergerTest {
 
         sut.mergeChanges(changeSet);
         assertEquals(refList.size(), clone.getReferencedList().size());
-        assertTrue(clone.getReferencedList() instanceof IndirectList);
-        final Field ownerField = IndirectCollection.class.getDeclaredField("owner");
+        assertTrue(clone.getReferencedList() instanceof ChangeTrackingIndirectList);
+        final Field ownerField = ChangeTrackingIndirectCollection.class.getDeclaredField("owner");
         ownerField.setAccessible(true);
         assertEquals(clone, ownerField.get(clone.getReferencedList()));
     }

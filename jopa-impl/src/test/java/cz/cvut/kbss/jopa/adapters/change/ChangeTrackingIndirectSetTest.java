@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters;
+package cz.cvut.kbss.jopa.adapters.change;
 
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
@@ -34,7 +35,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,14 +47,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class IndirectSetTest {
+class ChangeTrackingIndirectSetTest {
 
     private static Set<OWLClassA> set;
     private static Set<OWLClassA> backupSet;
     private static OWLClassF owner;
     private static Field ownerField;
 
-    private IndirectSet<OWLClassA> target;
+    private ChangeTrackingIndirectSet<OWLClassA> target;
 
     @Mock
     private UnitOfWork uow;
@@ -71,7 +71,7 @@ class IndirectSetTest {
 
     @BeforeEach
     void setUp() {
-        target = new IndirectSet<>(owner, ownerField, uow, set);
+        target = new ChangeTrackingIndirectSet<>(owner, ownerField, uow, set);
         set.clear();
         set.addAll(backupSet);
         owner.setSimpleSet(target);
@@ -79,12 +79,12 @@ class IndirectSetTest {
 
     @Test
     void testIndirectSetNullUoW() {
-        assertThrows(NullPointerException.class, () -> new IndirectSet<>(owner, ownerField, null, set));
+        assertThrows(NullPointerException.class, () -> new ChangeTrackingIndirectSet<>(owner, ownerField, null, set));
     }
 
     @Test
     void testIndirectSetNullReferencedSet() {
-        assertThrows(NullPointerException.class, () -> new IndirectSet<>(owner, ownerField, uow, null));
+        assertThrows(NullPointerException.class, () -> new ChangeTrackingIndirectSet<>(owner, ownerField, uow, null));
     }
 
     @Test
@@ -153,8 +153,9 @@ class IndirectSetTest {
     @Test
     void testAddAll() {
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
-        final List<OWLClassA> toAdd = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassAInstance())
-                .collect(Collectors.toList());
+        final List<OWLClassA> toAdd = IntStream.range(0, 5)
+                                               .mapToObj(i -> Generators.generateOwlClassAInstance())
+                                               .toList();
         target.addAll(toAdd);
         verify(uow).attributeChanged(owner, ownerField);
         assertEquals(backupSet.size() + toAdd.size(), set.size());
@@ -206,7 +207,7 @@ class IndirectSetTest {
 
     @Test
     void equalsWorksForTwoIndirectSets() {
-        final IndirectSet<OWLClassA> other = new IndirectSet<>(owner, ownerField, uow, set);
+        final ChangeTrackingIndirectSet<OWLClassA> other = new ChangeTrackingIndirectSet<>(owner, ownerField, uow, set);
         assertEquals(target, other);
     }
 

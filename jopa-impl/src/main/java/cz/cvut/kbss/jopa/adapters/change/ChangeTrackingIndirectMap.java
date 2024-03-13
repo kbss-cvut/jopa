@@ -15,29 +15,21 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters;
+package cz.cvut.kbss.jopa.adapters.change;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class IndirectMap<K, V> extends IndirectCollection<Map<K, V>> implements Map<K, V> {
+public class ChangeTrackingIndirectMap<K, V> extends ChangeTrackingIndirectCollection<Map<K, V>> implements Map<K, V> {
 
     private final Map<K, V> internalMap;
 
-    /**
-     * No-arg constructor to support clone building
-     */
-    IndirectMap() {
-        this.internalMap = new HashMap<>();
-    }
-
-    public IndirectMap(Object owner, Field f, UnitOfWork persistenceContext, Map<K, V> referencedMap) {
+    public ChangeTrackingIndirectMap(Object owner, Field f, UnitOfWork persistenceContext, Map<K, V> referencedMap) {
         super(owner, f, persistenceContext);
         this.internalMap = Objects.requireNonNull(referencedMap);
     }
@@ -122,8 +114,8 @@ public class IndirectMap<K, V> extends IndirectCollection<Map<K, V>> implements 
     @Override
     public boolean equals(Object o) {
         if (o instanceof Map) {
-            if (o instanceof IndirectMap) {
-                return internalMap.equals(((IndirectMap) o).internalMap);
+            if (o instanceof ChangeTrackingIndirectMap) {
+                return internalMap.equals(((ChangeTrackingIndirectMap) o).internalMap);
             }
             return internalMap.equals(o);
         }

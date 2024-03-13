@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters;
+package cz.cvut.kbss.jopa.adapters.change;
 
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectMap;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
@@ -42,7 +43,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class IndirectMapTest {
+class ChangeTrackingIndirectMapTest {
 
     private static OWLClassB owner;
     private static Field ownerField;
@@ -52,7 +53,7 @@ class IndirectMapTest {
     private UnitOfWork uow;
 
     private Map<String, Set<String>> map;
-    private IndirectMap<String, Set<String>> sut;
+    private ChangeTrackingIndirectMap<String, Set<String>> sut;
 
     @BeforeAll
     static void setUpBeforeClass() throws Exception {
@@ -66,18 +67,18 @@ class IndirectMapTest {
     void setUp() {
         this.map = new HashMap<>();
         map.putAll(backupMap);
-        this.sut = new IndirectMap<>(owner, ownerField, uow, map);
+        this.sut = new ChangeTrackingIndirectMap<>(owner, ownerField, uow, map);
 
     }
 
     @Test
     void testConstructorNullUoW() {
-        assertThrows(NullPointerException.class, () -> new IndirectMap<>(owner, ownerField, null, map));
+        assertThrows(NullPointerException.class, () -> new ChangeTrackingIndirectMap<>(owner, ownerField, null, map));
     }
 
     @Test
     void testConstructorNullMap() {
-        assertThrows(NullPointerException.class, () -> new IndirectMap<>(owner, ownerField, uow, null));
+        assertThrows(NullPointerException.class, () -> new ChangeTrackingIndirectMap<>(owner, ownerField, uow, null));
     }
 
     @Test
@@ -120,7 +121,8 @@ class IndirectMapTest {
 
     @Test
     void equalsWorksForTwoIndirectMaps() {
-        final IndirectMap<String, Set<String>> other = new IndirectMap<>(owner, ownerField, uow, map);
+        final ChangeTrackingIndirectMap<String, Set<String>>
+                other = new ChangeTrackingIndirectMap<>(owner, ownerField, uow, map);
         assertEquals(sut, other);
     }
 

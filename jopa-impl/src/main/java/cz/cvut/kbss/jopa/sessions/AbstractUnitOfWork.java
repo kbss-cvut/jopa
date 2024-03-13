@@ -747,7 +747,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     @Override
-    public <T> void loadEntityField(T entity, FieldSpecification<? super T, ?> fieldSpec) {
+    public <T> Object loadEntityField(T entity, FieldSpecification<? super T, ?> fieldSpec) {
         Objects.requireNonNull(entity);
         Objects.requireNonNull(fieldSpec);
         final Field field = fieldSpec.getJavaField();
@@ -759,7 +759,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         }
         final InstanceDescriptor<?> instanceDescriptor = instanceDescriptors.get(entity);
         if (instanceDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
-            return;
+            return EntityPropertiesUtils.getFieldValue(field, entity);
         }
 
         storage.loadFieldValue(entity, fieldSpec, entityDescriptor);
@@ -772,6 +772,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         final Object clone = cloneLoadedFieldValue(entity, field, fieldDescriptor, orig);
         EntityPropertiesUtils.setFieldValue(field, entity, clone);
         instanceDescriptor.setLoaded((FieldSpecification) fieldSpec, LoadState.LOADED);
+        return clone;
     }
 
     private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {

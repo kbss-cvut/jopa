@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters;
+package cz.cvut.kbss.jopa.adapters.change;
 
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectMultilingualString;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.MultilingualString;
@@ -41,7 +42,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class IndirectMultilingualStringTest {
+class ChangeTrackingIndirectMultilingualStringTest {
 
     private MultilingualString referencedString;
     private Map<String, String> translations;
@@ -51,7 +52,7 @@ class IndirectMultilingualStringTest {
     @Mock
     private UnitOfWork uow;
 
-    private IndirectMultilingualString sut;
+    private ChangeTrackingIndirectMultilingualString sut;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -61,19 +62,19 @@ class IndirectMultilingualStringTest {
         this.referencedString = new MultilingualString(translations);
         this.owner = new OWLClassU(Generators.createIndividualIdentifier());
         this.field = OWLClassU.getSingularStringAttField();
-        this.sut = new IndirectMultilingualString(owner, field, uow, referencedString);
+        this.sut = new ChangeTrackingIndirectMultilingualString(owner, field, uow, referencedString);
     }
 
     @Test
     void constructorThrowsNullPointerForNullReferencedString() {
         assertThrows(NullPointerException.class,
-                () -> new IndirectMultilingualString(owner, field, uow, null));
+                () -> new ChangeTrackingIndirectMultilingualString(owner, field, uow, null));
     }
 
     @Test
     void constructorThrowsNullPointerForNullUnitOfWork() {
         assertThrows(NullPointerException.class,
-                () -> new IndirectMultilingualString(owner, field, null, referencedString));
+                () -> new ChangeTrackingIndirectMultilingualString(owner, field, null, referencedString));
     }
 
     @Test
@@ -119,11 +120,11 @@ class IndirectMultilingualStringTest {
     @Test
     void equalsWorksWithUnwrappedMultilingualString() {
         assertEquals(sut, referencedString);
-        assertEquals(sut, new IndirectMultilingualString(owner, field, uow, referencedString));
+        assertEquals(sut, new ChangeTrackingIndirectMultilingualString(owner, field, uow, referencedString));
         final MultilingualString another = new MultilingualString(translations);
         another.set("de", "der Bau");
         assertNotEquals(sut, another);
-        assertNotEquals(sut, new IndirectMultilingualString(owner, field, uow, another));
+        assertNotEquals(sut, new ChangeTrackingIndirectMultilingualString(owner, field, uow, another));
         assertNotEquals(sut, "test");
     }
 

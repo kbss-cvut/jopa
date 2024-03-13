@@ -15,28 +15,20 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters;
+package cz.cvut.kbss.jopa.adapters.change;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 
-public class IndirectList<E> extends IndirectCollection<List<E>> implements List<E> {
+public class ChangeTrackingIndirectList<E> extends ChangeTrackingIndirectCollection<List<E>> implements List<E> {
 
     private final List<E> internalList;
-
-    /**
-     * No-arg constructor to allow clone building.
-     */
-    IndirectList() {
-        this.internalList = new ArrayList<>();
-    }
 
     /**
      * Create new indirect list backed by the specified referenced list.
@@ -47,7 +39,7 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
      * @param referencedList The list to reference
      * @throws NullPointerException If the {@code referencedList} is null
      */
-    public IndirectList(Object owner, Field f, UnitOfWork uow, List<E> referencedList) {
+    public ChangeTrackingIndirectList(Object owner, Field f, UnitOfWork uow, List<E> referencedList) {
         super(owner, f, uow);
         this.internalList = Objects.requireNonNull(referencedList);
     }
@@ -182,7 +174,7 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 
     @Override
     public List<E> subList(int fromIndex, int toIndex) {
-        return new IndirectList<>(owner, field, persistenceContext, internalList.subList(fromIndex, toIndex));
+        return new ChangeTrackingIndirectList<>(owner, field, persistenceContext, internalList.subList(fromIndex, toIndex));
     }
 
     @Override
@@ -203,8 +195,8 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
     @Override
     public boolean equals(Object o) {
         if (o instanceof List) {
-            if (o instanceof IndirectList) {
-                return internalList.equals(((IndirectList) o).internalList);
+            if (o instanceof ChangeTrackingIndirectList) {
+                return internalList.equals(((ChangeTrackingIndirectList) o).internalList);
             }
             return internalList.equals(o);
         }
@@ -242,7 +234,7 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
         @Override
         public void remove() {
             it.remove();
-            IndirectList.this.persistChange();
+            ChangeTrackingIndirectList.this.persistChange();
         }
     }
 
@@ -287,19 +279,19 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
         @Override
         public void remove() {
             lit.remove();
-            IndirectList.this.persistChange();
+            ChangeTrackingIndirectList.this.persistChange();
         }
 
         @Override
         public void set(E e) {
             lit.set(e);
-            IndirectList.this.persistChange();
+            ChangeTrackingIndirectList.this.persistChange();
         }
 
         @Override
         public void add(E e) {
             lit.add(e);
-            IndirectList.this.persistChange();
+            ChangeTrackingIndirectList.this.persistChange();
         }
     }
 }

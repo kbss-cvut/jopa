@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters;
+package cz.cvut.kbss.jopa.adapters.change;
 
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectList;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
@@ -49,7 +51,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class IndirectListTest {
+class ChangeTrackingIndirectListTest {
 
     private static List<OWLClassA> list;
     private static List<OWLClassA> backupList;
@@ -59,7 +61,7 @@ class IndirectListTest {
     @Mock
     private UnitOfWork uow;
 
-    private IndirectList<OWLClassA> target;
+    private ChangeTrackingIndirectList<OWLClassA> target;
 
     @BeforeAll
     static void setUpBeforeClass() throws Exception {
@@ -73,7 +75,7 @@ class IndirectListTest {
 
     @BeforeEach
     void setUp() {
-        target = new IndirectList<>(owner, ownerField, uow, list);
+        target = new ChangeTrackingIndirectList<>(owner, ownerField, uow, list);
         list.clear();
         list.addAll(backupList);
         owner.setReferencedList(target);
@@ -81,12 +83,12 @@ class IndirectListTest {
 
     @Test
     void constructorThrowsNullPointerForNullReferencedList() {
-        assertThrows(NullPointerException.class, () -> new IndirectList<>(owner, ownerField, uow, null));
+        assertThrows(NullPointerException.class, () -> new ChangeTrackingIndirectList<>(owner, ownerField, uow, null));
     }
 
     @Test
     void constructorThrowsNullPointerForNullUnitOfWork() {
-        assertThrows(NullPointerException.class, () -> new IndirectList<>(owner, ownerField, null, list));
+        assertThrows(NullPointerException.class, () -> new ChangeTrackingIndirectList<>(owner, ownerField, null, list));
     }
 
     @Test
@@ -297,7 +299,8 @@ class IndirectListTest {
 
     @Test
     void equalsWorksForTwoIndirectLists() {
-        final IndirectList<OWLClassA> other = new IndirectList<>(owner, ownerField, uow, list);
+        final ChangeTrackingIndirectList<OWLClassA>
+                other = new ChangeTrackingIndirectList<>(owner, ownerField, uow, list);
         assertEquals(target, other);
     }
 
@@ -319,7 +322,7 @@ class IndirectListTest {
     @Test
     void sublistReturnsAnotherIndirectList() {
         final List<OWLClassA> result = target.subList(0, target.size() / 2);
-        assertTrue(result instanceof IndirectList);
+        assertInstanceOf(ChangeTrackingIndirectList.class, result);
     }
 
     @Test

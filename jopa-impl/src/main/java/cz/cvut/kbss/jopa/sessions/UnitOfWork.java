@@ -126,11 +126,12 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      *
      * @param entity    The entity to load field for
      * @param fieldSpec Metamodel element representing the field to load
+     * @return The loaded field value
      * @throws NullPointerException    If {@code entity} or {@code field} is {@code null}
      * @throws OWLPersistenceException If an error occurs, this may be e.g. that the field is not present on the entity,
      *                                 an ontology access error occurred etc.
      */
-    <T> void loadEntityField(T entity, FieldSpecification<? super T, ?> fieldSpec);
+    <T> Object loadEntityField(T entity, FieldSpecification<? super T, ?> fieldSpec);
 
     /**
      * Merges the state of the given entity into the current persistence context.

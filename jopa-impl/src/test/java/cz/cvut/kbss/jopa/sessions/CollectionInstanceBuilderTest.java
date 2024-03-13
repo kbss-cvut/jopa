@@ -17,8 +17,8 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectList;
-import cz.cvut.kbss.jopa.adapters.IndirectSet;
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectList;
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
@@ -70,9 +70,9 @@ public class CollectionInstanceBuilderTest {
             final Object owner = invocation.getArguments()[1];
             final Field field = (Field) invocation.getArguments()[2];
             if (col instanceof List) {
-                return new IndirectList<>(owner, field, uowMock, (List<?>) col);
+                return new ChangeTrackingIndirectList<>(owner, field, uowMock, (List<?>) col);
             } else {
-                return new IndirectSet<>(owner, field, uowMock, (Set<?>) col);
+                return new ChangeTrackingIndirectSet<>(owner, field, uowMock, (Set<?>) col);
             }
         });
     }

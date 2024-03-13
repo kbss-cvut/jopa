@@ -17,7 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectMultilingualString;
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectMultilingualString;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.MultilingualString;
@@ -67,17 +67,17 @@ class MultilingualStringInstanceBuilderTest {
         original.set("cs", "stavba");
         final Object result = sut.buildClone(new OWLClassU(), OWLClassU.getSingularStringAttField(), original,
                 new CloneConfiguration(descriptor, false));
-        assertThat(result, instanceOf(IndirectMultilingualString.class));
+        assertThat(result, instanceOf(ChangeTrackingIndirectMultilingualString.class));
     }
 
     @Test
     void buildCloneBuildsCloneOfWrappedMultilingualStringWhenArgumentIsIndirectMultilingualString() throws Exception {
         final MultilingualString original = MultilingualString.create("building", Generators.LANG);
-        final IndirectMultilingualString arg = new IndirectMultilingualString(new OWLClassU(),
-                OWLClassU.getSingularStringAttField(), mock(UnitOfWork.class), original);
+        final ChangeTrackingIndirectMultilingualString arg = new ChangeTrackingIndirectMultilingualString(new OWLClassU(),
+                                                                                                          OWLClassU.getSingularStringAttField(), mock(UnitOfWork.class), original);
         final Object result = sut.buildClone(new OWLClassU(), OWLClassU.getSingularStringAttField(), arg, new CloneConfiguration(descriptor, false));
-        assertThat(result, instanceOf(IndirectMultilingualString.class));
-        final IndirectMultilingualString resultIndirect = (IndirectMultilingualString) result;
+        assertThat(result, instanceOf(ChangeTrackingIndirectMultilingualString.class));
+        final ChangeTrackingIndirectMultilingualString resultIndirect = (ChangeTrackingIndirectMultilingualString) result;
         assertEquals(original, resultIndirect.unwrap());
     }
 

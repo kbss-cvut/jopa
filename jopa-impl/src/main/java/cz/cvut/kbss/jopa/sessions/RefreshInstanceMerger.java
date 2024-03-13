@@ -17,7 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectCollection;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
@@ -51,7 +51,7 @@ class RefreshInstanceMerger {
         for (ChangeRecord change : changeSet.getChanges()) {
             final FieldSpecification<?, ?> att = change.getAttribute();
             final Object sourceValue = EntityPropertiesUtils.getAttributeValue(att, source);
-            if (sourceValue instanceof IndirectCollection<?> col) {
+            if (sourceValue instanceof ChangeTrackingIndirectCollection<?> col) {
                 final Object ic = indirectWrapperHelper.createIndirectWrapper(col.unwrap(), target, att.getJavaField());
                 merger.mergeValue(att, target, ic);
             } else {

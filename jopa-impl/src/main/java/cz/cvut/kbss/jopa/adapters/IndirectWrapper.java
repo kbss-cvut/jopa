@@ -20,14 +20,16 @@ package cz.cvut.kbss.jopa.adapters;
 /**
  * Wraps a target object in an indirect proxy which is able to intercept method calls and perform additional processing
  * (usually persistence context notification).
+ *
+ * @param <T> Type of the wrapped object
  */
 @FunctionalInterface
-public interface IndirectWrapper {
+public interface IndirectWrapper<T> {
 
     /**
      * Retrieves the wrapped object.
      *
      * @return The wrapped object
      */
-    Object unwrap();
+    T unwrap();
 }

@@ -1,7 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectMultilingualString;
-import cz.cvut.kbss.jopa.adapters.IndirectSet;
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectMultilingualString;
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
@@ -84,9 +84,9 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     void commitReplacesIndirectCollectionsWithRegularOnesInDetachedInstances() {
         uow.registerNewObject(entityA, descriptor);
-        assertInstanceOf(IndirectSet.class, entityA.getTypes());
+        assertInstanceOf(ChangeTrackingIndirectSet.class, entityA.getTypes());
         uow.commit();
-        assertThat(entityA.getTypes(), not(instanceOf(IndirectSet.class)));
+        assertThat(entityA.getTypes(), not(instanceOf(ChangeTrackingIndirectSet.class)));
     }
 
     @Test
@@ -96,10 +96,10 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         final Set<String> types = Generators.generateTypes(3);
         entityR.setTypes(types);
         uow.registerNewObject(entityR, descriptor);
-        assertInstanceOf(IndirectSet.class, entityR.getTypes());
+        assertInstanceOf(ChangeTrackingIndirectSet.class, entityR.getTypes());
         assertEquals(types, entityR.getTypes());
         uow.commit();
-        assertThat(entityR.getTypes(), not(instanceOf(IndirectSet.class)));
+        assertThat(entityR.getTypes(), not(instanceOf(ChangeTrackingIndirectSet.class)));
         assertEquals(types, entityR.getTypes());
     }
 
@@ -174,9 +174,9 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         final OWLClassU entityU = new OWLClassU(Generators.createIndividualIdentifier());
         entityU.setSingularStringAtt(MultilingualString.create("test", "en"));
         final OWLClassU managed = (OWLClassU) uow.registerExistingObject(entityU, descriptor);
-        assertInstanceOf(IndirectMultilingualString.class, managed.getSingularStringAtt());
+        assertInstanceOf(ChangeTrackingIndirectMultilingualString.class, managed.getSingularStringAtt());
         uow.unregisterObject(managed);
-        assertThat(managed.getSingularStringAtt(), not(instanceOf(IndirectMultilingualString.class)));
+        assertThat(managed.getSingularStringAtt(), not(instanceOf(ChangeTrackingIndirectMultilingualString.class)));
     }
 
     @Test
@@ -207,7 +207,7 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         when(storageMock.find(new LoadingParameters<>(OWLClassR.class, entityR.getUri(), descriptor)))
                 .thenReturn(entityR);
         final OWLClassR clone = uow.readObject(OWLClassR.class, entityR.getUri(), descriptor);
-        assertInstanceOf(IndirectSet.class, clone.getTypes());
+        assertInstanceOf(ChangeTrackingIndirectSet.class, clone.getTypes());
     }
 
     @Test
@@ -216,9 +216,9 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
                 .thenReturn(entityA);
         final OWLClassA result = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         assertNotNull(result);
-        assertInstanceOf(IndirectSet.class, result.getTypes());
+        assertInstanceOf(ChangeTrackingIndirectSet.class, result.getTypes());
         uow.release();
-        assertThat(result.getTypes(), not(instanceOf(IndirectSet.class)));
+        assertThat(result.getTypes(), not(instanceOf(ChangeTrackingIndirectSet.class)));
     }
 
     @Test

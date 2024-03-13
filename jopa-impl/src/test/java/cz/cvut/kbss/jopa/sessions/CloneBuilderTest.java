@@ -17,7 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectCollection;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
@@ -256,12 +256,12 @@ public class CloneBuilderTest {
         assertEquals(entityB.getUri(), res.getUri());
         assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
         assertEquals(entityB.getProperties().size(), res.getProperties().size());
-        assertTrue(res.getProperties() instanceof IndirectCollection);
+        assertTrue(res.getProperties() instanceof ChangeTrackingIndirectCollection);
         for (Entry<String, Set<String>> e : entityB.getProperties().entrySet()) {
             final String k = e.getKey();
             assertTrue(res.getProperties().containsKey(k));
             final Set<String> rv = res.getProperties().get(k);
-            assertTrue(rv instanceof IndirectCollection);
+            assertTrue(rv instanceof ChangeTrackingIndirectCollection);
             assertEquals(e.getValue().size(), rv.size());
             for (String s : e.getValue()) {
                 assertTrue(rv.contains(s));
@@ -288,7 +288,7 @@ public class CloneBuilderTest {
         final OWLClassD clTwo = (OWLClassD) builder.buildClone(another, new CloneConfiguration(defaultDescriptor, false));
         assertSame(clOne.getOwlClassA(), clTwo.getOwlClassA());
         assertEquals(entityA.getStringAttribute(), clOne.getOwlClassA().getStringAttribute());
-        assertTrue(clOne.getOwlClassA().getTypes() instanceof IndirectCollection);
+        assertTrue(clOne.getOwlClassA().getTypes() instanceof ChangeTrackingIndirectCollection);
         final Set<String> tps = clOne.getOwlClassA().getTypes();
         assertEquals(entityA.getTypes().size(), tps.size());
         for (String t : entityA.getTypes()) {
@@ -311,7 +311,7 @@ public class CloneBuilderTest {
         entityA.setTypes(singleton);
         final OWLClassA res = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor, false));
         assertNotSame(entityA, res);
-        assertTrue(res.getTypes() instanceof IndirectCollection);
+        assertTrue(res.getTypes() instanceof ChangeTrackingIndirectCollection);
         assertEquals(1, res.getTypes().size());
         assertTrue(res.getTypes().contains(singleton.iterator().next()));
     }
@@ -327,9 +327,9 @@ public class CloneBuilderTest {
         assertNotNull(res);
         assertNotSame(entityB, res);
         assertEquals(1, res.getProperties().size());
-        assertTrue(res.getProperties() instanceof IndirectCollection);
+        assertTrue(res.getProperties() instanceof ChangeTrackingIndirectCollection);
         final Set<String> s = res.getProperties().get(key);
-        assertTrue(s instanceof IndirectCollection);
+        assertTrue(s instanceof ChangeTrackingIndirectCollection);
         assertEquals(1, s.size());
         assertEquals(value, s.iterator().next());
     }
@@ -340,11 +340,11 @@ public class CloneBuilderTest {
         final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor, false));
         assertNotSame(res, entityC);
         assertEquals(1, res.getReferencedList().size());
-        assertTrue(res.getReferencedList() instanceof IndirectCollection);
+        assertTrue(res.getReferencedList() instanceof ChangeTrackingIndirectCollection);
         final OWLClassA a = res.getReferencedList().get(0);
         assertNotSame(entityA, a);
         assertEquals(entityA.getUri(), a.getUri());
-        assertTrue(a.getTypes() instanceof IndirectCollection);
+        assertTrue(a.getTypes() instanceof ChangeTrackingIndirectCollection);
     }
 
     @Test
@@ -355,7 +355,7 @@ public class CloneBuilderTest {
         assertNotSame(entityC, res);
         int size = entityC.getReferencedList().size();
         assertEquals(size, res.getReferencedList().size());
-        assertTrue(res.getReferencedList() instanceof IndirectCollection);
+        assertTrue(res.getReferencedList() instanceof ChangeTrackingIndirectCollection);
         for (int i = 0; i < size; i++) {
             final OWLClassA or = entityC.getReferencedList().get(i);
             final OWLClassA cl = res.getReferencedList().get(i);
@@ -363,7 +363,7 @@ public class CloneBuilderTest {
             assertEquals(or.getUri(), cl.getUri());
             assertEquals(or.getStringAttribute(), cl.getStringAttribute());
             assertEquals(or.getTypes().size(), cl.getTypes().size());
-            assertTrue(cl.getTypes() instanceof IndirectCollection);
+            assertTrue(cl.getTypes() instanceof ChangeTrackingIndirectCollection);
         }
     }
 
@@ -378,7 +378,7 @@ public class CloneBuilderTest {
         assertNotSame(entityC, res);
         int size = entityC.getReferencedList().size();
         assertEquals(size, res.getReferencedList().size());
-        assertTrue(res.getReferencedList() instanceof IndirectCollection);
+        assertTrue(res.getReferencedList() instanceof ChangeTrackingIndirectCollection);
         for (OWLClassA a : res.getReferencedList()) {
             assertNull(a);
         }

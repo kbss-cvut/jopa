@@ -17,7 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
+import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
@@ -68,8 +68,8 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     Object buildClone(Object cloneOwner, Field field, Object collection, CloneConfiguration configuration) {
         assert collection instanceof Collection;
         Collection<?> container = (Collection<?>) collection;
-        if (container instanceof IndirectCollection<?>) {
-            container = (Collection<?>) ((IndirectCollection<?>) container).unwrap();
+        if (container instanceof ChangeTrackingIndirectCollection<?>) {
+            container = (Collection<?>) ((ChangeTrackingIndirectCollection<?>) container).unwrap();
         }
         if (Collections.emptyList() == container || Collections.emptySet() == container) {
             return container;
@@ -202,8 +202,8 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         assert cloneValue instanceof Collection;
 
         Collection<Object> clone = (Collection<Object>) cloneValue;
-        if (clone instanceof IndirectCollection) {
-            clone = ((IndirectCollection<Collection<Object>>) clone).unwrap();
+        if (clone instanceof ChangeTrackingIndirectCollection) {
+            clone = ((ChangeTrackingIndirectCollection<Collection<Object>>) clone).unwrap();
         }
         Collection<Object> orig;
         if (clone == Collections.emptyList() || clone == Collections.emptySet()) {

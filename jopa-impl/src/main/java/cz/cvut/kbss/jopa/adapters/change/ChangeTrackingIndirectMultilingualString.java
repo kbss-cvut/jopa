@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters;
+package cz.cvut.kbss.jopa.adapters.change;
 
+import cz.cvut.kbss.jopa.adapters.IndirectWrapper;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
@@ -29,20 +30,13 @@ import java.util.Set;
  * Wraps a {@link MultilingualString} so that calls to modifying operations are intercepted and reported to the
  * persistence context (if necessary).
  */
-public class IndirectMultilingualString extends MultilingualString implements IndirectWrapper {
+public class ChangeTrackingIndirectMultilingualString extends MultilingualString implements IndirectWrapper {
 
     private final transient Object owner;
     private final transient Field field;
     private final transient UnitOfWork persistenceContext;
 
     private final MultilingualString referencedString;
-
-    protected IndirectMultilingualString() {
-        this.owner = null;
-        this.field = null;
-        this.persistenceContext = null;
-        this.referencedString = new MultilingualString();
-    }
 
     /**
      * Create new indirect multilingual string backed by the specified referenced {@link MultilingualString}.
@@ -53,7 +47,7 @@ public class IndirectMultilingualString extends MultilingualString implements In
      * @param referencedString The string to reference
      * @throws NullPointerException If the {@code referencedString} is null
      */
-    public IndirectMultilingualString(Object owner, Field f, UnitOfWork uow, MultilingualString referencedString) {
+    public ChangeTrackingIndirectMultilingualString(Object owner, Field f, UnitOfWork uow, MultilingualString referencedString) {
         this.owner = owner;
         this.field = f;
         this.persistenceContext = Objects.requireNonNull(uow);
@@ -125,8 +119,8 @@ public class IndirectMultilingualString extends MultilingualString implements In
     @Override
     public boolean equals(Object o) {
         if (o instanceof MultilingualString) {
-            if (o instanceof IndirectMultilingualString) {
-                return referencedString.equals(((IndirectMultilingualString) o).referencedString);
+            if (o instanceof ChangeTrackingIndirectMultilingualString) {
+                return referencedString.equals(((ChangeTrackingIndirectMultilingualString) o).referencedString);
             }
             return referencedString.equals(o);
         }
