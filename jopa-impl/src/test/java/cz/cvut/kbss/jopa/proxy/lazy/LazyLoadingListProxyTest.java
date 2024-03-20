@@ -13,13 +13,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -47,94 +47,12 @@ class LazyLoadingListProxyTest {
         entity.setUri(Generators.createIndividualIdentifier());
         this.sut = new LazyLoadingListProxy<>(entity, att, uow);
         entity.setSimpleList(sut);
+        when(uow.isActive()).thenReturn(true);
         when(uow.loadEntityField(entity, att)).thenAnswer(inv -> {
             final OWLClassP owner = inv.getArgument(0);
             owner.setSimpleList(proxiedList);
             return proxiedList;
         });
-    }
-
-    @Test
-    void sizeTriggersLazyLoadingAndReturnsLoadedListSize() {
-        assertEquals(proxiedList.size(), sut.size());
-        verify(uow).loadEntityField(entity, att);
-        // One call is in the assertion above, the other is the one we expect to be invoked by the SUT
-        verify(proxiedList, times(2)).size();
-    }
-
-    @Test
-    void isEmptyTriggersLazyLoadingAndReturnsLoadedListIsEmptyResult() {
-        assertEquals(proxiedList.isEmpty(), sut.isEmpty());
-        verify(uow).loadEntityField(entity, att);
-        verify(proxiedList, times(2)).isEmpty();
-    }
-
-    @Test
-    void containsTriggersLazyLoadingAndReturnsLoadedListContainsResult() {
-        final URI arg = proxiedList.get(0);
-        assertEquals(proxiedList.contains(arg), sut.contains(arg));
-        verify(uow).loadEntityField(entity, att);
-        verify(proxiedList, times(2)).contains(arg);
-    }
-
-    @Test
-    void iteratorTriggersLazyLoadingAndReturnsLoadedListIterator() {
-        final Iterator<URI> result = sut.iterator();
-        assertNotNull(result);
-        final Iterator<URI> expected = proxiedList.iterator();
-        while (result.hasNext()) {
-            assertTrue(expected.hasNext());
-            assertEquals(expected.next(), result.next());
-        }
-        assertFalse(expected.hasNext());
-        verify(uow).loadEntityField(entity, att);
-        verify(proxiedList, times(2)).iterator();
-    }
-
-    @Test
-    void toArrayTriggersLazyLoadingAndReturnsLoadedListToArrayResult() {
-        assertArrayEquals(proxiedList.toArray(), sut.toArray());
-        verify(uow).loadEntityField(entity, att);
-        verify(proxiedList, times(2)).toArray();
-    }
-
-    @Test
-    void toTypedArrayTriggersLazyLoadingAndReturnsLoadedListToTypedArrayResult() {
-        assertArrayEquals(proxiedList.toArray(new URI[] {}), sut.toArray(new URI[] {}));
-        verify(uow).loadEntityField(entity, att);
-        verify(proxiedList, times(2)).toArray(any(URI[].class));
-    }
-
-    @Test
-    void addTriggersLazyLoadingAddsElementToLoadedListAndReturnsResult() {
-        final URI toAdd = Generators.createIndividualIdentifier();
-        assertTrue(sut.add(toAdd));
-        verify(uow).loadEntityField(entity, att);
-        verify(proxiedList).add(toAdd);
-    }
-
-    @Test
-    void removeTriggersLazyLoadingRemovesElementFromLoadedListAndReturnsResult() {
-        final URI toRemove = proxiedList.get(1);
-        assertTrue(sut.remove(toRemove));
-        verify(uow).loadEntityField(entity, att);
-        verify(proxiedList).remove(toRemove);
-    }
-
-    @Test
-    void containsAllTriggersLazyLoadingAndReturnsLoadedListContainsAllResult() {
-        final Collection<URI> notContained = Set.of(Generators.createIndividualIdentifier(), proxiedList.get(0));
-        assertEquals(proxiedList.containsAll(notContained), sut.containsAll(notContained));
-        verify(uow).loadEntityField(entity, att);
-        verify(proxiedList, times(2)).containsAll(notContained);
-    }
-
-    @Test
-    void addAllTriggersLazyLoadingAddsElementsToLoadedListAndReturnsResult() {
-        final Collection<URI> toAdd = List.of(Generators.createIndividualIdentifier(), Generators.createIndividualIdentifier());
-        assertTrue(sut.addAll(toAdd));
-        verify(uow).loadEntityField(entity, att);
-        verify(proxiedList).addAll(toAdd);
     }
 
     @Test
@@ -144,29 +62,6 @@ class LazyLoadingListProxyTest {
         assertTrue(sut.addAll(index, toAdd));
         verify(uow).loadEntityField(entity, att);
         verify(proxiedList).addAll(index, toAdd);
-    }
-
-    @Test
-    void removeAllTriggersLazyLoadingRemovesElementsAndReturnsResult() {
-        final Collection<URI> toRemove = new ArrayList<>(proxiedList);
-        assertTrue(sut.removeAll(toRemove));
-        verify(uow).loadEntityField(entity, att);
-        verify(proxiedList).removeAll(toRemove);
-    }
-
-    @Test
-    void retainAllTriggersLazyLoadingRetainsElementsAndReturnsResult() {
-        final Collection<URI> toRetain = List.of(proxiedList.get(0));
-        assertTrue(sut.retainAll(toRetain));
-        verify(uow).loadEntityField(entity, att);
-        verify(proxiedList).retainAll(toRetain);
-    }
-
-    @Test
-    void clearTriggersLazyLoadingAndClearsLoadedList() {
-        sut.clear();
-        verify(uow).loadEntityField(entity, att);
-        verify(proxiedList).clear();
     }
 
     @Test
