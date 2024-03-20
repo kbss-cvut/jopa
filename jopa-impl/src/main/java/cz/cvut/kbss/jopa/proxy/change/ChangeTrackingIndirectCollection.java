@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters.change;
+package cz.cvut.kbss.jopa.proxy.change;
 
-import cz.cvut.kbss.jopa.adapters.IndirectWrapper;
+import cz.cvut.kbss.jopa.proxy.IndirectWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 import java.lang.reflect.Field;

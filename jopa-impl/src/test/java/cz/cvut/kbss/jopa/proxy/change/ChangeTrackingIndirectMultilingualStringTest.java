@@ -15,9 +15,8 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters.change;
+package cz.cvut.kbss.jopa.proxy.change;
 
-import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectMultilingualString;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.MultilingualString;

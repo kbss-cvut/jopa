@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters;
+package cz.cvut.kbss.jopa.proxy;
 
 /**
  * Wraps a target object in an indirect proxy which is able to intercept method calls and perform additional processing

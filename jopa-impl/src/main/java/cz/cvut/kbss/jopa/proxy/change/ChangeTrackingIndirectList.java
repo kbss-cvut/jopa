@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters.change;
+package cz.cvut.kbss.jopa.proxy.change;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
@@ -59,11 +59,9 @@ public class ChangeTrackingIndirectList<E> extends ChangeTrackingIndirectCollect
 
     @Override
     public boolean addAll(Collection<? extends E> c) {
-        boolean res = internalList.addAll(c);
-        if (res) {
-            persistChange();
-        }
-        return res;
+        internalList.addAll(c);
+        persistChange();
+        return true;
     }
 
     @Override

@@ -17,8 +17,8 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectList;
-import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectSet;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectList;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;

@@ -15,9 +15,8 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.adapters.change;
+package cz.cvut.kbss.jopa.proxy.change;
 
-import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectList;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.utils.Generators;

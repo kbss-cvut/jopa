@@ -17,7 +17,7 @@
  */
 package cz.cvut.kbss.jopa.test.integration;
 
-import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectSet;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.CacheManager;

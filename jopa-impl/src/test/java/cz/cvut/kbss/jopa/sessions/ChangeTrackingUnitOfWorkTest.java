@@ -1,7 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectMultilingualString;
-import cz.cvut.kbss.jopa.adapters.change.ChangeTrackingIndirectSet;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMultilingualString;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassF;

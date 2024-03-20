@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.adapters.lazy;
+package cz.cvut.kbss.jopa.proxy.lazy;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
