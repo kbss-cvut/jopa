@@ -618,14 +618,14 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     @Test
     void registerExistingObjectInvokesPostCloneListeners() {
         final Consumer<Object> plVerifier = mock(Consumer.class);
-        final Object result = uow.registerExistingObject(entityA, descriptor, Collections.singletonList(plVerifier));
+        final Object result = uow.registerExistingObject(entityA, new CloneRegistrationDescriptor(descriptor).postCloneHandlers(List.of(plVerifier)));
         verify(plVerifier).accept(result);
     }
 
     @Test
     void registerExistingObjectPassesPostCloneListenersToCloneBuilder() {
         final Consumer<Object> plVerifier = mock(Consumer.class);
-        uow.registerExistingObject(entityA, descriptor, Collections.singletonList(plVerifier));
+        uow.registerExistingObject(entityA, new CloneRegistrationDescriptor(descriptor).postCloneHandlers(List.of(plVerifier)));
         final ArgumentCaptor<CloneConfiguration> captor = ArgumentCaptor.forClass(CloneConfiguration.class);
         verify(cloneBuilder).buildClone(eq(entityA), captor.capture());
         assertTrue(captor.getValue().getPostRegister().contains(plVerifier));

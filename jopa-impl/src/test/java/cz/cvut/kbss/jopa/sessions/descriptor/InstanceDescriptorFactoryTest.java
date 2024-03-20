@@ -23,10 +23,14 @@ import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.LoadState;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingListProxy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.mock;
 
 class InstanceDescriptorFactoryTest {
 
@@ -104,5 +108,17 @@ class InstanceDescriptorFactoryTest {
         assertNotNull(result);
         assertSame(otherInstance, result.getInstance());
         assertEquals(original.isLoaded(), result.isLoaded());
+    }
+
+    @Test
+    void createCreatesDescriptorWithNotLoadedForLazyLoadedAttributesContainingProxyInstances() {
+        final OWLClassC instance = new OWLClassC(Generators.createIndividualIdentifier());
+        instance.setSimpleList(mock(LazyLoadingListProxy.class));
+        final InstanceDescriptor<OWLClassC> result = InstanceDescriptorFactory
+                .create(instance, metamodelMocks.forOwlClassC().entityType());
+        assertNotNull(result);
+        assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassC().identifier()));
+        assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassC().referencedListAtt()));
+        assertEquals(LoadState.NOT_LOADED, result.isLoaded(metamodelMocks.forOwlClassC().simpleListAtt()));
     }
 }

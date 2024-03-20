@@ -21,7 +21,14 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractQueryAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.PluralQueryAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.PluralQueryAttributeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
 import cz.cvut.kbss.jopa.oom.query.PluralQueryAttributeStrategy;
 import cz.cvut.kbss.jopa.oom.query.QueryFieldStrategy;
 import cz.cvut.kbss.jopa.oom.query.SingularQueryAttributeStrategy;
@@ -92,7 +99,7 @@ class EntityConstructor {
      * @return Newly created instance with identifier set
      */
     <T> T createEntityInstance(URI identifier, IdentifiableEntityType<T> et) {
-
+        // TODO et.getInstantiableJavaType?
         final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getJavaType());
         EntityPropertiesUtils.setIdentifier(identifier, instance, et);
         return instance;
@@ -182,14 +189,16 @@ class EntityConstructor {
                 PluralQueryAttribute<? super T, ?, ?> pluralQueryAttribute =
                         (PluralQueryAttribute<? super T, ?, ?>) queryAttribute;
                 typedQuery = queryFactory.createNativeQuery(pluralQueryAttribute.getQuery(),
-                                                            pluralQueryAttribute.getElementType().getJavaType());
+                        pluralQueryAttribute.getElementType().getJavaType());
             } else {
                 typedQuery = queryFactory.createNativeQuery(queryAttribute.getQuery(), queryAttribute.getJavaType());
             }
         } catch (RuntimeException e) {
-            LOG.error("Could not create native query from the parameter given in annotation @Sparql:\n{}" +
-                              "\nAttribute '{}' will be skipped.", queryAttribute.getQuery(),
-                      queryAttribute.getJavaMember().getName(), e);
+            LOG.error("""
+                            Could not create native query from the parameter given in annotation @Sparql:
+                            {}
+                            Attribute '{}' will be skipped.""", queryAttribute.getQuery(),
+                    queryAttribute.getJavaMember().getName(), e);
             return;
         }
 

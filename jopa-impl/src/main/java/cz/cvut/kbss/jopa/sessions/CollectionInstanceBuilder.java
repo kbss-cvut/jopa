@@ -17,10 +17,10 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.MetamodelUtils;
@@ -155,7 +155,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                                           CloneConfiguration configuration) {
         Object clone;
         if (builder.isTypeManaged(element.getClass())) {
-            clone = uow.registerExistingObject(element, configuration.getDescriptor(), configuration.getPostRegister());
+            clone = uow.registerExistingObject(element, new CloneRegistrationDescriptor(configuration.getDescriptor()).postCloneHandlers(configuration.getPostRegister()));
         } else {
             clone = builder.buildClone(cloneOwner, field, element, configuration.getDescriptor());
         }

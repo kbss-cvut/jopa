@@ -34,6 +34,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.ChangeTrackingUnitOfWork;
 import cz.cvut.kbss.jopa.sessions.CloneBuilder;
 import cz.cvut.kbss.jopa.sessions.CloneConfiguration;
+import cz.cvut.kbss.jopa.sessions.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
@@ -318,7 +319,7 @@ public class EntityLifecycleListenersTest {
 
         when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenAnswer(inv -> {
             final CloneConfiguration config = (CloneConfiguration) inv.getArguments()[1];
-            uow.registerExistingObject(aOriginal, config.getDescriptor(), config.getPostRegister());
+            uow.registerExistingObject(aOriginal, new CloneRegistrationDescriptor(config.getDescriptor()).postCloneHandlers(config.getPostRegister()));
             return rInstance;
         });
         when(cloneBuilderMock.buildClone(eq(aOriginal), any())).thenReturn(aInstance);
@@ -344,7 +345,7 @@ public class EntityLifecycleListenersTest {
         cInstance.setSimpleList(Collections.singletonList(aInstance));
         when(cloneBuilderMock.buildClone(eq(cOriginal), any())).thenAnswer(inv -> {
             final CloneConfiguration config = (CloneConfiguration) inv.getArguments()[1];
-            uow.registerExistingObject(aOriginal, config.getDescriptor(), config.getPostRegister());
+            uow.registerExistingObject(aOriginal, new CloneRegistrationDescriptor(config.getDescriptor()).postCloneHandlers(config.getPostRegister()));
             return cInstance;
         });
         when(cloneBuilderMock.buildClone(eq(aOriginal), any())).thenReturn(aInstance);

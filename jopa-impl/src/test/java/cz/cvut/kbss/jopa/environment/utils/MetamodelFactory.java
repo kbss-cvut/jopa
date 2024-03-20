@@ -431,6 +431,7 @@ public class MetamodelFactory {
         when(setAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(setAMock.getDeclaringType()).thenReturn(etMock);
         when(setAMock.getName()).thenReturn(OWLClassF.getSimpleSetField().getName());
+        when(setAMock.getFetchType()).thenReturn(FetchType.LAZY);
         when(etMock.getAttribute(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
         when(etMock.getFieldSpecification(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
 
@@ -446,6 +447,7 @@ public class MetamodelFactory {
         when(strAttMock.isInferred()).thenReturn(true);
         when(strAttMock.hasLanguage()).thenReturn(true);
         when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
+        when(strAttMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(etMock.getFieldSpecification(OWLClassF.getStrAttField().getName())).thenReturn(strAttMock);
 
         when(idMock.getJavaField()).thenReturn(OWLClassF.class.getDeclaredField("uri"));

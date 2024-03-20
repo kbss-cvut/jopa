@@ -20,6 +20,8 @@ package cz.cvut.kbss.jopa.sessions.descriptor;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 /**
@@ -73,11 +75,19 @@ public class InstanceDescriptorFactory {
     public static <T> InstanceDescriptor<T> create(T instance, EntityType<T> et) {
         final InstanceDescriptor<T> descriptor = createNotLoaded(instance, et);
         et.getFieldSpecifications()
-          .forEach(fs -> descriptor.setLoaded(fs, fs.getFetchType() == FetchType.EAGER ? LoadState.LOADED :
-                                                  EntityPropertiesUtils.getAttributeValue(fs, instance) != null ?
-                                                  LoadState.LOADED :
-                                                  LoadState.UNKNOWN));
+          .forEach(fs -> descriptor.setLoaded(fs, getAttributeLoadState(instance, fs)));
         return descriptor;
+    }
+
+    private static <T> LoadState getAttributeLoadState(T instance, FieldSpecification<? super T, ?> fs) {
+        if (fs.getFetchType() == FetchType.EAGER) {
+            return LoadState.LOADED;
+        }
+        final Object attValue = EntityPropertiesUtils.getAttributeValue(fs, instance);
+        if (attValue instanceof LazyLoadingProxy<?>) {
+            return LoadState.NOT_LOADED;
+        }
+        return attValue != null ? LoadState.LOADED : LoadState.UNKNOWN;
     }
 
     /**

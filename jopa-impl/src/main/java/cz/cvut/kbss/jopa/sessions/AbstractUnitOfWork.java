@@ -49,7 +49,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -57,7 +56,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import static cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException.individualAlreadyManaged;
 import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.getValidator;
@@ -264,7 +262,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         if (result == null) {
             return null;
         }
-        final Object clone = registerExistingObject(result, descriptor, Collections.singletonList(new PostLoadInvoker(getMetamodel())));
+        final Object clone = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor).postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel()))));
         return cls.cast(clone);
     }
 
@@ -394,23 +392,25 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
     @Override
     public Object registerExistingObject(Object entity, Descriptor descriptor) {
-        return registerExistingObject(entity, descriptor, Collections.emptyList());
+        return registerExistingObject(entity, new CloneRegistrationDescriptor(descriptor));
     }
 
     @Override
-    public Object registerExistingObject(Object entity, Descriptor descriptor, List<Consumer<Object>> postClone) {
+    public Object registerExistingObject(Object entity, CloneRegistrationDescriptor registrationDescriptor) {
         if (entity == null) {
             return null;
         }
         if (cloneToOriginals.containsValue(entity)) {
             return getCloneForOriginal(entity);
         }
-        final CloneConfiguration cloneConfig = new CloneConfiguration(descriptor, !isInCommit());
-        postClone.forEach(cloneConfig::addPostRegisterHandler);
+        final CloneConfiguration cloneConfig = CloneConfiguration.withDescriptor(registrationDescriptor.getDescriptor())
+                                                                 .forPersistenceContext(!isInCommit())
+                                                                 .allEager(registrationDescriptor.isAllEager())
+                                                                 .addPostRegisterHandlers(registrationDescriptor.getPostCloneHandlers());
         Object clone = cloneBuilder.buildClone(entity, cloneConfig);
         assert clone != null;
-        registerClone(clone, entity, descriptor);
-        postClone.forEach(c -> c.accept(clone));
+        registerClone(clone, entity, registrationDescriptor.getDescriptor());
+        registrationDescriptor.getPostCloneHandlers().forEach(c -> c.accept(clone));
         return clone;
     }
 
@@ -448,7 +448,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     private void calculateNewObjects(UnitOfWorkChangeSet changeSet) {
         for (Object clone : newObjectsCloneToOriginal.keySet()) {
             final Descriptor c = getDescriptor(clone);
-            Object original = newObjectsCloneToOriginal.computeIfAbsent(clone, key -> cloneBuilder.buildClone(key, new CloneConfiguration(c, false)));
+            Object original = newObjectsCloneToOriginal.computeIfAbsent(clone, key -> cloneBuilder.buildClone(key, CloneConfiguration.withDescriptor(c)));
             if (original == null) {
                 throw new OWLPersistenceException("Error while calculating changes for new objects. Original not found.");
             }
@@ -580,7 +580,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         T original = storage.find(params);
         assert original != null;
 
-        return (T) registerExistingObject(original, descriptor);
+        return (T) registerExistingObject(original, new CloneRegistrationDescriptor(descriptor).allEager(true));
     }
 
     protected void evictAfterMerge(EntityType<?> et, URI identifier, Descriptor descriptor) {
@@ -615,7 +615,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             if (original == null) {
                 throw new EntityNotFoundException("Entity " + object + " no longer exists in the repository.");
             }
-            T source = (T) cloneBuilder.buildClone(original, new CloneConfiguration(descriptor, false));
+            T source = (T) cloneBuilder.buildClone(original, CloneConfiguration.withDescriptor(descriptor));
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(source, object, descriptor);
             changeCalculator.calculateChanges(chSet);
             new RefreshInstanceMerger(indirectWrapperHelper).mergeChanges(chSet);

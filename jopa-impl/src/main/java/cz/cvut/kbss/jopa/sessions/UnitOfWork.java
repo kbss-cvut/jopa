@@ -29,7 +29,6 @@ import cz.cvut.kbss.jopa.utils.Wrapper;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Represents a persistence context.
@@ -192,27 +191,25 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
     /**
      * Register an existing object in this Unit of Work.
      * <p>
-     * This method creates a working clone of this object and puts the given object into this Unit of Work cache.
+     * This is a shortcut for {@link #registerExistingObject(Object, CloneRegistrationDescriptor)}.
      *
      * @param object     Object
      * @param descriptor Entity descriptor identifying repository contexts
-     * @return Object Returns clone of the registered object
+     * @return Registered clone of the specified object
+     * @see #registerExistingObject(Object, CloneRegistrationDescriptor)
      */
     Object registerExistingObject(Object object, Descriptor descriptor);
 
     /**
-     * Registers an existing object in this Unit of Work.
+     * Register an existing object in this Unit of Work.
      * <p>
-     * Invokes the specified postClone procedures after the cloning takes place, passing the newly created clone as
-     * argument.
+     * Creates a working clone of the specified object according to the configuration and puts the given object into this Unit of Work cache.
      *
-     * @param object     The object to register
-     * @param descriptor Descriptor identifying repository contexts
-     * @param postClone  Handlers to be called after the original object is cloned on the clone
-     * @return Clone of the registered object
-     * @see #registerExistingObject(Object, Descriptor)
+     * @param object     Object
+     * @param registrationDescriptor Configuration of the registration
+     * @return Registered clone of the specified object
      */
-    Object registerExistingObject(Object object, Descriptor descriptor, List<Consumer<Object>> postClone);
+    Object registerExistingObject(Object object, CloneRegistrationDescriptor registrationDescriptor);
 
     /**
      * Registers the specified new object in this Unit of Work.

@@ -173,13 +173,13 @@ public class CollectionInstanceBuilderTest {
         final OWLClassA aOrig = Generators.generateOwlClassAInstance();
         final OWLClassA aClone = new OWLClassA(aOrig);
         owner.setOwlClassA(Collections.singleton(aOrig));
-        when(uowMock.registerExistingObject(aOrig, descriptor, Collections.emptyList())).thenReturn(aClone);
+        when(uowMock.registerExistingObject(aOrig, new CloneRegistrationDescriptor(descriptor))).thenReturn(aClone);
         when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
         final Set<?> clone = (Set<?>) builder.buildClone(owner, OWLClassJ.getOwlClassAField(), owner.getOwlClassA(),
                                                          new CloneConfiguration(descriptor, false));
         assertEquals(owner.getOwlClassA().size(), clone.size());
         assertSame(aClone, clone.iterator().next());
-        verify(uowMock).registerExistingObject(aOrig, descriptor, Collections.emptyList());
+        verify(uowMock).registerExistingObject(aOrig, new CloneRegistrationDescriptor(descriptor));
     }
 
     @Test
@@ -189,14 +189,14 @@ public class CollectionInstanceBuilderTest {
         final OWLClassA aOrig = Generators.generateOwlClassAInstance();
         final OWLClassA aClone = new OWLClassA(aOrig);
         owner.setSimpleList(Collections.singletonList(aOrig));
-        when(uowMock.registerExistingObject(aOrig, descriptor, Collections.emptyList())).thenReturn(aClone);
+        when(uowMock.registerExistingObject(aOrig, new CloneRegistrationDescriptor(descriptor))).thenReturn(aClone);
         when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
 
         final List<?> clone = (List<?>) builder.buildClone(owner, OWLClassC.getSimpleListField(), owner.getSimpleList(),
                                                            new CloneConfiguration(descriptor, false));
         assertEquals(1, clone.size());
         assertSame(aClone, clone.get(0));
-        verify(uowMock).registerExistingObject(aOrig, descriptor, Collections.emptyList());
+        verify(uowMock).registerExistingObject(aOrig, new CloneRegistrationDescriptor(descriptor));
     }
 
     @Test
@@ -208,8 +208,8 @@ public class CollectionInstanceBuilderTest {
         final OWLClassA aTwoOrig = Generators.generateOwlClassAInstance();
         final OWLClassA aTwoClone = new OWLClassA(aTwoOrig);
         owner.setSimpleList(Arrays.asList(aOneOrig, aTwoOrig));
-        when(uowMock.registerExistingObject(aOneOrig, descriptor, Collections.emptyList())).thenReturn(aOneClone);
-        when(uowMock.registerExistingObject(aTwoOrig, descriptor, Collections.emptyList())).thenReturn(aTwoClone);
+        when(uowMock.registerExistingObject(aOneOrig, new CloneRegistrationDescriptor(descriptor))).thenReturn(aOneClone);
+        when(uowMock.registerExistingObject(aTwoOrig, new CloneRegistrationDescriptor(descriptor))).thenReturn(aTwoClone);
         when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
 
         final List<?> clone = (List<?>) builder.buildClone(owner, OWLClassC.getSimpleListField(), owner.getSimpleList(),
@@ -217,8 +217,8 @@ public class CollectionInstanceBuilderTest {
         assertEquals(2, clone.size());
         assertSame(aOneClone, clone.get(0));
         assertSame(aTwoClone, clone.get(1));
-        verify(uowMock).registerExistingObject(aOneOrig, descriptor, Collections.emptyList());
-        verify(uowMock).registerExistingObject(aTwoOrig, descriptor, Collections.emptyList());
+        verify(uowMock).registerExistingObject(aOneOrig, new CloneRegistrationDescriptor(descriptor));
+        verify(uowMock).registerExistingObject(aTwoOrig, new CloneRegistrationDescriptor(descriptor));
     }
 
     @Test

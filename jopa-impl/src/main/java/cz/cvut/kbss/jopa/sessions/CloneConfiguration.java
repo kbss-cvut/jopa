@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -27,26 +28,25 @@ import java.util.function.Consumer;
 
 public class CloneConfiguration {
 
-    private final Descriptor descriptor;
+    private Descriptor descriptor;
 
     private final List<Consumer<Object>> postRegister = new ArrayList<>(1);
 
-    private final boolean forPersistenceContext;
+    private boolean forPersistenceContext;
+
+    private boolean allEager;
+
+    private CloneConfiguration() {
+    }
 
     public CloneConfiguration(Descriptor descriptor, boolean forPersistenceContext) {
         this.descriptor = Objects.requireNonNull(descriptor);
         this.forPersistenceContext = forPersistenceContext;
     }
 
-    public CloneConfiguration(Descriptor descriptor, boolean forPersistenceContext, List<Consumer<Object>> handlers) {
-        this.descriptor = Objects.requireNonNull(descriptor);
-        this.forPersistenceContext = forPersistenceContext;
-        Objects.requireNonNull(handlers);
+    public CloneConfiguration addPostRegisterHandlers(Collection<Consumer<Object>> handlers) {
         postRegister.addAll(handlers);
-    }
-
-    public void addPostRegisterHandler(Consumer<Object> handler) {
-        postRegister.add(handler);
+        return this;
     }
 
     public Descriptor getDescriptor() {
@@ -57,7 +57,27 @@ public class CloneConfiguration {
         return Collections.unmodifiableList(postRegister);
     }
 
+    public CloneConfiguration forPersistenceContext(boolean value) {
+        this.forPersistenceContext = value;
+        return this;
+    }
+
     public boolean isForPersistenceContext() {
         return forPersistenceContext;
+    }
+
+    public CloneConfiguration allEager(boolean value) {
+        this.allEager = value;
+        return this;
+    }
+
+    public boolean isAllEager() {
+        return allEager;
+    }
+
+    public static CloneConfiguration withDescriptor(Descriptor descriptor) {
+        final CloneConfiguration configuration = new CloneConfiguration();
+        configuration.descriptor = descriptor;
+        return configuration;
     }
 }

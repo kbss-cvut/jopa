@@ -140,7 +140,7 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassF, String> fStringAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassF, Set<OWLClassA>, OWLClassA> fSetAtt;
+    private SetAttributeImpl<OWLClassF, OWLClassA> fSetAtt;
 
     @Mock
     private IdentifiableEntityType<OWLClassH> etH;
@@ -181,7 +181,7 @@ public class MetamodelMocks {
     @Mock
     private ListAttributeImpl<OWLClassL, OWLClassA> lReferencedList;
     @Mock
-    private AbstractPluralAttribute<OWLClassL, Set<OWLClassA>, OWLClassA> lSetAtt;
+    private SetAttributeImpl<OWLClassL, OWLClassA> lSetAtt;
     @Mock
     private SingularAttributeImpl<OWLClassL, OWLClassA> lOwlClassAAtt;
 
@@ -204,7 +204,7 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassM, OWLClassM.Severity> mOrdinalEnumAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassM, Set<Integer>, Integer> mIntegerSetAtt;
+    private SetAttributeImpl<OWLClassM, Integer> mIntegerSetAtt;
     @Mock
     private SingularAttributeImpl<OWLClassM, String> mLexicalFormAtt;
     @Mock
@@ -227,7 +227,7 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassN, String> nStringAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassN, Set<String>, String> nPluralAnnotationAtt;
+    private SetAttributeImpl<OWLClassN, String> nPluralAnnotationAtt;
     @Mock
     private PropertiesSpecification<OWLClassN, Map, String, String> nProperties;
 
@@ -245,7 +245,7 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassP, URI> pUriAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassP, Set<URL>, URL> pUrlsAtt;
+    private SetAttributeImpl<OWLClassP, URL> pUrlsAtt;
     @Mock
     private ListAttributeImpl<OWLClassP, URI> pSimpleList;
     @Mock
@@ -310,7 +310,7 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassU, MultilingualString> uSingularStringAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassU, Set<MultilingualString>, MultilingualString> uPluralStringAtt;
+    private SetAttributeImpl<OWLClassU, MultilingualString> uPluralStringAtt;
 
     @Mock
     private IdentifiableEntityType<OWLClassWithQueryAttr> etQA;

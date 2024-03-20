@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.sessions.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,10 +58,10 @@ class EntityResultMapperTest {
     @Test
     void mapCreatesNewInstanceOfTargetTypeAndRegistersItInUOW() {
         final OWLClassA clone = new OWLClassA();
-        when(uowMock.registerExistingObject(any(), any(), any())).thenReturn(clone);
+        when(uowMock.registerExistingObject(any(), any(CloneRegistrationDescriptor.class))).thenReturn(clone);
         final OWLClassA result = mapper.map(resultRow, uowMock);
         assertNotNull(result);
-        verify(uowMock).registerExistingObject(any(), any(), any());
+        verify(uowMock).registerExistingObject(any(), any(CloneRegistrationDescriptor.class));
     }
 
     @Test

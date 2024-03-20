@@ -17,9 +17,9 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
 import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMap;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Constructor;
@@ -145,7 +145,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         if (obj == null) {
             clone = null;
         } else if (builder.isTypeManaged(obj.getClass())) {
-            clone = uow.registerExistingObject(obj, configuration.getDescriptor(), configuration.getPostRegister());
+            clone = uow.registerExistingObject(obj, new CloneRegistrationDescriptor(configuration.getDescriptor()).postCloneHandlers(configuration.getPostRegister()));
         } else {
             clone = builder.buildClone(owner, field, obj, configuration.getDescriptor());
         }

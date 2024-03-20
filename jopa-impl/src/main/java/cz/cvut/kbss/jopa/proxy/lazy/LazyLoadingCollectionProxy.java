@@ -13,7 +13,7 @@ import java.util.Iterator;
  * @param <O> Owner object type
  * @param <T> Wrapped object type
  */
-abstract class LazyLoadingCollectionProxy<O, T extends Collection<E>, E> implements Collection<E> {
+abstract class LazyLoadingCollectionProxy<O, T extends Collection<E>, E> implements LazyLoadingProxy<T>, Collection<E> {
 
     protected final transient O owner;
     protected final transient FieldSpecification<? super O, T> fieldSpec;

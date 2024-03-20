@@ -88,7 +88,7 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
         if (result == null) {
             return null;
         }
-        final T clone = (T) cloneBuilder.buildReferenceClone(result, new CloneConfiguration(descriptor, true));
+        final T clone = (T) cloneBuilder.buildReferenceClone(result, CloneConfiguration.withDescriptor(descriptor).forPersistenceContext(true));
         instanceDescriptors.put(clone, InstanceDescriptorFactory.createNotLoaded(result, entityType(cls)));
         attachPersistenceContextToEntity(clone);
         registerEntityWithOntologyContext(clone, descriptor);
