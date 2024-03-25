@@ -25,12 +25,14 @@ import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeCalculator;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
@@ -574,7 +576,14 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
     protected <T> T getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
         if (keysToClones.containsKey(identifier)) {
-            return (T) keysToClones.get(identifier);
+            T managed = (T) keysToClones.get(identifier);
+            et.getFieldSpecifications().stream().filter(fs -> fs.getFetchType() == FetchType.LAZY).forEach(fs -> {
+                final Object fieldValue = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), managed);
+                if (fieldValue instanceof LazyLoadingProxy<?> proxy) {
+                    proxy.triggerLazyLoading();
+                }
+            });
+            return managed;
         }
         final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), identifier, descriptor, true);
         T original = storage.find(params);

@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static cz.cvut.kbss.jopa.environment.utils.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -936,5 +937,22 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         assertInstanceOf(LazyLoadingProxy.class, clone.getSimpleList());
         uow.unregisterObject(clone);
         assertNull(clone.getSimpleList());
+    }
+
+    @Test
+    void getInstanceForMergeTriggersLazyAttributeLoadingForAlreadyManagedObject() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final List<OWLClassA> simpleList = Generators.generateInstances(2);
+        final OWLClassC entityC = new OWLClassC(Generators.createIndividualIdentifier());
+        final OWLClassC clone = (OWLClassC) uow.registerExistingObject(entityC, descriptor);
+        assertInstanceOf(LazyLoadingProxy.class, clone.getSimpleList());
+        doAnswer(inv -> {
+            final OWLClassC instance = inv.getArgument(0);
+            instance.setSimpleList(simpleList);
+            return simpleList;
+        }).when(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassC().simpleListAtt(), descriptor);
+
+        final OWLClassC result = uow.getInstanceForMerge(entityC.getUri(), metamodelMocks.forOwlClassC().entityType(), descriptor);
+        assertThat(result.getSimpleList(), containsSameEntities(simpleList));
     }
 }

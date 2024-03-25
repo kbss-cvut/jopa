@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.environment.listener.MappedSuperclassListener;
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 
@@ -25,7 +26,7 @@ import java.net.URI;
 
 @EntityListeners(MappedSuperclassListener.class)
 @MappedSuperclass
-public class QMappedSuperclass {
+public class QMappedSuperclass implements HasUri {
 
     @Id(generated = true)
     private URI uri;

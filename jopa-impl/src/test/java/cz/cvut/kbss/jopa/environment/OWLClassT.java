@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
@@ -28,7 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @OWLClass(iri = Vocabulary.c_OwlClassT)
-public class OWLClassT {
+public class OWLClassT implements HasUri {
 
     @Id(generated = true)
     private URI uri;

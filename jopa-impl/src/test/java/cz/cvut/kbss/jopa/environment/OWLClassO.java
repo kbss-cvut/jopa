@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
@@ -26,7 +27,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassO")
-public class OWLClassO {
+public class OWLClassO implements HasUri {
 
     // Static fields should be transient
     private static boolean primitiveField = false;

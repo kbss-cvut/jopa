@@ -17,13 +17,14 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassI")
-public class OWLClassI {
+public class OWLClassI implements HasUri {
 
     private static final String CLS_A_FIELD = "owlClassA";
 

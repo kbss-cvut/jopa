@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.Inferred;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
@@ -28,7 +29,7 @@ import java.net.URI;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.c_OwlClassF)
-public class OWLClassF {
+public class OWLClassF implements HasUri {
 
     private static final String STR_ATT_FIELD = "secondStringAttribute";
     private static final String SET_FIELD = "simpleSet";

@@ -22,6 +22,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
@@ -29,7 +30,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 
 @OWLClass(iri = Vocabulary.c_OwlClassB)
-public class OWLClassB {
+public class OWLClassB implements HasUri {
 
 	private static final String STR_ATT_FIELD = "stringAttribute";
 	private static final String PROPERTIES_FIELD = "properties";

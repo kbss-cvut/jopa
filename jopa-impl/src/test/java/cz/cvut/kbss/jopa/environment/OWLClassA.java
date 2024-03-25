@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.PropertyInfo;
 
@@ -31,7 +32,7 @@ import java.util.Set;
         @VariableResult(name = "y", type = String.class)
 })
 @OWLClass(iri = Vocabulary.c_OwlClassA)
-public class OWLClassA {
+public class OWLClassA implements HasUri {
 
     public static final String VARIABLE_MAPPING = "OWLClassA.testMapping";
 
@@ -68,16 +69,12 @@ public class OWLClassA {
         this.types = new HashSet<>(other.types);
     }
 
-    /**
-     * @param uri the uri to set
-     */
+    @Override
     public void setUri(URI uri) {
         this.uri = uri;
     }
 
-    /**
-     * @return the uri
-     */
+    @Override
     public URI getUri() {
         return uri;
     }
