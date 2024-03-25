@@ -2,10 +2,10 @@ package cz.cvut.kbss.jopa.proxy.lazy;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.SetAttribute;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -35,6 +35,8 @@ public class LazyLoadingProxyFactory {
             return new LazyLoadingListProxy<>(entity, (ListAttribute<T, ?>) fieldSpec, uow);
         } else if (Set.class.isAssignableFrom(type)) {
             return new LazyLoadingSetProxy<>(entity, (FieldSpecification) fieldSpec, uow);
+        } else if (Map.class.isAssignableFrom(type)) {
+            return new LazyLoadingMapProxy<>(entity, (FieldSpecification) fieldSpec, uow);
         }
         return null;
     }

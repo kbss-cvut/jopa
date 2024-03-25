@@ -26,6 +26,7 @@ abstract class LazyLoadingCollectionProxy<O, T extends Collection<E>, E> impleme
         this.persistenceContext = persistenceContext;
     }
 
+    @Override
     public T triggerLazyLoading() {
         if (persistenceContext == null || !persistenceContext.isActive()) {
             throw new LazyLoadingException("No active persistence context is available in lazy loading proxy for attribute "
