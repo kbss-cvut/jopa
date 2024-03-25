@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -371,5 +372,11 @@ public class StringPropertiesFieldStrategyTest {
         final Set<Axiom<?>> result = strategy.buildAxiomsFromInstance(entity);
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    @Disabled
+    @Test
+    void buildInstanceFieldValueSetsInstanceFieldValueToNullWhenNoValuesWereAdded() {
+        // TODO Implement when LazyLoadingMapProxy is implemented
     }
 }

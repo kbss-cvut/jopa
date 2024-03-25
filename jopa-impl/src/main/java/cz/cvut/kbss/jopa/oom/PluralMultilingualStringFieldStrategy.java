@@ -23,7 +23,12 @@ import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -48,8 +53,7 @@ public class PluralMultilingualStringFieldStrategy<X>
     void addValueFromAxiom(Axiom<?> ax) {
         String value;
         String language = null;
-        if (ax.getValue().getValue() instanceof LangString) {
-            final LangString ls = (LangString) ax.getValue().getValue();
+        if (ax.getValue().getValue() instanceof LangString ls) {
             value = ls.getValue();
             language = ls.getLanguage().orElse(null);
         } else {
@@ -72,9 +76,7 @@ public class PluralMultilingualStringFieldStrategy<X>
 
     @Override
     void buildInstanceFieldValue(Object instance) {
-        if (!values.isEmpty()) {
-            setValueOnInstance(instance, values);
-        }
+        setValueOnInstance(instance, !values.isEmpty() ? values : null);
     }
 
     @Override

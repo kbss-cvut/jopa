@@ -2,8 +2,10 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
@@ -21,7 +23,18 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
 
     @Override
     void detachAllManagedInstances() {
-        // TODO Remove lazy proxies when implemented
+        cloneMapping.forEach(this::removeLazyLoadingProxies);
+    }
+
+    private void removeLazyLoadingProxies(Object entity) {
+        assert entity != null;
+        final EntityType<?> et = entityType(entity.getClass());
+        for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
+            final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
+            if (value instanceof LazyLoadingProxy) {
+                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, null);
+            }
+        }
     }
 
     @Override
@@ -95,7 +108,7 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
     @Override
     public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
         // TODO
-        return null;
+        return readObject(cls, identifier, descriptor);
     }
 
     @Override
@@ -105,6 +118,12 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
 
         final Object identifier = getIdentifier(entity);
         markCloneForDeletion(entity, identifier);
+    }
+
+    @Override
+    public void unregisterObject(Object object) {
+        super.unregisterObject(object);
+        removeLazyLoadingProxies(object);
     }
 
     @Override

@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.PrePersist;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassF;
@@ -49,14 +50,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -134,7 +132,9 @@ class BugTest extends IntegrationTestBase {
         initAxiomsForNullReferenceLoad(owner);
         final OWLClassJ result = em.find(OWLClassJ.class, owner);
         assertNotNull(result);
-        assertThat(result.getOwlClassA(), anyOf(nullValue(), empty()));
+        assertInstanceOf(LazyLoadingProxy.class, result.getOwlClassA());
+        ((LazyLoadingProxy) result.getOwlClassA()).triggerLazyLoading();
+        assertNull(result.getOwlClassA());
     }
 
     private void initAxiomsForNullReferenceLoad(URI owner) throws OntoDriverException {
@@ -150,12 +150,9 @@ class BugTest extends IntegrationTestBase {
                         new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_J)))));
         final AxiomDescriptor refDescriptor = new AxiomDescriptor(ownerResource);
         refDescriptor.addAssertion(opAssertion);
-        when(connectionMock.find(refDescriptor)).thenReturn(
-                Collections.singletonList(new AxiomImpl<>(ownerResource, opAssertion, new Value<>(reference))));
         final AxiomDescriptor aDesc = new AxiomDescriptor(reference);
         aDesc.addAssertion(classAssertion);
         aDesc.addAssertion(Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false));
-        when(connectionMock.find(aDesc)).thenReturn(Collections.emptyList());
     }
 
     /**

@@ -14,6 +14,8 @@ import cz.cvut.kbss.jopa.model.metamodel.Converters;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingListProxy;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Lists;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
@@ -116,4 +118,15 @@ class ReferencedListDataPropertyStrategyTest extends ListPropertyStrategyTestBas
         assertEquals(Assertion.AssertionType.DATA_PROPERTY, nodeContentAssertion.getType());
     }
 
+    @Test
+    void buildInstanceFieldValueSetsInstanceFieldValueToNullWhenNoValuesWereAdded() throws Exception {
+        final EntityType<DataPropertyReferencedList> et = mock(EntityType.class);
+        final ListAttributeImpl<DataPropertyReferencedList, Integer> att = initDataListAttribute();
+        final ReferencedListDataPropertyStrategy<DataPropertyReferencedList> sut = new ReferencedListDataPropertyStrategy<>(et, att, descriptor, mapperMock);
+        final DataPropertyReferencedList instance = new DataPropertyReferencedList();
+        instance.uri = Generators.createIndividualIdentifier();
+        instance.list = new LazyLoadingListProxy<>(instance, att, mock(UnitOfWork.class));
+        sut.buildInstanceFieldValue(instance);
+        assertNull(instance.list);
+    }
 }

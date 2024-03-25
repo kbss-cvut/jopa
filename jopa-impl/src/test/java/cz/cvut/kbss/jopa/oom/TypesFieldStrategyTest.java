@@ -24,20 +24,42 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingSetProxy;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class TypesFieldStrategyTest {
 
     private static final URI IDENTIFIER = Generators.createIndividualIdentifier();
@@ -53,8 +75,6 @@ public class TypesFieldStrategyTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
-
         this.mocks = new MetamodelMocks();
         this.entityA = new OWLClassA();
         entityA.setUri(IDENTIFIER);
@@ -328,5 +348,14 @@ public class TypesFieldStrategyTest {
         final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(entityA);
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void buildInstanceFieldValueSetsInstanceFieldToNullWhenNoValuesWereAdded() {
+        entityA.setTypes(new LazyLoadingSetProxy(entityA, mocks.forOwlClassA().typesSpec(), mock(UnitOfWork.class)));
+        final TypesFieldStrategy<OWLClassA> sut =
+                strategy(mocks.forOwlClassA().entityType(), mocks.forOwlClassA().typesSpec());
+        sut.buildInstanceFieldValue(entityA);
+        assertNull(entityA.getTypes());
     }
 }

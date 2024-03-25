@@ -32,6 +32,7 @@ import java.util.Set;
 @Target(ElementType.FIELD)
 public @interface Types {
 
+    // TODO Default to EAGER
     FetchType fetchType() default FetchType.LAZY;
 
     /**

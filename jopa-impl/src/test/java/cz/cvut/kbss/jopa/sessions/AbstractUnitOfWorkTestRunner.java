@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassE;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
@@ -37,6 +38,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -59,6 +61,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -922,5 +925,16 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
 
         verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
         verify(storageMock).persist(entityB.getUri(), entityB, descriptor);
+    }
+
+    @Test
+    void unregisterObjectReplacesLazyLoadingProxiesWithNull() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassC entityC = new OWLClassC(Generators.createIndividualIdentifier());
+        final OWLClassC clone = (OWLClassC) uow.registerExistingObject(entityC, descriptor);
+        // Simple list is lazy loaded
+        assertInstanceOf(LazyLoadingProxy.class, clone.getSimpleList());
+        uow.unregisterObject(clone);
+        assertNull(clone.getSimpleList());
     }
 }

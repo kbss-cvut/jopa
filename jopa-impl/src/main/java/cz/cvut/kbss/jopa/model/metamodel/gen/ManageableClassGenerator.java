@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
-import static net.bytebuddy.matcher.ElementMatchers.isGetter;
 import static net.bytebuddy.matcher.ElementMatchers.isSetter;
 
 /**
@@ -59,9 +58,6 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
                                                              .intercept(FieldAccessor.ofBeanProperty())
                                                              .method(isSetter().and(new PersistentPropertySetterMatcher<>(entityClass)))
                                                              .intercept(SuperMethodCall.INSTANCE.andThen(MethodDelegation.to(SetterInterceptor.class)))
-                                                             .method(isGetter().and(new PersistentPropertyGetterMatcher<>(entityClass)))
-                                                             .intercept(MethodDelegation.to(GetterInterceptor.class)
-                                                                                        .andThen(SuperMethodCall.INSTANCE))
                                                              .make();
         LOG.debug("Generated dynamic type {} for entity class {}.", typeDef, entityClass);
         outputGeneratedClass(typeDef);
@@ -96,24 +92,6 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
             }
             AttributeModificationValidator.verifyCanModify(fieldSpec);
             pc.attributeChanged(instance, fieldSpec);
-        }
-    }
-
-    public static class GetterInterceptor {
-
-        public static void get(@This Manageable instance, @Origin Method getter) throws Exception {
-            final UnitOfWork pc = instance.getPersistenceContext();
-            if (pc == null || !pc.contains(instance)) {
-                return;
-            }
-            final String fieldName = AnnotatedAccessor.from(getter).getPropertyName();
-            final EntityType<?> et = pc.getMetamodel().entity(MetamodelUtils.getEntityClass(instance.getClass()));
-            final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(fieldName);
-            assert fieldSpec != null;
-            if (et.getIdentifier().equals(fieldSpec)) {
-                return;
-            }
-            pc.loadEntityField(instance, (FieldSpecification) fieldSpec);
         }
     }
 }

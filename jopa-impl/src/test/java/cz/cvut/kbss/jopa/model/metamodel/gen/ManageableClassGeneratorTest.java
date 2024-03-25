@@ -1,9 +1,7 @@
 package cz.cvut.kbss.jopa.model.metamodel.gen;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassI;
 import cz.cvut.kbss.jopa.environment.OWLClassO;
-import cz.cvut.kbss.jopa.environment.Person;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.Manageable;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
@@ -22,10 +20,8 @@ import org.mockito.quality.Strictness;
 import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -75,44 +71,6 @@ class ManageableClassGeneratorTest {
     }
 
     @Test
-    void generatedGetterInvokesPersistenceContextAttributeLoadForLazyAttribute() throws Exception {
-        final Class<? extends OWLClassI> cls = sut.generate(OWLClassI.class);
-
-        final OWLClassI instance = cls.getDeclaredConstructor().newInstance();
-        assertInstanceOf(Manageable.class, instance);
-        assertInstanceOf(OWLClassI.class, instance);
-        ((Manageable) instance).setPersistenceContext(uow);
-        when(uow.contains(instance)).thenReturn(true);
-        assertEquals(uow, ((Manageable) instance).getPersistenceContext());
-        assertNull(instance.getOwlClassA());
-        verify(uow).loadEntityField(instance, metamodelMocks.forOwlClassI().owlClassAAtt());
-    }
-
-    @Test
-    void doesOverrideNonGetterMethod() throws Exception {
-        final Class<? extends Person> cls = sut.generate(Person.class);
-
-        final Person instance = cls.getDeclaredConstructor().newInstance();
-        ((Manageable) instance).setPersistenceContext(uow);
-        when(uow.contains(instance)).thenReturn(true);
-
-        assertFalse(instance.isChild());
-        verify(uow, never()).loadEntityField(eq(instance), any());
-    }
-
-    @Test
-    void doesNotOverrideGetterForTransientField() throws Exception {
-        final Class<? extends OWLClassO> cls = sut.generate(OWLClassO.class);
-
-        final OWLClassO instance = cls.getDeclaredConstructor().newInstance();
-        ((Manageable) instance).setPersistenceContext(uow);
-        when(uow.contains(instance)).thenReturn(true);
-
-        assertNull(instance.getTransientField());
-        verify(uow, never()).loadEntityField(eq(instance), any());
-    }
-
-    @Test
     void doesNotOverrideSetterForTransientField() throws Exception {
         final Class<? extends OWLClassO> cls = sut.generate(OWLClassO.class);
 
@@ -123,17 +81,5 @@ class ManageableClassGeneratorTest {
         instance.setTransientField("insignificant value");
         verify(uow, never()).attributeChanged(eq(instance), any(FieldSpecification.class));
         verify(uow, never()).attributeChanged(eq(instance), any(Field.class));
-    }
-
-    @Test
-    void doesNotOverrideIdentifierGetter() throws Exception {
-        final Class<? extends OWLClassA> cls = sut.generate(OWLClassA.class);
-
-        final OWLClassA instance = cls.getDeclaredConstructor().newInstance();
-        ((Manageable) instance).setPersistenceContext(uow);
-        when(uow.contains(instance)).thenReturn(true);
-        assertNull(instance.getUri());
-        verify(uow, never()).contains(instance);
-        verify(uow, never()).loadEntityField(instance, metamodelMocks.forOwlClassA().identifier());
     }
 }

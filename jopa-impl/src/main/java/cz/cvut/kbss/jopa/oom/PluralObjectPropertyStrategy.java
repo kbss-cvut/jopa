@@ -23,7 +23,11 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,8 +65,8 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
             values.add(attribute.getConverter().convertToAttribute(valueIdentifier));
         } else {
             final Object value = mapper.getEntityFromCacheOrOntology(elementType, valueIdentifier.getIdentifier(),
-                                                                     entityDescriptor.getAttributeDescriptor(
-                                                                             attribute));
+                    entityDescriptor.getAttributeDescriptor(
+                            attribute));
             if (value != null) {
                 values.add(value);
             } else {
@@ -73,9 +77,7 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
 
     @Override
     void buildInstanceFieldValue(Object instance) {
-        if (!values.isEmpty()) {
-            setValueOnInstance(instance, values);
-        }
+        setValueOnInstance(instance, !values.isEmpty() ? values : null);
     }
 
     @Override

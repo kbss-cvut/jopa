@@ -99,14 +99,8 @@ abstract class LazyLoadingCollectionProxy<O, T extends Collection<E>, E> impleme
         triggerLazyLoading().clear();
     }
 
-
     @Override
-    public int hashCode() {
-        return triggerLazyLoading().hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return triggerLazyLoading().equals(obj);
+    public String toString() {
+        return getClass().getSimpleName() + "[" + owner.getClass().getSimpleName() + "." + fieldSpec.getName() + "]";
     }
 }

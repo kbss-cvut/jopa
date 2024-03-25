@@ -53,11 +53,7 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
     @Override
     void buildInstanceFieldValue(Object instance) {
         assert attribute.getJavaField().getType().isAssignableFrom(Set.class);
-
-        if (values.isEmpty()) {
-            return;
-        }
-        setValueOnInstance(instance, values);
+        setValueOnInstance(instance, !values.isEmpty() ? values : null);
     }
 
     @Override

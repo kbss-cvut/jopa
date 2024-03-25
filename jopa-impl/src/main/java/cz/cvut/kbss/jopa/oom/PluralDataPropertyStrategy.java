@@ -58,9 +58,7 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
 
     @Override
     void buildInstanceFieldValue(Object instance) {
-        if (!values.isEmpty()) {
-            setValueOnInstance(instance, values);
-        }
+        setValueOnInstance(instance, !values.isEmpty() ? values : null);
     }
 
     @Override

@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMap;
 import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMultilingualString;
 import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.model.MultilingualString;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -73,6 +74,6 @@ class IndirectWrapperHelper {
      * @return {@code true} if an indirect wrapper is used for the specified target
      */
     static boolean requiresIndirectWrapper(Object target) {
-        return target instanceof Collection || target instanceof MultilingualString || target instanceof Map;
+        return (!(target instanceof LazyLoadingProxy)) && (target instanceof Collection || target instanceof MultilingualString || target instanceof Map);
     }
 }

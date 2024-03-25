@@ -8,6 +8,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
@@ -129,24 +130,26 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
     @Override
     protected void detachAllManagedInstances() {
         cloneMapping.forEach(instance -> {
-            removeIndirectWrappers(instance);
+            removeIndirectWrappersAndProxies(instance);
             deregisterEntityFromPersistenceContext(instance);
         });
-        newObjectsCloneToOriginal.keySet().forEach(this::removeIndirectWrappers);
+        newObjectsCloneToOriginal.keySet().forEach(this::removeIndirectWrappersAndProxies);
     }
 
     /**
-     * Removes {@link IndirectWrapper} instances from the specified entity (if present).
+     * Removes {@link IndirectWrapper} and {@link LazyLoadingProxy} instances from the specified entity (if present).
      *
      * @param entity The entity to remove indirect wrappers from
      */
-    private void removeIndirectWrappers(Object entity) {
+    private void removeIndirectWrappersAndProxies(Object entity) {
         assert entity != null;
         final EntityType<?> et = entityType(entity.getClass());
         for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
             final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
             if (value instanceof IndirectWrapper indirectWrapper) {
                 EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, indirectWrapper.unwrap());
+            } else if (value instanceof LazyLoadingProxy) {
+                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, null);
             }
         }
     }
@@ -262,7 +265,7 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
     @Override
     public void unregisterObject(Object object) {
         super.unregisterObject(object);
-        removeIndirectWrappers(object);
+        removeIndirectWrappersAndProxies(object);
         deregisterEntityFromPersistenceContext(object);
     }
 

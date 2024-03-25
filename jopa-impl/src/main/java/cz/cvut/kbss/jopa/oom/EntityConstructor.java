@@ -268,10 +268,6 @@ class EntityConstructor {
 
     <T> void setFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Collection<Axiom<?>> axioms,
                            EntityType<T> et, Descriptor entityDescriptor) {
-        if (axioms.isEmpty()) {
-            validateIntegrityConstraints(entity, fieldSpec, et);
-            return;
-        }
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
                 .createFieldStrategy(et, fieldSpec, entityDescriptor, mapper);
         axioms.forEach(fs::addValueFromAxiom);
