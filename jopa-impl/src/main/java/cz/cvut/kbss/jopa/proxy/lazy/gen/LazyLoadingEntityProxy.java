@@ -21,4 +21,14 @@ public interface LazyLoadingEntityProxy<T> extends LazyLoadingProxyPropertyAcces
         }
         return (T) getPersistenceContext().loadEntityField(getOwner(), (FieldSpecification<? super Object, ?>) getFieldSpec());
     }
+
+    /**
+     * Common implementation of {@link Object#toString()}.
+     *
+     * @return String representation of this proxy
+     */
+    default String stringify() {
+        return getClass().getSimpleName() + "[" + getOwner().getClass()
+                                                            .getSimpleName() + "." + getFieldSpec().getName() + "]";
+    }
 }

@@ -12,7 +12,6 @@ import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.FieldAccessor;
-import net.bytebuddy.implementation.FixedValue;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
@@ -57,7 +56,7 @@ public class LazyLoadingEntityProxyGenerator implements PersistenceContextAwareC
                                                              .method(isGetter().and(new PersistentPropertyGetterMatcher<>(entityClass)))
                                                              .intercept(MethodDelegation.to(GetterInterceptor.class))
                                                              .method(isToString())
-                                                             .intercept(FixedValue.value(entityClass.getSimpleName()))
+                                                             .intercept(MethodDelegation.toMethodReturnOf("stringify"))
                                                              .make();
         LOG.debug("Generated dynamic type {} for entity class {}.", typeDef, entityClass);
         return typeDef.load(getClass().getClassLoader()).getLoaded();

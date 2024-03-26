@@ -1,9 +1,12 @@
 package cz.cvut.kbss.jopa.proxy.lazy;
 
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxy;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +40,18 @@ public class LazyLoadingProxyFactory {
             return new LazyLoadingSetProxy<>(entity, (FieldSpecification) fieldSpec, uow);
         } else if (Map.class.isAssignableFrom(type)) {
             return new LazyLoadingMapProxy<>(entity, (FieldSpecification) fieldSpec, uow);
+        } else if (uow.getMetamodel().isEntityType(type)) {
+            try {
+                final Class<?> proxyType = uow.getMetamodel().getLazyLoadingProxy(type);
+                final LazyLoadingEntityProxy<?> proxy = (LazyLoadingEntityProxy<?>) proxyType.getDeclaredConstructor().newInstance();
+                proxy.setOwner(entity);
+                proxy.setPersistenceContext(uow);
+                proxy.setFieldSpec(fieldSpec);
+                return proxy;
+            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                throw new OWLPersistenceException("Unable to instantiate lazy loading proxy!", e);
+            }
         }
-        return null;
+        throw new IllegalArgumentException("Unsupported type for lazy proxying.");
     }
 }

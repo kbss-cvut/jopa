@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.doAnswer;
@@ -69,5 +71,20 @@ class LazyLoadingEntityProxyGeneratorTest {
         owner.getOwlClassA().setStringAttribute(setValue);
         verify(uow).loadEntityField(owner, fieldSpec);
         assertEquals(setValue, loaded.getStringAttribute());
+    }
+
+    @Test
+    void generateGeneratesProxyWithCommonToStringMethod() throws Exception {
+        when(fieldSpec.getName()).thenReturn("owlClassA");
+        final Class<? extends OWLClassA> resultCls = sut.generate(OWLClassA.class);
+        final OWLClassA proxy = resultCls.getDeclaredConstructor().newInstance();
+        ((LazyLoadingProxyPropertyAccessor) proxy).setPersistenceContext(uow);
+        ((LazyLoadingProxyPropertyAccessor) proxy).setFieldSpec(fieldSpec);
+        ((LazyLoadingProxyPropertyAccessor) proxy).setOwner(owner);
+        assertInstanceOf(LazyLoadingEntityProxy.class, proxy);
+        final String result = proxy.toString();
+        assertThat(result, containsString(OWLClassD.class.getSimpleName() + ".owlClassA"));
+        assertThat(result, containsString(resultCls.getSimpleName()));
+        assertEquals(((LazyLoadingEntityProxy<?>) proxy).stringify(), result);
     }
 }
