@@ -65,8 +65,7 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
             values.add(attribute.getConverter().convertToAttribute(valueIdentifier));
         } else {
             final Object value = mapper.getEntityFromCacheOrOntology(elementType, valueIdentifier.getIdentifier(),
-                    entityDescriptor.getAttributeDescriptor(
-                            attribute));
+                    entityDescriptor.getAttributeDescriptor(attribute));
             if (value != null) {
                 values.add(value);
             } else {
@@ -77,7 +76,7 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
 
     @Override
     void buildInstanceFieldValue(Object instance) {
-        setValueOnInstance(instance, !values.isEmpty() ? values : null);
+        setValueOnInstance(instance, values);
     }
 
     @Override

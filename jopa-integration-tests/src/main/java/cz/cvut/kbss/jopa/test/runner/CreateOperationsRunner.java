@@ -196,7 +196,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         final OWLClassB b = findRequired(OWLClassB.class, entityB.getUri());
         assertEquals(entityB.getUri(), b.getUri());
         assertEquals(entityB.getStringAttribute(), b.getStringAttribute());
-        assertNull(b.getProperties());
+        assertTrue(b.getProperties().isEmpty());
     }
 
     @Test

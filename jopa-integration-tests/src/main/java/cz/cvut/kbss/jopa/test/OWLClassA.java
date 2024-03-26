@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.ConstructorResult;
 import cz.cvut.kbss.jopa.model.annotations.EntityResult;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.FieldResult;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.NamedNativeQueries;
@@ -31,6 +32,7 @@ import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
 
 import java.net.URI;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -111,10 +113,9 @@ public class OWLClassA implements HasUri {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof OWLClassA)) {
+        if (!(o instanceof OWLClassA owlClassA)) {
             return false;
         }
-        OWLClassA owlClassA = (OWLClassA) o;
         return Objects.equals(getTypes(), owlClassA.getTypes()) && Objects.equals(getUri(), owlClassA.getUri()) && Objects.equals(getStringAttribute(), owlClassA.getStringAttribute());
     }
 

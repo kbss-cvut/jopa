@@ -244,7 +244,7 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
                     storage.merge(clone, (FieldSpecification<? super T, ?>) record.getAttribute(), descriptor);
                 }
                 et.getLifecycleListenerManager().invokePostUpdateCallbacks(clone);
-                uowChangeSet.addObjectChangeSet(copyChangeSet(chSet, getOriginal(clone), clone, descriptor));
+                registerMergeChangeSet(chSet, clone, descriptor);
             }
         } catch (OWLEntityExistsException e) {
             unregisterObject(clone);
@@ -254,6 +254,16 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
         setHasChanges();
         checkForIndirectObjects(clone);
         return et.getJavaType().cast(clone);
+    }
+
+    private <T> void registerMergeChangeSet(ObjectChangeSet mergeChangeSet, T clone, Descriptor descriptor) {
+        final Object original = getOriginal(clone);
+        if (uowChangeSet.getExistingObjectChanges(original) != null) {
+            final ObjectChangeSet existingChSet = uowChangeSet.getExistingObjectChanges(original);
+            mergeChangeSet.getChanges().forEach(existingChSet::addChangeRecord);
+        } else {
+            uowChangeSet.addObjectChangeSet(copyChangeSet(mergeChangeSet, original, clone, descriptor));
+        }
     }
 
     @Override

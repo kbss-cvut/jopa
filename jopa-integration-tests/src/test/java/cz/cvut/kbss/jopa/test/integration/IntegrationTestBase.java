@@ -24,9 +24,14 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.integration.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.integration.environment.TestDataSource;
 import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
@@ -44,6 +49,9 @@ public class IntegrationTestBase {
 
     @Mock
     Connection connectionMock;
+
+    @Mock
+    Types typesMock;
 
     @BeforeEach
     protected void setUp() throws Exception {

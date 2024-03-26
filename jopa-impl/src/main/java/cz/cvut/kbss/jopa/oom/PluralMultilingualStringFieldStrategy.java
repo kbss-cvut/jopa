@@ -76,7 +76,7 @@ public class PluralMultilingualStringFieldStrategy<X>
 
     @Override
     void buildInstanceFieldValue(Object instance) {
-        setValueOnInstance(instance, !values.isEmpty() ? values : null);
+        setValueOnInstance(instance, values);
     }
 
     @Override

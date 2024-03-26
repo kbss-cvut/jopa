@@ -56,7 +56,7 @@ class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Li
 
     @Override
     void buildInstanceFieldValue(Object instance) {
-        setValueOnInstance(instance, !values.isEmpty() ? values : null);
+        setValueOnInstance(instance, values);
     }
 
     @Override

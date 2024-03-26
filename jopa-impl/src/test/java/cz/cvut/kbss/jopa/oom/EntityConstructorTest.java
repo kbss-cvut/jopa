@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
@@ -156,7 +157,7 @@ class EntityConstructorTest {
     }
 
     @Test
-    void testReconstructEntityWithDataPropertyEmptyTypes() throws Exception {
+    void reconstructEntityWithDataPropertyAndEmptyTypesPopulatesAttributes() throws Exception {
         final Set<Axiom<?>> axioms = new HashSet<>();
         axioms.add(getClassAssertionAxiomForType(ID, OWLClassA.getClassIri()));
         axioms.add(getStringAttAssertionAxiom(ID, STRING_ATT, OWLClassA.getStrAttField()));
@@ -164,7 +165,8 @@ class EntityConstructorTest {
         assertNotNull(res);
         assertEquals(ID, res.getUri());
         assertEquals(STRING_ATT, res.getStringAttribute());
-        assertNull(res.getTypes());
+        assertNotNull(res.getTypes());
+        assertTrue(res.getTypes().isEmpty());
         verify(mapperMock).registerInstance(ID, res);
     }
 
@@ -622,7 +624,8 @@ class EntityConstructorTest {
         assertNotNull(res);
         assertEquals(ID, res.getUri());
         assertNotNull(res.getStringAttribute());
-        assertNull(res.getTypes());
+        assertNotNull(res.getTypes());
+        assertTrue(res.getTypes().isEmpty());
     }
 
     @Test
@@ -667,12 +670,13 @@ class EntityConstructorTest {
     }
 
     @Test
-    void setFieldValueSetsNothingWhenAxiomsAreEmpty() {
+    void setFieldValueSetsEmptyCollectionWhenAxiomsAreEmpty() {
         final OWLClassA entity = new OWLClassA(Generators.createIndividualIdentifier());
         assertNull(entity.getTypes());
         constructor.setFieldValue(entity, mocks.forOwlClassA().typesSpec(), Collections.emptyList(),
                 mocks.forOwlClassA().entityType(), descriptor);
-        assertNull(entity.getTypes());
+        assertNotNull(entity.getTypes());
+        assertTrue(entity.getTypes().isEmpty());
     }
 
     @Test
@@ -681,5 +685,17 @@ class EntityConstructorTest {
         assertThrows(IntegrityConstraintViolatedException.class, () -> constructor
                 .setFieldValue(instance, mocks.forOwlClassL().owlClassAAtt(), Collections.emptyList(),
                         mocks.forOwlClassL().entityType(), descriptor));
+    }
+
+    @Test
+    void reconstructEntitySetsEagerlyLoadedPluralAttributeValuesToEmptyCollectionWhenNoAxiomsWereLoadedForThem() {
+        final List<Axiom<?>> axioms = List.of(
+                getClassAssertionAxiomForType(ID, OWLClassC.getClassIri())
+        );
+        final OWLClassC result = constructor.reconstructEntity(ID, mocks.forOwlClassC().entityType(), descriptor, axioms);
+        assertNotNull(result);
+        assertNotNull(result.getReferencedList());
+        assertTrue(result.getReferencedList().isEmpty());
+        assertNull(result.getSimpleList());
     }
 }

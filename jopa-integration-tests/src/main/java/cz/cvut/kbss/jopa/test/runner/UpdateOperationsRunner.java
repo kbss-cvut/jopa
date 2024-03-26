@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
@@ -50,7 +51,6 @@ import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -74,6 +74,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -112,16 +113,14 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void testUpdateDataLeaveLazy() throws Exception {
+    void testUpdateDataLeaveLazy() {
         this.em = getEntityManager("UpdateDataProperty", false);
         entityB.setProperties(Generators.createProperties());
         persist(entityB);
 
         em.getTransaction().begin();
         final OWLClassB b = findRequired(OWLClassB.class, entityB.getUri());
-        final Field propsField = OWLClassB.class.getDeclaredField("properties");
-        propsField.setAccessible(true);
-        assertNull(propsField.get(b));
+        assertInstanceOf(LazyLoadingProxy.class, b.getProperties());
         final String newString = "NewString";
         b.setStringAttribute(newString);
         em.getTransaction().commit();
@@ -129,6 +128,8 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassB res = findRequired(OWLClassB.class, entityB.getUri());
         assertEquals(newString, res.getStringAttribute());
         assertNotNull(res.getProperties());
+        // Trigger lazy loading
+        assertFalse(res.getProperties().isEmpty());
         assertEquals(entityB.getProperties(), res.getProperties());
     }
 

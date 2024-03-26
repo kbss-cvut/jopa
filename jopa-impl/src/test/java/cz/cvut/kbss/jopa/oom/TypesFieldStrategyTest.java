@@ -24,8 +24,6 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
-import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingSetProxy;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
@@ -55,7 +53,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -311,7 +308,7 @@ public class TypesFieldStrategyTest {
     }
 
     @Test
-    public void buildInstanceFieldLeavesFieldNullWhenNoAxiomsAreLoaded() {
+    public void buildInstanceFieldSetsFieldValueToEmptySetWhenNoAxiomsAreLoaded() {
         final TypesFieldStrategy<OWLClassP> strategy =
                 strategy(mocks.forOwlClassP().entityType(), mocks.forOwlClassP().types());
         final List<Axiom<URI>> axioms = Collections.singletonList(
@@ -322,7 +319,8 @@ public class TypesFieldStrategyTest {
         final OWLClassP p = new OWLClassP();
         assertNull(p.getTypes());
         strategy.buildInstanceFieldValue(p);
-        assertNull(p.getTypes());
+        assertNotNull(p.getTypes());
+        assertTrue(p.getTypes().isEmpty());
     }
 
     @Test
@@ -348,14 +346,5 @@ public class TypesFieldStrategyTest {
         final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(entityA);
         assertNotNull(result);
         assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void buildInstanceFieldValueSetsInstanceFieldToNullWhenNoValuesWereAdded() {
-        entityA.setTypes(new LazyLoadingSetProxy(entityA, mocks.forOwlClassA().typesSpec(), mock(UnitOfWork.class)));
-        final TypesFieldStrategy<OWLClassA> sut =
-                strategy(mocks.forOwlClassA().entityType(), mocks.forOwlClassA().typesSpec());
-        sut.buildInstanceFieldValue(entityA);
-        assertNull(entityA.getTypes());
     }
 }

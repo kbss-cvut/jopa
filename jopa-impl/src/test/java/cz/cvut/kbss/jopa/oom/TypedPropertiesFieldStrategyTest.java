@@ -24,20 +24,41 @@ import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class TypedPropertiesFieldStrategyTest {
 
     private static final URI PK = Generators.createIndividualIdentifier();
@@ -52,7 +73,6 @@ public class TypedPropertiesFieldStrategyTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         MetamodelMocks mocks = new MetamodelMocks();
 
         this.entity = new OWLClassP();
@@ -138,9 +158,8 @@ public class TypedPropertiesFieldStrategyTest {
     public void addsPropertyWithValues() throws Exception {
         entity.setProperties(Generators.generateTypedProperties(3, 3));
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
-        final Map<URI, Set<Object>> added = new HashMap<>();
-        added.put(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#added"),
-                new HashSet<>(Arrays.asList(true, "two", 3)));
+        final Map<URI, Set<Object>> added = Map.of(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#added"),
+                Set.of(true, "two", 3));
         entity.getProperties().putAll(added);
 
         strategy.buildAxiomValuesFromInstance(entity, gatherer);
@@ -196,14 +215,12 @@ public class TypedPropertiesFieldStrategyTest {
     private Map<URI, Set<Object>> prepareForAdd() {
         final Map<URI, Set<Object>> added = new HashMap<>();
         final URI property = entity.getProperties().keySet().iterator().next();
-        final Set<Object> newValues = new HashSet<>(
-                Arrays.asList(URI.create("http://krizik.felk.cvut.cz/ontologies/test#A"),
-                        URI.create("http://krizik.felk.cvut.cz/ontologies/test#B")));
+        final Set<Object> newValues = Set.of(URI.create("http://krizik.felk.cvut.cz/ontologies/test#A"),
+                URI.create("http://krizik.felk.cvut.cz/ontologies/test#B"));
         added.put(property, newValues);
         entity.getProperties().get(property).addAll(newValues);
-        final Map<URI, Set<Object>> newProperty = Collections
-                .singletonMap(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newProperty"),
-                        new HashSet<>(Arrays.asList("blablaOne", 2, URI.create("http://blabla.org"))));
+        final Map<URI, Set<Object>> newProperty = Map.of(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newProperty"),
+                Set.of("blablaOne", 2, URI.create("http://blabla.org")));
         added.putAll(newProperty);
         entity.getProperties().putAll(newProperty);
         return added;
@@ -247,16 +264,17 @@ public class TypedPropertiesFieldStrategyTest {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         for (Map.Entry<URI, Set<Object>> e : data.entrySet()) {
             axioms.addAll(e.getValue().stream()
-                    .map(val -> new AxiomImpl<>(subject, Assertion.createPropertyAssertion(e.getKey(), false),
-                            new Value<>(val))).collect(Collectors.toList()));
+                           .map(val -> new AxiomImpl<>(subject, Assertion.createPropertyAssertion(e.getKey(), false),
+                                   new Value<>(val))).toList());
         }
         return axioms;
     }
 
     @Test
-    public void buildInstanceFieldFromEmptyAxiomsLeavesItNull() {
+    public void buildInstanceFieldFromEmptyAxiomsLeavesSetsItToEmptyMap() {
         strategy.buildInstanceFieldValue(entity);
-        assertNull(entity.getProperties());
+        assertNotNull(entity.getProperties());
+        assertTrue(entity.getProperties().isEmpty());
     }
 
     @SuppressWarnings("unchecked")

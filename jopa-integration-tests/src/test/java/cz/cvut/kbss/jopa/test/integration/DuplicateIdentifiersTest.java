@@ -63,6 +63,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
 
     @Test
     void persistObjectTwiceInPersistenceContextIsLegal() throws Exception {
+        when(connectionMock.types()).thenReturn(typesMock);
         em.getTransaction().begin();
         em.persist(entityA);
         em.persist(entityA);
@@ -89,6 +90,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     @Test
     void persistTwoInstancesOfDifferentClassesWithSameIdentifierInDifferentPersistenceContextsIsLegal()
             throws Exception {
+        when(connectionMock.types()).thenReturn(typesMock);
         final OWLClassB entityB = new OWLClassB();
         entityB.setUri(entityA.getUri());
         entityB.setStringAttribute("bStringAttribute");
@@ -108,6 +110,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
 
     @Test
     void mergeInstanceTwiceInTwoPersistenceContextsIsLegal() throws Exception {
+        when(connectionMock.types()).thenReturn(typesMock);
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAss = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
@@ -144,6 +147,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
 
     @Test
     void mergeTwoInstancesWithTheSameIdentifierInTwoPersistenceContextsIsLegal() throws Exception {
+        when(connectionMock.types()).thenReturn(typesMock);
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);

@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -295,8 +297,8 @@ public abstract class ListsTestRunner extends BaseRunner {
 
         final OWLClassC result = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(result);
-        assertNull(result.getSimpleList());
-        assertNull(result.getReferencedList());
+        assertThat(result.getSimpleList(), empty());
+        assertThat(result.getReferencedList(), empty());
     }
 
     @Test
@@ -732,6 +734,8 @@ public abstract class ListsTestRunner extends BaseRunner {
             em.persist(added);
         });
         final OWLClassC result = findRequired(OWLClassC.class, entityC.getUri());
+        // Trigger lazy loading
+        assertFalse(result.getRdfCollection().isEmpty());
         assertEquals(expectedList, result.getRdfCollection());
         assertEquals(1, em.createNativeQuery("SELECT (COUNT(?node) as ?cnt) WHERE { ?node ?hasNext ?nil . }", Integer.class)
                           .setParameter("hasNext", URI.create(RDF.REST))

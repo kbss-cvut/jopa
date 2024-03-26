@@ -119,7 +119,7 @@ class ReferencedListDataPropertyStrategyTest extends ListPropertyStrategyTestBas
     }
 
     @Test
-    void buildInstanceFieldValueSetsInstanceFieldValueToNullWhenNoValuesWereAdded() throws Exception {
+    void buildInstanceFieldValueSetsInstanceFieldValueToEmptyListWhenNoValuesWereAdded() throws Exception {
         final EntityType<DataPropertyReferencedList> et = mock(EntityType.class);
         final ListAttributeImpl<DataPropertyReferencedList, Integer> att = initDataListAttribute();
         final ReferencedListDataPropertyStrategy<DataPropertyReferencedList> sut = new ReferencedListDataPropertyStrategy<>(et, att, descriptor, mapperMock);
@@ -127,6 +127,7 @@ class ReferencedListDataPropertyStrategyTest extends ListPropertyStrategyTestBas
         instance.uri = Generators.createIndividualIdentifier();
         instance.list = new LazyLoadingListProxy<>(instance, att, mock(UnitOfWork.class));
         sut.buildInstanceFieldValue(instance);
-        assertNull(instance.list);
+        assertNotNull(instance.list);
+        assertTrue(instance.list.isEmpty());
     }
 }

@@ -70,9 +70,6 @@ class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<?
 
     @Override
     void buildInstanceFieldValue(Object instance) {
-        if (value.getValue().isEmpty()) {
-            return;
-        }
         setValueOnInstance(instance, value.getValue());
     }
 

@@ -24,8 +24,6 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingSetProxy;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -55,11 +53,9 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -147,11 +143,12 @@ class PluralDataPropertyStrategyTest {
     }
 
     @Test
-    void buildFieldValueDoesNothingWhenNoValuesWereAdded() {
+    void buildFieldValueSetsEmptyCollectionWhenNoValuesWereAdded() {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final OWLClassM m = new OWLClassM();
         strategy.buildInstanceFieldValue(m);
-        assertNull(m.getIntegerSet());
+        assertNotNull(m.getIntegerSet());
+        assertTrue(m.getIntegerSet().isEmpty());
     }
 
     @Test
@@ -279,15 +276,5 @@ class PluralDataPropertyStrategyTest {
             assertFalse(values.isEmpty());
         }
         inferred.forEach(i -> assertThat(values, not(hasItem(new Value<>(i)))));
-    }
-
-    @Test
-    void buildInstanceFieldValueSetsInstanceFieldValueToNullWhenNoValuesWereAdded() {
-        final OWLClassM instance = new OWLClassM();
-        instance.setKey(Generators.createIndividualIdentifier().toString());
-        instance.setIntegerSet(new LazyLoadingSetProxy<>(instance, mocks.forOwlClassM().integerSetAttribute(), mock(UnitOfWork.class)));
-        final PluralDataPropertyStrategy<OWLClassM> sut = createStrategyForM();
-        sut.buildInstanceFieldValue(instance);
-        assertNull(instance.getIntegerSet());
     }
 }

@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractQueryAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
@@ -34,6 +35,7 @@ import cz.cvut.kbss.jopa.oom.query.QueryFieldStrategy;
 import cz.cvut.kbss.jopa.oom.query.SingularQueryAttributeStrategy;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -71,7 +73,8 @@ class EntityConstructor {
      * @param <T>        Entity type
      * @return New instance with populated attributes
      */
-    <T> T reconstructEntity(URI identifier, IdentifiableEntityType<T> et, Descriptor descriptor, Collection<Axiom<?>> axioms) {
+    <T> T reconstructEntity(URI identifier, IdentifiableEntityType<T> et, Descriptor descriptor,
+                            Collection<Axiom<?>> axioms) {
         assert !axioms.isEmpty();
 
         if (!axiomsContainEntityClassAssertion(axioms, et)) {
@@ -81,6 +84,7 @@ class EntityConstructor {
         mapper.registerInstance(identifier, instance);
         populateAttributes(instance, et, descriptor, axioms);
         populateQueryAttributes(instance, et);
+        populateEagerlyLoadedEmptyPluralAttributes(instance, et);
         validateIntegrityConstraints(instance, et);
 
         return instance;
@@ -243,6 +247,17 @@ class EntityConstructor {
         } else {
             return new PluralQueryAttributeStrategy<>(et, (PluralQueryAttributeImpl<? super T, ?, ?>) queryAttribute);
         }
+    }
+
+    private <T> void populateEagerlyLoadedEmptyPluralAttributes(T entity, EntityType<T> et) {
+        et.getFieldSpecifications().stream().filter(fs -> fs.isCollection() && fs.getFetchType() == FetchType.EAGER)
+          .forEach(fs -> {
+              if (EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity) == null) {
+                  final CollectionType ct = CollectionFactory.resolveCollectionType(fs.getJavaType());
+                  final Object emptyValue = ct == CollectionType.MAP ? CollectionFactory.createDefaultMap() : CollectionFactory.createDefaultCollection(ct);
+                  EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, emptyValue);
+              }
+          });
     }
 
     private <T> void validateIntegrityConstraints(T entity, EntityType<T> et) {

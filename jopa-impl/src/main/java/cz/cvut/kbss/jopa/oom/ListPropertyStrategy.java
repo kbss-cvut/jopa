@@ -20,8 +20,6 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
-import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
-import cz.cvut.kbss.jopa.oom.converter.DefaultConverterWrapper;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;

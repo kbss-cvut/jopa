@@ -26,8 +26,6 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingSetProxy;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -56,9 +54,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -218,11 +214,12 @@ class PluralMultilingualStringFieldStrategyTest {
     }
 
     @Test
-    void buildInstanceFieldValueLeavesFieldNullWhenNoValuesWereAdded() {
+    void buildInstanceFieldValueSetsFieldValueToEmptyCollectionWhenNoValuesWereAdded() {
         final PluralMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
         final OWLClassU u = new OWLClassU(ID);
         sut.buildInstanceFieldValue(u);
-        assertNull(u.getPluralStringAtt());
+        assertNotNull(u.getPluralStringAtt());
+        assertTrue(u.getPluralStringAtt().isEmpty());
     }
 
     @Test
@@ -255,15 +252,5 @@ class PluralMultilingualStringFieldStrategyTest {
         final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(u);
         assertNotNull(result);
         assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void buildInstanceFieldValueSetsInstanceFieldValueToNullWhenNoValuesWereAdded() {
-        final PluralMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
-        final OWLClassU instance = new OWLClassU(ID);
-        instance.setPluralStringAtt(new LazyLoadingSetProxy<>(instance, mocks.forOwlClassU()
-                                                                             .uPluralStringAtt(), mock(UnitOfWork.class)));
-        sut.buildInstanceFieldValue(instance);
-        assertNull(instance.getPluralStringAtt());
     }
 }

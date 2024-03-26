@@ -65,7 +65,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
@@ -131,7 +130,8 @@ class PluralObjectPropertyStrategyTest {
 
         sut.addValueFromAxiom(axiom);
         sut.buildInstanceFieldValue(instance);
-        assertNull(instance.getOwlClassA());
+        assertNotNull(instance.getOwlClassA());
+        assertTrue(instance.getOwlClassA().isEmpty());
         verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class));
     }
 
@@ -296,13 +296,14 @@ class PluralObjectPropertyStrategyTest {
     }
 
     @Test
-    void buildInstanceFieldValueSetsInstanceFieldValueToNullWhenNoAxiomsWereAdded() {
-        // This ensures lazy loading proxy is replaced with null when lazy loaded field loading is triggered
+    void buildInstanceFieldValueSetsInstanceFieldValueToEmptyCollectionWhenNoAxiomsWereAdded() {
+        // This ensures lazy loading proxy is replaced with empty collection when lazy loaded field loading is triggered
         final SimpleSetPropertyStrategy<OWLClassJ> sut = new SimpleSetPropertyStrategy<>(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ()
                                                                                                                                  .setAttribute(), descriptor, mapperMock);
         final OWLClassJ instance = new OWLClassJ(ID);
         instance.setOwlClassA(new LazyLoadingSetProxy<>(instance, mocks.forOwlClassJ().setAttribute(), mock(UnitOfWork.class)));
         sut.buildInstanceFieldValue(instance);
-        assertNull(instance.getOwlClassA());
+        assertNotNull(instance.getOwlClassA());
+        assertTrue(instance.getOwlClassA().isEmpty());
     }
 }

@@ -54,7 +54,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -127,14 +126,14 @@ class BugTest extends IntegrationTestBase {
      * entity, nothing should be added into a plural attribute collection. The bug caused {@code null} to be added.
      */
     @Test
-    void readingInstanceReferenceWithoutCorrectTypeResultsInNullAddedToPluralAttribute() throws OntoDriverException {
+    void readingInstanceReferenceWithoutCorrectTypeDoesNotAddAnythingToPluralAttribute() throws OntoDriverException {
         final URI owner = Generators.generateUri();
         initAxiomsForNullReferenceLoad(owner);
         final OWLClassJ result = em.find(OWLClassJ.class, owner);
         assertNotNull(result);
         assertInstanceOf(LazyLoadingProxy.class, result.getOwlClassA());
-        ((LazyLoadingProxy) result.getOwlClassA()).triggerLazyLoading();
-        assertNull(result.getOwlClassA());
+        ((LazyLoadingProxy<?>) result.getOwlClassA()).triggerLazyLoading();
+        assertTrue(result.getOwlClassA().isEmpty());
     }
 
     private void initAxiomsForNullReferenceLoad(URI owner) throws OntoDriverException {

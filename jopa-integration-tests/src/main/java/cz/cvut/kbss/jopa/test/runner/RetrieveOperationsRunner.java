@@ -100,18 +100,14 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void testRetrieveWithLazyAttribute() throws Exception {
+    void testRetrieveWithLazyAttribute() {
         this.em = getEntityManager("RetrieveLazy", false);
         persist(entityI);
 
         final OWLClassI resI = findRequired(OWLClassI.class, entityI.getUri());
-        final Field f = OWLClassI.class.getDeclaredField("owlClassA");
-        f.setAccessible(true);
-        Object value = f.get(resI);
-        assertNull(value);
-        assertNotNull(resI.getOwlClassA());
-        value = f.get(resI);
-        assertNotNull(value);
+        assertInstanceOf(LazyLoadingProxy.class, resI.getOwlClassA());
+        // Trigger lazy loading
+        assertNotNull(resI.getOwlClassA().getUri());
         assertEquals(entityA.getUri(), resI.getOwlClassA().getUri());
         assertTrue(em.contains(resI.getOwlClassA()));
     }
