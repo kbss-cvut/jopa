@@ -5,6 +5,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
 import java.lang.reflect.Field;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -15,11 +16,11 @@ import java.util.Optional;
  *
  * @param <T> MethodDescription
  */
-abstract class PersistentPropertyMatcher<T extends MethodDescription> extends ElementMatcher.Junction.ForNonNullValues<T> {
+public abstract class PersistentPropertyMatcher<T extends MethodDescription> extends ElementMatcher.Junction.ForNonNullValues<T> {
 
     private final Class<?> parentType;
 
-    public PersistentPropertyMatcher(Class<?> parentType) {this.parentType = parentType;}
+    public PersistentPropertyMatcher(Class<?> parentType) {this.parentType = Objects.requireNonNull(parentType);}
 
     @Override
     protected boolean doMatch(T target) {
@@ -29,9 +30,9 @@ abstract class PersistentPropertyMatcher<T extends MethodDescription> extends El
                         .orElse(false);
     }
 
-    abstract Optional<String> resolveFieldName(String methodName, MethodDescription methodDesc);
+    protected abstract Optional<String> resolveFieldName(String methodName, MethodDescription methodDesc);
 
-    Optional<Field> tryFindingField(String fieldName) {
+    protected Optional<Field> tryFindingField(String fieldName) {
         Class<?> type = parentType;
         do {
             try {

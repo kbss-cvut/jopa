@@ -13,4 +13,8 @@ public class LazyLoadingException extends OWLPersistenceException {
     public LazyLoadingException(String message) {
         super(message);
     }
+
+    public LazyLoadingException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

@@ -11,8 +11,10 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.MetamodelUtils;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.NamingStrategy;
 import net.bytebuddy.description.modifier.FieldPersistence;
 import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.MethodDelegation;
@@ -40,7 +42,13 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
 
     private static final Logger LOG = LoggerFactory.getLogger(ManageableClassGenerator.class);
 
-    private final ByteBuddy byteBuddy = new ByteBuddy().with(new ByteBuddyUtil.NameGenerator());
+    private final ByteBuddy byteBuddy = new ByteBuddy().with(new NamingStrategy.AbstractBase() {
+
+        @Override
+        protected String name(TypeDescription typeDescription) {
+            return "JOPA_" + typeDescription.getSimpleName();
+        }
+    });
 
     private final Configuration config;
 
