@@ -15,8 +15,9 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.spy;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,7 +38,7 @@ class LazyLoadingMapProxyTest {
 
     @BeforeEach
     void setUp() {
-        this.proxiedProperties = spy(Generators.generateStringProperties());
+        this.proxiedProperties = Generators.generateStringProperties();
         this.entity = new OWLClassB(Generators.createIndividualIdentifier());
         this.sut = new LazyLoadingMapProxy<>(entity, fieldSpec, uow);
     }
@@ -110,7 +111,6 @@ class LazyLoadingMapProxyTest {
         sut.put(key, values);
         assertEquals(values, proxiedProperties.get(key));
         verify(uow).loadEntityField(entity, fieldSpec);
-        verify(proxiedProperties).put(key, values);
     }
 
     @Test
@@ -119,7 +119,7 @@ class LazyLoadingMapProxyTest {
         final String key = proxiedProperties.keySet().iterator().next();
         assertEquals(proxiedProperties.get(key), sut.remove(key));
         verify(uow).loadEntityField(entity, fieldSpec);
-        verify(proxiedProperties).remove(key);
+        assertFalse(proxiedProperties.containsKey(key));
     }
 
     @Test
@@ -128,7 +128,10 @@ class LazyLoadingMapProxyTest {
         final Map<String, Set<String>> toPut = Generators.generateStringProperties(2, 2);
         sut.putAll(toPut);
         verify(uow).loadEntityField(entity, fieldSpec);
-        verify(proxiedProperties).putAll(toPut);
+        toPut.forEach((key, value) -> {
+            assertTrue(proxiedProperties.containsKey(key));
+            assertEquals(proxiedProperties.get(key), value);
+        });
     }
 
     @Test
@@ -136,7 +139,7 @@ class LazyLoadingMapProxyTest {
         initLazyLoading();
         sut.clear();
         verify(uow).loadEntityField(entity, fieldSpec);
-        verify(proxiedProperties).clear();
+        assertTrue(proxiedProperties.isEmpty());
     }
 
     @Test

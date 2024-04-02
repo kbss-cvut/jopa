@@ -45,8 +45,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -99,8 +101,8 @@ public class TypesFieldStrategyTest {
 
         final Set<URI> toAdd = OOMTestUtils.getTypesToAdd(gatherer);
         assertEquals(count, toAdd.size());
-        verifyCollectionsAreEqual(entityA.getTypes(), toAdd);
-        assertNull(OOMTestUtils.getTypesToRemove(gatherer));
+        assertEquals(entityA.getTypes(), toAdd.stream().map(URI::toString).collect(Collectors.toSet()));
+        assertThat(OOMTestUtils.getTypesToRemove(gatherer), empty());
     }
 
     @Test
@@ -119,14 +121,8 @@ public class TypesFieldStrategyTest {
 
         final Set<URI> toAdd = OOMTestUtils.getTypesToAdd(gatherer);
         assertEquals(addedTypes.size(), toAdd.size());
-        verifyCollectionsAreEqual(addedTypes, toAdd);
+        assertEquals(addedTypes, toAdd.stream().map(URI::toString).collect(Collectors.toSet()));
         assertTrue(OOMTestUtils.getTypesToRemove(gatherer).isEmpty());
-    }
-
-    private void verifyCollectionsAreEqual(Set<String> expected, Set<URI> actual) {
-        for (URI type : actual) {
-            assertTrue(expected.contains(type.toString()));
-        }
     }
 
     private OWLClassA createOriginal() {
@@ -155,7 +151,7 @@ public class TypesFieldStrategyTest {
 
         final Set<URI> toRemove = OOMTestUtils.getTypesToRemove(gatherer);
         assertFalse(toRemove.isEmpty());
-        verifyCollectionsAreEqual(removedTypes, toRemove);
+        assertEquals(removedTypes, toRemove.stream().map(URI::toString).collect(Collectors.toSet()));
         assertTrue(OOMTestUtils.getTypesToAdd(gatherer).isEmpty());
     }
 
@@ -189,8 +185,8 @@ public class TypesFieldStrategyTest {
 
         final Set<URI> toRemove = OOMTestUtils.getTypesToRemove(gatherer);
         assertFalse(toRemove.isEmpty());
-        verifyCollectionsAreEqual(original.getTypes(), toRemove);
-        assertNull(OOMTestUtils.getTypesToAdd(gatherer));
+        assertEquals(toRemove.stream().map(URI::toString).collect(Collectors.toSet()), original.getTypes());
+        assertThat(OOMTestUtils.getTypesToAdd(gatherer), empty());
     }
 
     @Test
@@ -210,10 +206,10 @@ public class TypesFieldStrategyTest {
 
         final Set<URI> toRemove = OOMTestUtils.getTypesToRemove(gatherer);
         assertFalse(toRemove.isEmpty());
-        verifyCollectionsAreEqual(removedTypes, toRemove);
+        assertEquals(removedTypes, toRemove.stream().map(URI::toString).collect(Collectors.toSet()));
         final Set<URI> toAdd = OOMTestUtils.getTypesToAdd(gatherer);
         assertEquals(addedTypes.size(), toAdd.size());
-        verifyCollectionsAreEqual(addedTypes, toAdd);
+        assertEquals(addedTypes, toAdd.stream().map(URI::toString).collect(Collectors.toSet()));
     }
 
     @Test
@@ -223,8 +219,8 @@ public class TypesFieldStrategyTest {
         when(mapperMock.getOriginalInstance(entityA)).thenReturn(null);
         strategy.buildAxiomValuesFromInstance(entityA, gatherer);
 
-        assertNull(OOMTestUtils.getTypesToRemove(gatherer));
-        assertNull(OOMTestUtils.getTypesToAdd(gatherer));
+        assertThat(OOMTestUtils.getTypesToRemove(gatherer), empty());
+        assertThat(OOMTestUtils.getTypesToAdd(gatherer), empty());
     }
 
     @Test
@@ -236,8 +232,8 @@ public class TypesFieldStrategyTest {
 
         strategy.buildAxiomValuesFromInstance(entityA, gatherer);
 
-        assertNull(OOMTestUtils.getTypesToRemove(gatherer));
-        assertNull(OOMTestUtils.getTypesToAdd(gatherer));
+        assertThat(OOMTestUtils.getTypesToRemove(gatherer), empty());
+        assertThat(OOMTestUtils.getTypesToAdd(gatherer), empty());
     }
 
     @Test

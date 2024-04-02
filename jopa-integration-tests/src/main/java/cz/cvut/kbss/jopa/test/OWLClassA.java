@@ -62,8 +62,8 @@ public class OWLClassA implements HasUri {
     public static final String CONSTRUCTOR_MAPPING = "OWLClassA.constructorMapping";
     public static final String ENTITY_MAPPING = "OWLClassA.entityMapping";
 
-    @Types
-    private Set<String> types;
+    @Types(fetchType = FetchType.EAGER)
+    private Set<String> types = new HashSet<>();
 
     @Id
     private URI uri;
@@ -128,9 +128,7 @@ public class OWLClassA implements HasUri {
     public String toString() {
         String out = "OWLClassA: uri = " + uri;
         out += ", stringAttribute = " + stringAttribute;
-        if (types != null) {
-            out += ", types = {" + types + "}";
-        }
+        out += ", types = {" + types + "}";
         return out;
     }
 

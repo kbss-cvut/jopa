@@ -67,7 +67,13 @@ class AxiomDescriptorFactory {
             final Descriptor entityDesc = loadingParams.getDescriptor();
             final Assertion typesAssertion =
                     Assertion.createClassAssertion(includeInferred(types, entityDesc.getAttributeDescriptor(types)));
-            addAssertionToDescriptor(entityDesc, types, descriptor, typesAssertion);
+            if (descriptor.containsAssertion(typesAssertion) && !entityDesc.getAttributeContexts(types).isEmpty()) {
+                // If the types are non-inferred and have context, we need to merge it with the subject context
+                entityDesc.getAttributeContexts(types).forEach(c -> descriptor.addAssertionContext(typesAssertion, c));
+                entityDesc.getContexts().forEach(c -> descriptor.addAssertionContext(typesAssertion, c));
+            } else {
+                addAssertionToDescriptor(entityDesc, types, descriptor, typesAssertion);
+            }
         }
     }
 

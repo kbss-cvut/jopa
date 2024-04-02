@@ -59,6 +59,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -70,7 +71,7 @@ import static org.mockito.Mockito.when;
 class AxiomDescriptorFactoryTest {
 
     private static final URI CONTEXT = URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne");
-    private static final URI ID = URI.create("http://krizik.felk.cvut.cz/ontologies/entityX");
+    private static final URI ID = URI.create(Vocabulary.INDIVIDUAL_BASE + "X");
 
     private static URI stringAttAUri;
     private static URI stringAttBUri;
@@ -594,5 +595,16 @@ class AxiomDescriptorFactoryTest {
         @Sequence(type = SequenceType.referenced)
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "literalReferencedList")
         private List<Integer> literalReferencedList;
+    }
+
+    @Test
+    void createForEntityLoadingMergesSubjectContextWithTypesContextsForClassAssertionRetrieval() {
+        final URI attContext = Generators.createIndividualIdentifier();
+        descriptorInContext.addAttributeContext(metamodelMocks.forOwlClassA().typesSpec(), attContext);
+        descriptorInContext.addAttributeContext(metamodelMocks.forOwlClassA().stringAttribute(), attContext);
+        final LoadingParameters<OWLClassA> lp = new LoadingParameters<>(OWLClassA.class, ID, descriptorInContext);
+        final AxiomDescriptor result = sut.createForEntityLoading(lp, metamodelMocks.forOwlClassA().entityType());
+        final Set<URI> contexts = result.getAssertionContexts(Assertion.createClassAssertion(false));
+        assertThat(contexts, hasItems(attContext, CONTEXT));
     }
 }
