@@ -93,7 +93,7 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
     private static Set<URI> typesDiff(Set<?> base, Set<?> difference) {
         final Set<URI> addedDiff = new HashSet<>(base.size());
         addedDiff.addAll(difference.stream().filter(t -> !base.contains(t)).map(t -> URI.create(t.toString()))
-                                   .collect(Collectors.toList()));
+                                   .toList());
         return addedDiff;
     }
 

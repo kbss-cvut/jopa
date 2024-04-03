@@ -172,9 +172,10 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         } else if (singletonListClass.isInstance(container) || singletonSetClass.isInstance(container)) {
             final Object element = container.iterator().next();
             final Object elementClone = CloneBuilder.isImmutable(element) ? element :
-                                        cloneCollectionElement(cloneOwner, field, element, configuration);
-            return singletonListClass.isInstance(container) ? Collections.singletonList(elementClone) :
-                   Collections.singleton(elementClone);
+                    cloneCollectionElement(cloneOwner, field, element, configuration);
+            final Collection<Object> result = CollectionFactory.createDefaultCollection(singletonListClass.isInstance(container) ? CollectionType.LIST : CollectionType.SET);
+            result.add(elementClone);
+            return result;
         } else {
             return null;
         }

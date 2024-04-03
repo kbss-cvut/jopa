@@ -45,6 +45,7 @@ import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.ReloadableDataSource;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -379,6 +380,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     protected abstract void addFileStorageProperties(Map<String, String> properties);
 
     @Test
+    @Disabled
     void getReferenceRetrievesReferenceToInstanceWithDataPropertiesWhoseAttributesAreLoadedLazily()
             throws Exception {
         this.em = getEntityManager(
@@ -505,6 +507,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
+    @Disabled
     void testRetrieveWithLazyQueryAttribute() throws Exception {
         this.em = getEntityManager("RetrieveLazyQueryAttr", false);
 

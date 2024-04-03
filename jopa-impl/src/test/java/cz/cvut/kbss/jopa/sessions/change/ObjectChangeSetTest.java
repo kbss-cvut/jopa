@@ -31,13 +31,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ObjectChangeSetImplTest {
+public class ObjectChangeSetTest {
 
     private static final OWLClassA original = new OWLClassA(URI.create(Vocabulary.c_OwlClassA));
 
     private static final OWLClassA clone = new OWLClassA(URI.create(Vocabulary.c_OwlClassA));
 
-    private final ObjectChangeSetImpl sut = new ObjectChangeSetImpl(original, clone, new EntityDescriptor());
+    private final ObjectChangeSet sut = new ObjectChangeSet(original, clone, new EntityDescriptor());
 
     @Test
     public void addChangeRecordAddsChangeRecordToChanges() {

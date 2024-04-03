@@ -280,7 +280,7 @@ public class CloneBuilder {
      * @param changeSet Contains changes to merge
      */
     public void mergeChanges(ObjectChangeSet changeSet) {
-        final Object original = changeSet.getChangedObject();
+        final Object original = changeSet.getOriginal();
         try {
             for (ChangeRecord change : changeSet.getChanges()) {
                 Field f = change.getAttribute().getJavaField();

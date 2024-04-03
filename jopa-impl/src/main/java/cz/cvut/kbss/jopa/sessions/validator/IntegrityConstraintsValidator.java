@@ -77,7 +77,7 @@ public abstract class IntegrityConstraintsValidator {
         Objects.requireNonNull(metamodel);
 
         final EntityType<?> et = metamodel.entity(changeSet.getObjectClass());
-        final Object id = EntityPropertiesUtils.getIdentifier(changeSet.getCloneObject(), et);
+        final Object id = EntityPropertiesUtils.getIdentifier(changeSet.getClone(), et);
         for (ChangeRecord change : changeSet.getChanges()) {
             validate(id, change.getAttribute(), change.getNewValue());
         }

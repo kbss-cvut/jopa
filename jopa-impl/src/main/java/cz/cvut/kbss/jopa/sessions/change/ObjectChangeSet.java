@@ -18,11 +18,28 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
-import java.net.URI;
-import java.util.Set;
+import java.util.*;
 
-public interface ObjectChangeSet {
+public class ObjectChangeSet implements Change {
+
+    // The object the changes are bound to
+    private final Object changedObject;
+
+    // Reference to the clone
+    private final Object cloneObject;
+
+    // A map of attributeName-ChangeRecord pairs to easily find the attributes to change
+    private final Map<FieldSpecification<?, ?>, ChangeRecord> attributesToChange = new HashMap<>();
+
+    private final Descriptor descriptor;
+
+    public ObjectChangeSet(Object changedObject, Object cloneObject, Descriptor descriptor) {
+        this.changedObject = Objects.requireNonNull(changedObject);
+        this.cloneObject = Objects.requireNonNull(cloneObject);
+        this.descriptor = Objects.requireNonNull(descriptor);
+    }
 
     /**
      * Adds a new change record to this change set.
@@ -31,68 +48,46 @@ public interface ObjectChangeSet {
      *
      * @param record The record to add
      */
-    void addChangeRecord(ChangeRecord record);
-
-    /**
-     * Gets type of the changed object.
-     *
-     * @return Object type
-     */
-    Class<?> getObjectClass();
+    public void addChangeRecord(ChangeRecord record) {
+        Objects.requireNonNull(record);
+        attributesToChange.put(record.getAttribute(), record);
+    }
 
     /**
      * Gets changes held in this change set.
      *
      * @return Set of changes
      */
-    Set<ChangeRecord> getChanges();
+    public Set<ChangeRecord> getChanges() {
+        return new HashSet<>(attributesToChange.values());
+    }
 
     /**
-     * Whether this change set contains an changes.
+     * Whether this change set contains any changes.
      *
      * @return {@code true} if there are any changes in this change set, {@code false} otherwise
      */
-    boolean hasChanges();
+    public boolean hasChanges() {
+        return !attributesToChange.isEmpty();
+    }
 
-    /**
-     * Specifies whether this change set represents a new object.
-     *
-     * @param isNew Whether this is a new object's change set
-     */
-    void setNew(boolean isNew);
+    @Override
+    public Class<?> getObjectClass() {
+        return cloneObject.getClass();
+    }
 
-    /**
-     * Whether this is a new object's change set.
-     *
-     * @return Whether target object is new
-     */
-    boolean isNew();
+    @Override
+    public Object getOriginal() {
+        return changedObject;
+    }
 
-    /**
-     * Gets the clone with changes.
-     *
-     * @return Clone
-     */
-    Object getCloneObject();
+    @Override
+    public Object getClone() {
+        return cloneObject;
+    }
 
-    /**
-     * Gets the original object.
-     *
-     * @return Original
-     */
-    Object getChangedObject();
-
-    /**
-     * Gets descriptor of the changed object.
-     *
-     * @return Instance descriptor
-     */
-    Descriptor getEntityDescriptor();
-
-    /**
-     * Gets ontology context URI, to which the changed object belongs.
-     *
-     * @return context URI
-     */
-    URI getEntityContext();
+    @Override
+    public Descriptor getDescriptor() {
+        return descriptor;
+    }
 }

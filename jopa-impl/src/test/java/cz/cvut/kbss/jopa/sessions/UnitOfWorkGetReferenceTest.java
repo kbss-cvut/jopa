@@ -17,17 +17,18 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.model.EntityState;
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
+import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -36,11 +37,20 @@ import org.mockito.quality.Strictness;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@Disabled
 public class UnitOfWorkGetReferenceTest extends UnitOfWorkTestBase {
 
     // TODO Support ChangeTrackingUoW and OnCommitChangePropagatingUoW

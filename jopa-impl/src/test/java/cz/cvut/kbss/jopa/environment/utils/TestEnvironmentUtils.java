@@ -17,11 +17,8 @@
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
-import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Value;
@@ -43,10 +40,6 @@ public final class TestEnvironmentUtils {
 
     private TestEnvironmentUtils() {
         throw new AssertionError();
-    }
-
-    public static ObjectChangeSet createObjectChangeSet(Object original, Object clone, URI context) {
-        return ChangeSetFactory.createObjectChangeSet(original, clone, new EntityDescriptor(context));
     }
 
     /**

@@ -45,20 +45,20 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
         }
         uowChangeSet.getExistingObjectsChanges().forEach(chSet -> {
             final IdentifiableEntityType<?> et = entityType(chSet.getObjectClass());
-            final Object entity = chSet.getCloneObject();
+            final Object entity = chSet.getClone();
             et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
             chSet.getChanges()
                  .forEach(record -> {
                      AttributeModificationValidator.verifyCanModify(record.getAttribute());
-                     storage.merge(entity, (FieldSpecification<? super Object, ?>) record.getAttribute(), chSet.getEntityDescriptor());
+                     storage.merge(entity, (FieldSpecification<? super Object, ?>) record.getAttribute(), chSet.getDescriptor());
                  });
             et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
         });
         uowChangeSet.getDeletedObjects().forEach(chSet -> {
             final IdentifiableEntityType<?> et = entityType(chSet.getObjectClass());
-            final Object identifier = getIdentifier(chSet.getCloneObject());
-            storage.remove(identifier, chSet.getObjectClass(), chSet.getEntityDescriptor());
-            et.getLifecycleListenerManager().invokePostRemoveCallbacks(chSet.getCloneObject());
+            final Object identifier = getIdentifier(chSet.getClone());
+            storage.remove(identifier, chSet.getObjectClass(), chSet.getDescriptor());
+            et.getLifecycleListenerManager().invokePostRemoveCallbacks(chSet.getClone());
         });
         validateIntegrityConstraints();
         storage.commit();

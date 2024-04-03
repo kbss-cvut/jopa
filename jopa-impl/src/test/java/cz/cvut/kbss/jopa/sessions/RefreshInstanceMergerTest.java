@@ -17,9 +17,6 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
-import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectList;
-import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
@@ -27,6 +24,9 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectList;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -88,7 +88,7 @@ public class RefreshInstanceMergerTest {
         changeSet.addChangeRecord(new ChangeRecord(fieldSpec, clone.getTypes()));
 
         sut.mergeChanges(changeSet);
-        assertTrue(clone.getTypes() instanceof ChangeTrackingIndirectSet);
+        assertInstanceOf(ChangeTrackingIndirectSet.class, clone.getTypes());
         assertEquals(original.getTypes(), clone.getTypes());
         final Field ownerField = ChangeTrackingIndirectCollection.class.getDeclaredField("owner");
         ownerField.setAccessible(true);
@@ -112,7 +112,7 @@ public class RefreshInstanceMergerTest {
 
         sut.mergeChanges(changeSet);
         assertEquals(refList.size(), clone.getReferencedList().size());
-        assertTrue(clone.getReferencedList() instanceof ChangeTrackingIndirectList);
+        assertInstanceOf(ChangeTrackingIndirectList.class, clone.getReferencedList());
         final Field ownerField = ChangeTrackingIndirectCollection.class.getDeclaredField("owner");
         ownerField.setAccessible(true);
         assertEquals(clone, ownerField.get(clone.getReferencedList()));

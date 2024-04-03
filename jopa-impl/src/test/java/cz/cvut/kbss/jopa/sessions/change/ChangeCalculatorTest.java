@@ -25,16 +25,21 @@ import cz.cvut.kbss.jopa.environment.OWLClassF;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassO;
 import cz.cvut.kbss.jopa.environment.OWLClassQ;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -59,6 +64,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ChangeCalculatorTest {
 
     private static final URI DEFAULT_CONTEXT = URI.create("http://defaultContext");
@@ -89,7 +96,6 @@ public class ChangeCalculatorTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        MockitoAnnotations.openMocks(this);
         initInstances();
         manager = new ChangeCalculator(providerMock);
         when(providerMock.isEntityType(any(Class.class))).thenAnswer(invocation -> {
@@ -296,7 +302,7 @@ public class ChangeCalculatorTest {
     public void calculateChangesRegistersChangeOnPrimitiveTypeAttribute() {
         final OWLClassM testMClone = new OWLClassM();
         testMClone.setIntAttribute(testM.getIntAttribute() + 117);
-        ObjectChangeSet chSet = createChangeSet(testM, testMClone);
+        final ObjectChangeSet chSet = createChangeSet(testM, testMClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
@@ -307,7 +313,7 @@ public class ChangeCalculatorTest {
     @Test
     public void calculateChangesRegistersChangeOnObjectPropertyAttribute() {
         testDClone.setOwlClassA(testAClone);
-        ObjectChangeSet chSet = createChangeSet(testD, testDClone);
+        final ObjectChangeSet chSet = createChangeSet(testD, testDClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
@@ -322,7 +328,7 @@ public class ChangeCalculatorTest {
         newCollection.remove(typesCollection.iterator().next());
         newCollection.add("String");
         testAClone.setTypes(newCollection);
-        ObjectChangeSet chSet = createChangeSet(testA, testAClone);
+        final ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
@@ -338,7 +344,7 @@ public class ChangeCalculatorTest {
         newCollection.add("String");
         testAClone.setTypes(newCollection);
         testAClone.setStringAttribute("AnotherStringAttribute");
-        ObjectChangeSet chSet = createChangeSet(testA, testAClone);
+        final ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
@@ -349,7 +355,7 @@ public class ChangeCalculatorTest {
 
     @Test
     public void calculateChangesRegistersChangeWhenValueIsSetToNull() {
-        ObjectChangeSet chSet = createChangeSet(testA, testAClone);
+        final ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         testAClone.setStringAttribute(null);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
@@ -372,7 +378,7 @@ public class ChangeCalculatorTest {
     @Test
     public void calculateChangesRegistersItemRemovalFromReferenceCollection() {
         testCClone.getReferencedList().remove(4);
-        ObjectChangeSet chSet = createChangeSet(testC, testCClone);
+        final ObjectChangeSet chSet = createChangeSet(testC, testCClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
@@ -384,7 +390,7 @@ public class ChangeCalculatorTest {
     @Test
     public void calculateChangesRegistersItemAdditionToReferenceCollection() {
         testCClone.getReferencedList().add(testA);
-        ObjectChangeSet chSet = createChangeSet(testC, testCClone);
+        final ObjectChangeSet chSet = createChangeSet(testC, testCClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
@@ -400,7 +406,7 @@ public class ChangeCalculatorTest {
     public void calculateChangesRegistersItemReplacementInReferenceCollection() {
         testCClone.getReferencedList().remove(3);
         testCClone.getReferencedList().add(testA);
-        ObjectChangeSet chSet = createChangeSet(testC, testCClone);
+        final ObjectChangeSet chSet = createChangeSet(testC, testCClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
@@ -444,7 +450,7 @@ public class ChangeCalculatorTest {
     }
 
     private ObjectChangeSet createChangeSet(Object orig, Object clone) {
-        return TestEnvironmentUtils.createObjectChangeSet(orig, clone, DEFAULT_CONTEXT);
+        return ChangeSetFactory.createObjectChangeSet(orig, clone, new EntityDescriptor(DEFAULT_CONTEXT));
     }
 
     @Test
@@ -470,7 +476,7 @@ public class ChangeCalculatorTest {
     }
 
     private void initFAndClone(OWLClassF orig, OWLClassF clone) {
-        final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#testF");
+        final URI uri = URI.create(Vocabulary.INDIVIDUAL_BASE + "testF");
         orig.setUri(uri);
         clone.setUri(uri);
         orig.setSimpleSet(new HashSet<>());
@@ -478,7 +484,7 @@ public class ChangeCalculatorTest {
         orig.getSimpleSet().add(testA);
         testAClone.setStringAttribute(testA.getStringAttribute());
         clone.getSimpleSet().add(testAClone);
-        final URI aUri = URI.create("http://krizik.felk.cvut.cz/ontologies#testAA");
+        final URI aUri = URI.create(Vocabulary.INDIVIDUAL_BASE + "testAA");
         final OWLClassA extraA = new OWLClassA(aUri);
         extraA.setStringAttribute("string");
         orig.getSimpleSet().add(extraA);
@@ -560,7 +566,7 @@ public class ChangeCalculatorTest {
         testQClone.setParentString(testQ.getParentString());
         testQClone.setLabel(testQ.getLabel());
         final OWLClassA newA = new OWLClassA();
-        newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newA"));
+        newA.setUri(URI.create(Vocabulary.INDIVIDUAL_BASE + "newA"));
         testQClone.setOwlClassA(newA);
 
         final ObjectChangeSet changeSet = createChangeSet(testQ, testQClone);

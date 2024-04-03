@@ -105,7 +105,7 @@ public class ChangeCalculator {
     /**
      * Calculates the changes that happened to the clone object.
      * <p>
-     * The changes are written into the {@link ObjectChangeSet} passed in as argument.
+     * The changes are written into the {@link Change} passed in as argument.
      *
      * @param changeSet Contains references to the original and clone objects. Into this change set the changes should
      *                  be propagated
@@ -119,16 +119,15 @@ public class ChangeCalculator {
     /**
      * This internal method does the actual change calculation.
      * <p>
-     * It compares every non-static attribute of the clone to the original value. If the values are different, a change
-     * record is added into the change set.
+     * It compares every persistent attribute of the clone to the original value. If the values are different, a change
+     * record is added to the change set.
      *
-     * @param changeSet The change set where change records will be put in. It also contains reference to the clone and
-     *                  original object.
+     * @param changeSet The change set where change records will be put in
      */
     private boolean calculateChangesInternal(ObjectChangeSet changeSet) {
         LOG.trace("Calculating changes for change set {}.", changeSet);
-        Object original = changeSet.getChangedObject();
-        Object clone = changeSet.getCloneObject();
+        Object original = changeSet.getOriginal();
+        Object clone = changeSet.getClone();
         boolean changesFound = false;
         for (FieldSpecification<?, ?> fs : getFields(clone.getClass())) {
             final Field f = fs.getJavaField();

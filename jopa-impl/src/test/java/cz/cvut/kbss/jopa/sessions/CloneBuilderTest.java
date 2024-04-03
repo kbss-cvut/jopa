@@ -30,7 +30,6 @@ import cz.cvut.kbss.jopa.environment.OWLClassQ;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
-import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
@@ -427,8 +426,7 @@ public class CloneBuilderTest {
         final OWLClassA cloneA = (OWLClassA) builder.buildClone(a, new CloneConfiguration(defaultDescriptor, false));
         final String newStrAtt = "newString";
         cloneA.setStringAttribute(newStrAtt);
-        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(a, cloneA,
-                defaultDescriptor);
+        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(a, cloneA, defaultDescriptor);
         chSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassA().stringAttribute(),
                 newStrAtt));
         builder.mergeChanges(chSet);
@@ -442,7 +440,7 @@ public class CloneBuilderTest {
         assertNull(b.getProperties());
         b.setProperties(Generators.generateStringProperties());
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityB, b,
-                defaultDescriptor);
+                                                                    defaultDescriptor);
         chSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassB().propertiesSpec(),
                 b.getProperties()));
         builder.mergeChanges(chSet);
@@ -457,8 +455,7 @@ public class CloneBuilderTest {
         assertNotSame(entityC, c);
         assertNull(entityC.getReferencedList());
         c.setReferencedList(Generators.generateInstances(5));
-        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c,
-                defaultDescriptor);
+        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c, defaultDescriptor);
         chSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassC().referencedListAtt(),
                 c.getReferencedList()));
         builder.mergeChanges(chSet);
@@ -476,8 +473,7 @@ public class CloneBuilderTest {
         final OWLClassC c = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor, false));
         final OWLClassA newA = new OWLClassA();
         c.setReferencedList(Collections.singletonList(newA));
-        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c,
-                defaultDescriptor);
+        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c, defaultDescriptor);
         chSet.addChangeRecord(
                 new ChangeRecord(metamodelMocks.forOwlClassC().referencedListAtt(), c.getReferencedList()));
 
@@ -508,8 +504,7 @@ public class CloneBuilderTest {
         changeSet.addChangeRecord(
                 new ChangeRecord(metamodelMocks.forOwlClassM().booleanAttribute(), m.getBooleanAttribute()));
         m.setIntAttribute(11111);
-        changeSet
-                .addChangeRecord(
+        changeSet.addChangeRecord(
                         new ChangeRecord(metamodelMocks.forOwlClassM().integerAttribute(), m.getIntAttribute()));
         m.setLongAttribute(999L);
         changeSet.addChangeRecord(
@@ -568,8 +563,8 @@ public class CloneBuilderTest {
     }
 
     private OWLClassG initGWithBackwardReference() {
-        final OWLClassG g = new OWLClassG(URI.create("http://krizik.felk.cvut.cz/ontologies#entityG"));
-        final OWLClassH h = new OWLClassH(URI.create("http://krizik.felk.cvut.cz/ontologies#entityH"));
+        final OWLClassG g = new OWLClassG(URI.create(Vocabulary.INDIVIDUAL_BASE + "entityG"));
+        final OWLClassH h = new OWLClassH(URI.create(Vocabulary.INDIVIDUAL_BASE + "entityH"));
         g.setOwlClassH(h);
         h.setOwlClassG(g);
         return g;
@@ -602,7 +597,7 @@ public class CloneBuilderTest {
         newValueClone.setStringAttribute(newValue.getStringAttribute());
         dClone.setOwlClassA(newValueClone);
 
-        final ObjectChangeSet chSet = TestEnvironmentUtils.createObjectChangeSet(entityD, dClone, null);
+        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityD, dClone, new EntityDescriptor());
         chSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassD().owlClassAAtt(), newValueClone));
         when(uow.getOriginal(newValueClone)).thenReturn(newValue);
         builder.mergeChanges(chSet);
@@ -634,7 +629,7 @@ public class CloneBuilderTest {
         final OWLClassA newA = new OWLClassA();
         newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/newA"));
         qClone.setOwlClassA(newA);
-        final ObjectChangeSet changeSet = TestEnvironmentUtils.createObjectChangeSet(entityQ, qClone, null);
+        final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(entityQ, qClone, new EntityDescriptor());
         changeSet.addChangeRecord(
                 new ChangeRecord(metamodelMocks.forOwlClassQ().qStringAtt(), qClone.getStringAttribute()));
         changeSet.addChangeRecord(

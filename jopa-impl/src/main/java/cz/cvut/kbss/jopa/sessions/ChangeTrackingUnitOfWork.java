@@ -1,6 +1,5 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.proxy.IndirectWrapper;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.Manageable;
@@ -8,20 +7,17 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.proxy.IndirectWrapper;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Objects;
-
-import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
 public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
 
@@ -73,33 +69,6 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
         if (IndirectWrapperHelper.requiresIndirectWrapper(value)) {
             EntityPropertiesUtils.setFieldValue(field, entity, indirectWrapperHelper.createIndirectWrapper(value, entity, field));
         }
-    }
-
-    @Override
-    public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
-        Objects.requireNonNull(cls);
-        Objects.requireNonNull(identifier);
-        Objects.requireNonNull(descriptor);
-
-        final T managedResult = readManagedObject(cls, identifier, descriptor);
-        if (managedResult != null) {
-            return managedResult;
-        }
-        final T result = storage.getReference(new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor));
-        if (result == null) {
-            return null;
-        }
-        final T clone = (T) cloneBuilder.buildReferenceClone(result, CloneConfiguration.withDescriptor(descriptor).forPersistenceContext(true));
-        instanceDescriptors.put(clone, InstanceDescriptorFactory.createNotLoaded(result, entityType(cls)));
-        attachPersistenceContextToEntity(clone);
-        registerEntityWithOntologyContext(clone, descriptor);
-        if (getLiveObjectCache().contains(cls, identifier, descriptor)) {
-            cloneToOriginals.put(clone, getLiveObjectCache().get(cls, identifier, descriptor));
-        } else {
-            cloneToOriginals.put(clone, null);
-        }
-        keysToClones.put(identifier, clone);
-        return clone;
     }
 
     /**

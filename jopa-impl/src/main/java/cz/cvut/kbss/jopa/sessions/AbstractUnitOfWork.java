@@ -34,6 +34,7 @@ import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.sessions.change.Change;
 import cz.cvut.kbss.jopa.sessions.change.ChangeCalculator;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
@@ -298,6 +299,12 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     @Override
+    public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
+        // TODO Temporary just so that the API works
+        return readObject(cls, identifier, descriptor);
+    }
+
+    @Override
     public <T> T readObjectWithoutRegistration(Class<T> cls, Object identifier, Descriptor descriptor) {
         Objects.requireNonNull(cls);
         Objects.requireNonNull(identifier);
@@ -450,20 +457,16 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     private void calculateNewObjects(UnitOfWorkChangeSet changeSet) {
         for (Object clone : newObjectsCloneToOriginal.keySet()) {
             final Descriptor c = getDescriptor(clone);
-            Object original = newObjectsCloneToOriginal.computeIfAbsent(clone, key -> cloneBuilder.buildClone(key, CloneConfiguration.withDescriptor(c)));
-            if (original == null) {
-                throw new OWLPersistenceException("Error while calculating changes for new objects. Original not found.");
-            }
-            newObjectsCloneToOriginal.put(clone, original);
-            changeSet.addNewObjectChangeSet(ChangeSetFactory.createObjectChangeSet(original, clone, c));
+            changeSet.addNewObjectChangeSet(ChangeSetFactory.createNewObjectChange(clone, c));
         }
     }
 
     private void calculateDeletedObjects(final UnitOfWorkChangeSet changeSet) {
         for (Object clone : deletedObjects.keySet()) {
-            Descriptor descriptor = getDescriptor(clone);
-            changeSet.addDeletedObjectChangeSet(ChangeSetFactory.createDeleteObjectChangeSet(clone, descriptor));
-            changeSet.cancelObjectChanges(getOriginal(clone));
+            final Descriptor descriptor = getDescriptor(clone);
+            final Object original = getOriginal(clone);
+            changeSet.addDeletedObjectChangeSet(ChangeSetFactory.createDeleteObjectChange(clone, original, descriptor));
+            changeSet.cancelObjectChanges(original);
         }
     }
 
@@ -480,8 +483,8 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
     void validateIntegrityConstraints() {
         final IntegrityConstraintsValidator validator = getValidator();
-        for (ObjectChangeSet changeSet : uowChangeSet.getNewObjects()) {
-            validator.validate(changeSet.getCloneObject(), entityType((Class<Object>) changeSet.getObjectClass()), isNotInferred());
+        for (Change changeSet : uowChangeSet.getNewObjects()) {
+            validator.validate(changeSet.getClone(), entityType((Class<Object>) changeSet.getObjectClass()), isNotInferred());
         }
         uowChangeSet.getExistingObjectsChanges().forEach(changeSet -> validator.validate(changeSet, getMetamodel()));
     }
@@ -498,6 +501,21 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             return null;
         }
         return cloneToOriginals.containsKey(clone) ? cloneToOriginals.get(clone) : newObjectsCloneToOriginal.get(clone);
+    }
+
+    /**
+     * Registers the specified original for the specified clone, assuming the clone is a new object.
+     * <p>
+     * This method must be called during commit when new objects are persisted so that they can be referenced by other
+     * objects.
+     *
+     * @param clone    Already registered clone
+     * @param original Original to register
+     */
+    public void registerOriginalForNewClone(Object clone, Object original) {
+        assert inCommit;
+        assert newObjectsCloneToOriginal.containsKey(clone);
+        newObjectsCloneToOriginal.put(clone, original);
     }
 
     /**
@@ -559,17 +577,17 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
     protected ObjectChangeSet processInferredValueChanges(ObjectChangeSet changeSet) {
         if (getConfiguration().is(JOPAPersistenceProperties.IGNORE_INFERRED_VALUE_REMOVAL_ON_MERGE)) {
-            final ObjectChangeSet copy = ChangeSetFactory.createObjectChangeSet(changeSet.getChangedObject(), changeSet.getCloneObject(), changeSet.getEntityDescriptor());
+            final ObjectChangeSet copy = ChangeSetFactory.createObjectChangeSet(changeSet.getOriginal(), changeSet.getClone(), changeSet.getDescriptor());
             changeSet.getChanges().stream().filter(chr -> !(chr.getAttribute().isInferred() &&
-                    inferredAttributeChangeValidator.isInferredValueRemoval(changeSet.getCloneObject(), changeSet.getChangedObject(),
+                    inferredAttributeChangeValidator.isInferredValueRemoval(changeSet.getClone(), changeSet.getOriginal(),
                             (FieldSpecification) chr.getAttribute(),
-                            changeSet.getEntityDescriptor()))).forEach(copy::addChangeRecord);
+                            changeSet.getDescriptor()))).forEach(copy::addChangeRecord);
             return copy;
         } else {
             changeSet.getChanges().stream().filter(chr -> chr.getAttribute().isInferred()).forEach(
-                    chr -> inferredAttributeChangeValidator.validateChange(changeSet.getCloneObject(), changeSet.getChangedObject(),
+                    chr -> inferredAttributeChangeValidator.validateChange(changeSet.getClone(), changeSet.getOriginal(),
                             (FieldSpecification) chr.getAttribute(),
-                            changeSet.getEntityDescriptor()));
+                            changeSet.getDescriptor()));
             return changeSet;
         }
     }

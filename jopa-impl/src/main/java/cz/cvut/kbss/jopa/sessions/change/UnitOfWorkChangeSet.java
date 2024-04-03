@@ -26,9 +26,9 @@ import java.util.*;
  */
 public class UnitOfWorkChangeSet {
 
-    private final Set<ObjectChangeSet> deletedObjects;
+    private final Set<DeleteObjectChange> deletedObjects;
     private final Map<Object, ObjectChangeSet> objectChanges;
-    private final Set<ObjectChangeSet> newObjectChanges;
+    private final Set<NewObjectChange> newObjectChanges;
 
     public UnitOfWorkChangeSet() {
         this.objectChanges = new HashMap<>();
@@ -42,11 +42,7 @@ public class UnitOfWorkChangeSet {
      * @param objectChangeSet ObjectChangeSet
      */
     public void addObjectChangeSet(ObjectChangeSet objectChangeSet) {
-        if (objectChangeSet.isNew()) {
-            addNewObjectChangeSet(objectChangeSet);
-        } else {
-            objectChanges.put(objectChangeSet.getChangedObject(), objectChangeSet);
-        }
+        objectChanges.put(objectChangeSet.getOriginal(), objectChangeSet);
     }
 
     /**
@@ -54,7 +50,7 @@ public class UnitOfWorkChangeSet {
      *
      * @param deletedObject The change set to add
      */
-    public void addDeletedObjectChangeSet(ObjectChangeSet deletedObject) {
+    public void addDeletedObjectChangeSet(DeleteObjectChange deletedObject) {
         deletedObjects.add(deletedObject);
     }
 
@@ -64,8 +60,7 @@ public class UnitOfWorkChangeSet {
      *
      * @param newObject ObjectChangeSet
      */
-    public void addNewObjectChangeSet(ObjectChangeSet newObject) {
-        newObject.setNew(true);
+    public void addNewObjectChangeSet(NewObjectChange newObject) {
         newObjectChanges.add(newObject);
     }
 
@@ -104,7 +99,7 @@ public class UnitOfWorkChangeSet {
      *
      * @return Set of change sets
      */
-    public Set<ObjectChangeSet> getDeletedObjects() {
+    public Set<DeleteObjectChange> getDeletedObjects() {
         return this.deletedObjects;
     }
 
@@ -113,7 +108,7 @@ public class UnitOfWorkChangeSet {
      *
      * @return Set of change sets
      */
-    public Set<ObjectChangeSet> getNewObjects() {
+    public Set<NewObjectChange> getNewObjects() {
         return this.newObjectChanges;
     }
 
