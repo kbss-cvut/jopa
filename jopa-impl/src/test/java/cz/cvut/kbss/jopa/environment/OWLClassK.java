@@ -36,7 +36,14 @@ public class OWLClassK implements HasUri {
 	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasE")
 	private OWLClassE owlClassE;
 
-	public URI getUri() {
+    public OWLClassK() {
+    }
+
+    public OWLClassK(URI uri) {
+        this.uri = uri;
+    }
+
+    public URI getUri() {
 		return uri;
 	}
 

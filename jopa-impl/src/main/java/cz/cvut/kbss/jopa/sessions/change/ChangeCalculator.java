@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
@@ -133,7 +134,7 @@ public class ChangeCalculator {
             final Field f = fs.getJavaField();
             Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
             Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
-            if (clVal == null && origVal == null) {
+            if ((clVal == null || clVal instanceof LazyLoadingProxy<?>) && origVal == null) {
                 continue;
             }
             boolean changed = valueChanged(origVal, clVal);

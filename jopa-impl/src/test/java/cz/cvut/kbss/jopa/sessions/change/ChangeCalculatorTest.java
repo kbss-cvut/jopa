@@ -21,7 +21,9 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassE;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
+import cz.cvut.kbss.jopa.environment.OWLClassK;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassO;
 import cz.cvut.kbss.jopa.environment.OWLClassQ;
@@ -32,6 +34,7 @@ import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxyGenerator;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,6 +57,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -333,7 +338,7 @@ public class ChangeCalculatorTest {
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        assertTrue(((Set<String>) chSet.getChanges().iterator().next().getNewValue()).contains("String"));
+        assertThat((Set<String>) chSet.getChanges().iterator().next().getNewValue(), hasItem("String"));
     }
 
     @Test
@@ -576,5 +581,17 @@ public class ChangeCalculatorTest {
         assertEquals(1, changes.size());
         verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassQ().qOwlClassAAtt(), changeSet);
         assertEquals(newA, changes.iterator().next().getNewValue());
+    }
+
+    @Test
+    void calculateChangesDoesNotDetectChangeWhenOriginalValueIsNullAndCloneValueIsLazyLoadingProxy() throws Exception {
+        final OWLClassK original = new OWLClassK(Generators.createIndividualIdentifier());
+        final OWLClassK clone = new OWLClassK(original.getUri());
+        final LazyLoadingEntityProxyGenerator lazyProxyGenerator = new LazyLoadingEntityProxyGenerator();
+        final Class<? extends OWLClassE> lazyProxyCls = lazyProxyGenerator.generate(OWLClassE.class);
+        clone.setOwlClassE(lazyProxyCls.getDeclaredConstructor().newInstance());
+        final ObjectChangeSet changeSet = createChangeSet(original, clone);
+        final boolean res = manager.calculateChanges(changeSet);
+        assertFalse(res);
     }
 }
