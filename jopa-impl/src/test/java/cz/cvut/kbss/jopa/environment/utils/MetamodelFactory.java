@@ -94,6 +94,7 @@ import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLongConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.LocalDateTimeConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -1444,7 +1445,7 @@ public class MetamodelFactory {
     }
 
     static void initOwlClassUMocks(IdentifiableEntityType<OWLClassU> et, SingularAttributeImpl singularStringAtt,
-                                   AbstractPluralAttribute pluralStringAtt,
+                                   AbstractPluralAttribute pluralStringAtt, SingularAttributeImpl modified,
                                    Identifier id) throws Exception {
         when(et.getIdentifier()).thenReturn(id);
         when(id.isGenerated()).thenReturn(true);
@@ -1456,8 +1457,8 @@ public class MetamodelFactory {
         when(et.getIRI()).thenReturn(IRI.create(OWLClassU.getClassIri()));
         when(et.getName()).thenReturn(OWLClassU.class.getSimpleName());
         when(et.getFieldSpecifications())
-                .thenReturn(new HashSet(Arrays.asList(singularStringAtt, pluralStringAtt, id)));
-        when(et.getAttributes()).thenReturn(new HashSet(Arrays.asList(singularStringAtt, pluralStringAtt)));
+                .thenReturn(new HashSet(Arrays.asList(singularStringAtt, pluralStringAtt, modified, id)));
+        when(et.getAttributes()).thenReturn(new HashSet(Arrays.asList(singularStringAtt, pluralStringAtt, modified)));
         when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
 
         when(singularStringAtt.getJavaField()).thenReturn(OWLClassU.getSingularStringAttField());
@@ -1492,6 +1493,25 @@ public class MetamodelFactory {
         when(pluralStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
         when(pluralStringAtt.hasLanguage()).thenReturn(false);
         when(pluralStringAtt.getLanguage()).thenReturn(null);
+
+        when(modified.getJavaField()).thenReturn(OWLClassU.getModifiedField());
+        when(modified.getJavaType()).thenReturn(OWLClassU.getModifiedField().getType());
+        when(modified.getName()).thenReturn(OWLClassU.getModifiedField().getName());
+        when(et.getAttribute(OWLClassU.getModifiedField().getName())).thenReturn(modified);
+        when(et.getFieldSpecification(OWLClassU.getModifiedField().getName())).thenReturn(modified);
+        when(modified.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(modified.isCollection()).thenReturn(false);
+        when(modified.getBindableJavaType()).thenReturn(LocalDateTime.class);
+        when(modified.getIRI()).thenReturn(IRI.create(DC.Terms.MODIFIED));
+        when(modified.getDeclaringType()).thenReturn(et);
+        when(modified.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(modified.getCascadeTypes()).thenReturn(new CascadeType[0]);
+        when(modified.hasLanguage()).thenReturn(false);
+        when(modified.getLanguage()).thenReturn(null);
+
+        final EntityLifecycleListenerManager listenerManager = new EntityLifecycleListenerManager();
+        addLifecycleCallback(listenerManager, PRE_UPDATE, OWLClassU.class.getDeclaredMethod("preUpdate"));
+        when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
     }
 
     static void initOWLClassWithQueryAttrMocks(IdentifiableEntityType<OWLClassWithQueryAttr> etMock,

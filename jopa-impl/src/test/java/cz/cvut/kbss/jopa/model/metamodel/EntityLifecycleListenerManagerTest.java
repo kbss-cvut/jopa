@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -213,5 +214,22 @@ class EntityLifecycleListenerManagerTest {
             // This simulates the listener being called from UOW after an entity lifecycle event (e.g. setting an attribute)
             EntityLifecycleListenerManagerTest.this.manager.invokePreUpdateCallbacks(this);
         }
+    }
+
+    @Test
+    void hasLifecycleCallbackReturnsTrueWhenEntityHasMatchingLifecycleCallback() throws Exception {
+        manager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, Child.class.getDeclaredMethod("prePersistChild"));
+        final Child instance = spy(new Child());
+        assertTrue(manager.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST));
+    }
+
+    @Test
+    void hasLifecycleCallbackReturnsTrueWhenEntityHasListenerWithMatchingLifecycleCallback() throws Exception {
+        final ParentListener listener = spy(new ParentListener());
+        manager.addEntityListener(listener);
+        manager.addEntityListenerCallback(listener, LifecycleEvent.POST_LOAD,
+                ParentListener.class.getDeclaredMethod("postLoad", Parent.class));
+        final Parent instance = new Parent();
+        assertTrue(manager.hasLifecycleCallback(LifecycleEvent.POST_LOAD));
     }
 }

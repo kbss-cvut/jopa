@@ -311,6 +311,8 @@ public class MetamodelMocks {
     private SingularAttributeImpl<OWLClassU, MultilingualString> uSingularStringAtt;
     @Mock
     private SetAttributeImpl<OWLClassU, MultilingualString> uPluralStringAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassU, LocalDateTime> uModified;
 
     @Mock
     private IdentifiableEntityType<OWLClassWithQueryAttr> etQA;
@@ -382,7 +384,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
         MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
         MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, idT);
-        MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, idU);
+        MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, uModified, idU);
         MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, qaEntityQueryAtt,
                                                         qaEntityAtt, idQA);
         MetamodelFactory.initPhoneMocks(etPhone, phoneNumberAtt, idPhone);
@@ -968,6 +970,10 @@ public class MetamodelMocks {
 
         public AbstractPluralAttribute<OWLClassU, Set<MultilingualString>, MultilingualString> uPluralStringAtt() {
             return MetamodelMocks.this.uPluralStringAtt;
+        }
+
+        public AbstractAttribute<OWLClassU, LocalDateTime> uModified() {
+            return MetamodelMocks.this.uModified;
         }
     }
 

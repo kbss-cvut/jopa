@@ -3,9 +3,11 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.environment.NoopInstantiableTypeGenerator;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelFactory;
 import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.AfterAll;
@@ -107,5 +109,17 @@ class OnCommitChangePropagatingUnitOfWorkTest extends AbstractUnitOfWorkTestRunn
         final OWLClassM clone = (OWLClassM) uow.registerExistingObject(original, descriptor);
         clone.setLexicalForm("Cannot change");
         assertThrows(AttributeModificationForbiddenException.class, () -> uow.commit());
+    }
+
+    @Test
+    void commitRegistersChangesDoneByPreUpdateCallback() {
+        final OWLClassU original = new OWLClassU(Generators.createIndividualIdentifier());
+        when(storageMock.contains(original.getId(), OWLClassU.class, descriptor)).thenReturn(true);
+        when(storageMock.find(any(LoadingParameters.class))).thenReturn(original);
+        final OWLClassU toMerge = new OWLClassU(original.getId());
+        toMerge.setSingularStringAtt(MultilingualString.create("Test", "en"));
+        final OWLClassU merged = uow.mergeDetached(toMerge, descriptor);
+        uow.commit();
+        verify(storageMock).merge(merged, metamodelMocks.forOwlClassU().uModified(), descriptor);
     }
 }

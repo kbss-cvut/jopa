@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
@@ -17,7 +18,7 @@ import java.net.URI;
 
 public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
 
-    public OnCommitChangePropagatingUnitOfWork(AbstractSession parent, Configuration configuration) {
+    OnCommitChangePropagatingUnitOfWork(AbstractSession parent, Configuration configuration) {
         super(parent, configuration);
     }
 
@@ -47,6 +48,10 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
             final IdentifiableEntityType<?> et = entityType(chSet.getObjectClass());
             final Object entity = chSet.getClone();
             et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
+            if (et.getLifecycleListenerManager().hasLifecycleCallback(LifecycleEvent.PRE_UPDATE)) {
+                // Recalculate changes if a preUpdate callback was called as it may have altered the entity state
+                changeCalculator.calculateChanges(chSet);
+            }
             chSet.getChanges()
                  .forEach(record -> {
                      AttributeModificationValidator.verifyCanModify(record.getAttribute());
