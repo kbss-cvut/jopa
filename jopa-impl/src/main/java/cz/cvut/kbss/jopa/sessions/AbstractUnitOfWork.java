@@ -46,6 +46,7 @@ import cz.cvut.kbss.jopa.sessions.validator.InferredAttributeChangeValidator;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.utils.MetamodelUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -740,7 +741,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
         final Descriptor descriptor = repoMap.getEntityDescriptor(entity);
         if (descriptor == null) {
-            throw new OWLPersistenceException("Fatal error, unable to find descriptor for entity " + entity);
+            throw new OWLPersistenceException("Fatal error, unable to find descriptor for entity " + stringify(entity));
         }
         repoMap.remove(descriptor, entity);
         repoMap.removeEntityToRepository(entity);
@@ -782,7 +783,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
         final Descriptor entityDescriptor = getDescriptor(entity);
         if (!instanceDescriptors.containsKey(entity)) {
-            throw new OWLPersistenceException("Unable to find repository identifier for entity " + entity + ". Is it managed by this UoW?");
+            throw new OWLPersistenceException("Unable to find repository identifier for entity " + stringify(entity) + ". Is it managed by this UoW?");
         }
         final InstanceDescriptor<?> instanceDescriptor = instanceDescriptors.get(entity);
         if (instanceDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
@@ -800,6 +801,23 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         EntityPropertiesUtils.setFieldValue(field, entity, clone);
         instanceDescriptor.setLoaded((FieldSpecification) fieldSpec, LoadState.LOADED);
         return clone;
+    }
+
+    /**
+     * Gets basic object info for logging.
+     * <p>
+     * This works around using {@link Object#toString()} for entities, which could inadvertently trigger lazy field
+     * fetching and cause an infinite field loading loop.
+     *
+     * @param object Object to stringify
+     * @return String info about the specified object
+     */
+    protected String stringify(Object object) {
+        assert object != null;
+        return isEntityType(object.getClass()) ?
+                (object.getClass().getSimpleName() + IdentifierTransformer.stringifyIri(
+                        EntityPropertiesUtils.getIdentifier(object, getMetamodel()))) :
+                object.toString();
     }
 
     private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
@@ -892,7 +910,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
         final Descriptor descriptor = repoMap.getEntityDescriptor(entity);
         if (descriptor == null) {
-            throw new OWLPersistenceException("Unable to find descriptor of entity " + entity + " in this UoW!");
+            throw new OWLPersistenceException("Unable to find descriptor of entity " + stringify(entity) + " in this UoW!");
         }
         return descriptor;
     }

@@ -29,7 +29,6 @@ import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxyFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +94,7 @@ public class CloneBuilder {
         Objects.requireNonNull(cloneConfiguration);
         if (LOG.isTraceEnabled()) {
             // Normally this is a bad practice, but since stringify could be quite costly, we want to avoid it if possible
-            LOG.trace("Cloning object {}.", stringify(original));
+            LOG.trace("Cloning object {}.", uow.stringify(original));
         }
         return buildCloneImpl(null, null, original, cloneConfiguration);
     }
@@ -120,7 +119,7 @@ public class CloneBuilder {
         }
         if (LOG.isTraceEnabled()) {
             // Normally this is a bad practice, but since stringify could be quite costly, we want to avoid it if possible
-            LOG.trace("Cloning object {} with owner {}", stringify(original), stringify(cloneOwner));
+            LOG.trace("Cloning object {} with owner {}", uow.stringify(original), uow.stringify(cloneOwner));
         }
         return buildCloneImpl(cloneOwner, clonedField, original, CloneConfiguration.withDescriptor(descriptor));
     }
@@ -350,23 +349,6 @@ public class CloneBuilder {
      */
     public void removeVisited(Object instance, Descriptor descriptor) {
         visitedEntities.remove(descriptor, instance);
-    }
-
-    /**
-     * Gets basic object info for logging.
-     * <p>
-     * This works around using {@link Object#toString()} for entities, which could inadvertently trigger lazy field
-     * fetching.
-     *
-     * @param object Object to stringify
-     * @return String info about the specified object
-     */
-    private String stringify(Object object) {
-        assert object != null;
-        return isTypeManaged(object.getClass()) ?
-                (object.getClass().getSimpleName() + IdentifierTransformer.stringifyIri(
-                        EntityPropertiesUtils.getIdentifier(object, getMetamodel()))) :
-                object.toString();
     }
 
     private static Set<Class<?>> getImmutableTypes() {
