@@ -164,27 +164,6 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>github</id>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>github</id>
-                    <url>https://maven.pkg.github.com/kbss-cvut/jopa</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-        <profile>
-            <id>ossrh</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>ossrh</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
     </profiles>
 
     <build>
@@ -312,6 +291,10 @@
     </scm>
 
     <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
         <repository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
