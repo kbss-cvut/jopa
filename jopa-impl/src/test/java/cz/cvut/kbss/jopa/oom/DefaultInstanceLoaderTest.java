@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -82,22 +83,24 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
         metamodelMocks.setMocks(metamodelMock);
         this.etAMock = metamodelMocks.forOwlClassA().entityType();
         when(descriptorFactoryMock.createForEntityLoading(loadingParameters, metamodelMocks.forOwlClassA()
-                .entityType()))
+                                                                                           .entityType()))
                 .thenReturn(axiomDescriptor);
         when(
                 descriptorFactoryMock.createForFieldLoading(IDENTIFIER, metamodelMocks.forOwlClassA().typesSpec(),
                         descriptor, metamodelMocks.forOwlClassA().entityType())).thenReturn(axiomDescriptor);
         entityA.setTypes(null);
         this.instanceLoader = DefaultInstanceLoader.builder().connection(connectionMock).metamodel(metamodelMock)
-                .descriptorFactory(descriptorFactoryMock).cache(cacheMock)
-                .entityBuilder(entityConstructorMock).build();
+                                                   .descriptorFactory(descriptorFactoryMock).cache(cacheMock)
+                                                   .entityBuilder(entityConstructorMock)
+                                                   .loadStateRegistry(new LoadStateDescriptorRegistry(Object::toString))
+                                                   .build();
     }
 
     @Test
     void testLoadEntity() throws Exception {
         final Collection<Axiom<?>> entityAAxioms = Collections.singletonList(mock(Axiom.class));
         when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
-        when(entityConstructorMock.reconstructEntity(IDENTIFIER, etAMock, descriptor, entityAAxioms))
+        when(entityConstructorMock.reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, etAMock, descriptor, false), entityAAxioms))
                 .thenReturn(entityA);
         final OWLClassA res = instanceLoader.loadEntity(loadingParameters);
 
@@ -125,7 +128,7 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
         loadingParameters.bypassCache();
         final Collection<Axiom<?>> entityAAxioms = Collections.singletonList(mock(Axiom.class));
         when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
-        when(entityConstructorMock.reconstructEntity(IDENTIFIER, etAMock, descriptor, entityAAxioms))
+        when(entityConstructorMock.reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, etAMock, descriptor, false), entityAAxioms))
                 .thenReturn(entityA);
         final OWLClassA res = instanceLoader.loadEntity(loadingParameters);
         assertNotNull(res);
@@ -202,7 +205,7 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
         final OWLClassA res = instanceLoader.loadEntity(loadingParameters);
         assertEquals(entityA, res);
         verify(entityConstructorMock).populateQueryAttributes(entityA, etAMock);
-        verify(entityConstructorMock, never()).reconstructEntity(eq(loadingParameters.getIdentifier()), eq(etAMock), eq(descriptor), anyCollection());
+        verify(entityConstructorMock, never()).reconstructEntity(eq(new EntityConstructor.EntityConstructionParameters<>(loadingParameters.getIdentifier(), etAMock, descriptor, false)), anyCollection());
     }
 
     @Test

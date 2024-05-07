@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -34,6 +35,9 @@ import cz.cvut.kbss.jopa.oom.query.PluralQueryAttributeStrategy;
 import cz.cvut.kbss.jopa.oom.query.QueryFieldStrategy;
 import cz.cvut.kbss.jopa.oom.query.SingularQueryAttributeStrategy;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -58,33 +62,36 @@ class EntityConstructor {
 
     private final ObjectOntologyMapperImpl mapper;
 
-    EntityConstructor(ObjectOntologyMapperImpl mapper) {
+    private final LoadStateDescriptorRegistry loadStateRegistry;
+
+    EntityConstructor(ObjectOntologyMapperImpl mapper, LoadStateDescriptorRegistry loadStateRegistry) {
         this.mapper = mapper;
+        this.loadStateRegistry = loadStateRegistry;
     }
 
     /**
      * Creates an instance of the specified {@link EntityType} with the specified identifier and populates its
      * attributes from the specified axioms.
      *
-     * @param identifier Entity identifier
-     * @param et         Entity type to instantiate and reconstruct
-     * @param descriptor Entity descriptor with context info
-     * @param axioms     Axioms from which the instance attribute values should be reconstructed
-     * @param <T>        Entity type
+     * @param constructionParams Parameters for constructing the entity
+     * @param axioms             Axioms from which the instance attribute values should be reconstructed
+     * @param <T>                Entity type
      * @return New instance with populated attributes
      */
-    <T> T reconstructEntity(URI identifier, IdentifiableEntityType<T> et, Descriptor descriptor,
-                            Collection<Axiom<?>> axioms) {
+    <T> T reconstructEntity(EntityConstructionParameters<T> constructionParams, Collection<Axiom<?>> axioms) {
         assert !axioms.isEmpty();
+        final IdentifiableEntityType<T> et = constructionParams.entityType();
 
         if (!axiomsContainEntityClassAssertion(axioms, et)) {
             return null;
         }
-        final T instance = createEntityInstance(identifier, et);
-        mapper.registerInstance(identifier, instance);
-        populateAttributes(instance, et, descriptor, axioms);
-        populateQueryAttributes(instance, et);
-        populateEagerlyLoadedEmptyPluralAttributes(instance, et);
+        final T instance = createEntityInstance(constructionParams.id(), et);
+        mapper.registerInstance(constructionParams.id(), instance);
+        final LoadStateDescriptor<T> loadStateDescriptor = LoadStateDescriptorFactory.createAllUnknown(instance, et);
+        loadStateRegistry.put(instance, loadStateDescriptor);
+        populateAttributes(instance, constructionParams, axioms, loadStateDescriptor);
+        populateQueryAttributes(instance, et, loadStateDescriptor);
+        processEmptyAttributes(instance, et, loadStateDescriptor);
         validateIntegrityConstraints(instance, et);
 
         return instance;
@@ -109,8 +116,9 @@ class EntityConstructor {
         return instance;
     }
 
-    private <T> void populateAttributes(final T instance, EntityType<T> et, Descriptor entityDescriptor,
-                                        Collection<Axiom<?>> axioms) {
+    private <T> void populateAttributes(final T instance, EntityConstructionParameters<T> constructionParams,
+                                        Collection<Axiom<?>> axioms, LoadStateDescriptor<T> loadStateDescriptor) {
+        final IdentifiableEntityType<T> et = constructionParams.entityType();
         final Map<URI, FieldSpecification<? super T, ?>> attributes = indexEntityAttributes(et);
         final Map<FieldSpecification<? super T, ?>, FieldStrategy<? extends FieldSpecification<? super T, ?>, T>>
                 fieldLoaders = new HashMap<>(et.getAttributes().size());
@@ -119,19 +127,28 @@ class EntityConstructor {
                 continue;
             }
             final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = getFieldLoader(
-                    ax, attributes, fieldLoaders, et, entityDescriptor);
+                    ax, attributes, fieldLoaders, et, constructionParams.descriptor());
             if (fs == null) {
                 if (!MappingUtils.isClassAssertion(ax)) {
                     LOG.warn("No attribute found for property {}. Axiom {} will be skipped.", ax.getAssertion(), ax);
                 }
                 continue;
             }
-            fs.addAxiomValue(ax);
+            if (fs.attribute.getFetchType() == FetchType.LAZY && !constructionParams.forceEager()) {
+                fs.lazilyAddAxiomValue(ax);
+            } else {
+                fs.addAxiomValue(ax);
+            }
         }
         // We need to build the field values separately because some may be
         // plural and we have to wait until all values are prepared
         for (FieldStrategy<? extends FieldSpecification<?, ?>, ?> fs : fieldLoaders.values()) {
             fs.buildInstanceFieldValue(instance);
+            if (fs.attribute.getFetchType() == FetchType.LAZY && !constructionParams.forceEager() && fs.hasValue()) {
+                loadStateDescriptor.setLoaded((FieldSpecification<? super T, ?>) fs.attribute, LoadState.NOT_LOADED);
+            } else {
+                loadStateDescriptor.setLoaded((FieldSpecification<? super T, ?>) fs.attribute, LoadState.LOADED);
+            }
         }
     }
 
@@ -173,7 +190,11 @@ class EntityConstructor {
      * @param et       the entity class representation in the metamodel
      * @param <T>      the entity class
      */
-    public <T> void populateQueryAttributes(final T instance, EntityType<T> et) {
+    public <T> void populateQueryAttributes(T instance, EntityType<T> et) {
+        populateQueryAttributes(instance, et, loadStateRegistry.get(instance));
+    }
+
+    private <T> void populateQueryAttributes(T instance, EntityType<T> et, LoadStateDescriptor<T> loadStateDescriptor) {
         final SparqlQueryFactory queryFactory = mapper.getUow().sparqlQueryFactory();
 
         final Set<QueryAttribute<? super T, ?>> queryAttributes = et.getQueryAttributes();
@@ -181,6 +202,7 @@ class EntityConstructor {
         for (QueryAttribute<? super T, ?> queryAttribute : queryAttributes) {
             if (queryAttribute.getFetchType() != FetchType.LAZY) {
                 populateQueryAttribute(instance, queryAttribute, queryFactory, et);
+                loadStateDescriptor.setLoaded(queryAttribute, LoadState.LOADED);
             }
         }
     }
@@ -249,13 +271,17 @@ class EntityConstructor {
         }
     }
 
-    private <T> void populateEagerlyLoadedEmptyPluralAttributes(T entity, EntityType<T> et) {
-        et.getFieldSpecifications().stream().filter(fs -> fs.isCollection() && fs.getFetchType() == FetchType.EAGER)
+    private <T> void processEmptyAttributes(T entity, EntityType<T> et, LoadStateDescriptor<T> loadStateDescriptor) {
+        et.getFieldSpecifications().stream()
+          .filter(fs -> EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity) == null)
           .forEach(fs -> {
-              if (EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity) == null) {
+              if (fs.isCollection() && (fs.getFetchType() == FetchType.EAGER || fs.getFetchType() == FetchType.LAZY && loadStateDescriptor.isLoaded(fs) == LoadState.UNKNOWN)) {
                   final CollectionType ct = CollectionFactory.resolveCollectionType(fs.getJavaType());
                   final Object emptyValue = ct == CollectionType.MAP ? CollectionFactory.createDefaultMap() : CollectionFactory.createDefaultCollection(ct);
                   EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, emptyValue);
+                  loadStateDescriptor.setLoaded(fs, LoadState.LOADED);
+              } else if (fs.getFetchType() == FetchType.LAZY) {
+                  loadStateDescriptor.setLoaded(fs, LoadState.LOADED);
               }
           });
     }
@@ -294,4 +320,16 @@ class EntityConstructor {
         final SparqlQueryFactory queryFactory = mapper.getUow().sparqlQueryFactory();
         populateQueryAttribute(entity, queryAttribute, queryFactory, et);
     }
+
+    /**
+     * Parameters for constructing an entity from data.
+     *
+     * @param id         Entity identifier
+     * @param entityType Entity type
+     * @param descriptor Entity descriptor, specifies e.g., repository contexts
+     * @param forceEager Whether all attributes have to be loaded eagerly
+     * @param <T>        Entity type
+     */
+    record EntityConstructionParameters<T>(URI id, IdentifiableEntityType<T> entityType, Descriptor descriptor,
+                                           boolean forceEager) {}
 }

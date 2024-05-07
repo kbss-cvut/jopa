@@ -42,7 +42,7 @@ public class LoadStateDescriptorFactory {
      * @return Fresh instance descriptor
      */
     public static <T> LoadStateDescriptor<T> createNotLoaded(T instance, EntityType<T> et) {
-        return new LoadStateDescriptor<>(instance, et);
+        return new LoadStateDescriptor<>(instance, et, LoadState.NOT_LOADED);
     }
 
     /**
@@ -54,17 +54,27 @@ public class LoadStateDescriptorFactory {
      * @return Fresh instance descriptor with all loaded
      */
     public static <T> LoadStateDescriptor<T> createAllLoaded(T instance, EntityType<T> et) {
-        final LoadStateDescriptor<T> descriptor = createNotLoaded(instance, et);
-        et.getFieldSpecifications().forEach(fs -> descriptor.setLoaded(fs, LoadState.LOADED));
-        return descriptor;
+        return new LoadStateDescriptor<>(instance, et, LoadState.LOADED);
+    }
+
+    /**
+     * Creates an instance descriptor which marks all attributes except the identifier as having an unknown load state.
+     *
+     * @param instance Instance to create descriptor for
+     * @param et       Entity type of the instance
+     * @param <T>      Instance type
+     * @return Fresh instance descriptor
+     */
+    public static <T> LoadStateDescriptor<T> createAllUnknown(T instance, EntityType<T> et) {
+        return new LoadStateDescriptor<>(instance, et, LoadState.UNKNOWN);
     }
 
     /**
      * Creates an instance descriptor which sets load status of attributes based on their value in the specified
      * instance as follows:
      * <p>
-     * If the attribute value is not {@code null}, its status is set to {@link LoadState#LOADED}. If the value is {@code
-     * null} and the attribute fetch type is {@link FetchType#EAGER}, the status is also set to {@code LOADED}.
+     * If the attribute value is not {@code null}, its status is set to {@link LoadState#LOADED}. If the value is
+     * {@code null} and the attribute fetch type is {@link FetchType#EAGER}, the status is also set to {@code LOADED}.
      * Otherwise, the status is set to {@link LoadState#UNKNOWN}.
      *
      * @param instance Instance to create descriptor for

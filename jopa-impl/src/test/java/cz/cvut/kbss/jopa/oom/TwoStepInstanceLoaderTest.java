@@ -72,8 +72,8 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
         when(descriptorFactoryMock.createForEntityLoading(loadingParameters, mocks.forOwlClassR().entityType()))
                 .thenReturn(axiomDescriptor);
         this.instanceLoader = TwoStepInstanceLoader.builder().connection(connectionMock).metamodel(metamodelMock)
-                .cache(cacheMock).descriptorFactory(descriptorFactoryMock)
-                .entityBuilder(entityConstructorMock).build();
+                                                   .cache(cacheMock).descriptorFactory(descriptorFactoryMock)
+                                                   .entityBuilder(entityConstructorMock).build();
     }
 
     @Test
@@ -98,7 +98,8 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
         final Collection<Axiom<?>> axioms = new HashSet<>(types);
         when(connectionMock.find(axiomDescriptor)).thenReturn(axioms);
         when(entityConstructorMock
-                .reconstructEntity(IDENTIFIER, metamodelMock.entity(OWLClassR.class), descriptor, axioms))
+                .reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, metamodelMock.entity(OWLClassR.class), descriptor, false),
+                        axioms))
                 .thenReturn(entityR);
 
         final OWLClassS result = instanceLoader.loadEntity(loadingParameters);

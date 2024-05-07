@@ -12,6 +12,7 @@ import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -168,7 +169,7 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
         setHasChanges();
         setIndirectObjectIfPresent(entity, fieldSpec.getJavaField());
         et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
-        instanceDescriptors.get(entity).setLoaded(fieldSpec, LoadState.LOADED);
+        ((LoadStateDescriptor) loadStateRegistry.get(entity)).setLoaded(fieldSpec, LoadState.LOADED);
     }
 
     private void createAndRegisterChangeRecord(Object clone, FieldSpecification<?, ?> fieldSpec,

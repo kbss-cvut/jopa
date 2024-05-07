@@ -32,15 +32,20 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
@@ -53,6 +58,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -97,6 +103,8 @@ class EntityConstructorTest {
     private UnitOfWork uowMock;
     @Mock
     private SparqlQueryFactory queryFactoryMock;
+    @Spy
+    private LoadStateDescriptorRegistry loadStateRegistry = new LoadStateDescriptorRegistry(Object::toString);
 
     private MetamodelMocks mocks;
     private Descriptor descriptor;
@@ -110,7 +118,7 @@ class EntityConstructorTest {
         when(uowMock.sparqlQueryFactory()).thenReturn(queryFactoryMock);
         this.mocks = new MetamodelMocks();
         this.descriptor = new EntityDescriptor();
-        this.constructor = new EntityConstructor(mapperMock);
+        this.constructor = new EntityConstructor(mapperMock, loadStateRegistry);
     }
 
     private static Set<String> initTypes() {
@@ -126,7 +134,8 @@ class EntityConstructorTest {
         axioms.add(getClassAssertionAxiomForType(ID, OWLClassA.getClassIri()));
         axioms.add(getStringAttAssertionAxiom(ID, STRING_ATT, OWLClassA.getStrAttField()));
         axioms.addAll(getTypesAxiomsForOwlClassA());
-        final OWLClassA res = constructor.reconstructEntity(ID, mocks.forOwlClassA().entityType(), descriptor, axioms);
+        final OWLClassA res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassA()
+                                                                                        .entityType(), descriptor), axioms);
         assertNotNull(res);
         assertEquals(ID, res.getUri());
         assertEquals(STRING_ATT, res.getStringAttribute());
@@ -156,12 +165,19 @@ class EntityConstructorTest {
         return axs;
     }
 
+    static <T> EntityConstructor.EntityConstructionParameters<T> constructionConfig(URI id,
+                                                                                    IdentifiableEntityType<T> et,
+                                                                                    Descriptor descriptor) {
+        return new EntityConstructor.EntityConstructionParameters<>(id, et, descriptor, false);
+    }
+
     @Test
     void reconstructEntityWithDataPropertyAndEmptyTypesPopulatesAttributes() throws Exception {
         final Set<Axiom<?>> axioms = new HashSet<>();
         axioms.add(getClassAssertionAxiomForType(ID, OWLClassA.getClassIri()));
         axioms.add(getStringAttAssertionAxiom(ID, STRING_ATT, OWLClassA.getStrAttField()));
-        final OWLClassA res = constructor.reconstructEntity(ID, mocks.forOwlClassA().entityType(), descriptor, axioms);
+        final OWLClassA res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassA()
+                                                                                        .entityType(), descriptor), axioms);
         assertNotNull(res);
         assertEquals(ID, res.getUri());
         assertEquals(STRING_ATT, res.getStringAttribute());
@@ -177,7 +193,8 @@ class EntityConstructorTest {
         axioms.add(getStringAttAssertionAxiom(ID, STRING_ATT, OWLClassB.getStrAttField()));
         final Collection<Axiom<?>> properties = getProperties();
         axioms.addAll(properties);
-        final OWLClassB res = constructor.reconstructEntity(ID, mocks.forOwlClassB().entityType(), descriptor, axioms);
+        final OWLClassB res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassB()
+                                                                                        .entityType(), descriptor), axioms);
         assertNotNull(res);
         assertEquals(ID, res.getUri());
         assertEquals(STRING_ATT, res.getStringAttribute());
@@ -216,7 +233,8 @@ class EntityConstructorTest {
         final Set<Axiom<?>> axioms = new HashSet<>();
         axioms.add(getClassAssertionAxiomForType(ID, OWLClassB.getClassIri()));
         axioms.add(getStringAttAssertionAxiom(ID, STRING_ATT, OWLClassB.getStrAttField()));
-        final OWLClassB res = constructor.reconstructEntity(ID, mocks.forOwlClassB().entityType(), descriptor, axioms);
+        final OWLClassB res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassB()
+                                                                                        .entityType(), descriptor), axioms);
         assertNotNull(res);
         assertEquals(ID, res.getUri());
         assertEquals(STRING_ATT, res.getStringAttribute());
@@ -233,7 +251,8 @@ class EntityConstructorTest {
         entityA.setUri(ID_TWO);
         entityA.setStringAttribute(STRING_ATT);
         when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, fieldDesc)).thenReturn(entityA);
-        final OWLClassD res = constructor.reconstructEntity(ID, mocks.forOwlClassD().entityType(), descriptor, axiomsD);
+        final OWLClassD res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassD()
+                                                                                        .entityType(), descriptor), axiomsD);
         assertNotNull(res);
         assertEquals(ID, res.getUri());
         verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, fieldDesc);
@@ -256,9 +275,8 @@ class EntityConstructorTest {
                 new Value<>(NamedResource.create(ID_TWO)));
     }
 
-    private Assertion getClassDObjectPropertyAssertion() throws NoSuchFieldException {
-        final URI assertionUri = URI.create(OWLClassD.getOwlClassAField()
-                                                     .getAnnotation(OWLObjectProperty.class).iri());
+    private Assertion getClassDObjectPropertyAssertion() {
+        final URI assertionUri = URI.create(Vocabulary.P_HAS_A);
         return Assertion.createObjectPropertyAssertion(assertionUri, false);
     }
 
@@ -269,7 +287,8 @@ class EntityConstructorTest {
         // Using a list and adding the incorrect range value before the right value will cause it to be processed first
         axioms.add(createDataPropertyAxiomWithWrongRange(OWLClassA.getStrAttField()));
         axioms.add(getStringAttAssertionAxiom(ID, STRING_ATT, OWLClassA.getStrAttField()));
-        OWLClassA entityA = constructor.reconstructEntity(ID, mocks.forOwlClassA().entityType(), descriptor, axioms);
+        OWLClassA entityA = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassA()
+                                                                                      .entityType(), descriptor), axioms);
         assertNotNull(entityA);
         assertEquals(STRING_ATT, entityA.getStringAttribute());
 
@@ -278,7 +297,8 @@ class EntityConstructorTest {
         // Now reverse it
         axioms.add(getStringAttAssertionAxiom(ID, STRING_ATT, OWLClassA.getStrAttField()));
         axioms.add(createDataPropertyAxiomWithWrongRange(OWLClassA.getStrAttField()));
-        entityA = constructor.reconstructEntity(ID, mocks.forOwlClassA().entityType(), descriptor, axioms);
+        entityA = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassA()
+                                                                            .entityType(), descriptor), axioms);
         assertNotNull(entityA);
         assertEquals(STRING_ATT, entityA.getStringAttribute());
     }
@@ -290,7 +310,8 @@ class EntityConstructorTest {
         axioms.add(getStringAttAssertionAxiom(ID, STRING_ATT, OWLClassA.getStrAttField()));
         axioms.add(getStringAttAssertionAxiom(ID, STRING_ATT, OWLClassA.getStrAttField()));
         assertThrows(CardinalityConstraintViolatedException.class,
-                () -> constructor.reconstructEntity(ID, mocks.forOwlClassA().entityType(), descriptor, axioms));
+                () -> constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassA()
+                                                                                .entityType(), descriptor), axioms));
     }
 
     private Axiom<?> createDataPropertyAxiomWithWrongRange(Field valueField) {
@@ -307,7 +328,8 @@ class EntityConstructorTest {
         descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDescriptor);
         // The property value hasn't the corresponding type, so it cannot be returned by mapper
         when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, fieldDescriptor)).thenReturn(null);
-        final OWLClassD res = constructor.reconstructEntity(ID, mocks.forOwlClassD().entityType(), descriptor, axioms);
+        final OWLClassD res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassD()
+                                                                                        .entityType(), descriptor), axioms);
         assertNotNull(res);
         assertNull(res.getOwlClassA());
     }
@@ -328,7 +350,8 @@ class EntityConstructorTest {
         when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, pkThree, fieldDescriptor))
                 .thenReturn(entityThree);
         assertThrows(CardinalityConstraintViolatedException.class,
-                () -> constructor.reconstructEntity(ID, mocks.forOwlClassD().entityType(), descriptor, axioms));
+                () -> constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassD()
+                                                                                .entityType(), descriptor), axioms));
     }
 
     @Test
@@ -479,7 +502,8 @@ class EntityConstructorTest {
         final Date date = new Date();
         axioms.addAll(createAxiomsForValues(true, i, lng, d, date, null));
 
-        final OWLClassM res = constructor.reconstructEntity(ID, mocks.forOwlClassM().entityType(), descriptor, axioms);
+        final OWLClassM res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassM()
+                                                                                        .entityType(), descriptor), axioms);
         assertEquals(true, res.getBooleanAttribute());
         assertEquals(i, res.getIntAttribute());
         assertEquals(lng, res.getLongAttribute());
@@ -536,7 +560,7 @@ class EntityConstructorTest {
         axioms.addAll(createAxiomsForValues(null, null, null, null, null, enumValue));
 
         final OWLClassM result = constructor
-                .reconstructEntity(ID, mocks.forOwlClassM().entityType(), descriptor, axioms);
+                .reconstructEntity(constructionConfig(ID, mocks.forOwlClassM().entityType(), descriptor), axioms);
         assertNotNull(result);
         assertNotNull(result.getEnumAttribute());
         assertEquals(enumValue, result.getEnumAttribute());
@@ -548,7 +572,8 @@ class EntityConstructorTest {
         axioms.add(getClassAssertionAxiomForType(ID, OWLClassL.getClassIri()));
 
         assertThrows(IntegrityConstraintViolatedException.class,
-                () -> constructor.reconstructEntity(ID, mocks.forOwlClassL().entityType(), descriptor, axioms));
+                () -> constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassL()
+                                                                                .entityType(), descriptor), axioms));
     }
 
     @Test
@@ -562,7 +587,7 @@ class EntityConstructorTest {
         when(mapperMock.getConfiguration()).thenReturn(conf);
 
         final OWLClassL result = constructor
-                .reconstructEntity(ID, mocks.forOwlClassL().entityType(), descriptor, axioms);
+                .reconstructEntity(constructionConfig(ID, mocks.forOwlClassL().entityType(), descriptor), axioms);
         assertNotNull(result);
         assertNull(result.getSingleA());
     }
@@ -620,7 +645,8 @@ class EntityConstructorTest {
         final Assertion unknown =
                 Assertion.createAnnotationPropertyAssertion(Generators.createPropertyIdentifier(), false);
         axioms.add(new AxiomImpl<>(ID_RESOURCE, unknown, new Value<>("UnknownPropertyValue")));
-        final OWLClassA res = constructor.reconstructEntity(ID, mocks.forOwlClassA().entityType(), descriptor, axioms);
+        final OWLClassA res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassA()
+                                                                                        .entityType(), descriptor), axioms);
         assertNotNull(res);
         assertEquals(ID, res.getUri());
         assertNotNull(res.getStringAttribute());
@@ -645,7 +671,8 @@ class EntityConstructorTest {
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(ID_TWO), any(Descriptor.class)))
                 .thenReturn(a);
 
-        final OWLClassQ res = constructor.reconstructEntity(ID, mocks.forOwlClassQ().entityType(), descriptor, axioms);
+        final OWLClassQ res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassQ()
+                                                                                        .entityType(), descriptor), axioms);
         assertNotNull(res);
         assertEquals(ID, res.getUri());
         assertEquals(STRING_ATT, res.getStringAttribute());
@@ -663,7 +690,8 @@ class EntityConstructorTest {
         axioms.add(new AxiomImpl<>(ID_RESOURCE, assertion, new Value<>(STRING_ATT)));
 
         final OWLClassN result =
-                constructor.reconstructEntity(ID, mocks.forOwlClassN().entityType(), descriptor, axioms);
+                constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassN()
+                                                                          .entityType(), descriptor), axioms);
         assertNotNull(result);
         assertEquals(ID.toString(), result.getId());
         assertEquals(Collections.singleton(STRING_ATT), result.getPluralAnnotation());
@@ -692,10 +720,80 @@ class EntityConstructorTest {
         final List<Axiom<?>> axioms = List.of(
                 getClassAssertionAxiomForType(ID, OWLClassC.getClassIri())
         );
-        final OWLClassC result = constructor.reconstructEntity(ID, mocks.forOwlClassC().entityType(), descriptor, axioms);
+        final OWLClassC result = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassC()
+                                                                                           .entityType(), descriptor), axioms);
         assertNotNull(result);
         assertNotNull(result.getReferencedList());
         assertTrue(result.getReferencedList().isEmpty());
-        assertNull(result.getSimpleList());
+    }
+
+    @Test
+    void reconstructEntityRegistersLoadStateDescriptorForReconstructedInstanceInLoadStateRegistry() {
+        final List<Axiom<?>> axioms = List.of(
+                getClassAssertionAxiomForType(ID, OWLClassA.getClassIri())
+        );
+        final OWLClassA result = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassA()
+                                                                                           .entityType(), descriptor), axioms);
+        assertTrue(loadStateRegistry.contains(result));
+    }
+
+    @Test
+    void reconstructEntityMarksLazilyLoadedAttributesAsNotLoadedWhenThereExistAxiomsForThem() {
+        final List<Axiom<?>> axioms = List.of(
+                getClassAssertionAxiomForType(ID, OWLClassC.getClassIri()),
+                new AxiomImpl<Object>(NamedResource.create(ID), Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_SIMPLE_LIST), false), new Value<>(NamedResource.create(Generators.createIndividualIdentifier())))
+        );
+        final OWLClassC result = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassC()
+                                                                                           .entityType(), descriptor), axioms);
+        final LoadStateDescriptor<OWLClassC> loadStates = loadStateRegistry.get(result);
+        assertNotNull(loadStates);
+        assertEquals(LoadState.LOADED, loadStates.isLoaded(mocks.forOwlClassC().referencedListAtt()));
+        assertEquals(LoadState.NOT_LOADED, loadStates.isLoaded(mocks.forOwlClassC().simpleListAtt()));
+    }
+
+    @Test
+    void reconstructEntityMarksLazilyLoadedPluralAttributesAsLoadedWhenThereExistNoAxiomsForThem() {
+        final List<Axiom<?>> axioms = List.of(
+                getClassAssertionAxiomForType(ID, OWLClassC.getClassIri())
+        );
+        final OWLClassC result = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassC()
+                                                                                           .entityType(), descriptor), axioms);
+        final LoadStateDescriptor<OWLClassC> loadStates = loadStateRegistry.get(result);
+        assertNotNull(loadStates);
+        assertEquals(LoadState.LOADED, loadStates.isLoaded(mocks.forOwlClassC().referencedListAtt()));
+        assertEquals(LoadState.LOADED, loadStates.isLoaded(mocks.forOwlClassC().simpleListAtt()));
+    }
+
+    @Test
+    void reconstructEntityMarksSingularLazilyLoadedAttributeAsLoadedWhenThereExistNoAxiomsForThem() {
+        when(mocks.forOwlClassD().owlClassAAtt().getFetchType()).thenReturn(FetchType.LAZY);
+        final List<Axiom<?>> axioms = List.of(
+                getClassAssertionAxiomForType(ID, OWLClassD.getClassIri())
+        );
+        final OWLClassD result = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassD()
+                                                                                           .entityType(), descriptor), axioms);
+        final LoadStateDescriptor<OWLClassD> loadStates = loadStateRegistry.get(result);
+        assertNotNull(loadStates);
+        assertEquals(LoadState.LOADED, loadStates.isLoaded(mocks.forOwlClassD().owlClassAAtt()));
+    }
+
+    @Test
+    void reconstructEntityLoadsLazyReferencesWhenForceEagerIsSpecifiedForReconstruction() throws Exception {
+        when(mocks.forOwlClassD().owlClassAAtt().getFetchType()).thenReturn(FetchType.LAZY);
+        final OWLClassA aInstance = Generators.generateOwlClassAInstance();
+        final List<Axiom<?>> axioms = List.of(
+                getClassAssertionAxiomForType(ID, OWLClassD.getClassIri()),
+                new AxiomImpl<>(NamedResource.create(ID), getClassDObjectPropertyAssertion(), new Value<>(NamedResource.create(aInstance.getUri())))
+        );
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aInstance.getUri()), any(Descriptor.class))).thenReturn(aInstance);
+        final OWLClassD result = constructor.reconstructEntity(
+                new EntityConstructor.EntityConstructionParameters<>(ID, mocks.forOwlClassD()
+                                                                              .entityType(), descriptor, true), axioms);
+        assertNotNull(result);
+        assertNotNull(result.getOwlClassA());
+        assertEquals(aInstance, result.getOwlClassA());
+        final LoadStateDescriptor<OWLClassD> loadStates = loadStateRegistry.get(result);
+        assertNotNull(loadStates);
+        assertEquals(LoadState.LOADED, loadStates.isLoaded(mocks.forOwlClassD().owlClassAAtt()));
     }
 }

@@ -18,9 +18,14 @@
 package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 class EntityCache {
@@ -30,7 +35,7 @@ class EntityCache {
     private static final String DEFAULT_CONTEXT_BASE = "http://defaultContext";
 
     final Map<URI, Map<Object, Map<Class<?>, Object>>> repoCache;
-    final Map<Object, Descriptor> descriptors;
+    final Map<Object, Descriptors> descriptors;
     final URI defaultContext;
 
     EntityCache() {
@@ -40,13 +45,13 @@ class EntityCache {
         this.defaultContext = URI.create(DEFAULT_CONTEXT_BASE + System.currentTimeMillis());
     }
 
-    void put(Object identifier, Object entity, Descriptor descriptor) {
+    void put(Object identifier, Object entity, Descriptors descriptors) {
         assert identifier != null;
         assert entity != null;
-        assert isCacheable(descriptor);
+        assert isCacheable(descriptors.repositoryDescriptor());
 
         final Class<?> cls = entity.getClass();
-        final URI ctx = descriptor.getSingleContext().orElse(defaultContext);
+        final URI ctx = descriptors.repositoryDescriptor().getSingleContext().orElse(defaultContext);
 
         Map<Object, Map<Class<?>, Object>> ctxMap;
         if (!repoCache.containsKey(ctx)) {
@@ -63,10 +68,10 @@ class EntityCache {
             individualMap = ctxMap.get(identifier);
         }
         if (individualMap.containsKey(cls)) {
-            descriptors.remove(individualMap.get(cls));
+            this.descriptors.remove(individualMap.get(cls));
         }
         individualMap.put(cls, entity);
-        descriptors.put(entity, descriptor);
+        this.descriptors.put(entity, descriptors);
     }
 
     boolean isCacheable(Descriptor descriptor) {
@@ -86,12 +91,17 @@ class EntityCache {
         for (URI ctx : contexts) {
             final Map<Class<?>, Object> m = getMapForId(ctx, identifier);
             final Object result = m.get(cls);
-            if (result != null && descriptors.get(result).equals(descriptor)) {
+            if (result != null && descriptors.get(result).repositoryDescriptor().equals(descriptor)) {
                 contextHandler.accept(ctx);
                 return cls.cast(result);
             }
         }
         return null;
+    }
+
+    <T> LoadStateDescriptor<T> getLoadStateDescriptor(T instance) {
+        return descriptors.containsKey(instance) ?
+               (LoadStateDescriptor<T>) descriptors.get(instance).loadStateDescriptor() : null;
     }
 
     boolean contains(Class<?> cls, Object identifier, Descriptor descriptor) {
@@ -109,7 +119,7 @@ class EntityCache {
             final Object result = m.get(cls);
             assert descriptors.containsKey(result);
 
-            if (descriptors.get(result).equals(descriptor)) {
+            if (descriptors.get(result).repositoryDescriptor().equals(descriptor)) {
                 return true;
             }
         }

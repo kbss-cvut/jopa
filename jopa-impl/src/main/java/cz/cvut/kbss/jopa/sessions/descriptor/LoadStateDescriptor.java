@@ -35,20 +35,20 @@ public class LoadStateDescriptor<T> {
 
     private final Map<FieldSpecification<? super T, ?>, LoadState> loadState;
 
-    LoadStateDescriptor(T instance, EntityType<T> et) {
+    public LoadStateDescriptor(T instance, EntityType<T> et, LoadState defaultState) {
         this.instance = Objects.requireNonNull(instance);
-        this.loadState = mapInstanceAttributes(et);
+        this.loadState = mapInstanceAttributes(et, defaultState);
     }
 
-    LoadStateDescriptor(T instance, LoadStateDescriptor<T> other) {
+    public LoadStateDescriptor(T instance, LoadStateDescriptor<T> other) {
         this.instance = Objects.requireNonNull(instance);
         this.loadState = new HashMap<>(other.loadState);
     }
 
-    private Map<FieldSpecification<? super T, ?>, LoadState> mapInstanceAttributes(EntityType<T> et) {
+    private Map<FieldSpecification<? super T, ?>, LoadState> mapInstanceAttributes(EntityType<T> et, LoadState defaultState) {
         final Map<FieldSpecification<? super T, ?>, LoadState> map = new HashMap<>();
         for (FieldSpecification<? super T, ?> fs : et.getFieldSpecifications()) {
-            map.put(fs, LoadState.NOT_LOADED);
+            map.put(fs, defaultState);
         }
         map.put(et.getIdentifier(), LoadState.LOADED);
         return map;

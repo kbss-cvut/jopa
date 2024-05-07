@@ -20,7 +20,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.CacheManager;
+import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.LoadState;
@@ -34,6 +34,7 @@ import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.change.Change;
 import cz.cvut.kbss.jopa.sessions.change.ChangeCalculator;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
@@ -44,6 +45,7 @@ import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.validator.InferredAttributeChangeValidator;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
@@ -81,8 +83,9 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     final Map<Object, Object> deletedObjects;
     final Map<Object, Object> newObjectsCloneToOriginal;
     final Map<Object, Object> newObjectsKeyToClone = new HashMap<>();
-    final Map<Object, LoadStateDescriptor> instanceDescriptors;
     RepositoryMap repoMap;
+
+    final LoadStateDescriptorRegistry loadStateRegistry;
 
     boolean hasChanges;
     boolean hasNew;
@@ -110,7 +113,6 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         this.cloneMapping = cloneToOriginals.keySet();
         this.deletedObjects = new IdentityHashMap<>();
         this.newObjectsCloneToOriginal = new IdentityHashMap<>();
-        this.instanceDescriptors = new IdentityHashMap<>();
         this.repoMap = new RepositoryMap();
         this.cloneBuilder = new CloneBuilder(this);
         this.storage = acquireConnection();
@@ -120,6 +122,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         this.inferredAttributeChangeValidator = new InferredAttributeChangeValidator(storage);
         this.isActive = true;
         this.indirectWrapperHelper = new IndirectWrapperHelper(this);
+        this.loadStateRegistry = new LoadStateDescriptorRegistry(this::stringify);
     }
 
     @Override
@@ -145,7 +148,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         deletedObjects.clear();
         newObjectsCloneToOriginal.clear();
         newObjectsKeyToClone.clear();
-        instanceDescriptors.clear();
+        loadStateRegistry.clear();
         this.hasChanges = false;
         this.hasDeleted = false;
         this.hasNew = false;
@@ -434,7 +437,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         final LoadStateDescriptor<?> instanceDesc = identifier != null
                 ? LoadStateDescriptorFactory.create(clone, (EntityType<Object>) entityType(clone.getClass()))
                 : LoadStateDescriptorFactory.createAllLoaded(clone, (EntityType<Object>) entityType(clone.getClass()));
-        instanceDescriptors.put(clone, instanceDesc);
+        loadStateRegistry.put(clone, instanceDesc);
         registerEntityWithOntologyContext(clone, descriptor);
     }
 
@@ -677,7 +680,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         // Original is null until commit
         newObjectsCloneToOriginal.put(entity, null);
         registerEntityWithOntologyContext(entity, descriptor);
-        instanceDescriptors.put(entity, LoadStateDescriptorFactory.createAllLoaded(entity, (EntityType<Object>) eType));
+        loadStateRegistry.put(entity, LoadStateDescriptorFactory.createAllLoaded(entity, (EntityType<Object>) eType));
         newObjectsKeyToClone.put(id, entity);
         this.hasNew = true;
     }
@@ -785,10 +788,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         assert field.getDeclaringClass().isAssignableFrom(entity.getClass());
 
         final Descriptor entityDescriptor = getDescriptor(entity);
-        if (!instanceDescriptors.containsKey(entity)) {
-            throw new OWLPersistenceException("Unable to find repository identifier for entity " + stringify(entity) + ". Is it managed by this UoW?");
-        }
-        final LoadStateDescriptor<?> loadStateDescriptor = instanceDescriptors.get(entity);
+        final LoadStateDescriptor<?> loadStateDescriptor = loadStateRegistry.get(entity);
         if (loadStateDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
             return EntityPropertiesUtils.getFieldValue(field, entity);
         }
@@ -815,7 +815,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
      * @param object Object to stringify
      * @return String info about the specified object
      */
-    protected String stringify(Object object) {
+    public String stringify(Object object) {
         assert object != null;
         return isEntityType(object.getClass()) ?
                 (object.getClass().getSimpleName() + IdentifierTransformer.stringifyIri(
@@ -847,7 +847,9 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
     @Override
     public void putObjectIntoCache(Object identifier, Object entity, Descriptor descriptor) {
-        getLiveObjectCache().add(identifier, entity, descriptor);
+        final LoadStateDescriptor<?> loadStateDescriptor = loadStateRegistry.get(entity);
+        assert loadStateDescriptor != null;
+        getLiveObjectCache().add(identifier, entity, new Descriptors(descriptor, loadStateDescriptor));
     }
 
     @Override
@@ -882,14 +884,13 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     public LoadState isLoaded(Object entity, String attributeName) {
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
-        return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity)
-                                                                            .isLoaded(fs) : LoadState.UNKNOWN;
+        return loadStateRegistry.contains(entity) ? loadStateRegistry.get(entity).isLoaded(fs) : LoadState.UNKNOWN;
     }
 
     @Override
     public LoadState isLoaded(Object entity) {
         Objects.requireNonNull(entity);
-        return instanceDescriptors.containsKey(entity) ? instanceDescriptors.get(entity).isLoaded() : LoadState.UNKNOWN;
+        return loadStateRegistry.contains(entity) ? loadStateRegistry.get(entity).isLoaded() : LoadState.UNKNOWN;
     }
 
     public SparqlQueryFactory sparqlQueryFactory() {
@@ -916,6 +917,10 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             throw new OWLPersistenceException("Unable to find descriptor of entity " + stringify(entity) + " in this UoW!");
         }
         return descriptor;
+    }
+
+    public LoadStateDescriptorRegistry getLoadStateRegistry() {
+        return loadStateRegistry;
     }
 
     @Override

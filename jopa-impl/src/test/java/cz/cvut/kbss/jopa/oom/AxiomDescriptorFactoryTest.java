@@ -86,9 +86,9 @@ class AxiomDescriptorFactoryTest {
 
     @BeforeAll
     static void setUpBeforeClass() throws Exception {
-        stringAttAUri = URI.create(OWLClassA.getStrAttField().getAnnotation(OWLDataProperty.class).iri());
+        stringAttAUri = URI.create(Vocabulary.p_a_stringAttribute);
         stringAttBUri = URI.create(OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class).iri());
-        owlClassAAttUri = URI.create(OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class).iri());
+        owlClassAAttUri = URI.create(Vocabulary.P_HAS_A);
     }
 
     @BeforeEach
@@ -178,17 +178,17 @@ class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    void createForEntityLoadingWithLazilyLoadedAttribute() {
+    void createForEntityLoadingAddsAssertionsForLazilyLoadedAttributesToo() {
         when(metamodelMocks.forOwlClassA().stringAttribute().getFetchType()).thenReturn(FetchType.LAZY);
         final AxiomDescriptor res = sut
                 .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, ID, descriptor),
                         metamodelMocks.forOwlClassA().entityType());
         // Types specification (class assertion)
-        assertEquals(1, res.getAssertions().size());
+        assertEquals(2, res.getAssertions().size());
         assertEquals(NamedResource.create(ID), res.getSubject());
         assertThat(res.getSubjectContexts(), empty());
-        assertFalse(res.getAssertions().contains(
-                Assertion.createDataPropertyAssertion(stringAttAUri, false)));
+        assertTrue(res.getAssertions().contains(
+                Assertion.createDataPropertyAssertion(stringAttAUri, Generators.LANG, false)));
         assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
     }
 

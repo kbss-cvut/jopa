@@ -101,7 +101,7 @@ class LoadStateDescriptorFactoryTest {
     void createCopyCopiesStateFromSpecifiedDescriptor() {
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         final LoadStateDescriptor<OWLClassA> original = new LoadStateDescriptor<>(instance,
-                metamodelMocks.forOwlClassA().entityType());
+                metamodelMocks.forOwlClassA().entityType(), LoadState.LOADED);
 
         final OWLClassA otherInstance = Generators.generateOwlClassAInstance();
         final LoadStateDescriptor<OWLClassA> result = LoadStateDescriptorFactory.createCopy(otherInstance, original);

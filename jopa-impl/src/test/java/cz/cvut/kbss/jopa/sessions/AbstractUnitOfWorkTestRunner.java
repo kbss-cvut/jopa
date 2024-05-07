@@ -39,6 +39,9 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
+import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
@@ -139,7 +142,7 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         uow.commit();
 
         ArgumentCaptor<Object> pks = ArgumentCaptor.forClass(Object.class);
-        verify(serverSessionStub.getLiveObjectCache(), times(3)).add(pks.capture(), any(Object.class), eq(descriptor));
+        verify(serverSessionStub.getLiveObjectCache(), times(3)).add(pks.capture(), any(Object.class), any(Descriptors.class));
         final Set<URI> uris = pks.getAllValues().stream().map(pk -> URI.create(pk.toString())).collect(
                 Collectors.toSet());
         assertTrue(uris.contains(entityA.getUri()));
@@ -185,7 +188,7 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         uow.commit();
 
         assertEquals(d.getOwlClassA().getUri(), newA.getUri());
-        verify(serverSessionStub.getLiveObjectCache()).add(eq(newA.getUri()), any(Object.class), eq(descriptor));
+        verify(serverSessionStub.getLiveObjectCache()).add(eq(newA.getUri()), any(Object.class), any(Descriptors.class));
     }
 
     @Test
@@ -607,12 +610,15 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         original.setStringAttribute("originalStringAttribute");
         when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
         when(storageMock.find(any())).thenReturn(original);
+        final LoadStateDescriptor<OWLClassA> loadStateDescriptor = LoadStateDescriptorFactory.createAllLoaded(original, metamodelMocks.forOwlClassA()
+                                                                                                                                      .entityType());
+        uow.loadStateRegistry.put(original, loadStateDescriptor);
 
         final OWLClassA merged = uow.mergeDetached(entityA, descriptor);
         assertNotNull(merged);
         assertEquals(entityA.getStringAttribute(), merged.getStringAttribute());
         uow.commit();
-        verify(serverSessionStub.getLiveObjectCache()).add(entityA.getUri(), original, descriptor);
+        verify(serverSessionStub.getLiveObjectCache()).add(entityA.getUri(), original, new Descriptors(descriptor, loadStateDescriptor));
     }
 
     @Test

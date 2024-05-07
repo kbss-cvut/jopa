@@ -38,19 +38,19 @@ class LoadStateDescriptorTest {
     }
 
     @Test
-    void constructorInitializesAllDataPropertyAttributesAsNotLoaded() {
+    void constructorInitializesAllDataPropertyAttributesWithSpecifiedState() {
         final OWLClassM instance = new OWLClassM();
         final LoadStateDescriptor<OWLClassM> sut = new LoadStateDescriptor<>(instance,
-                metamodelMocks.forOwlClassM().entityType());
+                metamodelMocks.forOwlClassM().entityType(), LoadState.UNKNOWN);
         metamodelMocks.forOwlClassM().entityType().getAttributes()
-                      .forEach(fs -> assertEquals(LoadState.NOT_LOADED, sut.isLoaded(fs)));
+                      .forEach(fs -> assertEquals(LoadState.UNKNOWN, sut.isLoaded(fs)));
     }
 
     @Test
     void constructorSetsIdentifierAsLoaded() {
         final OWLClassM instance = new OWLClassM();
         final LoadStateDescriptor<OWLClassM> sut = new LoadStateDescriptor<>(instance,
-                metamodelMocks.forOwlClassM().entityType());
+                metamodelMocks.forOwlClassM().entityType(), LoadState.NOT_LOADED);
         assertEquals(LoadState.LOADED, sut.isLoaded(metamodelMocks.forOwlClassM().identifier()));
     }
 
@@ -58,7 +58,7 @@ class LoadStateDescriptorTest {
     void copyConstructorCreatesDescriptorForDifferentInstanceWithSameLoadedState() {
         final OWLClassM instance = new OWLClassM();
         final LoadStateDescriptor<OWLClassM> sut = new LoadStateDescriptor<>(instance,
-                metamodelMocks.forOwlClassM().entityType());
+                metamodelMocks.forOwlClassM().entityType(), LoadState.UNKNOWN);
         sut.setLoaded(metamodelMocks.forOwlClassM().booleanAttribute(), LoadState.LOADED);
         sut.setLoaded(metamodelMocks.forOwlClassM().integerAttribute(), LoadState.LOADED);
 
@@ -74,7 +74,7 @@ class LoadStateDescriptorTest {
     void isLoadedByAttributeReturnsLoadedAllEagerAttributesAreLoaded() {
         final OWLClassA instance = new OWLClassA();
         final LoadStateDescriptor<OWLClassA> sut = new LoadStateDescriptor<>(instance,
-                metamodelMocks.forOwlClassA().entityType());
+                metamodelMocks.forOwlClassA().entityType(), LoadState.UNKNOWN);
         sut.setLoaded(metamodelMocks.forOwlClassA().identifier(), LoadState.LOADED);
         sut.setLoaded(metamodelMocks.forOwlClassA().stringAttribute(), LoadState.LOADED);
         sut.setLoaded(metamodelMocks.forOwlClassA().typesSpec(), LoadState.LOADED);
@@ -85,7 +85,7 @@ class LoadStateDescriptorTest {
     void isLoadedReturnsNotLoadedWhenAtLeastOneEagerlyFetchedAttributeIsNotLoaded() {
         final OWLClassA instance = new OWLClassA();
         final LoadStateDescriptor<OWLClassA> sut = new LoadStateDescriptor<>(instance,
-                metamodelMocks.forOwlClassA().entityType());
+                metamodelMocks.forOwlClassA().entityType(), LoadState.NOT_LOADED);
         sut.setLoaded(metamodelMocks.forOwlClassA().stringAttribute(), LoadState.LOADED);
         // types are eagerly fetched and are not loaded
 
@@ -96,7 +96,7 @@ class LoadStateDescriptorTest {
     void isLoadedReturnsUnknownWhenAtLeastOneEagerlyFetchedAttributeIsUnknownAndOthersAreLoaded() {
         final OWLClassM instance = new OWLClassM();
         final LoadStateDescriptor<OWLClassM> sut = new LoadStateDescriptor<>(instance,
-                metamodelMocks.forOwlClassM().entityType());
+                metamodelMocks.forOwlClassM().entityType(), LoadState.UNKNOWN);
         metamodelMocks.forOwlClassM().entityType().getFieldSpecifications()
                       .forEach(fs -> sut.setLoaded(fs, LoadState.LOADED));
         sut.setLoaded(metamodelMocks.forOwlClassM().booleanAttribute(), LoadState.UNKNOWN);
@@ -108,7 +108,7 @@ class LoadStateDescriptorTest {
     void isLoadedReturnsLoadedWhenEagerlyFetchedAttributesAreLoadedAndLazilyIsNotLoaded() {
         final OWLClassC instance = new OWLClassC();
         final LoadStateDescriptor<OWLClassC> sut = new LoadStateDescriptor<>(instance,
-                metamodelMocks.forOwlClassC().entityType());
+                metamodelMocks.forOwlClassC().entityType(), LoadState.UNKNOWN);
         sut.setLoaded(metamodelMocks.forOwlClassC().referencedListAtt(), LoadState.LOADED);
 
         assertEquals(LoadState.LOADED, sut.isLoaded());

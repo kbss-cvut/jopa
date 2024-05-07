@@ -22,10 +22,12 @@ import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.CacheManager;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -35,7 +37,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -75,17 +83,21 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     @Test
     public void testAddIntoContext() {
         final Descriptor descriptor = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptor);
+        manager.add(testA.getUri(), testA, descriptors(descriptor));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptor));
         final Object res = manager.get(testA.getClass(), testA.getUri(), descriptor);
         assertNotNull(res);
         assertSame(testA, res);
     }
 
+    protected Descriptors descriptors(Descriptor repoDescriptor) {
+        return new Descriptors(repoDescriptor, new LoadStateDescriptor<>(testA, mock(EntityType.class), LoadState.UNKNOWN));
+    }
+
     @Test
     public void testAddToDefault() {
         final Descriptor descriptor = descriptor(null);
-        manager.add(testA.getUri(), testA, descriptor);
+        manager.add(testA.getUri(), testA, descriptors(descriptor));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptor));
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), descriptor(CONTEXT_ONE)));
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), descriptor(CONTEXT_TWO)));
@@ -97,18 +109,18 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     @Test
     public void addNullThrowsNullPointerException() {
         assertThrows(NullPointerException.class,
-                () -> manager.add(URI.create("http://blahblahblah"), null, descriptor(null)));
+                () -> manager.add(URI.create("http://blahblahblah"), null, descriptors(descriptor(null))));
     }
 
     @Test
     public void addingWithDuplicateIdentifierReplacesExistingRecord() {
         final Descriptor descriptor = descriptor(CONTEXT_ONE);
-        manager.add(testA.getUri(), testA, descriptor);
+        manager.add(testA.getUri(), testA, descriptors(descriptor));
         final OWLClassA duplicate = new OWLClassA();
         final String newStr = testA.getStringAttribute() + "duplicated";
         duplicate.setStringAttribute(newStr);
         duplicate.setUri(testA.getUri());
-        manager.add(duplicate.getUri(), duplicate, descriptor);
+        manager.add(duplicate.getUri(), duplicate, descriptors(descriptor));
         final OWLClassA res = manager.get(testA.getClass(), testA.getUri(), descriptor);
         assertNotNull(res);
         assertEquals(newStr, res.getStringAttribute());
@@ -118,12 +130,12 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     public void addWithSameIdToDifferentContextsRetainsBothRecords() {
         final Descriptor dOne = descriptor(CONTEXT_ONE);
         final Descriptor dTwo = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, dOne);
+        manager.add(testA.getUri(), testA, descriptors(dOne));
         final OWLClassA duplicate = new OWLClassA();
         duplicate.setUri(testA.getUri());
         final String newStr = testA.getStringAttribute() + "duplicated";
         duplicate.setStringAttribute(newStr);
-        manager.add(duplicate.getUri(), duplicate, dTwo);
+        manager.add(duplicate.getUri(), duplicate, descriptors(dTwo));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), dOne));
         assertTrue(manager.contains(duplicate.getClass(), duplicate.getUri(), dTwo));
         assertSame(testA, manager.get(testA.getClass(), testA.getUri(), dOne));
@@ -133,14 +145,14 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     @Test
     public void testContainsDefault() {
         final Descriptor descriptor = descriptor(null);
-        manager.add(testA.getUri(), testA, descriptor);
+        manager.add(testA.getUri(), testA, descriptors(descriptor));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptor));
         assertFalse(manager.contains(testB.getClass(), testA.getUri(), descriptor(CONTEXT_TWO)));
     }
 
     @Test
     public void testContainsWithContext() {
-        manager.add(testA.getUri(), testA, descriptor(CONTEXT_TWO));
+        manager.add(testA.getUri(), testA, descriptors(descriptor(CONTEXT_TWO)));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptor(CONTEXT_TWO)));
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), descriptor(CONTEXT_ONE)));
     }
@@ -157,7 +169,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     @Test
     public void testGetObject() {
         final Descriptor descriptor = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptor);
+        manager.add(testA.getUri(), testA, descriptors(descriptor));
         final Object res = manager.get(testA.getClass(), testA.getUri(), descriptor);
         assertEquals(testA, res);
     }
@@ -165,7 +177,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     @Test
     public void getWithWrongContextReturnsNull() {
         final Descriptor descriptor = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptor);
+        manager.add(testA.getUri(), testA, descriptors(descriptor));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptor));
         final OWLClassA res = manager.get(testA.getClass(), testA.getUri(), descriptor(CONTEXT_ONE));
         assertNull(res);
@@ -174,7 +186,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     @Test
     public void getWithNullIdReturnsNull() {
         final Descriptor descriptor = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptor);
+        manager.add(testA.getUri(), testA, descriptors(descriptor));
         final Object o = manager.get(OWLClassA.class, null, descriptor);
         assertNull(o);
     }
@@ -182,8 +194,8 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     @Test
     public void getByNonMatchingClassReturnsNull() {
         final Descriptor descriptor = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptor);
-        manager.add(testB.getUri(), testB, descriptor);
+        manager.add(testA.getUri(), testA, descriptors(descriptor));
+        manager.add(testB.getUri(), testB, descriptors(descriptor));
         final Object o = manager.get(OWLClassD.class, testA.getUri(), descriptor);
         assertNull(o);
     }
@@ -191,8 +203,8 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     @Test
     public void getByUnknownIdReturnsNull() {
         final Descriptor descriptor = descriptor(CONTEXT_ONE);
-        manager.add(testA.getUri(), testA, descriptor);
-        manager.add(testB.getUri(), testB, descriptor);
+        manager.add(testA.getUri(), testA, descriptors(descriptor));
+        manager.add(testB.getUri(), testB, descriptors(descriptor));
         final URI unknownId = URI.create("http://unknownId");
         final Object o = manager.get(OWLClassA.class, unknownId, descriptor);
         assertNull(o);
@@ -201,7 +213,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     @Test
     public void evictAllRemovesAllRecords() {
         final Descriptor descriptor = descriptor(CONTEXT_ONE);
-        manager.add(testA.getUri(), testA, descriptor);
+        manager.add(testA.getUri(), testA, descriptors(descriptor));
         addAllToCache(listOfBs, manager);
         manager.evictAll();
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), descriptor));
@@ -213,8 +225,8 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     Class<?> evictByClass() {
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptorOne);
-        manager.add(testB.getUri(), testB, descriptorTwo);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
+        manager.add(testB.getUri(), testB, descriptors(descriptorTwo));
         addAllToCache(listOfBs, manager);
         manager.evict(OWLClassB.class);
         assertTrue(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
@@ -227,7 +239,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
 
     @Test
     public void evictByClassThrowsNPXForNullArgument() {
-        manager.add(testA.getUri(), testA, descriptor(CONTEXT_ONE));
+        manager.add(testA.getUri(), testA, descriptors(descriptor(CONTEXT_ONE)));
         addAllToCache(listOfBs, manager);
         assertThrows(NullPointerException.class, () -> manager.evict((Class<?>) null));
     }
@@ -235,8 +247,8 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     URI evictByContext() {
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptorOne);
-        manager.add(testB.getUri(), testB, descriptorTwo);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
+        manager.add(testB.getUri(), testB, descriptors(descriptorTwo));
         manager.evict(CONTEXT_ONE);
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
         assertTrue(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
@@ -245,7 +257,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
 
     @Test
     public void evictByContextWithNullArgumentEvictsDefaultContext() {
-        manager.add(testA.getUri(), testA, descriptor(null));
+        manager.add(testA.getUri(), testA, descriptors(descriptor(null)));
         manager.evict((URI) null);
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), descriptor(null)));
         assertNull(manager.get(testA.getClass(), testA.getUri(), descriptor(null)));
@@ -255,8 +267,8 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     public void evictByContextRetainsRecordsWhenUnknownContextIsUsed() {
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptorOne);
-        manager.add(testB.getUri(), testB, descriptorTwo);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
+        manager.add(testB.getUri(), testB, descriptors(descriptorTwo));
         manager.evict(URI.create("http://someUnknownContextUri"));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
         assertTrue(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
@@ -266,8 +278,8 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     public void evictInferredClassesRemovesInstancesOfInferredClasses() {
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptorOne);
-        manager.add(testB.getUri(), testB, descriptorTwo);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
+        manager.add(testB.getUri(), testB, descriptors(descriptorTwo));
         final Set<Class<?>> inferred = Collections.singleton(testA.getClass());
         manager.setInferredClasses(inferred);
         manager.evictInferredObjects();
@@ -279,11 +291,11 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     public void testEvictByContextClassAndPrimaryKey() throws Exception {
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptorTwo);
+        manager.add(testA.getUri(), testA, descriptors(descriptorTwo));
         final OWLClassA duplicate = new OWLClassA();
         duplicate.setUri(testA.getUri());
         duplicate.setStringAttribute("Duplicate entity.");
-        manager.add(duplicate.getUri(), duplicate, descriptorOne);
+        manager.add(duplicate.getUri(), duplicate, descriptors(descriptorOne));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorTwo));
         assertTrue(manager.contains(duplicate.getClass(), duplicate.getUri(), descriptorOne));
 
@@ -294,28 +306,28 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
 
     @Test
     public void evictByNullIdentifierThrowsNPX() {
-        manager.add(testA.getUri(), testA, descriptor(CONTEXT_ONE));
+        manager.add(testA.getUri(), testA, descriptors(descriptor(CONTEXT_ONE)));
         assertThrows(NullPointerException.class, () -> manager.evict(null, null, CONTEXT_ONE));
     }
 
     private void addAllToCache(Map<URI, OWLClassB> entities, CacheManager manager) {
         final Descriptor descriptor = descriptor(CONTEXT_ONE);
         for (Entry<URI, OWLClassB> e : entities.entrySet()) {
-            manager.add(e.getKey(), e.getValue(), descriptor);
+            manager.add(e.getKey(), e.getValue(), descriptors(descriptor));
         }
     }
 
     @Test
     public void cacheAddWithStringIdentifier() {
         final Descriptor descriptor = descriptor(CONTEXT_ONE);
-        manager.add(testM.getKey(), testM, descriptor);
+        manager.add(testM.getKey(), testM, descriptors(descriptor));
         assertTrue(manager.contains(OWLClassM.class, testM.getKey(), descriptor));
     }
 
     @Test
     public void cacheEvictWithStringIdentifier() {
         final Descriptor descriptor = descriptor(null);
-        manager.add(testM.getKey(), testM, descriptor);
+        manager.add(testM.getKey(), testM, descriptors(descriptor));
         assertTrue(manager.contains(OWLClassM.class, testM.getKey(), descriptor));
         manager.evict(OWLClassM.class, testM.getKey(), null);
         assertFalse(manager.contains(OWLClassM.class, testM.getKey(), descriptor));
@@ -324,7 +336,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     @Test
     public void containsReturnsFalseWhenDescriptorsDoNotMatch() {
         final Descriptor descriptorOne = new EntityDescriptor();
-        manager.add(testA.getUri(), testA, descriptorOne);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
         final Descriptor descriptorTwo = new EntityDescriptor();
         descriptorTwo.setLanguage("cs");
         assertTrue(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
@@ -335,7 +347,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     public void getReturnsNullWhenDescriptorsDoNotMatch() throws Exception {
         final Descriptor descriptorOne = new EntityDescriptor();
         descriptorOne.setLanguage("en");
-        manager.add(testA.getUri(), testA, descriptorOne);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
         final Descriptor descriptorTwo = new EntityDescriptor();
         descriptorTwo.setLanguage("en");
         final Attribute<OWLClassA, String> att = mock(Attribute.class);
@@ -351,10 +363,10 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
         descriptorOne.setLanguage("en");
         final Descriptor descriptorTwo = new EntityDescriptor();
         descriptorTwo.setLanguage("cs");
-        manager.add(testA.getUri(), testA, descriptorOne);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
         assertTrue(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
         assertFalse(manager.contains(OWLClassA.class, testA.getUri(), descriptorTwo));
-        manager.add(testA.getUri(), testA, descriptorTwo);
+        manager.add(testA.getUri(), testA, descriptors(descriptorTwo));
         assertFalse(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
         assertTrue(manager.contains(OWLClassA.class, testA.getUri(), descriptorTwo));
     }
@@ -365,11 +377,11 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
         descriptorOne.setLanguage("en");
         final Descriptor descriptorTwo = new EntityDescriptor();
         descriptorTwo.setLanguage("cs");
-        manager.add(testA.getUri(), testA, descriptorOne);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
         assertTrue(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
         assertFalse(manager.contains(OWLClassA.class, testA.getUri(), descriptorTwo));
         final OWLClassA newA = new OWLClassA(testA.getUri());
-        manager.add(newA.getUri(), newA, descriptorTwo);
+        manager.add(newA.getUri(), newA, descriptors(descriptorTwo));
         assertFalse(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
         assertTrue(manager.contains(OWLClassA.class, newA.getUri(), descriptorTwo));
         final Map<?, ?> descriptors = extractDescriptors();
@@ -383,7 +395,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     public void evictRemovesInstanceDescriptor() throws Exception {
         final Descriptor descriptorOne = new EntityDescriptor();
         descriptorOne.setLanguage("en");
-        manager.add(testA.getUri(), testA, descriptorOne);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
         assertTrue(extractDescriptors().containsKey(testA));
         manager.evict(OWLClassA.class, testA.getUri(), null);
         assertFalse(extractDescriptors().containsKey(testA));
@@ -393,9 +405,9 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     public void evictByClassRemovesInstanceDescriptors() throws Exception {
         final Descriptor descriptorOne = new EntityDescriptor();
         descriptorOne.setLanguage("en");
-        manager.add(testA.getUri(), testA, descriptor(CONTEXT_ONE));
+        manager.add(testA.getUri(), testA, descriptors(descriptor(CONTEXT_ONE)));
         final OWLClassA anotherA = new OWLClassA(Generators.createIndividualIdentifier());
-        manager.add(anotherA.getUri(), anotherA, descriptor(null));
+        manager.add(anotherA.getUri(), anotherA, descriptors(descriptor(null)));
         assertTrue(extractDescriptors().containsKey(testA));
         assertTrue(extractDescriptors().containsKey(anotherA));
         manager.evict(OWLClassA.class);
@@ -406,10 +418,10 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     @Test
     public void evictByContextRemovesInstanceDescriptors() throws Exception {
         final Descriptor descriptorOne = new EntityDescriptor(CONTEXT_ONE);
-        manager.add(testA.getUri(), testA, descriptorOne);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
         final Descriptor descriptorTwo = new EntityDescriptor();
         descriptorTwo.setLanguage("en");
-        manager.add(testB.getUri(), testB, descriptorTwo);
+        manager.add(testB.getUri(), testB, descriptors(descriptorTwo));
         assertTrue(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
         assertTrue(manager.contains(OWLClassB.class, testB.getUri(), descriptorTwo));
         manager.evict(CONTEXT_ONE);
@@ -423,9 +435,17 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     public void cacheSupportsEntitiesOverridingEqualsAndHashCode() {
         final URI uri = Generators.createIndividualIdentifier();
         final Descriptor descriptorOne = new EntityDescriptor(CONTEXT_ONE);
-        manager.add(uri, URI.create(uri.toString()), descriptorOne);
-        manager.add(uri, URI.create(uri.toString()), new EntityDescriptor());
+        manager.add(uri, URI.create(uri.toString()), descriptors(descriptorOne));
+        manager.add(uri, URI.create(uri.toString()), descriptors(new EntityDescriptor()));
         manager.evict(URI.class, uri, CONTEXT_ONE);
         assertTrue(manager.contains(URI.class, uri, new EntityDescriptor()));
+    }
+
+    @Test
+    void getLoadStateDescriptorReturnsLoadStateDescriptorAssociatedWithSpecifiedCacheEntry() {
+        final Descriptor descriptor = descriptor(CONTEXT_ONE);
+        final Descriptors entryDescriptors = descriptors(descriptor);
+        manager.add(testM.getKey(), testM, entryDescriptors);
+        assertEquals(entryDescriptors.loadStateDescriptor(), manager.getLoadStateDescriptor(testM));
     }
 }

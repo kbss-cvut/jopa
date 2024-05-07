@@ -15,9 +15,11 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.model;
+package cz.cvut.kbss.jopa.sessions.cache;
 
+import cz.cvut.kbss.jopa.model.Cache;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 
 import java.util.Set;
 
@@ -29,14 +31,14 @@ public interface CacheManager extends Cache {
     /**
      * Adds the specified object into the shared session cache.
      * <p>
-     * If the cache already contains object with the specified identifier (and it is in the same repository context),
-     * it is replaced with the one passed as argument.
+     * If the cache already contains object with the specified identifier (and it is in the same repository context), it
+     * is replaced with the one passed as argument.
      *
-     * @param identifier Identifier of the specified object
-     * @param entity     The object to be added into the cache
-     * @param descriptor    Instance descriptor, contains info about repository context(s) and language tags
+     * @param identifier  Identifier of the specified object
+     * @param entity      The object to be added into the cache
+     * @param descriptors Instance descriptors
      */
-    void add(Object identifier, Object entity, Descriptor descriptor);
+    void add(Object identifier, Object entity, Descriptors descriptors);
 
     /**
      * Gets entity with the specified identifier from the cache.
@@ -46,14 +48,22 @@ public interface CacheManager extends Cache {
      *
      * @param cls        Class of the entity
      * @param identifier Primary key of the entity
-     * @param descriptor    Instance descriptor, contains info about repository context(s) and language tags
+     * @param descriptor Instance descriptor, contains info about repository context(s) and language tags
      * @return Entity with the specified primary key or {@code null}
      */
     <T> T get(Class<T> cls, Object identifier, Descriptor descriptor);
 
     /**
-     * Removes objects with (possibly) inferred attributes from the cache.
+     * Gets {@link LoadStateDescriptor} that is associated with the specified cached instance.
      *
+     * @param instance Instance whose load state descriptor to retrieve
+     * @return Load state descriptor, {@code null} if this cache does not contain the specified instance
+     */
+    LoadStateDescriptor<?> getLoadStateDescriptor(Object instance);
+
+    /**
+     * Removes objects with (possibly) inferred attributes from the cache.
+     * <p>
      * This should be called when changes in the ontology may influence inference results.
      */
     void evictInferredObjects();
