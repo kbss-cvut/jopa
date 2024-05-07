@@ -27,20 +27,20 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Describes an instance managed by a persistence context.
+ * Describes load state of an instance in a persistence context.
  */
-public class InstanceDescriptor<T> {
+public class LoadStateDescriptor<T> {
 
     private final T instance;
 
     private final Map<FieldSpecification<? super T, ?>, LoadState> loadState;
 
-    InstanceDescriptor(T instance, EntityType<T> et) {
+    LoadStateDescriptor(T instance, EntityType<T> et) {
         this.instance = Objects.requireNonNull(instance);
         this.loadState = mapInstanceAttributes(et);
     }
 
-    InstanceDescriptor(T instance, InstanceDescriptor<T> other) {
+    LoadStateDescriptor(T instance, LoadStateDescriptor<T> other) {
         this.instance = Objects.requireNonNull(instance);
         this.loadState = new HashMap<>(other.loadState);
     }
@@ -87,7 +87,7 @@ public class InstanceDescriptor<T> {
 
     @Override
     public String toString() {
-        return "InstanceDescriptor{" +
+        return "LoadStateDescriptor{" +
                 "instance=" + instance +
                 ", loadState=" + loadState +
                 '}';

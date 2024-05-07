@@ -22,7 +22,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
-import cz.cvut.kbss.jopa.sessions.LoadingParameters;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Assertion;

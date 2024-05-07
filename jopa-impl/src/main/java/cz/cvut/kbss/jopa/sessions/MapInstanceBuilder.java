@@ -20,6 +20,8 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
 import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMap;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
+import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Constructor;

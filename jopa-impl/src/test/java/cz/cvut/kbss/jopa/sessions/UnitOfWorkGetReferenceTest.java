@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;

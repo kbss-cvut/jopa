@@ -30,6 +30,7 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.Change;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

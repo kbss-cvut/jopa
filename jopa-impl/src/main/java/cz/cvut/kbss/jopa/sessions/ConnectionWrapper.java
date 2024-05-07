@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapper;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapperImpl;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import cz.cvut.kbss.ontodriver.Connection;

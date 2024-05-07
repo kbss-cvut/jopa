@@ -25,11 +25,11 @@ import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 /**
- * Builds {@link InstanceDescriptor}s on various occasions.
+ * Builds {@link LoadStateDescriptor}s on various occasions.
  */
-public class InstanceDescriptorFactory {
+public class LoadStateDescriptorFactory {
 
-    private InstanceDescriptorFactory() {
+    private LoadStateDescriptorFactory() {
         throw new AssertionError();
     }
 
@@ -41,8 +41,8 @@ public class InstanceDescriptorFactory {
      * @param <T>      Instance type
      * @return Fresh instance descriptor
      */
-    public static <T> InstanceDescriptor<T> createNotLoaded(T instance, EntityType<T> et) {
-        return new InstanceDescriptor<>(instance, et);
+    public static <T> LoadStateDescriptor<T> createNotLoaded(T instance, EntityType<T> et) {
+        return new LoadStateDescriptor<>(instance, et);
     }
 
     /**
@@ -53,8 +53,8 @@ public class InstanceDescriptorFactory {
      * @param <T>      Instance type
      * @return Fresh instance descriptor with all loaded
      */
-    public static <T> InstanceDescriptor<T> createAllLoaded(T instance, EntityType<T> et) {
-        final InstanceDescriptor<T> descriptor = createNotLoaded(instance, et);
+    public static <T> LoadStateDescriptor<T> createAllLoaded(T instance, EntityType<T> et) {
+        final LoadStateDescriptor<T> descriptor = createNotLoaded(instance, et);
         et.getFieldSpecifications().forEach(fs -> descriptor.setLoaded(fs, LoadState.LOADED));
         return descriptor;
     }
@@ -72,8 +72,8 @@ public class InstanceDescriptorFactory {
      * @param <T>      Instance type
      * @return Fresh instance descriptor
      */
-    public static <T> InstanceDescriptor<T> create(T instance, EntityType<T> et) {
-        final InstanceDescriptor<T> descriptor = createNotLoaded(instance, et);
+    public static <T> LoadStateDescriptor<T> create(T instance, EntityType<T> et) {
+        final LoadStateDescriptor<T> descriptor = createNotLoaded(instance, et);
         et.getFieldSpecifications()
           .forEach(fs -> descriptor.setLoaded(fs, getAttributeLoadState(instance, fs)));
         return descriptor;
@@ -98,7 +98,7 @@ public class InstanceDescriptorFactory {
      * @param <T>      Instance type
      * @return Fresh instance descriptor with state copied from the specified one
      */
-    public static <T> InstanceDescriptor<T> createCopy(T instance, InstanceDescriptor<T> original) {
-        return new InstanceDescriptor<>(instance, original);
+    public static <T> LoadStateDescriptor<T> createCopy(T instance, LoadStateDescriptor<T> original) {
+        return new LoadStateDescriptor<>(instance, original);
     }
 }

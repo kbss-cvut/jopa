@@ -40,8 +40,11 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
-import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptor;
-import cz.cvut.kbss.jopa.sessions.descriptor.InstanceDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
+import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.validator.InferredAttributeChangeValidator;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -78,7 +81,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     final Map<Object, Object> deletedObjects;
     final Map<Object, Object> newObjectsCloneToOriginal;
     final Map<Object, Object> newObjectsKeyToClone = new HashMap<>();
-    final Map<Object, InstanceDescriptor> instanceDescriptors;
+    final Map<Object, LoadStateDescriptor> instanceDescriptors;
     RepositoryMap repoMap;
 
     boolean hasChanges;
@@ -428,9 +431,9 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         cloneToOriginals.put(clone, original);
         final Object identifier = EntityPropertiesUtils.getIdentifier(clone, getMetamodel());
         keysToClones.put(identifier, clone);
-        final InstanceDescriptor<?> instanceDesc = identifier != null
-                ? InstanceDescriptorFactory.create(clone, (EntityType<Object>) entityType(clone.getClass()))
-                : InstanceDescriptorFactory.createAllLoaded(clone, (EntityType<Object>) entityType(clone.getClass()));
+        final LoadStateDescriptor<?> instanceDesc = identifier != null
+                ? LoadStateDescriptorFactory.create(clone, (EntityType<Object>) entityType(clone.getClass()))
+                : LoadStateDescriptorFactory.createAllLoaded(clone, (EntityType<Object>) entityType(clone.getClass()));
         instanceDescriptors.put(clone, instanceDesc);
         registerEntityWithOntologyContext(clone, descriptor);
     }
@@ -674,7 +677,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         // Original is null until commit
         newObjectsCloneToOriginal.put(entity, null);
         registerEntityWithOntologyContext(entity, descriptor);
-        instanceDescriptors.put(entity, InstanceDescriptorFactory.createAllLoaded(entity, (EntityType<Object>) eType));
+        instanceDescriptors.put(entity, LoadStateDescriptorFactory.createAllLoaded(entity, (EntityType<Object>) eType));
         newObjectsKeyToClone.put(id, entity);
         this.hasNew = true;
     }
@@ -785,8 +788,8 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         if (!instanceDescriptors.containsKey(entity)) {
             throw new OWLPersistenceException("Unable to find repository identifier for entity " + stringify(entity) + ". Is it managed by this UoW?");
         }
-        final InstanceDescriptor<?> instanceDescriptor = instanceDescriptors.get(entity);
-        if (instanceDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
+        final LoadStateDescriptor<?> loadStateDescriptor = instanceDescriptors.get(entity);
+        if (loadStateDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
             return EntityPropertiesUtils.getFieldValue(field, entity);
         }
 
@@ -799,7 +802,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         final Descriptor fieldDescriptor = getFieldDescriptor(entity, field, entityDescriptor);
         final Object clone = cloneLoadedFieldValue(entity, field, fieldDescriptor, orig);
         EntityPropertiesUtils.setFieldValue(field, entity, clone);
-        instanceDescriptor.setLoaded((FieldSpecification) fieldSpec, LoadState.LOADED);
+        loadStateDescriptor.setLoaded((FieldSpecification) fieldSpec, LoadState.LOADED);
         return clone;
     }
 

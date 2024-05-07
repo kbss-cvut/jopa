@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Field;

@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 
-class InstanceDescriptorFactoryTest {
+class LoadStateDescriptorFactoryTest {
 
     private MetamodelMocks metamodelMocks;
 
@@ -44,7 +44,7 @@ class InstanceDescriptorFactoryTest {
     @Test
     void createNotLoadedCreatesInstanceDescriptorWithAttributesInNotLoadedState() {
         final OWLClassM instance = new OWLClassM();
-        final InstanceDescriptor<OWLClassM> result = InstanceDescriptorFactory
+        final LoadStateDescriptor<OWLClassM> result = LoadStateDescriptorFactory
                 .createNotLoaded(instance, metamodelMocks.forOwlClassM().entityType());
         assertNotNull(result);
         metamodelMocks.forOwlClassM().entityType().getAttributes()
@@ -55,7 +55,7 @@ class InstanceDescriptorFactoryTest {
     @Test
     void createAllLoadedCreatesInstanceDescriptorWithAllAttributesInLoadedState() {
         final OWLClassA instance = Generators.generateOwlClassAInstance();
-        final InstanceDescriptor<OWLClassA> result = InstanceDescriptorFactory
+        final LoadStateDescriptor<OWLClassA> result = LoadStateDescriptorFactory
                 .createAllLoaded(instance, metamodelMocks.forOwlClassA().entityType());
         assertNotNull(result);
         metamodelMocks.forOwlClassA().entityType().getFieldSpecifications()
@@ -66,7 +66,7 @@ class InstanceDescriptorFactoryTest {
     void createCreatesInstanceDescriptorWithLoadedSetForNonNullAttributes() {
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setTypes(null);
-        final InstanceDescriptor<OWLClassA> result = InstanceDescriptorFactory
+        final LoadStateDescriptor<OWLClassA> result = LoadStateDescriptorFactory
                 .create(instance, metamodelMocks.forOwlClassA().entityType());
         assertNotNull(result);
         assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassA().identifier()));
@@ -78,7 +78,7 @@ class InstanceDescriptorFactoryTest {
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setStringAttribute(null);
         instance.setTypes(null);
-        final InstanceDescriptor<OWLClassA> result = InstanceDescriptorFactory
+        final LoadStateDescriptor<OWLClassA> result = LoadStateDescriptorFactory
                 .create(instance, metamodelMocks.forOwlClassA().entityType());
         assertNotNull(result);
         assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassA().identifier()));
@@ -89,7 +89,7 @@ class InstanceDescriptorFactoryTest {
     @Test
     void createCreatesInstanceDescriptorWithUnknownSetForNullLazilyFetchedAttributes() {
         final OWLClassC instance = new OWLClassC(Generators.createIndividualIdentifier());
-        final InstanceDescriptor<OWLClassC> result = InstanceDescriptorFactory
+        final LoadStateDescriptor<OWLClassC> result = LoadStateDescriptorFactory
                 .create(instance, metamodelMocks.forOwlClassC().entityType());
         assertNotNull(result);
         assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassC().identifier()));
@@ -100,11 +100,11 @@ class InstanceDescriptorFactoryTest {
     @Test
     void createCopyCopiesStateFromSpecifiedDescriptor() {
         final OWLClassA instance = Generators.generateOwlClassAInstance();
-        final InstanceDescriptor<OWLClassA> original = new InstanceDescriptor<>(instance,
+        final LoadStateDescriptor<OWLClassA> original = new LoadStateDescriptor<>(instance,
                 metamodelMocks.forOwlClassA().entityType());
 
         final OWLClassA otherInstance = Generators.generateOwlClassAInstance();
-        final InstanceDescriptor<OWLClassA> result = InstanceDescriptorFactory.createCopy(otherInstance, original);
+        final LoadStateDescriptor<OWLClassA> result = LoadStateDescriptorFactory.createCopy(otherInstance, original);
         assertNotNull(result);
         assertSame(otherInstance, result.getInstance());
         assertEquals(original.isLoaded(), result.isLoaded());
@@ -114,7 +114,7 @@ class InstanceDescriptorFactoryTest {
     void createCreatesDescriptorWithNotLoadedForLazyLoadedAttributesContainingProxyInstances() {
         final OWLClassC instance = new OWLClassC(Generators.createIndividualIdentifier());
         instance.setSimpleList(mock(LazyLoadingListProxy.class));
-        final InstanceDescriptor<OWLClassC> result = InstanceDescriptorFactory
+        final LoadStateDescriptor<OWLClassC> result = LoadStateDescriptorFactory
                 .create(instance, metamodelMocks.forOwlClassC().entityType());
         assertNotNull(result);
         assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassC().identifier()));

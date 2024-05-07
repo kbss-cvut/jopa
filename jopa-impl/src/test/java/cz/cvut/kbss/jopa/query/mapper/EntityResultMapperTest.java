@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.sessions.CloneRegistrationDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.junit.jupiter.api.BeforeEach;

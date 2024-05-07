@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.sessions;
+package cz.cvut.kbss.jopa.sessions.util;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
@@ -50,7 +50,7 @@ public final class LoadingParameters<T> {
         return cls != null && identifier != null && descriptor != null;
     }
 
-    public Class<T> getEntityType() {
+    public Class<T> getEntityClass() {
         return cls;
     }
 
@@ -79,10 +79,9 @@ public final class LoadingParameters<T> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof LoadingParameters)) {
+        if (!(o instanceof LoadingParameters<?> that)) {
             return false;
         }
-        LoadingParameters<?> that = (LoadingParameters<?>) o;
         if (forceEager != that.forceEager) {
             return false;
         }

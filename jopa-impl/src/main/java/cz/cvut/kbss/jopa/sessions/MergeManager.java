@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.sessions.change.Change;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.util.Objects;

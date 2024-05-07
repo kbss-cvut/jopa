@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.sessions;
+package cz.cvut.kbss.jopa.sessions.util;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 

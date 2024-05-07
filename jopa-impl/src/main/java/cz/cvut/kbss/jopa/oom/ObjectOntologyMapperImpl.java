@@ -29,8 +29,8 @@ import cz.cvut.kbss.jopa.oom.exception.EntityDeconstructionException;
 import cz.cvut.kbss.jopa.oom.exception.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
-import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
@@ -126,7 +126,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     private <T> T loadEntityInternal(LoadingParameters<T> loadingParameters) {
-        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityClass());
         final T result;
         if (et.hasSubtypes()) {
             result = twoStepInstanceLoader.loadEntity(loadingParameters);
@@ -143,7 +143,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public <T> T loadReference(LoadingParameters<T> loadingParameters) {
         assert loadingParameters != null;
 
-        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityClass());
         if (et.hasSubtypes()) {
             return twoStepInstanceLoader.loadReference(loadingParameters);
         } else {
@@ -322,8 +322,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     private <T> void removePendingAssertions(FieldSpecification<? super T, ?> fs, URI identifier) {
-        if (fs instanceof Attribute) {
-            final Attribute<?, ?> att = (Attribute<?, ?>) fs;
+        if (fs instanceof Attribute<?, ?> att) {
             // We care only about object property assertions, others are never pending
             final Assertion assertion = Assertion.createObjectPropertyAssertion(att.getIRI().toURI(), att.isInferred());
             pendingReferences.removePendingReferences(NamedResource.create(identifier), assertion);

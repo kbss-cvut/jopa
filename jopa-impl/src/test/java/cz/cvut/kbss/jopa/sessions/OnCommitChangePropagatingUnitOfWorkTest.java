@@ -9,6 +9,7 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelFactory;
 import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

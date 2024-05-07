@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
-import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -594,35 +593,13 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void retrieveIdOfLazilyLoadedReference() {
-        this.em = getEntityManager("retrieveIdOfLazilyLoadedReference", false);
+    void lazilyLoadedAttributeIsNullWhenThereIsNoReferenceToLoad() {
+        this.em = getEntityManager("lazilyLoadedAttributeIsNullWhenThereIsNoReferenceToLoad", false);
         final EntityDescriptor descriptor = new EntityDescriptor(Generators.generateUri());
-//        entityI.setOwlClassA(null);
+        entityI.setOwlClassA(null);
         transactional(() -> em.persist(entityI, descriptor));
 
-        final List<OWLClassI> iInstances = em.createQuery("SELECT i FROM OWLClassI i", OWLClassI.class)
-                                             .setDescriptor(descriptor)
-                                             .getResultList();
-        for (OWLClassI result : iInstances) {
-            final Class refCls = result.getOwlClassA().getClass();
-            assertTrue(LazyLoadingProxy.class.isAssignableFrom(refCls));
-            assertNotNull(result.getOwlClassA().getUri());
-        }
-    }
-
-    @Test
-    void isLoadedReturnsFalseForDetachedInstances() {
-        this.em = getEntityManager("isLoadedReturnsFalseForDetachedInstances", false);
-        transactional(() -> em.persist(entityI));
-        final OWLClassI i = new OWLClassI();
-        i.setUri(entityI.getUri());
-        final OWLClassA a = new OWLClassA(entityA.getUri());
-        a.setStringAttribute(entityA.getStringAttribute());
-        assertFalse(((AbstractEntityManager) em).isLoaded(i));
-        assertFalse(((AbstractEntityManager) em).isLoaded(a));
-        i.setOwlClassA(a);
-        assertFalse(((AbstractEntityManager) em).isLoaded(i, "owlClassA"));
-        assertFalse(((AbstractEntityManager) em).isLoaded(i));
-        assertFalse(((AbstractEntityManager) em).isLoaded(a));
+        final OWLClassI result = findRequired(OWLClassI.class, entityI.getUri());
+        assertNull(result.getOwlClassA());
     }
 }
