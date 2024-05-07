@@ -160,8 +160,8 @@ class PluralMultilingualStringFieldStrategyTest {
                 new Value<>(new LangString("construction", "en")));
         final Axiom<LangString> axTwo = new AxiomImpl<>(INDIVIDUAL, assertion,
                 new Value<>(new LangString("stavba", "cs")));
-        sut.addValueFromAxiom(axOne);
-        sut.addValueFromAxiom(axTwo);
+        sut.addAxiomValue(axOne);
+        sut.addAxiomValue(axTwo);
         sut.buildInstanceFieldValue(u);
         assertEquals(1, u.getPluralStringAtt().size());
         final MultilingualString msResult = u.getPluralStringAtt().iterator().next();
@@ -179,8 +179,8 @@ class PluralMultilingualStringFieldStrategyTest {
                 new Value<>(new LangString("construction", "en")));
         final Axiom<LangString> axTwo = new AxiomImpl<>(INDIVIDUAL, assertion,
                 new Value<>(new LangString("building", "en")));
-        sut.addValueFromAxiom(axOne);
-        sut.addValueFromAxiom(axTwo);
+        sut.addAxiomValue(axOne);
+        sut.addAxiomValue(axTwo);
         sut.buildInstanceFieldValue(u);
         assertEquals(2, u.getPluralStringAtt().size());
         assertTrue(u.getPluralStringAtt().stream()
@@ -201,9 +201,9 @@ class PluralMultilingualStringFieldStrategyTest {
                 new Value<>(new LangString("building", "en")));
         final Axiom<LangString> axThree = new AxiomImpl<>(INDIVIDUAL, assertion,
                 new Value<>(new LangString("stavba", "cs")));
-        sut.addValueFromAxiom(axOne);
-        sut.addValueFromAxiom(axTwo);
-        sut.addValueFromAxiom(axThree);
+        sut.addAxiomValue(axOne);
+        sut.addAxiomValue(axTwo);
+        sut.addAxiomValue(axThree);
         sut.buildInstanceFieldValue(u);
         assertEquals(2, u.getPluralStringAtt().size());
         assertTrue(

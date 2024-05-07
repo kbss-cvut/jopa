@@ -356,7 +356,7 @@ public class StringPropertiesFieldStrategyTest {
     public void buildsInstanceFieldFroAxiomValues() {
         final Map<String, Set<String>> properties = Generators.generateStringProperties();
         final Collection<Axiom<?>> axioms = createAxiomsForProperties(properties);
-        axioms.forEach(ax -> strategy.addValueFromAxiom(ax));
+        axioms.forEach(ax -> strategy.addAxiomValue(ax));
         strategy.buildInstanceFieldValue(entity);
         assertEquals(properties, entity.getProperties());
     }

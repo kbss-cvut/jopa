@@ -92,7 +92,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
 
         when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class))).thenReturn(axioms);
 
-        strategy.addValueFromAxiom(ax);
+        strategy.addAxiomValue(ax);
         final OWLClassC instance = new OWLClassC();
         instance.setUri(IDENTIFIER);
         strategy.buildInstanceFieldValue(instance);
@@ -132,7 +132,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         final Collection<Axiom<NamedResource>> axioms = buildAxiomsForList(simpleList, as);
         when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class))).thenReturn(axioms);
 
-        strategy.addValueFromAxiom(ax);
+        strategy.addAxiomValue(ax);
         final OWLClassP instance = new OWLClassP();
         instance.setUri(IDENTIFIER);
         strategy.buildInstanceFieldValue(instance);
@@ -153,7 +153,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class)))
                 .thenReturn(axioms);
 
-        strategy.addValueFromAxiom(ax);
+        strategy.addAxiomValue(ax);
         final ArgumentCaptor<SimpleListDescriptor> captor = ArgumentCaptor
                 .forClass(SimpleListDescriptor.class);
         verify(mapperMock).loadSimpleList(captor.capture());

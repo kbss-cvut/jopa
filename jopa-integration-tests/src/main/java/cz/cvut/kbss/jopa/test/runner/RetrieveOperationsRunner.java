@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
+import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -24,6 +25,7 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassG;
@@ -53,6 +55,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
@@ -69,7 +72,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -189,7 +194,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
         final OWLClassP p = findRequired(OWLClassP.class, entityP.getUri());
         p.getProperties().put(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#addedProperty"),
-                              Collections.singleton("Test"));
+                Collections.singleton("Test"));
         assertNotEquals(properties, p.getProperties());
         em.refresh(p);
         assertEquals(properties, p.getProperties());
@@ -250,14 +255,14 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     @Test
     void retrieveGetsStringAttributeWithCorrectLanguageWhenItIsSpecifiedInDescriptor() throws Exception {
         this.em = getEntityManager("retrieveGetsStringAttributeWithCorrectLanguageWhenItIsSpecifiedInDescriptor",
-                                   false);
+                false);
         persist(entityA);
         final String value = "v cestine";
         final String lang = "cs";
         persistTestData(Collections
-                                .singleton(
-                                        new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value,
-                                                 lang)), em);
+                .singleton(
+                        new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value,
+                                lang)), em);
 
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.setLanguage(lang);
@@ -278,7 +283,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final String csString = "retezec cesky";
         final Set<Quad> testData = new HashSet<>();
         testData.add(new Quad(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STR_ANNOTATION_PROPERTY),
-                              csAnnotation, "cs"));
+                csAnnotation, "cs"));
         testData.add(
                 new Quad(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STRING_ATTRIBUTE), csString, "cs"));
         persistTestData(testData, em);
@@ -288,7 +293,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
                 em.getMetamodel().entity(OWLClassN.class).getDeclaredAttribute("annotationProperty"), "en");
         descriptor
                 .setAttributeLanguage(em.getMetamodel().entity(OWLClassN.class).getDeclaredAttribute("stringAttribute"),
-                                      "cs");
+                        "cs");
         final OWLClassN result = em.find(OWLClassN.class, entityN.getId(), descriptor);
         assertEquals(entityN.getAnnotationProperty(), result.getAnnotationProperty());
         assertEquals(csString, result.getStringAttribute());
@@ -302,9 +307,9 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persist(entityA);
         final String value = "cestina";
         persistTestData(Collections
-                                .singleton(
-                                        new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value,
-                                                 "cs")), em);
+                .singleton(
+                        new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value,
+                                "cs")), em);
 
         final OWLClassA resOne = findRequired(OWLClassA.class, entityA.getUri());
         assertNull(resOne.getStringAttribute());
@@ -324,9 +329,9 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persist(entityA);   // persisted with @en
         final String value = "cestina";
         persistTestData(Collections
-                                .singleton(
-                                        new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value,
-                                                 "cs")), em);
+                .singleton(
+                        new Quad(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value,
+                                "cs")), em);
 
         final OWLClassA resOne = findRequired(OWLClassA.class, entityA.getUri());
         assertEquals(entityA.getStringAttribute(), resOne.getStringAttribute());
@@ -431,10 +436,10 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persist(entityM);
         final Integer value = 117;
         persistTestData(Collections
-                                .singleton(
-                                        new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_lexicalForm),
-                                                 value)),
-                        em);
+                        .singleton(
+                                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_lexicalForm),
+                                        value)),
+                em);
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(value.toString(), result.getLexicalForm());
     }
@@ -444,9 +449,9 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         this.em = getEntityManager("loadingEntityWithSimpleLiteralLoadsSimpleLiteralValue", false);
         final String value = "test";
         persistTestData(Arrays.asList(
-                                new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
-                                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), value, (String) null)),
-                        em);
+                        new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
+                        new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral), value, (String) null)),
+                em);
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(value, result.getSimpleLiteral());
@@ -468,10 +473,10 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     void loadEntitySupportsCollectionAttribute() throws Exception {
         this.em = getEntityManager("loadEntitySupportsCollectionAttribute", false);
         persistTestData(Arrays.asList(
-                                new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
-                                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_StringCollection), "value", "en"),
-                                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_StringCollection), "valueTwo", "en")),
-                        em);
+                        new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
+                        new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_StringCollection), "value", "en"),
+                        new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_StringCollection), "valueTwo", "en")),
+                em);
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertNotNull(result.getStringCollection());
@@ -561,10 +566,63 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         persistTestData(List.of(
                 new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_enumSimpleLiteralAttribute),
-                         entityM.getEnumSimpleLiteral().name(), (String) null)
+                        entityM.getEnumSimpleLiteral().name(), (String) null)
         ), em);
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getEnumSimpleLiteral(), result.getEnumSimpleLiteral());
+    }
+
+    @Test
+    void retrieveViaReflectiveGetter() throws Exception {
+        this.em = getEntityManager("retrieveViaReflectiveGetter", false);
+        transactional(() -> {
+            em.persist(entityC);
+            entityC.setReferencedList(List.of(entityA));
+            entityC.getReferencedList().forEach(em::persist);
+        });
+        em.clear();
+
+        final OWLClassC result = em.find(OWLClassC.class, entityC.getUri());
+        final Method getter = OWLClassC.class.getDeclaredMethod("getReferencedList");
+        final Object value = getter.invoke(result);
+        assertNotNull(value);
+        assertFalse(((List) value).isEmpty());
+
+        assertEquals(1, ((List) value).size());
+        assertThat(result.getReferencedList(), not(instanceOf(LazyLoadingProxy.class)));
+    }
+
+    @Test
+    void retrieveIdOfLazilyLoadedReference() {
+        this.em = getEntityManager("retrieveIdOfLazilyLoadedReference", false);
+        final EntityDescriptor descriptor = new EntityDescriptor(Generators.generateUri());
+//        entityI.setOwlClassA(null);
+        transactional(() -> em.persist(entityI, descriptor));
+
+        final List<OWLClassI> iInstances = em.createQuery("SELECT i FROM OWLClassI i", OWLClassI.class)
+                                             .setDescriptor(descriptor)
+                                             .getResultList();
+        for (OWLClassI result : iInstances) {
+            final Class refCls = result.getOwlClassA().getClass();
+            assertTrue(LazyLoadingProxy.class.isAssignableFrom(refCls));
+            assertNotNull(result.getOwlClassA().getUri());
+        }
+    }
+
+    @Test
+    void isLoadedReturnsFalseForDetachedInstances() {
+        this.em = getEntityManager("isLoadedReturnsFalseForDetachedInstances", false);
+        transactional(() -> em.persist(entityI));
+        final OWLClassI i = new OWLClassI();
+        i.setUri(entityI.getUri());
+        final OWLClassA a = new OWLClassA(entityA.getUri());
+        a.setStringAttribute(entityA.getStringAttribute());
+        assertFalse(((AbstractEntityManager) em).isLoaded(i));
+        assertFalse(((AbstractEntityManager) em).isLoaded(a));
+        i.setOwlClassA(a);
+        assertFalse(((AbstractEntityManager) em).isLoaded(i, "owlClassA"));
+        assertFalse(((AbstractEntityManager) em).isLoaded(i));
+        assertFalse(((AbstractEntityManager) em).isLoaded(a));
     }
 }

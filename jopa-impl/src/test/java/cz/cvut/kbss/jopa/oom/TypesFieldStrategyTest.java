@@ -268,7 +268,7 @@ public class TypesFieldStrategyTest {
         final TypesFieldStrategy<OWLClassA> strategy =
                 strategy(mocks.forOwlClassA().entityType(), mocks.forOwlClassA().typesSpec());
         final List<Axiom<URI>> axioms = generateClassAssertionAxioms(OWLClassA.getClassIri());
-        axioms.forEach(strategy::addValueFromAxiom);
+        axioms.forEach(strategy::addAxiomValue);
 
         final OWLClassA a = new OWLClassA();
         strategy.buildInstanceFieldValue(a);
@@ -293,7 +293,7 @@ public class TypesFieldStrategyTest {
         final TypesFieldStrategy<OWLClassP> strategy =
                 strategy(mocks.forOwlClassP().entityType(), mocks.forOwlClassP().types());
         final List<Axiom<URI>> axioms = generateClassAssertionAxioms(OWLClassP.getClassIri());
-        axioms.forEach(strategy::addValueFromAxiom);
+        axioms.forEach(strategy::addAxiomValue);
 
         final OWLClassP p = new OWLClassP();
         strategy.buildInstanceFieldValue(p);
@@ -310,7 +310,7 @@ public class TypesFieldStrategyTest {
         final List<Axiom<URI>> axioms = Collections.singletonList(
                 new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
                                 new Value<>(URI.create(OWLClassP.getClassIri()))));
-        axioms.forEach(strategy::addValueFromAxiom);
+        axioms.forEach(strategy::addAxiomValue);
 
         final OWLClassP p = new OWLClassP();
         assertNull(p.getTypes());

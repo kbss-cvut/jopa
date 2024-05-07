@@ -42,13 +42,12 @@ class SingularMultilingualStringFieldStrategy<X>
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         if (value == null) {
             this.value = new MultilingualString();
         }
         final Value<?> axiomValue = ax.getValue();
-        if (axiomValue.getValue() instanceof LangString) {
-            final LangString lsAxiomValue = (LangString) axiomValue.getValue();
+        if (axiomValue.getValue() instanceof LangString lsAxiomValue) {
             verifyCardinality(lsAxiomValue.getLanguage().orElse(null), ax.getSubject());
             value.set(lsAxiomValue.getLanguage().orElse(null), lsAxiomValue.getValue());
         } else {
@@ -66,6 +65,11 @@ class SingularMultilingualStringFieldStrategy<X>
                     "Expected single simple literal value of attribute %s of instance <%s>, but got multiple.",
                     attribute.getName(), subject));
         }
+    }
+
+    @Override
+    boolean hasValue() {
+        return value != null;
     }
 
     @Override

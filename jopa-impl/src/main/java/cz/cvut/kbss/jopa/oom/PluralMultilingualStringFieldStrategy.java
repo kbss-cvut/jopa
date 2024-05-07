@@ -50,7 +50,7 @@ public class PluralMultilingualStringFieldStrategy<X>
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         String value;
         String language = null;
         if (ax.getValue().getValue() instanceof LangString ls) {
@@ -60,6 +60,11 @@ public class PluralMultilingualStringFieldStrategy<X>
             value = ax.getValue().stringValue();
         }
         addValue(value, language);
+    }
+
+    @Override
+    boolean hasValue() {
+        return !values.isEmpty();
     }
 
     private void addValue(String value, String language) {

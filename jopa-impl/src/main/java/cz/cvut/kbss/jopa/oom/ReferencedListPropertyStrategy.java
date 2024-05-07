@@ -38,12 +38,12 @@ class ReferencedListPropertyStrategy<X> extends
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         final ReferencedListDescriptor listDescriptor = createListDescriptor(ax);
         final Collection<Axiom<?>> sequence = mapper.loadReferencedList(listDescriptor);
         sequence.stream()
                 .filter(a -> a.getAssertion().getIdentifier().equals(attribute.getHasContentsPropertyIRI().toURI()))
-                .forEach(super::addValueFromAxiom);
+                .forEach(super::addAxiomValue);
     }
 
     ReferencedListDescriptor createListDescriptor(Axiom<?> ax) {

@@ -35,8 +35,13 @@ class IdentifierFieldStrategy<X> extends FieldStrategy<Identifier<? super X, ?>,
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         // Do nothing
+    }
+
+    @Override
+    boolean hasValue() {
+        return false;
     }
 
     @Override

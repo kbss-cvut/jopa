@@ -254,7 +254,7 @@ public class TypedPropertiesFieldStrategyTest {
     public void buildsInstanceFieldFromTypedAxiomValues() {
         final Map<URI, Set<Object>> properties = Generators.generateTypedProperties();
         final Collection<Axiom<?>> axioms = createAxiomsForProperties(properties);
-        axioms.forEach(ax -> strategy.addValueFromAxiom(ax));
+        axioms.forEach(ax -> strategy.addAxiomValue(ax));
         strategy.buildInstanceFieldValue(entity);
         assertEquals(properties, entity.getProperties());
     }
@@ -289,6 +289,6 @@ public class TypedPropertiesFieldStrategyTest {
         MetamodelMocks mocks = new MetamodelMocks();
         final PropertiesFieldStrategy<OWLClassP> s = new PropertiesFieldStrategy<>(mocks.forOwlClassP().entityType(),
                 spec, new EntityDescriptor(), mapperMock);
-        assertThrows(IllegalArgumentException.class, () -> s.addValueFromAxiom(axiom));
+        assertThrows(IllegalArgumentException.class, () -> s.addAxiomValue(axiom));
     }
 }

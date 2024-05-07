@@ -88,7 +88,7 @@ class PluralDataPropertyStrategyTest {
     @Test
     void buildFieldValueCreatesCorrectCollectionTypeForSet() {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
-        strategy.addValueFromAxiom(createMSetAxiom());
+        strategy.addAxiomValue(createMSetAxiom());
         final OWLClassM m = new OWLClassM();
         strategy.buildInstanceFieldValue(m);
         assertNotNull(m.getIntegerSet());
@@ -122,7 +122,7 @@ class PluralDataPropertyStrategyTest {
         for (int i = 0; i < Generators.randomPositiveInt(10); i++) {
             final Axiom<Integer> axiom = createMSetAxiom();
             values.add(axiom.getValue().getValue());
-            strategy.addValueFromAxiom(axiom);
+            strategy.addAxiomValue(axiom);
         }
         return values;
     }
@@ -132,10 +132,10 @@ class PluralDataPropertyStrategyTest {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final Set<Integer> values = addValuesFromAxioms(strategy);
         final Assertion a = assertionForMIntegerSet();
-        strategy.addValueFromAxiom(new AxiomImpl<>(INDIVIDUAL, a, new Value<>("Test")));
-        strategy.addValueFromAxiom(
+        strategy.addAxiomValue(new AxiomImpl<>(INDIVIDUAL, a, new Value<>("Test")));
+        strategy.addAxiomValue(
                 new AxiomImpl<>(INDIVIDUAL, a, new Value<>(Generators.createIndividualIdentifier())));
-        strategy.addValueFromAxiom(new AxiomImpl<>(INDIVIDUAL, a, new Value<>(new Date())));
+        strategy.addAxiomValue(new AxiomImpl<>(INDIVIDUAL, a, new Value<>(new Date())));
 
         final OWLClassM m = new OWLClassM();
         strategy.buildInstanceFieldValue(m);
@@ -227,7 +227,7 @@ class PluralDataPropertyStrategyTest {
     void addValueFromAxiomUsesConverterToTransformValueToCorrectType() {
         final PluralDataPropertyStrategy<OWLClassM> strategy = createStrategyForM();
         final Axiom<Short> axiom = new AxiomImpl<>(INDIVIDUAL, assertionForMIntegerSet(), new Value<>((short) 117));
-        strategy.addValueFromAxiom(axiom);
+        strategy.addAxiomValue(axiom);
         final OWLClassM m = new OWLClassM();
         strategy.buildInstanceFieldValue(m);
         assertEquals(Collections.singleton(117), m.getIntegerSet());

@@ -68,7 +68,7 @@ class SingularMultilingualStringFieldStrategyTest {
                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false),
                                                         new Value<>(new LangString(value, LANG)));
 
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         final OWLClassU instance = new OWLClassU();
         sut.buildInstanceFieldValue(instance);
         assertNotNull(instance.getSingularStringAtt());
@@ -94,8 +94,8 @@ class SingularMultilingualStringFieldStrategyTest {
         final Axiom<LangString> axiomCs = new AxiomImpl<>(INDIVIDUAL, assertion,
                                                           new Value<>(new LangString(valueCs, "cs")));
 
-        sut.addValueFromAxiom(axiomEn);
-        sut.addValueFromAxiom(axiomCs);
+        sut.addAxiomValue(axiomEn);
+        sut.addAxiomValue(axiomCs);
         final OWLClassU instance = new OWLClassU();
         sut.buildInstanceFieldValue(instance);
         assertNotNull(instance.getSingularStringAtt());
@@ -113,7 +113,7 @@ class SingularMultilingualStringFieldStrategyTest {
                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false),
                                                     new Value<>(value));
 
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         final OWLClassU instance = new OWLClassU();
         sut.buildInstanceFieldValue(instance);
         assertNotNull(instance.getSingularStringAtt());
@@ -132,8 +132,8 @@ class SingularMultilingualStringFieldStrategyTest {
                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false),
                                                            new Value<>(new LangString("test two", LANG)));
 
-        sut.addValueFromAxiom(axiomOne);
-        assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addValueFromAxiom(axiomTwo));
+        sut.addAxiomValue(axiomOne);
+        assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addAxiomValue(axiomTwo));
     }
 
     @Test
@@ -148,8 +148,8 @@ class SingularMultilingualStringFieldStrategyTest {
         final Axiom<LangString> axiomCs = new AxiomImpl<>(INDIVIDUAL, assertion,
                                                           new Value<>(new LangString(value)));
 
-        sut.addValueFromAxiom(axiomEn);
-        sut.addValueFromAxiom(axiomCs);
+        sut.addAxiomValue(axiomEn);
+        sut.addAxiomValue(axiomCs);
         final OWLClassU instance = new OWLClassU();
         sut.buildInstanceFieldValue(instance);
         assertNotNull(instance.getSingularStringAtt());
@@ -169,8 +169,8 @@ class SingularMultilingualStringFieldStrategyTest {
                 Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE), false),
                                                            new Value<>(new LangString("test two")));
 
-        sut.addValueFromAxiom(axiomOne);
-        assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addValueFromAxiom(axiomTwo));
+        sut.addAxiomValue(axiomOne);
+        assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addAxiomValue(axiomTwo));
     }
 
     @Test

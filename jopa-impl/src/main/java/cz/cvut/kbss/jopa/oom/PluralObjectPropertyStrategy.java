@@ -46,13 +46,15 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
 
     private final Collection<Object> values;
 
+    private boolean hasLazyValues = false;
+
     PluralObjectPropertyStrategy(EntityType<X> et, Y att, Descriptor descriptor, EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
         this.values = CollectionFactory.createDefaultCollection(att.getCollectionType());
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         final NamedResource valueIdentifier = (NamedResource) ax.getValue().getValue();
         final Class<?> elementType = attribute.getBindableJavaType();
         if (IdentifierTransformer.isValidIdentifierType(elementType)) {
@@ -72,6 +74,21 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
                 LOG.trace("Value of axiom {} could not be loaded as entity filling attribute {}.", ax, attribute);
             }
         }
+    }
+
+    @Override
+    void lazilyAddAxiomValue(Axiom<?> ax) {
+        final Class<?> elementType = attribute.getBindableJavaType();
+        if (IdentifierTransformer.isValidIdentifierType(elementType) || elementType.isEnum()) {
+            addAxiomValue(ax);
+        } else {
+            hasLazyValues = true;
+        }
+    }
+
+    @Override
+    boolean hasValue() {
+        return !values.isEmpty() || hasLazyValues;
     }
 
     @Override

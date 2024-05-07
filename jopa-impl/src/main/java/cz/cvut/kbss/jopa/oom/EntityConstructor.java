@@ -126,7 +126,7 @@ class EntityConstructor {
                 }
                 continue;
             }
-            fs.addValueFromAxiom(ax);
+            fs.addAxiomValue(ax);
         }
         // We need to build the field values separately because some may be
         // plural and we have to wait until all values are prepared
@@ -285,7 +285,7 @@ class EntityConstructor {
                            EntityType<T> et, Descriptor entityDescriptor) {
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
                 .createFieldStrategy(et, fieldSpec, entityDescriptor, mapper);
-        axioms.forEach(fs::addValueFromAxiom);
+        axioms.forEach(fs::addAxiomValue);
         fs.buildInstanceFieldValue(entity);
         validateIntegrityConstraints(entity, fieldSpec, et);
     }

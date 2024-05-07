@@ -69,6 +69,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -103,7 +104,7 @@ class PluralObjectPropertyStrategyTest {
                                                                    URI.create(Vocabulary.P_HAS_A), false), new Value<>(
                 NamedResource.create(aReference)));
 
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         sut.buildInstanceFieldValue(instance);
         assertNotNull(instance.getOwlClassA());
         assertEquals(1, instance.getOwlClassA().size());
@@ -128,7 +129,7 @@ class PluralObjectPropertyStrategyTest {
                                                                    URI.create(Vocabulary.P_HAS_A), false), new Value<>(
                 NamedResource.create(aReference)));
 
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         sut.buildInstanceFieldValue(instance);
         assertNotNull(instance.getOwlClassA());
         assertTrue(instance.getOwlClassA().isEmpty());
@@ -148,7 +149,7 @@ class PluralObjectPropertyStrategyTest {
                                                                    URI.create(Vocabulary.P_HAS_A), false), new Value<>(
                 NamedResource.create(aReference)));
 
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, aReference, aDescriptor);
     }
 
@@ -246,7 +247,7 @@ class PluralObjectPropertyStrategyTest {
         final SimpleSetPropertyStrategy<EntityWithPluralObjectPropertyEnum> sut = initEnumAttributeStrategy();
         final NamedResource value = NamedResource.create(OWL.ANNOTATION_PROPERTY);
 
-        sut.addValueFromAxiom(new AxiomImpl<>(NamedResource.create(ID), Assertion.createObjectPropertyAssertion(
+        sut.addAxiomValue(new AxiomImpl<>(NamedResource.create(ID), Assertion.createObjectPropertyAssertion(
                 URI.create(Vocabulary.p_m_objectOneOfEnumAttribute), false), new Value<>(value)));
         final EntityWithPluralObjectPropertyEnum instance = new EntityWithPluralObjectPropertyEnum();
         sut.buildInstanceFieldValue(instance);
@@ -305,5 +306,20 @@ class PluralObjectPropertyStrategyTest {
         sut.buildInstanceFieldValue(instance);
         assertNotNull(instance.getOwlClassA());
         assertTrue(instance.getOwlClassA().isEmpty());
+    }
+
+    @Test
+    void lazilyAddAxiomValueSetsHasValueButDoesNotLoadReference() {
+        final SimpleSetPropertyStrategy<OWLClassJ> sut = new SimpleSetPropertyStrategy<>(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ()
+                                                                                                                                 .setAttribute(), descriptor, mapperMock);
+        final URI aReference = Generators.createIndividualIdentifier();
+        final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID),
+                Assertion.createObjectPropertyAssertion(
+                        URI.create(Vocabulary.P_HAS_A), false), new Value<>(
+                NamedResource.create(aReference)));
+
+        sut.lazilyAddAxiomValue(axiom);
+        verify(mapperMock, never()).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any());
+        assertTrue(sut.hasValue());
     }
 }

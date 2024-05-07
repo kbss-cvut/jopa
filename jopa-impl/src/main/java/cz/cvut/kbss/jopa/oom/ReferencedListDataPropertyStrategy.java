@@ -28,7 +28,7 @@ class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Li
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> head) {
+    void addAxiomValue(Axiom<?> head) {
         final ReferencedListDescriptor listDescriptor = createListDescriptor(head);
         final Collection<Axiom<?>> sequence = mapper.loadReferencedList(listDescriptor);
         sequence.stream()
@@ -47,6 +47,11 @@ class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Li
         final ReferencedListDescriptor listDescriptor = ListDescriptorFactory.createReferencedListDescriptor(owner, attribute);
         listDescriptor.setContext(getAttributeWriteContext());
         return listDescriptor;
+    }
+
+    @Override
+    boolean hasValue() {
+        return !values.isEmpty();
     }
 
     @Override

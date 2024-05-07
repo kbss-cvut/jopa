@@ -49,6 +49,8 @@ import java.util.stream.Collectors;
  */
 abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 
+    protected static final Object LAZILY_LOADED_REFERENCE_PLACEHOLDER = new Object();
+
     final EntityType<X> et;
     final T attribute;
     final Descriptor entityDescriptor;
@@ -139,7 +141,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             EntityMappingHelper mapper) {
         return switch (attribute.getCollectionType()) {
             case LIST -> createListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor,
-                                                    mapper);
+                    mapper);
             case COLLECTION, SET -> new SimpleSetPropertyStrategy<>(et, attribute, descriptor, mapper);
             default -> throw new UnsupportedOperationException(
                     "Unsupported plural attribute collection type " + attribute.getCollectionType());
@@ -241,7 +243,19 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      *
      * @param ax Axiom to extract value from
      */
-    abstract void addValueFromAxiom(Axiom<?> ax);
+    abstract void addAxiomValue(Axiom<?> ax);
+
+    /**
+     * Adds value from axiom in case the field is lazily loaded.
+     * <p>
+     * This allows skipping loading of references of lazily loaded attributes while providing info whether there
+     * actually are any values to load eventually.
+     *
+     * @param ax Axiom to extract value from
+     */
+    void lazilyAddAxiomValue(Axiom<?> ax) {
+        addAxiomValue(ax);
+    }
 
     /**
      * Sets instance field from values gathered in this strategy.
@@ -253,6 +267,14 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      * @throws IllegalArgumentException Access error
      */
     abstract void buildInstanceFieldValue(Object instance);
+
+    /**
+     * Checks whether any values have been added from axioms.
+     *
+     * @return {@code true} if this strategy holds values added from axioms, {@code false} otherwise
+     * @see #addAxiomValue(Axiom)
+     */
+    abstract boolean hasValue();
 
     /**
      * Extracts values of field represented by this strategy from the specified instance and adds them to the specified

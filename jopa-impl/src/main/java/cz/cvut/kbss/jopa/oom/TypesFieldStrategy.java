@@ -41,13 +41,18 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         if (MappingUtils.isEntityClassAssertion(ax, et)) {
             return;
         }
         final Object type =
                 IdentifierTransformer.transformToIdentifier(ax.getValue().getValue(), attribute.getElementType());
         values.add(type);
+    }
+
+    @Override
+    boolean hasValue() {
+        return !values.isEmpty();
     }
 
     @Override
@@ -104,7 +109,7 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
 
     private static Set<URI> prepareTypes(Set<?> types) {
         final Set<URI> toAdd = new HashSet<>(types.size());
-        toAdd.addAll(types.stream().map(t -> URI.create(t.toString())).collect(Collectors.toList()));
+        toAdd.addAll(types.stream().map(t -> URI.create(t.toString())).toList());
         return toAdd;
     }
 

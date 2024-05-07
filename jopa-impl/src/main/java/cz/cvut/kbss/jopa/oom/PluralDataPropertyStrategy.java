@@ -44,11 +44,16 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         final Object value = ax.getValue().getValue();
         if (isValidRange(value)) {
             this.values.add(toAttributeValue(value));
         }
+    }
+
+    @Override
+    boolean hasValue() {
+        return !values.isEmpty();
     }
 
     @Override
