@@ -68,6 +68,7 @@ abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
         it.next();
         it.remove();
         when(storageMock.find(any())).thenReturn(orig);
+        defaultLoadStateDescriptor(orig);
 
         return uow.mergeDetached(entityA, descriptor);
     }
@@ -83,6 +84,7 @@ abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
     void mergeDetachedRegistersNewObjectWhenItDoesNotExist() {
         when(storageMock.contains(entityA.getUri(), entityA.getClass(), descriptor)).thenReturn(false);
         assertFalse(uow.contains(entityA));
+        defaultLoadStateDescriptor(entityA);
         final OWLClassA res = uow.mergeDetached(entityA, descriptor);
         assertNotNull(res);
         assertSame(entityA, res);
@@ -98,6 +100,7 @@ abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
         clone.setTypes(Collections.emptySet());
         when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
         when(storageMock.find(any())).thenReturn(entityA);
+        defaultLoadStateDescriptor(entityA);
         uow.mergeDetached(clone, descriptor);
 
         assertTrue(uow.hasChanges());
@@ -132,6 +135,7 @@ abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
         final LoadingParameters<OWLClassD> dParams = new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(),
                                                                              descriptor, true);
         when(storageMock.find(dParams)).thenReturn(dOriginal);
+        defaultLoadStateDescriptor(dOriginal, aOriginal);
 
         final OWLClassD result = uow.mergeDetached(entityD, descriptor);
         assertEquals(aOriginal.getStringAttribute(), result.getOwlClassA().getStringAttribute());
@@ -147,6 +151,7 @@ abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
         final LoadingParameters<OWLClassD> dParams = new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(),
                                                                              descriptor, true);
         when(storageMock.find(dParams)).thenReturn(dOriginal);
+        defaultLoadStateDescriptor(dOriginal, aOriginal);
 
         final OWLClassD result = uow.mergeDetached(entityD, descriptor);
         assertEquals(entityA.getUri(), result.getOwlClassA().getUri());
@@ -156,6 +161,7 @@ abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
 
     @Test
     void mergeMergesChangesIntoExistingManagedInstanceAndReturnsIt() {
+        defaultLoadStateDescriptor(entityA);
         final OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         final OWLClassA detached = new OWLClassA(managed.getUri());
         detached.setTypes(new HashSet<>(managed.getTypes()));
@@ -170,6 +176,7 @@ abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
 
     @Test
     void mergeDoesNotAddChangeSetToUoWChangeSetWhenItContainsNoChanges() {
+        defaultLoadStateDescriptor(entityA, entityD);
         final OWLClassD managed = (OWLClassD) uow.registerExistingObject(entityD, descriptor);
         when(transactionMock.isActive()).thenReturn(true);
         when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
@@ -184,6 +191,7 @@ abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
     void mergeDetachedEvictsClassesPossiblyReferencingMergedTypeFromCache() {
         when(metamodelMock.getReferringTypes(OWLClassA.class)).thenReturn(
                 new HashSet<>(Arrays.asList(OWLClassD.class, OWLClassC.class)));
+        defaultLoadStateDescriptor(entityA);
         final OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         final OWLClassA detached = new OWLClassA(managed.getUri());
         detached.setTypes(new HashSet<>(managed.getTypes()));
@@ -207,6 +215,7 @@ abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
         when(transactionMock.isActive()).thenReturn(true);
         when(storageMock.contains(detached.getUri(), OWLClassF.class, descriptor)).thenReturn(true);
         when(storageMock.find(any(LoadingParameters.class))).thenReturn(original);
+        defaultLoadStateDescriptor(original);
         final Assertion assertion =
                 Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_f_stringAttribute), true);
         doAnswer(inv -> {
@@ -233,6 +242,7 @@ abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
         when(transactionMock.isActive()).thenReturn(true);
         when(storageMock.contains(detached.getUri(), OWLClassF.class, descriptor)).thenReturn(true);
         when(storageMock.find(any(LoadingParameters.class))).thenReturn(original);
+        defaultLoadStateDescriptor(original);
         final Assertion assertion =
                 Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_f_stringAttribute), true);
         doAnswer(inv -> {

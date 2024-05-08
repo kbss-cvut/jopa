@@ -26,6 +26,9 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import org.mockito.Mock;
 
@@ -85,5 +88,12 @@ public abstract class UnitOfWorkTestBase {
         entityD.setOwlClassA(entityA);
         this.entityL = new OWLClassL();
         entityL.setUri(Generators.createIndividualIdentifier());
+    }
+
+    protected void defaultLoadStateDescriptor(Object... entities) {
+        for (Object e : entities) {
+            final LoadStateDescriptor<Object> desc = LoadStateDescriptorFactory.createAllLoaded(e, (EntityType<? super Object>) metamodelMock.entity(e.getClass()));
+            uow.getLoadStateRegistry().put(e, desc);
+        }
     }
 }

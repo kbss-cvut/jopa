@@ -69,6 +69,7 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     void refreshCancelsObjectChangesInUnitOfWorkChangeSet() throws Exception {
         when(transactionMock.isActive()).thenReturn(true);
+        defaultLoadStateDescriptor(entityA);
         final OWLClassA a = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         a.setStringAttribute("updatedString");
         uow.attributeChanged(a, OWLClassA.getStrAttField());
@@ -76,6 +77,7 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         original.setStringAttribute(entityA.getStringAttribute());
         original.setTypes(new HashSet<>(entityA.getTypes()));
         when(storageMock.find(any())).thenReturn(original);
+        defaultLoadStateDescriptor(original);
         assertNotNull(uow.uowChangeSet.getExistingObjectChanges(entityA));
         uow.refreshObject(a);
         assertNull(uow.uowChangeSet.getExistingObjectChanges(entityA));
@@ -116,6 +118,7 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     void attributeChangedMergesChangeToStorage() throws Exception {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+        defaultLoadStateDescriptor(entityA);
         final OWLClassA clone = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         final Field strField = OWLClassA.getStrAttField();
 
@@ -137,6 +140,7 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         final OWLClassF original = new OWLClassF(Generators.createIndividualIdentifier());
         original.setSecondStringAttribute("Changed value");
         when(transactionMock.isActive()).thenReturn(true);
+        defaultLoadStateDescriptor(original);
         final OWLClassF instance = (OWLClassF) uow.registerExistingObject(original, descriptor);
         // Ensure original and cloned value differ
         original.setSecondStringAttribute("Original value");
@@ -161,6 +165,7 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     void attributeChangedSetsAttributeLoadStatusToLoaded() throws Exception {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+        defaultLoadStateDescriptor(entityL);
         final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
         assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
         instance.setSet(Collections.singleton(entityA));
@@ -174,6 +179,7 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
         final OWLClassU entityU = new OWLClassU(Generators.createIndividualIdentifier());
         entityU.setSingularStringAtt(MultilingualString.create("test", "en"));
+        defaultLoadStateDescriptor(entityU);
         final OWLClassU managed = (OWLClassU) uow.registerExistingObject(entityU, descriptor);
         assertInstanceOf(ChangeTrackingIndirectMultilingualString.class, managed.getSingularStringAtt());
         uow.unregisterObject(managed);
@@ -182,6 +188,7 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
 
     @Test
     void removeObjectPutsExistingObjectIntoDeletedCacheAndRemovesItFromRepository() {
+        defaultLoadStateDescriptor(entityB);
         final OWLClassB toRemove = (OWLClassB) uow.registerExistingObject(entityB, descriptor);
         uow.removeObject(toRemove);
         assertFalse(uow.contains(toRemove));
@@ -192,6 +199,7 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     void changesToRemovedObjectAreIgnoredOnCommit() throws Exception {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+        defaultLoadStateDescriptor(entityA);
         final OWLClassA instance = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         instance.setStringAttribute("update");
         uow.attributeChanged(instance, OWLClassA.getStrAttField());
@@ -207,6 +215,7 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         entityR.setTypes(Generators.generateTypes(5));
         when(storageMock.find(new LoadingParameters<>(OWLClassR.class, entityR.getUri(), descriptor)))
                 .thenReturn(entityR);
+        defaultLoadStateDescriptor(entityR);
         final OWLClassR clone = uow.readObject(OWLClassR.class, entityR.getUri(), descriptor);
         assertInstanceOf(ChangeTrackingIndirectSet.class, clone.getTypes());
     }
@@ -215,6 +224,7 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     void releaseRemovesIndirectCollectionsFromManagedEntities() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false)))
                 .thenReturn(entityA);
+        defaultLoadStateDescriptor(entityA);
         final OWLClassA result = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         assertNotNull(result);
         assertInstanceOf(ChangeTrackingIndirectSet.class, result.getTypes());
@@ -225,6 +235,7 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     void loadEntityFieldDoesNotInvokeLoadFromRepositoryForNullAttributeWhenItsStateIsLoaded() throws Exception {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+        defaultLoadStateDescriptor(entityL);
         final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
         assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
         uow.attributeChanged(instance, OWLClassL.getSetField());

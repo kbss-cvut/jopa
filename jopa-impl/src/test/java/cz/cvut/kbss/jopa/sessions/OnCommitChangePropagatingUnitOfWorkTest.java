@@ -56,6 +56,7 @@ class OnCommitChangePropagatingUnitOfWorkTest extends AbstractUnitOfWorkTestRunn
 
     @Test
     void commitToStorageCalculatesChangesToExistingObjectsAndPropagatesThemToStorage() {
+        defaultLoadStateDescriptor(entityA);
         final OWLClassA clone = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         clone.setStringAttribute("new string value");
         assertTrue(uow.uowChangeSet.getExistingObjectsChanges().isEmpty());
@@ -65,6 +66,7 @@ class OnCommitChangePropagatingUnitOfWorkTest extends AbstractUnitOfWorkTestRunn
 
     @Test
     void commitToStorageDeletesRemovedObjectsFromStorage() {
+        defaultLoadStateDescriptor(entityA);
         final OWLClassA clone = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         uow.removeObject(clone);
         verify(storageMock, never()).remove(clone.getUri(), OWLClassA.class, descriptor);
@@ -74,6 +76,7 @@ class OnCommitChangePropagatingUnitOfWorkTest extends AbstractUnitOfWorkTestRunn
 
     @Test
     void removeObjectRegistersObjectForDeletion() {
+        defaultLoadStateDescriptor(entityA);
         final OWLClassA clone = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         uow.removeObject(clone);
         verify(storageMock, never()).remove(clone.getUri(), OWLClassA.class, descriptor);
@@ -84,6 +87,7 @@ class OnCommitChangePropagatingUnitOfWorkTest extends AbstractUnitOfWorkTestRunn
     void mergeDetachedRegistersChangesToSpecifiedObjectAndReturnsManagedClone() {
         when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
         when(storageMock.find(any(LoadingParameters.class))).thenReturn(entityA);
+        defaultLoadStateDescriptor(entityA);
         final OWLClassA toMerge = new OWLClassA(entityA.getUri());
         toMerge.setStringAttribute("Different string");
         toMerge.setTypes(Generators.generateTypes(2));
@@ -107,6 +111,7 @@ class OnCommitChangePropagatingUnitOfWorkTest extends AbstractUnitOfWorkTestRunn
     void commitThrowsAttributeModificationForbiddenExceptionWhenChangeConcernsLexicalValueAttribute() {
         final OWLClassM original = new OWLClassM();
         original.initializeTestValues(true);
+        defaultLoadStateDescriptor(original);
         final OWLClassM clone = (OWLClassM) uow.registerExistingObject(original, descriptor);
         clone.setLexicalForm("Cannot change");
         assertThrows(AttributeModificationForbiddenException.class, () -> uow.commit());
@@ -117,6 +122,7 @@ class OnCommitChangePropagatingUnitOfWorkTest extends AbstractUnitOfWorkTestRunn
         final OWLClassU original = new OWLClassU(Generators.createIndividualIdentifier());
         when(storageMock.contains(original.getId(), OWLClassU.class, descriptor)).thenReturn(true);
         when(storageMock.find(any(LoadingParameters.class))).thenReturn(original);
+        defaultLoadStateDescriptor(original);
         final OWLClassU toMerge = new OWLClassU(original.getId());
         toMerge.setSingularStringAtt(MultilingualString.create("Test", "en"));
         final OWLClassU merged = uow.mergeDetached(toMerge, descriptor);
