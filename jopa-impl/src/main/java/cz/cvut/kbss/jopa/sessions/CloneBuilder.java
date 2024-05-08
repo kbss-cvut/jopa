@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -28,6 +29,8 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxyFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -146,11 +149,19 @@ public class CloneBuilder {
         if (managed) {
             // Register visited object before populating attributes to prevent infinite cloning cycles
             putVisitedEntity(descriptor, original, clone);
+            final LoadStateDescriptor<Object> loadState = cloneLoadStateDescriptor(original, clone);
+            uow.getLoadStateRegistry().put(clone, loadState);
         }
         if (!builder.populatesAttributes() && !isImmutable(cls)) {
             populateAttributes(original, clone, cloneConfiguration);
         }
         return clone;
+    }
+
+    private LoadStateDescriptor<Object> cloneLoadStateDescriptor(Object original, Object clone) {
+        assert uow.getLoadStateRegistry().contains(original);
+        final LoadStateDescriptor<Object> origLoadState = uow.getLoadStateRegistry().get(original);
+        return LoadStateDescriptorFactory.createCopy(clone, origLoadState);
     }
 
     /**
@@ -181,6 +192,7 @@ public class CloneBuilder {
     private void populateAttributes(Object original, Object clone, CloneConfiguration configuration) {
         final Class<?> originalClass = original.getClass();
         final EntityType<?> et = getMetamodel().entity(originalClass);
+        final LoadStateDescriptor<Object> loadState = uow.getLoadStateRegistry().get(clone);
         // Ensure the identifier is cloned before any other attributes
         // This prevents problems where circular references between entities lead to clones being registered with null identifier
         cloneIdentifier(original, clone, et);
@@ -192,7 +204,7 @@ public class CloneBuilder {
             final Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
             Object clonedValue;
             if (origVal == null) {
-                if (shouldUseLazyLoadingProxies(fs, configuration)) {
+                if (loadState.isLoaded(fs) == LoadState.NOT_LOADED) {
                     clonedValue = lazyLoaderFactory.createProxy(clone, (FieldSpecification<? super Object, ?>) fs);
                 } else {
                     continue;
@@ -236,10 +248,6 @@ public class CloneBuilder {
         final Identifier<?, ?> identifier = et.getIdentifier();
         final Object idValue = EntityPropertiesUtils.getFieldValue(identifier.getJavaField(), original);
         EntityPropertiesUtils.setFieldValue(identifier.getJavaField(), clone, idValue);
-    }
-
-    private boolean shouldUseLazyLoadingProxies(FieldSpecification<?, ?> fs, CloneConfiguration config) {
-        return fs.getFetchType() == FetchType.LAZY && config.isForPersistenceContext() && !config.isAllEager();
     }
 
     private Descriptor getFieldDescriptor(Field field, Class<?> entityClass, Descriptor entityDescriptor) {

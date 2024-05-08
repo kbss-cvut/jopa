@@ -421,7 +421,6 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         }
         final CloneConfiguration cloneConfig = CloneConfiguration.withDescriptor(registrationDescriptor.getDescriptor())
                                                                  .forPersistenceContext(!isInCommit())
-                                                                 .allEager(registrationDescriptor.isAllEager())
                                                                  .addPostRegisterHandlers(registrationDescriptor.getPostCloneHandlers());
         Object clone = cloneBuilder.buildClone(entity, cloneConfig);
         assert clone != null;

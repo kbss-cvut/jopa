@@ -34,8 +34,6 @@ public class CloneConfiguration {
 
     private boolean forPersistenceContext;
 
-    private boolean allEager;
-
     private CloneConfiguration() {
     }
 
@@ -64,15 +62,6 @@ public class CloneConfiguration {
 
     public boolean isForPersistenceContext() {
         return forPersistenceContext;
-    }
-
-    public CloneConfiguration allEager(boolean value) {
-        this.allEager = value;
-        return this;
-    }
-
-    public boolean isAllEager() {
-        return allEager;
     }
 
     public static CloneConfiguration withDescriptor(Descriptor descriptor) {
