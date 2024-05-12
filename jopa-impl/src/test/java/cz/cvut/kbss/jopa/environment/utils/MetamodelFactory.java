@@ -1556,8 +1556,7 @@ public class MetamodelFactory {
         when(entityAttMock.getName()).thenReturn(OWLClassWithQueryAttr.getEntityAttField().getName());
         when(entityAttMock.getDeclaringType()).thenReturn(etMock);
         when(entityAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(entityAttMock.hasLanguage()).thenReturn(true);
-        when(entityAttMock.getLanguage()).thenReturn(Generators.LANG);
+        when(entityAttMock.getFetchType()).thenReturn(FetchType.EAGER);
 
         when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(etMock.getFieldSpecification(strQueryAttMock.getName())).thenReturn(strQueryAttMock);

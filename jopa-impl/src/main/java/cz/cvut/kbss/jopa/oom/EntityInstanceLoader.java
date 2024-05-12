@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.datatype.util.Pair;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
@@ -26,6 +27,8 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.oom.exception.EntityReconstructionException;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -38,8 +41,10 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import java.net.URI;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Root of the entity loading strategies.
@@ -117,24 +122,27 @@ abstract class EntityInstanceLoader {
 
     <T> T loadCached(EntityType<T> et, URI identifier, Descriptor descriptor) {
         final T cached = cache.get(et.getJavaType(), identifier, descriptor);
-        loadStateRegistry.put(cached, cache.getLoadStateDescriptor(cached));
-        recursivelyReloadQueryAttributes(cached, et, new IdentityHashMap<>());
+        recursivelyProcessCachedEntityReferences(cached, et, new IdentityHashMap<>(), List.of(
+                pair -> loadStateRegistry.put(pair.first(), getLoadStatDescriptor(pair.first(), pair.second())),
+                pair -> entityBuilder.populateQueryAttributes(pair.first(), (EntityType<Object>) pair.second())
+        ));
         return cached;
     }
 
-    /**
-     * Recursively reloads query attribute values.
-     *
-     * @param instance Instance whose query attributes should be reloaded
-     * @param et       Entity type of the instance
-     * @param visited  Map of already visited objects to prevent infinite recursion
-     */
-    private void recursivelyReloadQueryAttributes(Object instance, EntityType<?> et, Map<Object, Object> visited) {
+    private LoadStateDescriptor<?> getLoadStatDescriptor(Object instance, EntityType<?> et) {
+        final LoadStateDescriptor<?> cached = cache.getLoadStateDescriptor(instance);
+        if (cached != null) {
+            return cached;
+        }
+        return LoadStateDescriptorFactory.createAllUnknown(instance, (EntityType<Object>) et);
+    }
+
+    private void recursivelyProcessCachedEntityReferences(Object instance, EntityType<?> et, Map<Object, Object> visited, List<Consumer<Pair<Object, EntityType<?>>>> handlers) {
         if (visited.containsKey(instance)) {
             return;
         }
         visited.put(instance, null);
-        entityBuilder.populateQueryAttributes(instance, (EntityType<Object>) et);
+        handlers.forEach(h -> h.accept(new Pair<>(instance, et)));
         et.getAttributes().stream().filter(Attribute::isAssociation).forEach(att -> {
             final Class<?> cls = att.isCollection() ? ((PluralAttribute) att).getElementType()
                                                                              .getJavaType() : att.getJavaType();
@@ -145,9 +153,9 @@ abstract class EntityInstanceLoader {
             if (value != null) {
                 // Resolve the value class instead of using the attribute type, as it may be a subclass at runtime
                 if (att.isCollection()) {
-                    ((Collection<?>) value).forEach(el -> recursivelyReloadQueryAttributes(el, metamodel.entity(el.getClass()), visited));
+                    ((Collection<?>) value).forEach(el -> recursivelyProcessCachedEntityReferences(el, metamodel.entity(el.getClass()), visited, handlers));
                 } else {
-                    recursivelyReloadQueryAttributes(value, metamodel.entity(value.getClass()), visited);
+                    recursivelyProcessCachedEntityReferences(value, metamodel.entity(value.getClass()), visited, handlers);
                 }
             }
         });

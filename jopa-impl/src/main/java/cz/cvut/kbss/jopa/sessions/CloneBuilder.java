@@ -20,7 +20,6 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.MultilingualString;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
@@ -159,7 +158,9 @@ public class CloneBuilder {
     }
 
     private LoadStateDescriptor<Object> cloneLoadStateDescriptor(Object original, Object clone) {
-        assert uow.getLoadStateRegistry().contains(original);
+        if (!uow.getLoadStateRegistry().contains(original)) {
+            uow.getLoadStateRegistry().put(original, LoadStateDescriptorFactory.createAllUnknown(original, (EntityType<? super Object>) getMetamodel().entity(original.getClass())));
+        }
         final LoadStateDescriptor<Object> origLoadState = uow.getLoadStateRegistry().get(original);
         return LoadStateDescriptorFactory.createCopy(clone, origLoadState);
     }
@@ -203,12 +204,10 @@ public class CloneBuilder {
             final Field f = fs.getJavaField();
             final Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
             Object clonedValue;
-            if (origVal == null) {
-                if (loadState.isLoaded(fs) == LoadState.NOT_LOADED) {
-                    clonedValue = lazyLoaderFactory.createProxy(clone, (FieldSpecification<? super Object, ?>) fs);
-                } else {
-                    continue;
-                }
+            if (loadState.isLoaded(fs) == LoadState.NOT_LOADED) {
+                clonedValue = lazyLoaderFactory.createProxy(clone, (FieldSpecification<? super Object, ?>) fs);
+            } else if (origVal == null) {
+                 continue;
             } else {
                 final Class<?> origValueClass = origVal.getClass();
                 if (isImmutable(origValueClass)) {

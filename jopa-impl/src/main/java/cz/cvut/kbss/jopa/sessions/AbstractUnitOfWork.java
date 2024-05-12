@@ -114,6 +114,8 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         this.deletedObjects = new IdentityHashMap<>();
         this.newObjectsCloneToOriginal = new IdentityHashMap<>();
         this.repoMap = new RepositoryMap();
+        this.loadStateRegistry = new LoadStateDescriptorRegistry(this::stringify);
+        this.indirectWrapperHelper = new IndirectWrapperHelper(this);
         this.cloneBuilder = new CloneBuilder(this);
         this.storage = acquireConnection();
         this.queryFactory = new SparqlQueryFactory(this, storage);
@@ -121,8 +123,6 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         this.changeCalculator = new ChangeCalculator(this);
         this.inferredAttributeChangeValidator = new InferredAttributeChangeValidator(storage);
         this.isActive = true;
-        this.indirectWrapperHelper = new IndirectWrapperHelper(this);
-        this.loadStateRegistry = new LoadStateDescriptorRegistry(this::stringify);
     }
 
     @Override

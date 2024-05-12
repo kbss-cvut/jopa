@@ -76,6 +76,11 @@ public class Vocabulary {
     public static final String p_e_simpleList = ATTRIBUTE_IRI_BASE + "simpleList";
     public static final String p_e_enumeratedOrdinalColor = ATTRIBUTE_IRI_BASE + "enumeratedOrdinalColor";
 
+    public static final String p_l_simpleListAttribute = ATTRIBUTE_IRI_BASE + "l-hasSimpleSequence";
+    public static final String p_l_referencedListAttribute = ATTRIBUTE_IRI_BASE + "l-hasReferencedSequence";
+    public static final String p_l_aSetAttribute = ATTRIBUTE_IRI_BASE + "l-hasA";
+    public static final String p_l_singleOwlClassAAttribute = ATTRIBUTE_IRI_BASE + "has-singleA";
+
     public static final String p_m_booleanAttribute = ATTRIBUTE_IRI_BASE + "m-booleanAttribute";
     public static final String p_m_intAttribute = ATTRIBUTE_IRI_BASE + "m-intAttribute";
     public static final String p_m_longAttribute = ATTRIBUTE_IRI_BASE + "m-longAttribute";

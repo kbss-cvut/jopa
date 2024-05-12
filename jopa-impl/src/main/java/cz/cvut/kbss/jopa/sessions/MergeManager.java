@@ -60,6 +60,7 @@ class MergeManager {
     }
 
     private void updateCache(ObjectChangeSet changeSet) {
+        // TODO Update load state descriptor
         final Object changedObject = changeSet.getOriginal();
         final Object identifier = EntityPropertiesUtils.getIdentifier(changedObject, uow.getMetamodel());
         boolean preventCaching = changeSet.getChanges().stream().anyMatch(ChangeRecord::doesPreventCaching);

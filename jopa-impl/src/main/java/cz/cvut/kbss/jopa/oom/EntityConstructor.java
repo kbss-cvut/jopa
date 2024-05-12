@@ -249,7 +249,7 @@ class EntityConstructor {
             }
             et.getAttributes().stream().filter(a -> query.hasParameter(a.getName())).forEach(a -> {
                 final Object value = EntityPropertiesUtils.getAttributeValue(a, instance);
-                if (value != null) {
+                if (value != null && ((!a.isCollection() || !((Collection) value).isEmpty()))) {
                     query.setParameter(a.getName(), value);
                 }
             });
@@ -275,12 +275,14 @@ class EntityConstructor {
         et.getFieldSpecifications().stream()
           .filter(fs -> EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity) == null)
           .forEach(fs -> {
-              if (fs.isCollection() && (fs.getFetchType() == FetchType.EAGER || fs.getFetchType() == FetchType.LAZY && loadStateDescriptor.isLoaded(fs) == LoadState.UNKNOWN)) {
+              final FetchType fetchType = fs.getFetchType();
+              final LoadState loadState = loadStateDescriptor.isLoaded(fs);
+              if (fs.isCollection() && (fetchType == FetchType.EAGER || fetchType == FetchType.LAZY && loadState == LoadState.UNKNOWN)) {
                   final CollectionType ct = CollectionFactory.resolveCollectionType(fs.getJavaType());
                   final Object emptyValue = ct == CollectionType.MAP ? CollectionFactory.createDefaultMap() : CollectionFactory.createDefaultCollection(ct);
                   EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, emptyValue);
                   loadStateDescriptor.setLoaded(fs, LoadState.LOADED);
-              } else if (fs.getFetchType() == FetchType.LAZY) {
+              } else if (fetchType == FetchType.LAZY && loadState == LoadState.UNKNOWN) {
                   loadStateDescriptor.setLoaded(fs, LoadState.LOADED);
               }
           });

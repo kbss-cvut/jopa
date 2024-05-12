@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 
 import java.lang.reflect.Field;
@@ -204,9 +205,10 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
     /**
      * Register an existing object in this Unit of Work.
      * <p>
-     * Creates a working clone of the specified object according to the configuration and puts the given object into this Unit of Work cache.
+     * Creates a working clone of the specified object according to the configuration and puts the given object into
+     * this Unit of Work cache.
      *
-     * @param object     Object
+     * @param object                 Object
      * @param registrationDescriptor Configuration of the registration
      * @return Registered clone of the specified object
      */
@@ -302,6 +304,13 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * @return Unmodifiable list of context URIs
      */
     List<URI> getContexts();
+
+    /**
+     * Gets the registry of entity load state descriptors.
+     *
+     * @return {@code LoadStateDescriptorRegistry} for this persistence context
+     */
+    LoadStateDescriptorRegistry getLoadStateRegistry();
 
     /**
      * Gets the load status of the specified attribute on the specified entity.

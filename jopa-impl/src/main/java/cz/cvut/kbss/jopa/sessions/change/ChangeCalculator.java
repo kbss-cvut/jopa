@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -84,6 +85,9 @@ public class ChangeCalculator {
         }
         final Class<?> cls = clone.getClass();
         for (FieldSpecification<?, ?> fs : getFields(cls)) {
+            if (fs instanceof Identifier<?,?>) {
+                continue;
+            }
             final Field f = fs.getJavaField();
             final Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
             final Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
@@ -131,6 +135,9 @@ public class ChangeCalculator {
         Object clone = changeSet.getClone();
         boolean changesFound = false;
         for (FieldSpecification<?, ?> fs : getFields(clone.getClass())) {
+            if (fs instanceof Identifier<?,?>) {
+                continue;
+            }
             final Field f = fs.getJavaField();
             Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
             Object origVal = EntityPropertiesUtils.getFieldValue(f, original);

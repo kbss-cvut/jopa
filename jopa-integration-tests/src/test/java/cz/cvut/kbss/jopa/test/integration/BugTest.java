@@ -24,7 +24,6 @@ import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.PrePersist;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
-import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassF;
@@ -131,27 +130,20 @@ class BugTest extends IntegrationTestBase {
         initAxiomsForNullReferenceLoad(owner);
         final OWLClassJ result = em.find(OWLClassJ.class, owner);
         assertNotNull(result);
-        assertInstanceOf(LazyLoadingProxy.class, result.getOwlClassA());
-        ((LazyLoadingProxy<?>) result.getOwlClassA()).triggerLazyLoading();
         assertTrue(result.getOwlClassA().isEmpty());
     }
 
     private void initAxiomsForNullReferenceLoad(URI owner) throws OntoDriverException {
         final NamedResource ownerResource = NamedResource.create(owner);
         final Assertion classAssertion = Assertion.createClassAssertion(false);
-        final NamedResource reference = NamedResource.create(Generators.generateUri());
         final Assertion opAssertion = Assertion
                 .createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_OWL_CLASS_A), false);
         final AxiomDescriptor fDesc = new AxiomDescriptor(ownerResource);
         fDesc.addAssertion(classAssertion);
+        fDesc.addAssertion(opAssertion);
         when(connectionMock.find(fDesc))
                 .thenReturn(Collections.singletonList(new AxiomImpl<>(ownerResource, classAssertion,
                         new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_J)))));
-        final AxiomDescriptor refDescriptor = new AxiomDescriptor(ownerResource);
-        refDescriptor.addAssertion(opAssertion);
-        final AxiomDescriptor aDesc = new AxiomDescriptor(reference);
-        aDesc.addAssertion(classAssertion);
-        aDesc.addAssertion(Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false));
     }
 
     /**

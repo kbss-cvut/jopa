@@ -18,10 +18,14 @@
 package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
+import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.ReflectionUtils;
@@ -60,7 +64,12 @@ class EntityResultMapper<T> implements SparqlResultMapper {
     public T map(ResultRow resultRow, UnitOfWork uow) {
         try {
             final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getJavaType());
-            fieldMappers.forEach(m -> m.map(resultRow, instance, uow));
+            final LoadStateDescriptor<T> loadStateDescriptor = LoadStateDescriptorFactory.createAllUnknown(instance, et);
+            fieldMappers.forEach(m -> {
+                m.map(resultRow, instance, uow);
+                loadStateDescriptor.setLoaded((FieldSpecification<? super T, ?>) m.getFieldSpecification(), LoadState.LOADED);
+            });
+            uow.getLoadStateRegistry().put(instance, loadStateDescriptor);
             return et.getJavaType()
                      .cast(uow.registerExistingObject(instance, new CloneRegistrationDescriptor(new EntityDescriptor()).postCloneHandlers(List.of(new PostLoadInvoker(uow.getMetamodel())))));
         } catch (cz.cvut.kbss.jopa.exception.InstantiationException e) {

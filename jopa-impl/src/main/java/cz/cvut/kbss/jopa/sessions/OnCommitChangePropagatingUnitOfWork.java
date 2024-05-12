@@ -72,7 +72,9 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
     @Override
     void calculateChanges() {
         super.calculateChanges();
-        cloneToOriginals.forEach((clone, original) -> {
+        cloneToOriginals.entrySet().stream().filter(e -> !deletedObjects.containsKey(e.getKey())).forEach(e -> {
+            final Object original = e.getValue();
+            final Object clone = e.getKey();
             ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(original, clone, getDescriptor(clone));
             changeCalculator.calculateChanges(chSet);
             processInferredValueChanges(chSet);

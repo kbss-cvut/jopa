@@ -18,9 +18,11 @@
 package cz.cvut.kbss.jopa.query.mapper;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +55,7 @@ class EntityResultMapperTest {
     void setUp() {
         this.mapper = new EntityResultMapper<>(etMock);
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
+        when(uowMock.getLoadStateRegistry()).thenReturn(new LoadStateDescriptorRegistry(Object::toString));
     }
 
     @Test
@@ -66,8 +69,12 @@ class EntityResultMapperTest {
 
     @Test
     void mapUsesFieldMappersToPopulateEntityFields() {
+        final FieldSpecification fs = mock(FieldSpecification.class);
+        when(fs.getDeclaringType()).thenReturn(etMock);
         final FieldResultMapper fOne = mock(FieldResultMapper.class);
+        when(fOne.getFieldSpecification()).thenReturn(fs);
         final FieldResultMapper fTwo = mock(FieldResultMapper.class);
+        when(fTwo.getFieldSpecification()).thenReturn(fs);
         mapper.addFieldMapper(fOne);
         mapper.addFieldMapper(fTwo);
 

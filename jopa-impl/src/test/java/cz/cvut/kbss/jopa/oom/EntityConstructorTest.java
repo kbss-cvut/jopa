@@ -778,7 +778,21 @@ class EntityConstructorTest {
     }
 
     @Test
-    void reconstructEntityLoadsLazyReferencesWhenForceEagerIsSpecifiedForReconstruction() throws Exception {
+    void reconstructEntityMarksSingularLazilyLoadedAttributeAsNotLoadedWhenThereExistAxiomsForThem() {
+        when(mocks.forOwlClassD().owlClassAAtt().getFetchType()).thenReturn(FetchType.LAZY);
+        final List<Axiom<?>> axioms = List.of(
+                getClassAssertionAxiomForType(ID, OWLClassD.getClassIri()),
+                new AxiomImpl<>(NamedResource.create(ID), Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false), new Value<>(NamedResource.create(Generators.createIndividualIdentifier())))
+        );
+        final OWLClassD result = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassD()
+                                                                                           .entityType(), descriptor), axioms);
+        final LoadStateDescriptor<OWLClassD> loadStates = loadStateRegistry.get(result);
+        assertNotNull(loadStates);
+        assertEquals(LoadState.NOT_LOADED, loadStates.isLoaded(mocks.forOwlClassD().owlClassAAtt()));
+    }
+
+    @Test
+    void reconstructEntityLoadsLazyReferencesWhenForceEagerIsSpecifiedForReconstruction() {
         when(mocks.forOwlClassD().owlClassAAtt().getFetchType()).thenReturn(FetchType.LAZY);
         final OWLClassA aInstance = Generators.generateOwlClassAInstance();
         final List<Axiom<?>> axioms = List.of(
