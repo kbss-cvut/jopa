@@ -21,7 +21,6 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
-import cz.cvut.kbss.jopa.environment.OWLClassF;
 import cz.cvut.kbss.jopa.environment.OWLClassG;
 import cz.cvut.kbss.jopa.environment.OWLClassH;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
@@ -58,8 +57,12 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -90,6 +93,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class CloneBuilderTest {
 
     private CloneBuilder builder;
@@ -134,7 +139,6 @@ public class CloneBuilderTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         when(uow.isEntityType(any())).thenAnswer(invocation -> {
             Class<?> cls = (Class<?>) invocation.getArguments()[0];
             return managedTypes.contains(cls);
@@ -611,6 +615,7 @@ public class CloneBuilderTest {
 
     @Test
     public void mergeOfFieldOfManagedTypeUsesOriginalValueForMerge() {
+        defaultLoadStateDescriptor(entityD, metamodelMocks.forOwlClassD().entityType());
         entityD.setOwlClassA(entityA);
         final OWLClassD dClone = new OWLClassD();
         dClone.setUri(entityD.getUri());
@@ -649,6 +654,7 @@ public class CloneBuilderTest {
 
     @Test
     public void mergeChangesMergesChangesOnMappedSuperclassFields() {
+        defaultLoadStateDescriptor(entityQ, metamodelMocks.forOwlClassQ().entityType());
         final OWLClassQ qClone = new OWLClassQ();
         qClone.setUri(entityQ.getUri());
         qClone.setStringAttribute("newStringAtt");
@@ -795,5 +801,23 @@ public class CloneBuilderTest {
 
         final OWLClassD result = (OWLClassD) builder.buildClone(entityD, new CloneConfiguration(defaultDescriptor, true));
         assertNull(result.getOwlClassA());
+    }
+
+    @Test
+    public void mergeChangesUpdatesLoadStateOfOriginalLoadStateDescriptor() {
+        final LoadStateDescriptor<OWLClassC> loadStateDescriptor = LoadStateDescriptorFactory.createNotLoaded(entityC, metamodelMocks.forOwlClassC()
+                                                                                                                      .entityType());
+        loadStateDescriptor.setLoaded(metamodelMocks.forOwlClassC().referencedListAtt(), LoadState.LOADED);
+        loadStateRegistry.put(entityC, loadStateDescriptor);
+        final OWLClassC c = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor, false));
+        assertNotSame(entityC, c);
+        c.setSimpleList(null);
+        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c, defaultDescriptor);
+        chSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassC().simpleListAtt(),
+                c.getSimpleList()));
+        builder.mergeChanges(chSet);
+
+        assertNull(entityC.getSimpleList());
+        assertEquals(LoadState.LOADED, loadStateDescriptor.isLoaded(metamodelMocks.forOwlClassC().simpleListAtt()));
     }
 }

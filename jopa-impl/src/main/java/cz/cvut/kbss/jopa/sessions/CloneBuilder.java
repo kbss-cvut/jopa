@@ -289,6 +289,7 @@ public class CloneBuilder {
      */
     public void mergeChanges(ObjectChangeSet changeSet) {
         final Object original = changeSet.getOriginal();
+        final LoadStateDescriptor<?> loadStateDescriptor = uow.getLoadStateRegistry().get(original);
         try {
             for (ChangeRecord change : changeSet.getChanges()) {
                 Field f = change.getAttribute().getJavaField();
@@ -300,9 +301,10 @@ public class CloneBuilder {
                 Object newVal = change.getNewValue();
                 if (newVal == null) {
                     EntityPropertiesUtils.setFieldValue(f, original, null);
-                    continue;
+                } else {
+                    getInstanceBuilder(newVal).mergeChanges(f, original, origVal, newVal);
                 }
-                getInstanceBuilder(newVal).mergeChanges(f, original, origVal, newVal);
+                loadStateDescriptor.setLoaded((FieldSpecification<? super Object, ?>) change.getAttribute(), LoadState.LOADED);
             }
         } catch (SecurityException e) {
             throw new OWLPersistenceException(e);
