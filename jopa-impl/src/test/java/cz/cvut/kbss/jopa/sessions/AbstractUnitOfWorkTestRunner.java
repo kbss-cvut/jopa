@@ -463,6 +463,7 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         final Map<String, Set<String>> props = Collections
                 .singletonMap(Vocabulary.p_m_IntegerSet, Collections.singleton("12345"));
         defaultLoadStateDescriptor(b);
+        uow.getLoadStateRegistry().get(b).setLoaded(metamodelMocks.forOwlClassB().propertiesSpec(), LoadState.NOT_LOADED);
         final OWLClassB clone = (OWLClassB) uow.registerExistingObject(b, descriptor);
         doAnswer(invocation -> {
             final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
@@ -478,7 +479,9 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     @Test
     void loadFieldLoadsManagedTypeAttribute() {
         final OWLClassL original = new OWLClassL(Generators.createIndividualIdentifier());
-        defaultLoadStateDescriptor(original);
+        final LoadStateDescriptor<OWLClassL> loadStateDescriptor = LoadStateDescriptorFactory.createNotLoaded(original, metamodelMocks.forOwlClassL()
+                                                                                                                                     .entityType());
+        uow.getLoadStateRegistry().put(original, loadStateDescriptor);
         final OWLClassL clone = (OWLClassL) uow.registerExistingObject(original, descriptor);
         doAnswer(invocation -> {
             final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
@@ -501,6 +504,7 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     void findOfObjectAlreadyManagedAsLazilyLoadedValueReturnSameObject() {
         final OWLClassL original = new OWLClassL(Generators.createIndividualIdentifier());
         defaultLoadStateDescriptor(original);
+        uow.getLoadStateRegistry().get(original).setLoaded(metamodelMocks.forOwlClassL().setAttribute(), LoadState.NOT_LOADED);
         final OWLClassL clone = (OWLClassL) uow.registerExistingObject(original, descriptor);
         doAnswer(invocation -> {
             final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
@@ -879,10 +883,12 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     }
 
     @Test
-    void isLoadedByAttributeReturnsUnknownForNullValuedLazilyLoadedAttribute() throws Exception {
-        defaultLoadStateDescriptor(entityL);
+    void isLoadedByAttributeReturnsNotLoadedForNotLoadedLazilyLoadedAttribute() throws Exception {
+        final LoadStateDescriptor<OWLClassL> loadStateDescriptor = LoadStateDescriptorFactory.createNotLoaded(entityL, metamodelMocks.forOwlClassL()
+                                                                                                                                     .entityType());
+        uow.getLoadStateRegistry().put(entityL, loadStateDescriptor);
         final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
-        assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+        assertEquals(LoadState.NOT_LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
     }
 
     @Test
@@ -895,26 +901,16 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
 
     @Test
     void loadEntityFieldCausesLoadStateOfLazilyLoadedAttributeToBeSetToLoaded() throws Exception {
-        defaultLoadStateDescriptor(entityL);
+        final LoadStateDescriptor<OWLClassL> loadStateDescriptor = LoadStateDescriptorFactory.createNotLoaded(entityL, metamodelMocks.forOwlClassL()
+                                                                                                                                     .entityType());
+        uow.getLoadStateRegistry().put(entityL, loadStateDescriptor);
         final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
-        assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
         doAnswer(inv -> {
             final OWLClassL inst = inv.getArgument(0);
             inst.setSet(Collections.singleton(entityA));
             return null;
         }).when(storageMock).loadFieldValue(eq(instance), eq(metamodelMocks.forOwlClassL().setAttribute()), any());
         defaultLoadStateDescriptor(entityA);
-        uow.loadEntityField(instance, metamodelMocks.forOwlClassL().setAttribute());
-
-        assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
-    }
-
-    @Test
-    void loadEntityFieldCausesLoadStateOfLazilyLoadedAttributeToBeSetToLoadedEvenIfValueIsNull() throws Exception {
-        defaultLoadStateDescriptor(entityL);
-        final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
-        assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
-        // Do nothing when load field is triggered
         uow.loadEntityField(instance, metamodelMocks.forOwlClassL().setAttribute());
 
         assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));

@@ -33,6 +33,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.ChangeTrackingUnitOfWork;
 import cz.cvut.kbss.jopa.sessions.CloneBuilder;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
@@ -215,6 +216,8 @@ public class EntityLifecycleListenersTest {
         final OWLClassR rInstance = spy(createInstance(OWLClassR.class));
         rInstance.setUri(rOriginal.getUri());
         when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rInstance);
+        uow.getLoadStateRegistry().put(rOriginal, LoadStateDescriptorFactory.createAllLoaded(rOriginal, metamodelMock.entity(OWLClassR.class)));
+        uow.getLoadStateRegistry().put(rInstance, LoadStateDescriptorFactory.createAllLoaded(rOriginal, metamodelMock.entity(OWLClassR.class)));
 
         uow.registerExistingObject(rOriginal, descriptor);
         rInstance.setStringAtt("Update");
@@ -264,6 +267,8 @@ public class EntityLifecycleListenersTest {
         final OWLClassR rInstance = spy(createInstance(OWLClassR.class));
         rInstance.setUri(rOriginal.getUri());
         when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rInstance);
+        uow.getLoadStateRegistry().put(rOriginal, LoadStateDescriptorFactory.createAllLoaded(rOriginal, metamodelMock.entity(OWLClassR.class)));
+        uow.getLoadStateRegistry().put(rInstance, LoadStateDescriptorFactory.createAllLoaded(rOriginal, metamodelMock.entity(OWLClassR.class)));
 
         uow.registerExistingObject(rOriginal, descriptor);
         rInstance.setStringAtt("Update");

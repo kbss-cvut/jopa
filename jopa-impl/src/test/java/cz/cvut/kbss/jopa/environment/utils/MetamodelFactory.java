@@ -240,6 +240,7 @@ public class MetamodelFactory {
         when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(propsMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
+        when(propsMock.getJavaType()).thenReturn(OWLClassB.getPropertiesField().getType());
         when(propsMock.getName()).thenReturn(OWLClassB.getPropertiesField().getName());
         when(propsMock.getDeclaringType()).thenReturn(etMock);
         when(propsMock.getPropertyIdentifierType()).thenReturn(String.class);
@@ -653,6 +654,7 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(OWLClassL.getReferencedListField().getName())).thenReturn(refListMock);
         when(etMock.getAttribute(OWLClassL.getReferencedListField().getName())).thenReturn(refListMock);
         when(refListMock.getDeclaringType()).thenReturn(etMock);
+        when(refListMock.getJavaType()).thenReturn(List.class);
 
         when(simpleListMock.getJavaField()).thenReturn(OWLClassL.getSimpleListField());
         when(simpleListMock.getName()).thenReturn(OWLClassL.getSimpleListField().getName());
@@ -670,6 +672,7 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(OWLClassL.getSimpleListField().getName())).thenReturn(simpleListMock);
         when(etMock.getAttribute(OWLClassL.getSimpleListField().getName())).thenReturn(simpleListMock);
         when(simpleListMock.getDeclaringType()).thenReturn(etMock);
+        when(simpleListMock.getJavaType()).thenReturn(List.class);
 
         when(setMock.getJavaField()).thenReturn(OWLClassL.getSetField());
         when(setMock.getName()).thenReturn(OWLClassL.getSetField().getName());
@@ -684,6 +687,7 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(OWLClassL.getSetField().getName())).thenReturn(setMock);
         when(etMock.getAttribute(OWLClassL.getSetField().getName())).thenReturn(setMock);
         when(setMock.getDeclaringType()).thenReturn(etMock);
+        when(setMock.getJavaType()).thenReturn(Set.class);
 
         when(singleAMock.getJavaField()).thenReturn(OWLClassL.getSingleAField());
         when(singleAMock.getName()).thenReturn(OWLClassL.getSingleAField().getName());
@@ -698,6 +702,7 @@ public class MetamodelFactory {
         when(singleAMock.getDeclaringType()).thenReturn(etMock);
         when(etMock.getFieldSpecification(OWLClassL.getSingleAField().getName())).thenReturn(singleAMock);
         when(etMock.getAttribute(OWLClassL.getSingleAField().getName())).thenReturn(singleAMock);
+        when(singleAMock.getJavaType()).thenReturn(OWLClassA.class);
         when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
     }
 

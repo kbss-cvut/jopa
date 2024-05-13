@@ -273,7 +273,10 @@ class EntityConstructor {
 
     private <T> void processEmptyAttributes(T entity, EntityType<T> et, LoadStateDescriptor<T> loadStateDescriptor) {
         et.getFieldSpecifications().stream()
-          .filter(fs -> EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity) == null)
+          .filter(fs -> {
+              final Object value= EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
+              return value == null || (value instanceof Collection<?> && ((Collection<?>) value).isEmpty());
+          })
           .forEach(fs -> {
               final FetchType fetchType = fs.getFetchType();
               final LoadState loadState = loadStateDescriptor.isLoaded(fs);

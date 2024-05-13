@@ -16,6 +16,8 @@ import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -165,9 +167,11 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     void attributeChangedSetsAttributeLoadStatusToLoaded() throws Exception {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
-        defaultLoadStateDescriptor(entityL);
+        final LoadStateDescriptor<OWLClassL> loadStateDescriptor = LoadStateDescriptorFactory.createNotLoaded(entityL, metamodelMocks.forOwlClassL()
+                                                                                                                                      .entityType());
+        uow.getLoadStateRegistry().put(entityL, loadStateDescriptor);
         final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
-        assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+        assertEquals(LoadState.NOT_LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
         instance.setSet(Collections.singleton(entityA));
         uow.attributeChanged(instance, OWLClassL.getSetField());
 
@@ -235,9 +239,11 @@ public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     void loadEntityFieldDoesNotInvokeLoadFromRepositoryForNullAttributeWhenItsStateIsLoaded() throws Exception {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
-        defaultLoadStateDescriptor(entityL);
+        final LoadStateDescriptor<OWLClassL> loadStateDescriptor = LoadStateDescriptorFactory.createNotLoaded(entityL, metamodelMocks.forOwlClassL()
+                                                                                                                                      .entityType());
+        uow.getLoadStateRegistry().put(entityL, loadStateDescriptor);
         final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
-        assertEquals(LoadState.UNKNOWN, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
+        assertEquals(LoadState.NOT_LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
         uow.attributeChanged(instance, OWLClassL.getSetField());
         assertEquals(LoadState.LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
         uow.loadEntityField(instance, metamodelMocks.forOwlClassL().setAttribute());

@@ -433,10 +433,6 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         cloneToOriginals.put(clone, original);
         final Object identifier = EntityPropertiesUtils.getIdentifier(clone, getMetamodel());
         keysToClones.put(identifier, clone);
-        final LoadStateDescriptor<?> instanceDesc = identifier != null
-                ? LoadStateDescriptorFactory.create(clone, (EntityType<Object>) entityType(clone.getClass()))
-                : LoadStateDescriptorFactory.createAllLoaded(clone, (EntityType<Object>) entityType(clone.getClass()));
-        loadStateRegistry.put(clone, instanceDesc);
         registerEntityWithOntologyContext(clone, descriptor);
     }
 
@@ -654,6 +650,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             new RefreshInstanceMerger(indirectWrapperHelper).mergeChanges(chSet);
             revertTransactionalChanges(object, descriptor, chSet);
             registerClone(object, original, descriptor);
+            loadStateRegistry.put(object, LoadStateDescriptorFactory.createAllLoaded(object, et));
             et.getLifecycleListenerManager().invokePostLoadCallbacks(object);
         } finally {
             connection.close();
