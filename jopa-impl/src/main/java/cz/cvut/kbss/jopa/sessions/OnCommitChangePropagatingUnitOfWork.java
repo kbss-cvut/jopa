@@ -32,8 +32,8 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
         final EntityType<?> et = entityType(entity.getClass());
         for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
             final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
-            if (value instanceof LazyLoadingProxy) {
-                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, null);
+            if (value instanceof LazyLoadingProxy<?> lazyLoadingProxy) {
+                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, lazyLoadingProxy.unwrap());
             }
         }
     }

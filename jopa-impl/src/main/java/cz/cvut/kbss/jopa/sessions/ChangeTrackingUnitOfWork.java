@@ -118,8 +118,8 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
             final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
             if (value instanceof IndirectWrapper indirectWrapper) {
                 EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, indirectWrapper.unwrap());
-            } else if (value instanceof LazyLoadingProxy) {
-                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, null);
+            } else if (value instanceof LazyLoadingProxy lazyLoadingProxy) {
+                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, lazyLoadingProxy.unwrap());
             }
         }
     }

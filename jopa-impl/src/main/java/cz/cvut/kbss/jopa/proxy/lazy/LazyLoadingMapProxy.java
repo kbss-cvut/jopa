@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.proxy.lazy;
 import cz.cvut.kbss.jopa.exception.LazyLoadingException;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
 
 import java.util.Collection;
 import java.util.Map;
@@ -35,6 +36,11 @@ public class LazyLoadingMapProxy<T, K, V> implements LazyLoadingProxy<Map<K, V>>
                     + fieldSpec + " of entity " + owner);
         }
         return (Map<K, V>) persistenceContext.loadEntityField(owner, fieldSpec);
+    }
+
+    @Override
+    public Map<K, V> unwrap() {
+        return (Map<K, V>) CollectionFactory.createDefaultMap();
     }
 
     @Override

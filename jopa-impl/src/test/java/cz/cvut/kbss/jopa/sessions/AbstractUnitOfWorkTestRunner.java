@@ -39,6 +39,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
+import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxyGenerator;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
@@ -349,7 +350,8 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     @Test
     void removeObjectFromCacheEvictsObjectFromCacheManager() {
         uow.removeObjectFromCache(entityB, descriptor.getSingleContext().orElse(null));
-        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassB.class, entityB.getUri(), descriptor.getSingleContext().orElse(null));
+        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassB.class, entityB.getUri(), descriptor.getSingleContext()
+                                                                                                          .orElse(null));
     }
 
     @Test
@@ -463,7 +465,8 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         final Map<String, Set<String>> props = Collections
                 .singletonMap(Vocabulary.p_m_IntegerSet, Collections.singleton("12345"));
         defaultLoadStateDescriptor(b);
-        uow.getLoadStateRegistry().get(b).setLoaded(metamodelMocks.forOwlClassB().propertiesSpec(), LoadState.NOT_LOADED);
+        uow.getLoadStateRegistry().get(b)
+           .setLoaded(metamodelMocks.forOwlClassB().propertiesSpec(), LoadState.NOT_LOADED);
         final OWLClassB clone = (OWLClassB) uow.registerExistingObject(b, descriptor);
         doAnswer(invocation -> {
             final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
@@ -480,8 +483,9 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     void loadFieldLoadsManagedTypeAttribute() {
         final OWLClassL original = new OWLClassL(Generators.createIndividualIdentifier());
         final LoadStateDescriptor<OWLClassL> loadStateDescriptor = LoadStateDescriptorFactory.createNotLoaded(original, metamodelMocks.forOwlClassL()
-                                                                                                                                     .entityType());
+                                                                                                                                      .entityType());
         uow.getLoadStateRegistry().put(original, loadStateDescriptor);
+        when(metamodelMock.getLazyLoadingProxy(OWLClassA.class)).thenReturn((Class) new LazyLoadingEntityProxyGenerator().generate(OWLClassA.class));
         final OWLClassL clone = (OWLClassL) uow.registerExistingObject(original, descriptor);
         doAnswer(invocation -> {
             final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
@@ -504,7 +508,8 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     void findOfObjectAlreadyManagedAsLazilyLoadedValueReturnSameObject() {
         final OWLClassL original = new OWLClassL(Generators.createIndividualIdentifier());
         defaultLoadStateDescriptor(original);
-        uow.getLoadStateRegistry().get(original).setLoaded(metamodelMocks.forOwlClassL().setAttribute(), LoadState.NOT_LOADED);
+        uow.getLoadStateRegistry().get(original)
+           .setLoaded(metamodelMocks.forOwlClassL().setAttribute(), LoadState.NOT_LOADED);
         final OWLClassL clone = (OWLClassL) uow.registerExistingObject(original, descriptor);
         doAnswer(invocation -> {
             final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
@@ -522,10 +527,11 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
 
     @Test
     void loadEntityFieldOnUnmanagedObjectThrowsOwlPersistenceException() {
-        assertThrows(OWLPersistenceException.class, () -> uow.loadEntityField(entityB, metamodelMocks.forOwlClassB().stringAttribute()));
+        assertThrows(OWLPersistenceException.class, () -> uow.loadEntityField(entityB, metamodelMocks.forOwlClassB()
+                                                                                                     .stringAttribute()));
         verify(storageMock, never()).loadFieldValue(any(OWLClassB.class),
-                                                    eq(metamodelMocks.forOwlClassB().stringAttribute()),
-                                                    eq(descriptor));
+                eq(metamodelMocks.forOwlClassB().stringAttribute()),
+                eq(descriptor));
     }
 
     @Test
@@ -601,7 +607,7 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     }
 
     @Test
-    void clearCleansUpPersistenceContext() throws Exception {
+    void clearCleansUpPersistenceContext() {
         final OWLClassD d = new OWLClassD();
         d.setUri(URI.create("http://dUri"));
         defaultLoadStateDescriptor(d);
@@ -689,8 +695,8 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     @Test
     void refreshThrowsIllegalArgumentForNonManagedInstance() {
         final IllegalArgumentException result = assertThrows(IllegalArgumentException.class,
-                                                             () -> uow.refreshObject(
-                                                                     Generators.generateOwlClassAInstance()));
+                () -> uow.refreshObject(
+                        Generators.generateOwlClassAInstance()));
         assertEquals("Object not managed by this persistence context.", result.getMessage());
     }
 
@@ -700,7 +706,7 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         final Object a = uow.registerExistingObject(entityA, descriptor);
         uow.removeObject(a);
         final IllegalArgumentException result = assertThrows(IllegalArgumentException.class,
-                                                             () -> uow.refreshObject(a));
+                () -> uow.refreshObject(a));
         assertEquals("Object not managed by this persistence context.", result.getMessage());
     }
 
@@ -887,6 +893,7 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         final LoadStateDescriptor<OWLClassL> loadStateDescriptor = LoadStateDescriptorFactory.createNotLoaded(entityL, metamodelMocks.forOwlClassL()
                                                                                                                                      .entityType());
         uow.getLoadStateRegistry().put(entityL, loadStateDescriptor);
+        when(metamodelMock.getLazyLoadingProxy(OWLClassA.class)).thenReturn((Class) new LazyLoadingEntityProxyGenerator().generate(OWLClassA.class));
         final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
         assertEquals(LoadState.NOT_LOADED, uow.isLoaded(instance, OWLClassL.getSetField().getName()));
     }
@@ -904,6 +911,7 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         final LoadStateDescriptor<OWLClassL> loadStateDescriptor = LoadStateDescriptorFactory.createNotLoaded(entityL, metamodelMocks.forOwlClassL()
                                                                                                                                      .entityType());
         uow.getLoadStateRegistry().put(entityL, loadStateDescriptor);
+        when(metamodelMock.getLazyLoadingProxy(OWLClassA.class)).thenReturn((Class) new LazyLoadingEntityProxyGenerator().generate(OWLClassA.class));
         final OWLClassL instance = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
         doAnswer(inv -> {
             final OWLClassL inst = inv.getArgument(0);
@@ -922,7 +930,7 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         defaultLoadStateDescriptor(entityA);
         uow.registerExistingObject(entityA, descriptor);
         assertThrows(OWLEntityExistsException.class,
-                     () -> uow.getManagedOriginal(OWLClassB.class, entityA.getUri(), descriptor));
+                () -> uow.getManagedOriginal(OWLClassB.class, entityA.getUri(), descriptor));
     }
 
     @Test
@@ -976,12 +984,14 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         defaultLoadStateDescriptor(entityD, entityA);
         final OWLClassD instance = (OWLClassD) uow.registerExistingObject(entityD, descriptor);
         uow.isInferred(instance, metamodelMocks.forOwlClassD().owlClassAAtt(), instance.getOwlClassA());
-        verify(storageMock).isInferred(instance, metamodelMocks.forOwlClassD().owlClassAAtt(), instance.getOwlClassA(), descriptor);
+        verify(storageMock).isInferred(instance, metamodelMocks.forOwlClassD()
+                                                               .owlClassAAtt(), instance.getOwlClassA(), descriptor);
     }
 
     @Test
     void isInferredThrowsIllegalArgumentExceptionWhenInstanceIsNotManaged() {
-        assertThrows(IllegalArgumentException.class, () -> uow.isInferred(entityD, metamodelMocks.forOwlClassD().owlClassAAtt(), entityD.getOwlClassA()));
+        assertThrows(IllegalArgumentException.class, () -> uow.isInferred(entityD, metamodelMocks.forOwlClassD()
+                                                                                                 .owlClassAAtt(), entityD.getOwlClassA()));
         verify(storageMock, never()).isInferred(any(), any(), any(), any());
     }
 
@@ -998,16 +1008,35 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     }
 
     @Test
-    void unregisterObjectReplacesLazyLoadingProxiesWithNull() {
+    void unregisterObjectReplacesPluralLazyLoadingProxiesWithEmptyCollection() {
         when(transactionMock.isActive()).thenReturn(true);
-        final OWLClassC entityC = new OWLClassC(Generators.createIndividualIdentifier());
-        defaultLoadStateDescriptor(entityC);
-        uow.getLoadStateRegistry().get(entityC).setLoaded(metamodelMocks.forOwlClassC().simpleListAtt(), LoadState.NOT_LOADED);
-        final OWLClassC clone = (OWLClassC) uow.registerExistingObject(entityC, descriptor);
+        defaultLoadStateDescriptor(entityL);
+        uow.getLoadStateRegistry().get(entityL)
+           .setLoaded(metamodelMocks.forOwlClassL().simpleListAtt(), LoadState.NOT_LOADED);
+        uow.getLoadStateRegistry().get(entityL)
+           .setLoaded(metamodelMocks.forOwlClassL().setAttribute(), LoadState.NOT_LOADED);
+        final OWLClassL clone = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
         // Simple list is lazy loaded
         assertInstanceOf(LazyLoadingProxy.class, clone.getSimpleList());
+        assertInstanceOf(LazyLoadingProxy.class, clone.getSet());
         uow.unregisterObject(clone);
-        assertNull(clone.getSimpleList());
+        assertNotNull(clone.getSimpleList());
+        assertTrue(clone.getSimpleList().isEmpty());
+        assertNotNull(clone.getSet());
+        assertTrue(clone.getSet().isEmpty());
+    }
+
+    @Test
+    void unregisterObjectReplacesSingularLazyLoadingProxiesWithNull() {
+        when(transactionMock.isActive()).thenReturn(true);
+        defaultLoadStateDescriptor(entityL);
+        uow.getLoadStateRegistry().get(entityL)
+           .setLoaded(metamodelMocks.forOwlClassL().owlClassAAtt(), LoadState.NOT_LOADED);
+        when(metamodelMock.getLazyLoadingProxy(OWLClassA.class)).thenReturn((Class) new LazyLoadingEntityProxyGenerator().generate(OWLClassA.class));
+        final OWLClassL clone = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
+        assertInstanceOf(LazyLoadingProxy.class, clone.getSingleA());
+        uow.unregisterObject(clone);
+        assertNull(clone.getSingleA());
     }
 
     @Test
@@ -1017,7 +1046,8 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         defaultLoadStateDescriptor(simpleList.toArray());
         final OWLClassC entityC = new OWLClassC(Generators.createIndividualIdentifier());
         defaultLoadStateDescriptor(entityC);
-        uow.getLoadStateRegistry().get(entityC).setLoaded(metamodelMocks.forOwlClassC().simpleListAtt(), LoadState.NOT_LOADED);
+        uow.getLoadStateRegistry().get(entityC)
+           .setLoaded(metamodelMocks.forOwlClassC().simpleListAtt(), LoadState.NOT_LOADED);
         final OWLClassC clone = (OWLClassC) uow.registerExistingObject(entityC, descriptor);
         assertInstanceOf(LazyLoadingProxy.class, clone.getSimpleList());
         doAnswer(inv -> {
@@ -1026,7 +1056,8 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
             return simpleList;
         }).when(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassC().simpleListAtt(), descriptor);
 
-        final OWLClassC result = uow.getInstanceForMerge(entityC.getUri(), metamodelMocks.forOwlClassC().entityType(), descriptor);
+        final OWLClassC result = uow.getInstanceForMerge(entityC.getUri(), metamodelMocks.forOwlClassC()
+                                                                                         .entityType(), descriptor);
         assertThat(result.getSimpleList(), containsSameEntities(simpleList));
     }
 }

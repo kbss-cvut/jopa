@@ -13,4 +13,8 @@ public interface LazyLoadingProxy<T> {
      * @return Loaded value
      */
     T triggerLazyLoading();
+
+    default T unwrap() {
+        return null;
+    }
 }

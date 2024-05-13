@@ -1,7 +1,9 @@
 package cz.cvut.kbss.jopa.proxy.lazy;
 
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
 
 import java.util.Collection;
 import java.util.List;
@@ -12,6 +14,11 @@ public class LazyLoadingListProxy<O, E> extends LazyLoadingCollectionProxy<O, Li
     public LazyLoadingListProxy(O owner, FieldSpecification<? super O, List<E>> fieldSpec,
                                 UnitOfWork persistenceContext) {
         super(owner, fieldSpec, persistenceContext);
+    }
+
+    @Override
+    public List<E> unwrap() {
+        return (List<E>) CollectionFactory.createDefaultCollection(CollectionType.LIST);
     }
 
     @Override
