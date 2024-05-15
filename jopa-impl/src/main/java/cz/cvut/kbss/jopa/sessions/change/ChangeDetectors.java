@@ -56,7 +56,7 @@ class ChangeDetectors implements ChangeDetector {
         return !clone.equals(original);
     }
 
-    private static boolean isNonEmptyCollection(Object instance) {
+    static boolean isNonEmptyCollection(Object instance) {
         return !(instance instanceof Collection) || !((Collection<?>) instance).isEmpty();
     }
 }

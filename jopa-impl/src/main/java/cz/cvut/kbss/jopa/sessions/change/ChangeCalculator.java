@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.sessions.change;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
+import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxy;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public class ChangeCalculator {
         }
         final Class<?> cls = clone.getClass();
         for (FieldSpecification<?, ?> fs : getFields(cls)) {
-            if (fs instanceof Identifier<?,?>) {
+            if (fs instanceof Identifier<?, ?>) {
                 continue;
             }
             final Field f = fs.getJavaField();
@@ -135,13 +136,12 @@ public class ChangeCalculator {
         Object clone = changeSet.getClone();
         boolean changesFound = false;
         for (FieldSpecification<?, ?> fs : getFields(clone.getClass())) {
-            if (fs instanceof Identifier<?,?>) {
+            if (fs instanceof Identifier<?, ?>) {
                 continue;
             }
-            final Field f = fs.getJavaField();
-            Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
-            Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
-            if ((clVal == null || clVal instanceof LazyLoadingProxy<?>) && origVal == null) {
+            Object clVal = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), clone);
+            Object origVal = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), original);
+            if (shouldSkipLazyLoadedField(origVal, clVal)) {
                 continue;
             }
             boolean changed = valueChanged(origVal, clVal);
@@ -151,5 +151,10 @@ public class ChangeCalculator {
             }
         }
         return changesFound;
+    }
+
+    private static boolean shouldSkipLazyLoadedField(Object originalValue, Object cloneValue) {
+        return (cloneValue instanceof LazyLoadingEntityProxy<?> && originalValue == null)
+                || (cloneValue instanceof LazyLoadingProxy<?> && !ChangeDetectors.isNonEmptyCollection(originalValue));
     }
 }

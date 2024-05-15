@@ -34,8 +34,10 @@ import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingListProxy;
 import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxyGenerator;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,6 +69,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -613,5 +618,17 @@ public class ChangeCalculatorTest {
         clone.setStringAttribute(original.getStringAttribute());
         clone.setTypes(new HashSet<>(original.getTypes()));
         assertFalse(sut.hasChanges(original, clone));
+    }
+
+    @Test
+    void calculateChangesSkipsLazyLoadedCollectionValueWhenOriginalIsEmptyCollection() {
+        final OWLClassC original = new OWLClassC(Generators.createIndividualIdentifier());
+        original.setSimpleList(Collections.emptyList());
+        final OWLClassC clone = new OWLClassC(original.getUri());
+        final UnitOfWork uow = mock(UnitOfWork.class);
+        clone.setSimpleList(new LazyLoadingListProxy<>(clone, metamodelMocks.forOwlClassC().simpleListAtt(), uow));
+        final ObjectChangeSet changeSet = createChangeSet(original, clone);
+        assertFalse(sut.calculateChanges(changeSet));
+        verify(uow, never()).loadEntityField(any(), any());
     }
 }
