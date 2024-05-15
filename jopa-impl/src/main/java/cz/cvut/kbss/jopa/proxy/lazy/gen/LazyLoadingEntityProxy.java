@@ -23,6 +23,16 @@ public interface LazyLoadingEntityProxy<T> extends LazyLoadingProxyPropertyAcces
     }
 
     /**
+     * Gets the entity class for which this is a lazy loading proxy.
+     *
+     * @return Proxied entity class
+     */
+    default Class<T> getProxiedClass() {
+        assert getClass().getSuperclass() != null;
+        return (Class<T>) getClass().getSuperclass();
+    }
+
+    /**
      * Common implementation of {@link Object#toString()}.
      *
      * @return String representation of this proxy
