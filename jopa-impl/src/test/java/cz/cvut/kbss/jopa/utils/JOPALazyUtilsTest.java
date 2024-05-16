@@ -72,6 +72,18 @@ class JOPALazyUtilsTest {
     }
 
     @Test
+    void isLoadedReturnsTrueForLazyLoadingProxyInstanceThatIsLoaded() {
+        final OWLClassC entity = new OWLClassC(Generators.createIndividualIdentifier());
+        final List<OWLClassA> list = List.of(Generators.generateOwlClassAInstance());
+        final FieldSpecification<OWLClassC, List> fieldSpec = mock(FieldSpecification.class);
+        final LazyLoadingListProxy proxy = new LazyLoadingListProxy(entity, fieldSpec, uow);
+        when(uow.isActive()).thenReturn(true);
+        when(uow.loadEntityField(entity, fieldSpec)).thenReturn(list);
+        proxy.triggerLazyLoading();
+        assertTrue(JOPALazyUtils.isLoaded(proxy));
+    }
+
+    @Test
     void getClassReturnsEntityClassForLazyLoadingEntityProxy() throws Exception {
         final Class<? extends OWLClassA> proxyCls = new LazyLoadingEntityProxyGenerator().generate(OWLClassA.class);
         final OWLClassA proxy = proxyCls.getDeclaredConstructor().newInstance();

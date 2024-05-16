@@ -14,6 +14,7 @@ import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
+import net.bytebuddy.implementation.bind.annotation.FieldValue;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import net.bytebuddy.implementation.bind.annotation.This;
@@ -27,6 +28,7 @@ import java.util.Objects;
 import static net.bytebuddy.matcher.ElementMatchers.isGetter;
 import static net.bytebuddy.matcher.ElementMatchers.isSetter;
 import static net.bytebuddy.matcher.ElementMatchers.isToString;
+import static net.bytebuddy.matcher.ElementMatchers.named;
 
 public class LazyLoadingEntityProxyGenerator implements PersistenceContextAwareClassGenerator {
 
@@ -48,7 +50,9 @@ public class LazyLoadingEntityProxyGenerator implements PersistenceContextAwareC
                                                              .defineField("persistenceContext", UnitOfWork.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
                                                              .defineField("owner", Object.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
                                                              .defineField("fieldSpec", FieldSpecification.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
-                                                             .implement(LazyLoadingProxyPropertyAccessor.class)
+                                                             // Have to use Object, because otherwise it won't generate a setter for us
+                                                             .defineField("value", entityClass, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
+                                                             .implement(TypeDescription.Generic.Builder.parameterizedType(LazyLoadingProxyPropertyAccessor.class, entityClass).build())
                                                              .intercept(FieldAccessor.ofBeanProperty())
                                                              .implement(LazyLoadingEntityProxy.class)
                                                              .method(isSetter().and(new PersistentPropertySetterMatcher<>(entityClass)))
@@ -57,6 +61,10 @@ public class LazyLoadingEntityProxyGenerator implements PersistenceContextAwareC
                                                              .intercept(MethodDelegation.to(GetterInterceptor.class))
                                                              .method(isToString())
                                                              .intercept(MethodDelegation.toMethodReturnOf("stringify"))
+                                                             .method(named("isLoaded"))
+                                                             .intercept(MethodDelegation.to(ProxyMethodsInterceptor.class))
+                                                             .method(named("getLoadedValue"))
+                                                             .intercept(MethodDelegation.to(ProxyMethodsInterceptor.class))
                                                              .make();
         LOG.debug("Generated dynamic type {} for entity class {}.", typeDef, entityClass);
         return typeDef.load(getClass().getClassLoader()).getLoaded();
@@ -85,6 +93,20 @@ public class LazyLoadingEntityProxyGenerator implements PersistenceContextAwareC
             } catch (InvocationTargetException | IllegalAccessException e) {
                 throw new LazyLoadingException("Unable to invoke setter after lazily loading object.", e);
             }
+        }
+    }
+
+    public static class ProxyMethodsInterceptor {
+
+        public static <T> boolean isLoaded(@This LazyLoadingEntityProxy<T> proxy, @FieldValue("value") T value) {
+            return value != null;
+        }
+
+        public static <T> T getLoadedValue(@This LazyLoadingEntityProxy<T> proxy, @FieldValue("value") T value) {
+            if (value == null) {
+                throw new IllegalStateException("Proxy has not been loaded, yet.");
+            }
+            return value;
         }
     }
 }

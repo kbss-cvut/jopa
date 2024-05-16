@@ -30,7 +30,7 @@ public class JOPALazyUtils {
      * @return {@code true} if the object is a {@code LazyLoadingProxy}, {@code false} otherwise
      */
     public static boolean isLoaded(Object proxy) {
-        return !(proxy instanceof LazyLoadingProxy<?>);
+        return !(proxy instanceof LazyLoadingProxy<?> lazyLoadingProxy) || (lazyLoadingProxy.isLoaded());
     }
 
     /**

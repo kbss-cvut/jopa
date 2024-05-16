@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -192,5 +193,25 @@ class LazyLoadingCollectionProxyTest {
         sut.clear();
         verify(uow).loadEntityField(entity, att);
         verify(proxiedCollection).clear();
+    }
+
+    @Test
+    void getLoadedValueReturnsLoadedValueAfterTriggeringLazyLoading() {
+        initLazyLoading();
+        assertFalse(sut.isEmpty());
+        assertTrue(sut.isLoaded());
+        assertEquals(proxiedCollection, sut.getLoadedValue());
+    }
+
+    @Test
+    void triggerLazyLoadingMultipleTimesReturnsAlreadyLoadedValueAndDoesNotCallPersistenceContext() {
+        initLazyLoading();
+        IntStream.range(0, 5).forEach(i -> assertEquals(proxiedCollection, sut.triggerLazyLoading()));
+        verify(uow, times(1)).loadEntityField(entity, att);
+    }
+
+    @Test
+    void getLoadedThrowsIllegalStateExceptionWhenCalledBeforeLoading() {
+        assertThrows(IllegalStateException.class, () -> sut.getLoadedValue());
     }
 }

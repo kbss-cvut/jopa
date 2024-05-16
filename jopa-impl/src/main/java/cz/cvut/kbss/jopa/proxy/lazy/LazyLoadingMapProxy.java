@@ -22,6 +22,8 @@ public class LazyLoadingMapProxy<T, K, V> implements LazyLoadingProxy<Map<K, V>>
     protected final transient FieldSpecification<? super T, Map<K, V>> fieldSpec;
     protected final transient UnitOfWork persistenceContext;
 
+    private Map<K, V> value;
+
     public LazyLoadingMapProxy(T owner, FieldSpecification<? super T, Map<K, V>> fieldSpec,
                                UnitOfWork persistenceContext) {
         this.owner = owner;
@@ -31,11 +33,28 @@ public class LazyLoadingMapProxy<T, K, V> implements LazyLoadingProxy<Map<K, V>>
 
     @Override
     public Map<K, V> triggerLazyLoading() {
+        if (value != null) {
+            return value;
+        }
         if (persistenceContext == null || !persistenceContext.isActive()) {
             throw new LazyLoadingException("No active persistence context is available in lazy loading proxy for attribute "
                     + fieldSpec + " of entity " + owner);
         }
-        return (Map<K, V>) persistenceContext.loadEntityField(owner, fieldSpec);
+        this.value = (Map<K, V>) persistenceContext.loadEntityField(owner, fieldSpec);
+        return value;
+    }
+
+    @Override
+    public boolean isLoaded() {
+        return value != null;
+    }
+
+    @Override
+    public Map<K, V> getLoadedValue() {
+        if (value == null) {
+            throw new IllegalStateException("Proxy has not been loaded, yet.");
+        }
+        return value;
     }
 
     @Override

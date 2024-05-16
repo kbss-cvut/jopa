@@ -13,11 +13,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -161,5 +163,25 @@ class LazyLoadingMapProxyTest {
         initLazyLoading();
         assertEquals(proxiedProperties.entrySet(), sut.entrySet());
         verify(uow).loadEntityField(entity, fieldSpec);
+    }
+
+    @Test
+    void getLoadedValueReturnsLoadedValueAfterTriggeringLazyLoading() {
+        initLazyLoading();
+        assertFalse(sut.isEmpty());
+        assertTrue(sut.isLoaded());
+        assertEquals(proxiedProperties, sut.getLoadedValue());
+    }
+
+    @Test
+    void triggerLazyLoadingMultipleTimesReturnsAlreadyLoadedValueAndDoesNotCallPersistenceContext() {
+        initLazyLoading();
+        IntStream.range(0, 5).forEach(i -> assertEquals(proxiedProperties, sut.triggerLazyLoading()));
+        verify(uow, times(1)).loadEntityField(entity, fieldSpec);
+    }
+
+    @Test
+    void getLoadedThrowsIllegalStateExceptionWhenCalledBeforeLoading() {
+        assertThrows(IllegalStateException.class, () -> sut.getLoadedValue());
     }
 }

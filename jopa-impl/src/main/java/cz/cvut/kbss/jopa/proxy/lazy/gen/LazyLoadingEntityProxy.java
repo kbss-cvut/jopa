@@ -11,15 +11,19 @@ import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
  *
  * @param <T> Type of the lazily-loaded value
  */
-public interface LazyLoadingEntityProxy<T> extends LazyLoadingProxyPropertyAccessor, LazyLoadingProxy<T> {
+public interface LazyLoadingEntityProxy<T> extends LazyLoadingProxyPropertyAccessor<T>, LazyLoadingProxy<T> {
 
     @Override
     default T triggerLazyLoading() {
+        if (isLoaded()) {
+            return getLoadedValue();
+        }
         if (getPersistenceContext() == null || !getPersistenceContext().isActive()) {
             throw new LazyLoadingException("No active persistence context is available in lazy loading proxy for attribute "
                     + getFieldSpec() + " of entity " + getOwner());
         }
-        return (T) getPersistenceContext().loadEntityField(getOwner(), (FieldSpecification<? super Object, ?>) getFieldSpec());
+        setValue((T) getPersistenceContext().loadEntityField(getOwner(), (FieldSpecification<? super Object, ?>) getFieldSpec()));
+        return getLoadedValue();
     }
 
     /**

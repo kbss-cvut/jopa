@@ -19,6 +19,8 @@ abstract class LazyLoadingCollectionProxy<O, T extends Collection<E>, E> impleme
     protected final transient FieldSpecification<? super O, T> fieldSpec;
     protected final transient UnitOfWork persistenceContext;
 
+    private transient T value;
+
     public LazyLoadingCollectionProxy(O owner, FieldSpecification<? super O, T> fieldSpec,
                                       UnitOfWork persistenceContext) {
         this.owner = owner;
@@ -28,11 +30,28 @@ abstract class LazyLoadingCollectionProxy<O, T extends Collection<E>, E> impleme
 
     @Override
     public T triggerLazyLoading() {
+        if (value != null) {
+            return value;
+        }
         if (persistenceContext == null || !persistenceContext.isActive()) {
             throw new LazyLoadingException("No active persistence context is available in lazy loading proxy for attribute "
                     + fieldSpec + " of entity " + owner);
         }
-        return (T) persistenceContext.loadEntityField(owner, fieldSpec);
+        this.value = (T) persistenceContext.loadEntityField(owner, fieldSpec);
+        return value;
+    }
+
+    @Override
+    public boolean isLoaded() {
+        return value != null;
+    }
+
+    @Override
+    public T getLoadedValue() {
+        if (value == null) {
+            throw new IllegalStateException("Proxy has not been loaded, yet.");
+        }
+        return value;
     }
 
     @Override

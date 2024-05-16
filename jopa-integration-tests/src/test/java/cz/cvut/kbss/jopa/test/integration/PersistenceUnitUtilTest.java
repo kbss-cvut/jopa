@@ -57,8 +57,7 @@ class PersistenceUnitUtilTest extends IntegrationTestBase {
     @Test
     void isLoadedReturnsTrueForLoadedExistingEntity() throws Exception {
         final URI uri = Generators.generateUri();
-        initAxiomsForOWLClassA(NamedResource.create(uri),
-                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false), "test");
+        initAxiomsForOWLClassA(NamedResource.create(uri), "test", false);
         final OWLClassA entity = em.find(OWLClassA.class, uri);
         assertTrue(em.getEntityManagerFactory().getPersistenceUnitUtil().isLoaded(entity));
         assertTrue(em.getEntityManagerFactory().getPersistenceUnitUtil().isLoaded(entity, "stringAttribute"));

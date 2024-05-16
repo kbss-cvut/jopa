@@ -10,11 +10,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.stream.IntStream;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -86,5 +91,41 @@ class LazyLoadingEntityProxyGeneratorTest {
         assertThat(result, containsString(OWLClassD.class.getSimpleName() + ".owlClassA"));
         assertThat(result, containsString(resultCls.getSimpleName()));
         assertEquals(((LazyLoadingEntityProxy<?>) proxy).stringify(), result);
+    }
+
+    @Test
+    void getLoadedValueOnGeneratedProxyReturnsLoadedValueAfterTriggeringLazyLoading() throws Exception {
+        initLazyLoading();
+        final Class<? extends OWLClassA> resultCls = sut.generate(OWLClassA.class);
+        final OWLClassA proxy = resultCls.getDeclaredConstructor().newInstance();
+        ((LazyLoadingProxyPropertyAccessor) proxy).setPersistenceContext(uow);
+        ((LazyLoadingProxyPropertyAccessor) proxy).setFieldSpec(fieldSpec);
+        ((LazyLoadingProxyPropertyAccessor) proxy).setOwner(owner);
+        assertEquals(loaded.getStringAttribute(), proxy.getStringAttribute());
+        assertTrue(((LazyLoadingEntityProxy<OWLClassA>) proxy).isLoaded());
+        assertEquals(loaded, ((LazyLoadingEntityProxy<OWLClassA>) proxy).getLoadedValue());
+    }
+
+    @Test
+    void triggerLazyLoadingMultipleTimesOnGeneratedProxyReturnsAlreadyLoadedValueAndDoesNotCallPersistenceContext() throws Exception {
+        initLazyLoading();
+        final Class<? extends OWLClassA> resultCls = sut.generate(OWLClassA.class);
+        final OWLClassA proxy = resultCls.getDeclaredConstructor().newInstance();
+        ((LazyLoadingProxyPropertyAccessor) proxy).setPersistenceContext(uow);
+        ((LazyLoadingProxyPropertyAccessor) proxy).setFieldSpec(fieldSpec);
+        ((LazyLoadingProxyPropertyAccessor) proxy).setOwner(owner);
+        IntStream.range(0, 5)
+                 .forEach(i -> assertEquals(loaded, ((LazyLoadingEntityProxy<OWLClassA>) proxy).triggerLazyLoading()));
+        verify(uow, times(1)).loadEntityField(owner, fieldSpec);
+    }
+
+    @Test
+    void getLoadedOnGeneratedProxyThrowsIllegalStateExceptionWhenCalledBeforeLoading() throws Exception {
+        final Class<? extends OWLClassA> resultCls = sut.generate(OWLClassA.class);
+        final OWLClassA proxy = resultCls.getDeclaredConstructor().newInstance();
+        ((LazyLoadingProxyPropertyAccessor) proxy).setPersistenceContext(uow);
+        ((LazyLoadingProxyPropertyAccessor) proxy).setFieldSpec(fieldSpec);
+        ((LazyLoadingProxyPropertyAccessor) proxy).setOwner(owner);
+        assertThrows(IllegalStateException.class, () -> ((LazyLoadingEntityProxy<OWLClassA>) proxy).getLoadedValue());
     }
 }
