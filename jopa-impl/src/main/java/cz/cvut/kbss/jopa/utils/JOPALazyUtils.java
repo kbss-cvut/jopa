@@ -13,7 +13,8 @@ public class JOPALazyUtils {
     /**
      * Triggers loading on the specified lazy loading proxy.
      * <p>
-     * If the specified object is not a {@link cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy}, nothing happens.
+     * If the specified object is not a {@link cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy} or is a proxy that is
+     * already loaded, nothing happens.
      *
      * @param proxy Proxy to load
      */
@@ -27,7 +28,7 @@ public class JOPALazyUtils {
      * Checks whether the specified object has been loaded or is still a lazy loading proxy.
      *
      * @param proxy Proxy to check
-     * @return {@code true} if the object is a {@code LazyLoadingProxy}, {@code false} otherwise
+     * @return {@code true} if the object is a {@code LazyLoadingProxy} and is not loaded, {@code false} otherwise
      */
     public static boolean isLoaded(Object proxy) {
         return !(proxy instanceof LazyLoadingProxy<?> lazyLoadingProxy) || (lazyLoadingProxy.isLoaded());
