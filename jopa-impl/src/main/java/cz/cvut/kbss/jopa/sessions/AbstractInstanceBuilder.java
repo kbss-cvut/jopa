@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,13 +90,13 @@ abstract class AbstractInstanceBuilder {
             return null;
         } catch (RuntimeException e) {
             // Constructor cannot be resolved for some other reason
-            LOG.warn("Unable to get constructor for arguments of type {}. Got runtime exception {}.", args, e);
+            LOG.warn("Unable to get constructor for arguments of type {}.", args, e);
             return null;
         }
         return c;
     }
 
     protected static void logConstructorAccessException(Constructor<?> constructor, Exception e) {
-        LOG.warn("Exception caught when invoking constructor " + constructor + ". Exception: " + e);
+        LOG.warn("Exception caught when invoking constructor {}.", constructor, e);
     }
 }

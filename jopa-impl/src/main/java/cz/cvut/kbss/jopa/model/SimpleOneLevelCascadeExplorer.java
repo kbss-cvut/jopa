@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.util.Collection;
@@ -34,7 +35,7 @@ public class SimpleOneLevelCascadeExplorer extends OneLevelCascadeExplorer {
 
     protected void runForEach(final Attribute<?, ?> at, final Object o, boolean cascaded) {
         Object attVal = EntityPropertiesUtils.getAttributeValue(at, o);
-        if (attVal == null) {
+        if (attVal == null || attVal instanceof LazyLoadingProxy<?>) {
             return;
         }
         if (at.isCollection()) {

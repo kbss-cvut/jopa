@@ -7,7 +7,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
@@ -37,7 +37,7 @@ class ReferencedListIteratorTest {
     private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
     @Mock
-    private Connector connector;
+    private RepoConnection connector;
 
     @Test
     void nextNodeThrowsIntegrityConstraintViolatedExceptionWhenNodeHasMultipleContentValues() throws Exception {

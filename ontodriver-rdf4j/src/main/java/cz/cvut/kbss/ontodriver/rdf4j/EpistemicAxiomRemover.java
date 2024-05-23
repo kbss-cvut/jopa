@@ -21,7 +21,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AbstractAxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.SubjectPredicateContext;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
@@ -49,10 +49,10 @@ import static cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils.toRdf4jIri;
  */
 class EpistemicAxiomRemover {
 
-    private final Connector connector;
+    private final RepoConnection connector;
     private final ValueFactory valueFactory;
 
-    EpistemicAxiomRemover(Connector connector, ValueFactory valueFactory) {
+    EpistemicAxiomRemover(RepoConnection connector, ValueFactory valueFactory) {
         this.connector = connector;
         this.valueFactory = valueFactory;
     }

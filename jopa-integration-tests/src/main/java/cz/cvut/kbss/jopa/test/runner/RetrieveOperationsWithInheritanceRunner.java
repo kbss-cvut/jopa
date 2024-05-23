@@ -278,11 +278,10 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         persist(entityU, entityT, entityA);
 
         final OWLClassU result = em.find(OWLClassU.class, entityU.getUri());
-        assertNotNull(result.getOwlClassS());
+        assertEquals(entityT.getUri(), result.getOwlClassS().getUri());
         assertInstanceOf(OWLClassT.class, result.getOwlClassS());
         final OWLClassT tResult = (OWLClassT) result.getOwlClassS();
         verifyEntityTAttributes(tResult);
-        assertNotNull(tResult.getOwlClassA());
         assertEquals(entityA.getUri(), tResult.getOwlClassA().getUri());
     }
 }

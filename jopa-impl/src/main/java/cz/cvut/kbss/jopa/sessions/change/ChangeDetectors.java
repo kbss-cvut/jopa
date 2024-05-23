@@ -28,31 +28,35 @@ class ChangeDetectors implements ChangeDetector {
 
     private final ChangeDetector mapChangeDetector;
     private final ChangeDetector collectionChangeDetector;
-    private final ChangeDetector managedTypeDector;
+    private final ChangeDetector managedTypeDetector;
 
     ChangeDetectors(MetamodelProvider metamodelProvider) {
         this.metamodelProvider = metamodelProvider;
         this.mapChangeDetector = new MapChangeDetector(this);
         this.collectionChangeDetector = new CollectionChangeDetector(this, metamodelProvider);
-        this.managedTypeDector = new ManagedTypeChangeDetector(metamodelProvider);
+        this.managedTypeDetector = new ManagedTypeChangeDetector(metamodelProvider);
     }
 
     @Override
     public boolean hasChanges(Object clone, Object original) {
         if ((clone == null && original != null) || (clone != null && original == null)) {
-            return true;
+            return isNonEmptyCollection(clone) && isNonEmptyCollection(original);
         }
         if (clone == null) {
             return false;
         }
 
         if (metamodelProvider.isEntityType(clone.getClass())) {
-            return managedTypeDector.hasChanges(clone, original);
+            return managedTypeDetector.hasChanges(clone, original);
         } else if (clone instanceof Collection) {
             return collectionChangeDetector.hasChanges(clone, original);
         } else if (clone instanceof Map) {
             return mapChangeDetector.hasChanges(clone, original);
         }
         return !clone.equals(original);
+    }
+
+    static boolean isNonEmptyCollection(Object instance) {
+        return !(instance instanceof Collection) || !((Collection<?>) instance).isEmpty();
     }
 }

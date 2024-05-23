@@ -17,13 +17,14 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.net.URI;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.c_Person)
-public class Person {
+public class Person implements HasUri {
 
     @Id
     private URI uri;

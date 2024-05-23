@@ -11,8 +11,10 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.MetamodelUtils;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.NamingStrategy;
 import net.bytebuddy.description.modifier.FieldPersistence;
 import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.MethodDelegation;
@@ -27,7 +29,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
-import static net.bytebuddy.matcher.ElementMatchers.isGetter;
 import static net.bytebuddy.matcher.ElementMatchers.isSetter;
 
 /**
@@ -41,7 +42,13 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
 
     private static final Logger LOG = LoggerFactory.getLogger(ManageableClassGenerator.class);
 
-    private final ByteBuddy byteBuddy = new ByteBuddy().with(new ByteBuddyUtil.NameGenerator());
+    private final ByteBuddy byteBuddy = new ByteBuddy().with(new NamingStrategy.AbstractBase() {
+
+        @Override
+        protected String name(TypeDescription typeDescription) {
+            return "JOPA_" + typeDescription.getSimpleName();
+        }
+    });
 
     private final Configuration config;
 
@@ -59,9 +66,6 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
                                                              .intercept(FieldAccessor.ofBeanProperty())
                                                              .method(isSetter().and(new PersistentPropertySetterMatcher<>(entityClass)))
                                                              .intercept(SuperMethodCall.INSTANCE.andThen(MethodDelegation.to(SetterInterceptor.class)))
-                                                             .method(isGetter().and(new PersistentPropertyGetterMatcher<>(entityClass)))
-                                                             .intercept(MethodDelegation.to(GetterInterceptor.class)
-                                                                                        .andThen(SuperMethodCall.INSTANCE))
                                                              .make();
         LOG.debug("Generated dynamic type {} for entity class {}.", typeDef, entityClass);
         outputGeneratedClass(typeDef);
@@ -96,24 +100,6 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
             }
             AttributeModificationValidator.verifyCanModify(fieldSpec);
             pc.attributeChanged(instance, fieldSpec);
-        }
-    }
-
-    public static class GetterInterceptor {
-
-        public static void get(@This Manageable instance, @Origin Method getter) throws Exception {
-            final UnitOfWork pc = instance.getPersistenceContext();
-            if (pc == null || !pc.contains(instance)) {
-                return;
-            }
-            final String fieldName = AnnotatedAccessor.from(getter).getPropertyName();
-            final EntityType<?> et = pc.getMetamodel().entity(MetamodelUtils.getEntityClass(instance.getClass()));
-            final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(fieldName);
-            assert fieldSpec != null;
-            if (et.getIdentifier().equals(fieldSpec)) {
-                return;
-            }
-            pc.loadEntityField(instance, (FieldSpecification) fieldSpec);
         }
     }
 }

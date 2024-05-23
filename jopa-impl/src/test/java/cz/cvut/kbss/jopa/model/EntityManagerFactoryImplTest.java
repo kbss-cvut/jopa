@@ -21,6 +21,10 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.DataSourceStub;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
+import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.ontodriver.Connection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -136,7 +141,7 @@ class EntityManagerFactoryImplTest {
     void closeClearsSecondLevelCache() {
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         final CacheManager cache = emf.unwrap(CacheManager.class);
-        cache.add(instance.getUri(), instance, new EntityDescriptor());
+        cache.add(instance.getUri(), instance, new Descriptors(new EntityDescriptor(), new LoadStateDescriptor<>(instance, mock(EntityType.class), LoadState.LOADED)));
         assertTrue(cache.contains(OWLClassA.class, instance.getUri(), new EntityDescriptor()));
         emf.close();
         assertFalse(cache.contains(OWLClassA.class, instance.getUri(), new EntityDescriptor()));

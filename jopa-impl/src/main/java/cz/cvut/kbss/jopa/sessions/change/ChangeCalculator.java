@@ -18,6 +18,9 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
+import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxy;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
@@ -83,6 +86,9 @@ public class ChangeCalculator {
         }
         final Class<?> cls = clone.getClass();
         for (FieldSpecification<?, ?> fs : getFields(cls)) {
+            if (fs instanceof Identifier<?, ?>) {
+                continue;
+            }
             final Field f = fs.getJavaField();
             final Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
             final Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
@@ -105,7 +111,7 @@ public class ChangeCalculator {
     /**
      * Calculates the changes that happened to the clone object.
      * <p>
-     * The changes are written into the {@link ObjectChangeSet} passed in as argument.
+     * The changes are written into the {@link Change} passed in as argument.
      *
      * @param changeSet Contains references to the original and clone objects. Into this change set the changes should
      *                  be propagated
@@ -119,22 +125,23 @@ public class ChangeCalculator {
     /**
      * This internal method does the actual change calculation.
      * <p>
-     * It compares every non-static attribute of the clone to the original value. If the values are different, a change
-     * record is added into the change set.
+     * It compares every persistent attribute of the clone to the original value. If the values are different, a change
+     * record is added to the change set.
      *
-     * @param changeSet The change set where change records will be put in. It also contains reference to the clone and
-     *                  original object.
+     * @param changeSet The change set where change records will be put in
      */
     private boolean calculateChangesInternal(ObjectChangeSet changeSet) {
         LOG.trace("Calculating changes for change set {}.", changeSet);
-        Object original = changeSet.getChangedObject();
-        Object clone = changeSet.getCloneObject();
+        Object original = changeSet.getOriginal();
+        Object clone = changeSet.getClone();
         boolean changesFound = false;
         for (FieldSpecification<?, ?> fs : getFields(clone.getClass())) {
-            final Field f = fs.getJavaField();
-            Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
-            Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
-            if (clVal == null && origVal == null) {
+            if (fs instanceof Identifier<?, ?>) {
+                continue;
+            }
+            Object clVal = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), clone);
+            Object origVal = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), original);
+            if (shouldSkipLazyLoadedField(origVal, clVal)) {
                 continue;
             }
             boolean changed = valueChanged(origVal, clVal);
@@ -144,5 +151,10 @@ public class ChangeCalculator {
             }
         }
         return changesFound;
+    }
+
+    private static boolean shouldSkipLazyLoadedField(Object originalValue, Object cloneValue) {
+        return (cloneValue instanceof LazyLoadingEntityProxy<?> && originalValue == null)
+                || (cloneValue instanceof LazyLoadingProxy<?> && !ChangeDetectors.isNonEmptyCollection(originalValue));
     }
 }

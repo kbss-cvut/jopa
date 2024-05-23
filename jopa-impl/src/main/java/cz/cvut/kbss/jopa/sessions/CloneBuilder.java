@@ -17,17 +17,22 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxyFactory;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
+import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,12 +74,15 @@ public class CloneBuilder {
 
     private final Builders builders;
 
-    private final UnitOfWorkImpl uow;
+    private final LazyLoadingProxyFactory lazyLoaderFactory;
 
-    public CloneBuilder(UnitOfWorkImpl uow) {
+    private final AbstractUnitOfWork uow;
+
+    public CloneBuilder(AbstractUnitOfWork uow) {
         this.uow = uow;
         this.visitedEntities = new RepositoryMap();
         this.builders = new Builders();
+        this.lazyLoaderFactory = new LazyLoadingProxyFactory(uow);
     }
 
     /**
@@ -90,7 +98,7 @@ public class CloneBuilder {
         Objects.requireNonNull(cloneConfiguration);
         if (LOG.isTraceEnabled()) {
             // Normally this is a bad practice, but since stringify could be quite costly, we want to avoid it if possible
-            LOG.trace("Cloning object {}.", stringify(original));
+            LOG.trace("Cloning object {}.", uow.stringify(original));
         }
         return buildCloneImpl(null, null, original, cloneConfiguration);
     }
@@ -115,9 +123,9 @@ public class CloneBuilder {
         }
         if (LOG.isTraceEnabled()) {
             // Normally this is a bad practice, but since stringify could be quite costly, we want to avoid it if possible
-            LOG.trace("Cloning object {} with owner {}", stringify(original), stringify(cloneOwner));
+            LOG.trace("Cloning object {} with owner {}", uow.stringify(original), uow.stringify(cloneOwner));
         }
-        return buildCloneImpl(cloneOwner, clonedField, original, new CloneConfiguration(descriptor, false));
+        return buildCloneImpl(cloneOwner, clonedField, original, CloneConfiguration.withDescriptor(descriptor));
     }
 
     private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original,
@@ -140,11 +148,21 @@ public class CloneBuilder {
         if (managed) {
             // Register visited object before populating attributes to prevent infinite cloning cycles
             putVisitedEntity(descriptor, original, clone);
+            final LoadStateDescriptor<Object> loadState = cloneLoadStateDescriptor(original, clone);
+            uow.getLoadStateRegistry().put(clone, loadState);
         }
         if (!builder.populatesAttributes() && !isImmutable(cls)) {
             populateAttributes(original, clone, cloneConfiguration);
         }
         return clone;
+    }
+
+    private LoadStateDescriptor<Object> cloneLoadStateDescriptor(Object original, Object clone) {
+        if (!uow.getLoadStateRegistry().contains(original)) {
+            uow.getLoadStateRegistry().put(original, LoadStateDescriptorFactory.createAllUnknown(original, (EntityType<? super Object>) getMetamodel().entity(original.getClass())));
+        }
+        final LoadStateDescriptor<Object> origLoadState = uow.getLoadStateRegistry().get(original);
+        return LoadStateDescriptorFactory.createCopy(clone, origLoadState);
     }
 
     /**
@@ -175,6 +193,7 @@ public class CloneBuilder {
     private void populateAttributes(Object original, Object clone, CloneConfiguration configuration) {
         final Class<?> originalClass = original.getClass();
         final EntityType<?> et = getMetamodel().entity(originalClass);
+        final LoadStateDescriptor<Object> loadState = uow.getLoadStateRegistry().get(clone);
         // Ensure the identifier is cloned before any other attributes
         // This prevents problems where circular references between entities lead to clones being registered with null identifier
         cloneIdentifier(original, clone, et);
@@ -184,37 +203,39 @@ public class CloneBuilder {
             }
             final Field f = fs.getJavaField();
             final Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
-            if (origVal == null) {
-                continue;
-            }
-            final Class<?> origValueClass = origVal.getClass();
             Object clonedValue;
-            if (isImmutable(origValueClass)) {
-                // The field is an immutable type
-                clonedValue = origVal;
-            } else if (IndirectWrapperHelper.requiresIndirectWrapper(origVal)) {
-                final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, configuration.getDescriptor());
-                // Collection or Map
-                clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal,
-                        new CloneConfiguration(fieldDescriptor,
-                                configuration.isForPersistenceContext(),
-                                configuration.getPostRegister()));
+            if (loadState.isLoaded(fs) == LoadState.NOT_LOADED) {
+                clonedValue = lazyLoaderFactory.createProxy(clone, (FieldSpecification<? super Object, ?>) fs);
+            } else if (origVal == null) {
+                 continue;
             } else {
-                // Otherwise, we have a relationship, and we need to clone its target as well
-                if (isOriginalInUoW(origVal)) {
-                    // If the reference is already managed
-                    clonedValue = uow.getCloneForOriginal(origVal);
+                final Class<?> origValueClass = origVal.getClass();
+                if (isImmutable(origValueClass)) {
+                    // The field is an immutable type
+                    clonedValue = origVal;
+                } else if (IndirectWrapperHelper.requiresIndirectWrapper(origVal)) {
+                    final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, configuration.getDescriptor());
+                    // Collection or Map
+                    clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal,
+                            CloneConfiguration.withDescriptor(fieldDescriptor)
+                                              .forPersistenceContext(configuration.isForPersistenceContext())
+                                              .addPostRegisterHandlers(configuration.getPostRegister()));
                 } else {
-                    if (isTypeManaged(origValueClass)) {
-                        final Descriptor fieldDescriptor =
-                                getFieldDescriptor(f, originalClass, configuration.getDescriptor());
-                        clonedValue = getVisitedEntity(configuration.getDescriptor(), origVal);
-                        if (clonedValue == null) {
-                            clonedValue = uow.registerExistingObject(origVal, fieldDescriptor,
-                                    configuration.getPostRegister());
-                        }
+                    // Otherwise, we have a relationship, and we need to clone its target as well
+                    if (isOriginalInUoW(origVal)) {
+                        // If the reference is already managed
+                        clonedValue = uow.getCloneForOriginal(origVal);
                     } else {
-                        clonedValue = buildClone(origVal, configuration);
+                        if (isTypeManaged(origValueClass)) {
+                            final Descriptor fieldDescriptor =
+                                    getFieldDescriptor(f, originalClass, configuration.getDescriptor());
+                            clonedValue = getVisitedEntity(configuration.getDescriptor(), origVal);
+                            if (clonedValue == null) {
+                                clonedValue = uow.registerExistingObject(origVal, new CloneRegistrationDescriptor(fieldDescriptor).postCloneHandlers(configuration.getPostRegister()));
+                            }
+                        } else {
+                            clonedValue = buildClone(origVal, configuration);
+                        }
                     }
                 }
             }
@@ -267,7 +288,8 @@ public class CloneBuilder {
      * @param changeSet Contains changes to merge
      */
     public void mergeChanges(ObjectChangeSet changeSet) {
-        final Object original = changeSet.getChangedObject();
+        final Object original = changeSet.getOriginal();
+        final LoadStateDescriptor<?> loadStateDescriptor = uow.getLoadStateRegistry().get(original);
         try {
             for (ChangeRecord change : changeSet.getChanges()) {
                 Field f = change.getAttribute().getJavaField();
@@ -279,9 +301,10 @@ public class CloneBuilder {
                 Object newVal = change.getNewValue();
                 if (newVal == null) {
                     EntityPropertiesUtils.setFieldValue(f, original, null);
-                    continue;
+                } else {
+                    getInstanceBuilder(newVal).mergeChanges(f, original, origVal, newVal);
                 }
-                getInstanceBuilder(newVal).mergeChanges(f, original, origVal, newVal);
+                loadStateDescriptor.setLoaded((FieldSpecification<? super Object, ?>) change.getAttribute(), LoadState.LOADED);
             }
         } catch (SecurityException e) {
             throw new OWLPersistenceException(e);
@@ -337,23 +360,6 @@ public class CloneBuilder {
      */
     public void removeVisited(Object instance, Descriptor descriptor) {
         visitedEntities.remove(descriptor, instance);
-    }
-
-    /**
-     * Gets basic object info for logging.
-     * <p>
-     * This works around using {@link Object#toString()} for entities, which could inadvertently trigger lazy field
-     * fetching.
-     *
-     * @param object Object to stringify
-     * @return String info about the specified object
-     */
-    private String stringify(Object object) {
-        assert object != null;
-        return isTypeManaged(object.getClass()) ?
-                (object.getClass().getSimpleName() + IdentifierTransformer.stringifyIri(
-                        EntityPropertiesUtils.getIdentifier(object, getMetamodel()))) :
-                object.toString();
     }
 
     private static Set<Class<?>> getImmutableTypes() {

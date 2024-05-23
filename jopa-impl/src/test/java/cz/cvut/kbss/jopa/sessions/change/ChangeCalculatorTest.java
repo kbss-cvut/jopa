@@ -17,27 +17,65 @@
  */
 package cz.cvut.kbss.jopa.sessions.change;
 
-import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassE;
+import cz.cvut.kbss.jopa.environment.OWLClassF;
+import cz.cvut.kbss.jopa.environment.OWLClassK;
+import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.OWLClassO;
+import cz.cvut.kbss.jopa.environment.OWLClassQ;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingListProxy;
+import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxyGenerator;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ChangeCalculatorTest {
 
     private static final URI DEFAULT_CONTEXT = URI.create("http://defaultContext");
@@ -64,13 +102,12 @@ public class ChangeCalculatorTest {
 
     private MetamodelMocks metamodelMocks;
 
-    private ChangeCalculator manager;
+    private ChangeCalculator sut;
 
     @BeforeEach
     public void setup() throws Exception {
-        MockitoAnnotations.openMocks(this);
         initInstances();
-        manager = new ChangeCalculator(providerMock);
+        sut = new ChangeCalculator(providerMock);
         when(providerMock.isEntityType(any(Class.class))).thenAnswer(invocation -> {
             final Class<?> cls = (Class<?>) invocation.getArguments()[0];
             return TestEnvironmentUtils.getManagedTypes().contains(cls);
@@ -170,19 +207,19 @@ public class ChangeCalculatorTest {
 
     @Test
     public void hasChangesOnNullReturnsFalse() {
-        assertFalse(manager.hasChanges(null, null));
+        assertFalse(sut.hasChanges(null, null));
     }
 
     @Test
     public void hasChangeWithChangedDataPropertyValueReturnsTrue() {
         testAClone.setStringAttribute("differentStringAttribute");
-        assertTrue(manager.hasChanges(testA, testAClone));
+        assertTrue(sut.hasChanges(testA, testAClone));
     }
 
     @Test
     public void hasChangeWithoutChangeOnDataPropertyReturnsFalse() {
         testAClone.setStringAttribute(testA.getStringAttribute());
-        assertFalse(manager.hasChanges(testA, testA));
+        assertFalse(sut.hasChanges(testA, testA));
     }
 
     @Test
@@ -190,14 +227,14 @@ public class ChangeCalculatorTest {
         final OWLClassA ref = new OWLClassA(Generators.createIndividualIdentifier());
         ref.setStringAttribute(testA.getStringAttribute());
         testDClone.setOwlClassA(ref);
-        assertTrue(manager.hasChanges(testD, testDClone));
+        assertTrue(sut.hasChanges(testD, testDClone));
     }
 
     @Test
     public void hasChangeFromEmptyCollectionToNonEmptyReturnsTrue() {
         testAClone.setTypes(typesCollection);
         testA.setTypes(new HashSet<>());
-        assertTrue(manager.hasChanges(testA, testAClone));
+        assertTrue(sut.hasChanges(testA, testAClone));
     }
 
     @Test
@@ -211,7 +248,7 @@ public class ChangeCalculatorTest {
             changed.add(it.next());
         }
         testAClone.setTypes(changed);
-        assertTrue(manager.hasChanges(testA, testAClone));
+        assertTrue(sut.hasChanges(testA, testAClone));
     }
 
     @Test
@@ -225,31 +262,31 @@ public class ChangeCalculatorTest {
                 removed = true;
             }
         }
-        assertTrue(manager.hasChanges(testC, testCClone));
+        assertTrue(sut.hasChanges(testC, testCClone));
     }
 
     @Test
     public void hasChangeOnDataPropertyWhenOriginalValueWasNullReturnsTrue() {
         testA.setStringAttribute(null);
         testAClone.setStringAttribute("someString");
-        assertTrue(manager.hasChanges(testA, testAClone));
+        assertTrue(sut.hasChanges(testA, testAClone));
     }
 
     @Test
     public void hasChangeAttributeValueChangeOnReferenceReturnsFalse() {
         testDClone.getOwlClassA().setStringAttribute("updatedString");
-        assertFalse(manager.hasChanges(testD, testDClone));
+        assertFalse(sut.hasChanges(testD, testDClone));
     }
 
     @Test
     public void calculateChangesThrowsNPXForNullArgument() {
-        assertThrows(NullPointerException.class, () -> manager.calculateChanges(null));
+        assertThrows(NullPointerException.class, () -> sut.calculateChanges(null));
     }
 
     @Test
     public void calculateChangesForIdenticalObjectsAddsNoChangesToChangeSet() {
         final ObjectChangeSet chSet = createChangeSet(testA, testAClone);
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertFalse(res);
         assertTrue(chSet.getChanges().isEmpty());
     }
@@ -259,7 +296,7 @@ public class ChangeCalculatorTest {
         testAClone.setStringAttribute("updated");
         ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         assertTrue(chSet.getChanges().isEmpty());
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         assertFalse(chSet.getChanges().isEmpty());
         verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassA().stringAttribute(), chSet);
@@ -275,9 +312,9 @@ public class ChangeCalculatorTest {
     public void calculateChangesRegistersChangeOnPrimitiveTypeAttribute() {
         final OWLClassM testMClone = new OWLClassM();
         testMClone.setIntAttribute(testM.getIntAttribute() + 117);
-        ObjectChangeSet chSet = createChangeSet(testM, testMClone);
+        final ObjectChangeSet chSet = createChangeSet(testM, testMClone);
         assertTrue(chSet.getChanges().isEmpty());
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         assertFalse(chSet.getChanges().isEmpty());
         verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassM().integerAttribute(), chSet);
@@ -286,9 +323,9 @@ public class ChangeCalculatorTest {
     @Test
     public void calculateChangesRegistersChangeOnObjectPropertyAttribute() {
         testDClone.setOwlClassA(testAClone);
-        ObjectChangeSet chSet = createChangeSet(testD, testDClone);
+        final ObjectChangeSet chSet = createChangeSet(testD, testDClone);
         assertTrue(chSet.getChanges().isEmpty());
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
         assertEquals(testAClone, chSet.getChanges().iterator().next().getNewValue());
@@ -301,12 +338,12 @@ public class ChangeCalculatorTest {
         newCollection.remove(typesCollection.iterator().next());
         newCollection.add("String");
         testAClone.setTypes(newCollection);
-        ObjectChangeSet chSet = createChangeSet(testA, testAClone);
+        final ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         assertTrue(chSet.getChanges().isEmpty());
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        assertTrue(((Set<String>) chSet.getChanges().iterator().next().getNewValue()).contains("String"));
+        assertThat((Set<String>) chSet.getChanges().iterator().next().getNewValue(), hasItem("String"));
     }
 
     @Test
@@ -317,9 +354,9 @@ public class ChangeCalculatorTest {
         newCollection.add("String");
         testAClone.setTypes(newCollection);
         testAClone.setStringAttribute("AnotherStringAttribute");
-        ObjectChangeSet chSet = createChangeSet(testA, testAClone);
+        final ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         assertTrue(chSet.getChanges().isEmpty());
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(2, chSet.getChanges().size());
         verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassA().stringAttribute(), chSet);
@@ -328,10 +365,10 @@ public class ChangeCalculatorTest {
 
     @Test
     public void calculateChangesRegistersChangeWhenValueIsSetToNull() {
-        ObjectChangeSet chSet = createChangeSet(testA, testAClone);
+        final ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         testAClone.setStringAttribute(null);
         assertTrue(chSet.getChanges().isEmpty());
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         assertFalse(chSet.getChanges().isEmpty());
         assertNotNull(chSet);
@@ -342,7 +379,7 @@ public class ChangeCalculatorTest {
     public void calculateChangesRegistersChangeWhenValueIsSetToNonNull() {
         testA.setTypes(null);
         final ObjectChangeSet chSet = createChangeSet(testA, testAClone);
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
         assertNotNull(chSet.getChanges().iterator().next().getNewValue());
@@ -351,9 +388,9 @@ public class ChangeCalculatorTest {
     @Test
     public void calculateChangesRegistersItemRemovalFromReferenceCollection() {
         testCClone.getReferencedList().remove(4);
-        ObjectChangeSet chSet = createChangeSet(testC, testCClone);
+        final ObjectChangeSet chSet = createChangeSet(testC, testCClone);
         assertTrue(chSet.getChanges().isEmpty());
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassC().referencedListAtt(), chSet);
         assertEquals(1, chSet.getChanges().size());
@@ -363,9 +400,9 @@ public class ChangeCalculatorTest {
     @Test
     public void calculateChangesRegistersItemAdditionToReferenceCollection() {
         testCClone.getReferencedList().add(testA);
-        ObjectChangeSet chSet = createChangeSet(testC, testCClone);
+        final ObjectChangeSet chSet = createChangeSet(testC, testCClone);
         assertTrue(chSet.getChanges().isEmpty());
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
         final ChangeRecord r = chSet.getChanges().iterator().next();
@@ -379,9 +416,9 @@ public class ChangeCalculatorTest {
     public void calculateChangesRegistersItemReplacementInReferenceCollection() {
         testCClone.getReferencedList().remove(3);
         testCClone.getReferencedList().add(testA);
-        ObjectChangeSet chSet = createChangeSet(testC, testCClone);
+        final ObjectChangeSet chSet = createChangeSet(testC, testCClone);
         assertTrue(chSet.getChanges().isEmpty());
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassC().referencedListAtt(), chSet);
         assertEquals(1, chSet.getChanges().size());
@@ -394,7 +431,7 @@ public class ChangeCalculatorTest {
     public void calculateChangesRegistersMapKeyAddition() {
         testBClone.getProperties().put("newProperty", Collections.singleton("propVal"));
         final ObjectChangeSet chSet = createChangeSet(testB, testBClone);
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
         verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassB().propertiesSpec(), chSet);
@@ -405,7 +442,7 @@ public class ChangeCalculatorTest {
         final String key = testB.getProperties().keySet().iterator().next();
         testBClone.getProperties().put(key, Collections.singleton("propVal"));
         final ObjectChangeSet chSet = createChangeSet(testB, testBClone);
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
         verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassB().propertiesSpec(), chSet);
@@ -416,14 +453,14 @@ public class ChangeCalculatorTest {
         final String key = testB.getProperties().keySet().iterator().next();
         testBClone.getProperties().get(key).add("addedValue");
         final ObjectChangeSet chSet = createChangeSet(testB, testBClone);
-        final boolean res = manager.calculateChanges(chSet);
+        final boolean res = sut.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
         verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassB().propertiesSpec(), chSet);
     }
 
     private ObjectChangeSet createChangeSet(Object orig, Object clone) {
-        return TestEnvironmentUtils.createObjectChangeSet(orig, clone, DEFAULT_CONTEXT);
+        return ChangeSetFactory.createObjectChangeSet(orig, clone, new EntityDescriptor(DEFAULT_CONTEXT));
     }
 
     @Test
@@ -435,7 +472,7 @@ public class ChangeCalculatorTest {
         final Set<String> newTypes = new LinkedHashSet<>(lst);
         testAClone.setTypes(newTypes);
         assertNotEquals(typesCollection.iterator().next(), newTypes.iterator().next());
-        final boolean res = manager.hasChanges(testA, testAClone);
+        final boolean res = sut.hasChanges(testA, testAClone);
         assertFalse(res);
     }
 
@@ -444,12 +481,12 @@ public class ChangeCalculatorTest {
         final OWLClassF testF = new OWLClassF();
         final OWLClassF cloneF = new OWLClassF();
         initFAndClone(testF, cloneF);
-        final boolean res = manager.hasChanges(testF, cloneF);
+        final boolean res = sut.hasChanges(testF, cloneF);
         assertFalse(res);
     }
 
     private void initFAndClone(OWLClassF orig, OWLClassF clone) {
-        final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#testF");
+        final URI uri = URI.create(Vocabulary.INDIVIDUAL_BASE + "testF");
         orig.setUri(uri);
         clone.setUri(uri);
         orig.setSimpleSet(new HashSet<>());
@@ -457,7 +494,7 @@ public class ChangeCalculatorTest {
         orig.getSimpleSet().add(testA);
         testAClone.setStringAttribute(testA.getStringAttribute());
         clone.getSimpleSet().add(testAClone);
-        final URI aUri = URI.create("http://krizik.felk.cvut.cz/ontologies#testAA");
+        final URI aUri = URI.create(Vocabulary.INDIVIDUAL_BASE + "testAA");
         final OWLClassA extraA = new OWLClassA(aUri);
         extraA.setStringAttribute("string");
         orig.getSimpleSet().add(extraA);
@@ -478,7 +515,7 @@ public class ChangeCalculatorTest {
         remove.next();
         remove.remove();
         cloneF.getSimpleSet().add(added);
-        final boolean res = manager.hasChanges(testF, cloneF);
+        final boolean res = sut.hasChanges(testF, cloneF);
         assertTrue(res);
     }
 
@@ -489,7 +526,7 @@ public class ChangeCalculatorTest {
         testOClone.setStringAttribute(testO.getStringAttribute());
         testOClone.setTransientField("Change!");
 
-        final boolean res = manager.hasChanges(testO, testOClone);
+        final boolean res = sut.hasChanges(testO, testOClone);
         assertFalse(res);
     }
 
@@ -501,7 +538,7 @@ public class ChangeCalculatorTest {
         testOClone.setTransientFieldWithAnnotation("Change!");
 
         final ObjectChangeSet changeSet = createChangeSet(testO, testOClone);
-        final boolean res = manager.calculateChanges(changeSet);
+        final boolean res = sut.calculateChanges(changeSet);
         assertFalse(res);
         assertTrue(changeSet.getChanges().isEmpty());
     }
@@ -516,7 +553,7 @@ public class ChangeCalculatorTest {
         testQClone.setOwlClassA(testA);
 
         final ObjectChangeSet changeSet = createChangeSet(testQ, testQClone);
-        final boolean res = manager.calculateChanges(changeSet);
+        final boolean res = sut.calculateChanges(changeSet);
         assertTrue(res);
         final Set<ChangeRecord> changes = changeSet.getChanges();
         assertEquals(3, changes.size());
@@ -539,15 +576,59 @@ public class ChangeCalculatorTest {
         testQClone.setParentString(testQ.getParentString());
         testQClone.setLabel(testQ.getLabel());
         final OWLClassA newA = new OWLClassA();
-        newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newA"));
+        newA.setUri(URI.create(Vocabulary.INDIVIDUAL_BASE + "newA"));
         testQClone.setOwlClassA(newA);
 
         final ObjectChangeSet changeSet = createChangeSet(testQ, testQClone);
-        final boolean res = manager.calculateChanges(changeSet);
+        final boolean res = sut.calculateChanges(changeSet);
         assertTrue(res);
         final Set<ChangeRecord> changes = changeSet.getChanges();
         assertEquals(1, changes.size());
         verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassQ().qOwlClassAAtt(), changeSet);
         assertEquals(newA, changes.iterator().next().getNewValue());
+    }
+
+    @Test
+    void calculateChangesDoesNotDetectChangeWhenOriginalValueIsNullAndCloneValueIsLazyLoadingProxy() throws Exception {
+        final OWLClassK original = new OWLClassK(Generators.createIndividualIdentifier());
+        final OWLClassK clone = new OWLClassK(original.getUri());
+        final LazyLoadingEntityProxyGenerator lazyProxyGenerator = new LazyLoadingEntityProxyGenerator();
+        final Class<? extends OWLClassE> lazyProxyCls = lazyProxyGenerator.generate(OWLClassE.class);
+        clone.setOwlClassE(lazyProxyCls.getDeclaredConstructor().newInstance());
+        final ObjectChangeSet changeSet = createChangeSet(original, clone);
+        final boolean res = sut.calculateChanges(changeSet);
+        assertFalse(res);
+    }
+
+    @Test
+    void calculateChangesSkipsIdentifier() {
+        final OWLClassA original = Generators.generateOwlClassAInstance();
+        final OWLClassA clone = new OWLClassA(Generators.createIndividualIdentifier());
+        clone.setStringAttribute(original.getStringAttribute());
+        clone.setTypes(new HashSet<>(original.getTypes()));
+        final ObjectChangeSet changeSet = createChangeSet(original, clone);
+        final boolean res = sut.calculateChanges(changeSet);
+        assertFalse(res);
+    }
+
+    @Test
+    void hasChangesSkipsIdentifier() {
+        final OWLClassA original = Generators.generateOwlClassAInstance();
+        final OWLClassA clone = new OWLClassA(Generators.createIndividualIdentifier());
+        clone.setStringAttribute(original.getStringAttribute());
+        clone.setTypes(new HashSet<>(original.getTypes()));
+        assertFalse(sut.hasChanges(original, clone));
+    }
+
+    @Test
+    void calculateChangesSkipsLazyLoadedCollectionValueWhenOriginalIsEmptyCollection() {
+        final OWLClassC original = new OWLClassC(Generators.createIndividualIdentifier());
+        original.setSimpleList(Collections.emptyList());
+        final OWLClassC clone = new OWLClassC(original.getUri());
+        final UnitOfWork uow = mock(UnitOfWork.class);
+        clone.setSimpleList(new LazyLoadingListProxy<>(clone, metamodelMocks.forOwlClassC().simpleListAtt(), uow));
+        final ObjectChangeSet changeSet = createChangeSet(original, clone);
+        assertFalse(sut.calculateChanges(changeSet));
+        verify(uow, never()).loadEntityField(any(), any());
     }
 }

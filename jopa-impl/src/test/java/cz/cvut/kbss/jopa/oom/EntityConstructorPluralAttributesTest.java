@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -37,6 +38,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -71,6 +73,8 @@ public class EntityConstructorPluralAttributesTest {
 
     @Mock
     private ObjectOntologyMapperImpl mapperMock;
+    @Spy
+    private LoadStateDescriptorRegistry loadStateRegistry = new LoadStateDescriptorRegistry(Object::toString);
 
     private MetamodelMocks metamodelMocks;
 
@@ -96,7 +100,7 @@ public class EntityConstructorPluralAttributesTest {
         this.hasSimpleListAssertion = Assertion
                 .createObjectPropertyAssertion(simpleListProperty, simpleListMock.isInferred());
 
-        this.constructor = new EntityConstructor(mapperMock);
+        this.constructor = new EntityConstructor(mapperMock, loadStateRegistry);
     }
 
     @Test
@@ -105,7 +109,9 @@ public class EntityConstructorPluralAttributesTest {
         prepareMapperMockForSimpleListLoad();
 
         final OWLClassC res = constructor
-                .reconstructEntity(ID, metamodelMocks.forOwlClassC().entityType(), descriptor, axioms);
+                .reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(ID, metamodelMocks.forOwlClassC()
+                                                                                                          .entityType(), descriptor, true),
+                        axioms);
 
         assertNotNull(res);
         assertNotNull(res.getSimpleList());
@@ -117,8 +123,8 @@ public class EntityConstructorPluralAttributesTest {
     private void prepareMapperMockForSimpleListLoad() {
         for (Entry<URI, OWLClassA> e : LIST_CONTENT.entrySet()) {
             when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, e.getKey(),
-                                                            descriptor.getAttributeDescriptor(
-                                                                    simpleListMock))).thenReturn(
+                    descriptor.getAttributeDescriptor(
+                            simpleListMock))).thenReturn(
                     e.getValue());
         }
         final Collection<Axiom<NamedResource>> listAxioms = initSimpleListAxioms();
@@ -142,13 +148,13 @@ public class EntityConstructorPluralAttributesTest {
             final Axiom<NamedResource> ax;
             if (first) {
                 ax = new AxiomImpl<>(NamedResource.create(ID), hasSimpleListAssertion,
-                                     new Value<>(NamedResource.create(key)));
+                        new Value<>(NamedResource.create(key)));
                 first = false;
             } else {
                 ax = new AxiomImpl<>(NamedResource.create(previous),
-                                     Assertion.createObjectPropertyAssertion(nextElemProperty,
-                                                                             simpleListMock.isInferred()),
-                                     new Value<>(NamedResource.create(key)));
+                        Assertion.createObjectPropertyAssertion(nextElemProperty,
+                                simpleListMock.isInferred()),
+                        new Value<>(NamedResource.create(key)));
             }
             previous = key;
             axioms.add(ax);
@@ -166,7 +172,7 @@ public class EntityConstructorPluralAttributesTest {
         c.setUri(ID);
         assertNull(c.getSimpleList());
         constructor.setFieldValue(c, metamodelMocks.forOwlClassC().simpleListAtt(), axioms,
-                                  metamodelMocks.forOwlClassC().entityType(), descriptor);
+                metamodelMocks.forOwlClassC().entityType(), descriptor);
         assertNotNull(c.getSimpleList());
         assertEquals(LIST_CONTENT.size(), c.getSimpleList().size());
         assertTrue(c.getSimpleList().containsAll(LIST_CONTENT.values()));

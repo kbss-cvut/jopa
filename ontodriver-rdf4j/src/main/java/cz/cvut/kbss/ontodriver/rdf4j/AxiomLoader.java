@@ -22,7 +22,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.loader.StatementLoader;
 import cz.cvut.kbss.ontodriver.rdf4j.util.AxiomBuilder;
@@ -33,7 +33,7 @@ import java.util.*;
 
 class AxiomLoader {
 
-    private final Connector connector;
+    private final RepoConnection connector;
 
     private final Map<IRI, Assertion> propertyToAssertion;
     private Map<IRI, Assertion> explicitAssertions;
@@ -41,7 +41,7 @@ class AxiomLoader {
 
     private final RuntimeConfiguration config;
 
-    AxiomLoader(Connector connector, RuntimeConfiguration config) {
+    AxiomLoader(RepoConnection connector, RuntimeConfiguration config) {
         this.connector = connector;
         this.propertyToAssertion = new HashMap<>();
         this.config = config;

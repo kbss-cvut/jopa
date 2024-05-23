@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.ConstructorResult;
 import cz.cvut.kbss.jopa.model.annotations.EntityResult;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.FieldResult;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.NamedNativeQueries;
@@ -31,6 +32,7 @@ import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
 
 import java.net.URI;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -60,8 +62,8 @@ public class OWLClassA implements HasUri {
     public static final String CONSTRUCTOR_MAPPING = "OWLClassA.constructorMapping";
     public static final String ENTITY_MAPPING = "OWLClassA.entityMapping";
 
-    @Types
-    private Set<String> types;
+    @Types(fetchType = FetchType.EAGER)
+    private Set<String> types = new HashSet<>();
 
     @Id
     private URI uri;
@@ -111,10 +113,9 @@ public class OWLClassA implements HasUri {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof OWLClassA)) {
+        if (!(o instanceof OWLClassA owlClassA)) {
             return false;
         }
-        OWLClassA owlClassA = (OWLClassA) o;
         return Objects.equals(getTypes(), owlClassA.getTypes()) && Objects.equals(getUri(), owlClassA.getUri()) && Objects.equals(getStringAttribute(), owlClassA.getStringAttribute());
     }
 
@@ -127,9 +128,7 @@ public class OWLClassA implements HasUri {
     public String toString() {
         String out = "OWLClassA: uri = " + uri;
         out += ", stringAttribute = " + stringAttribute;
-        if (types != null) {
-            out += ", types = {" + types + "}";
-        }
+        out += ", types = {" + types + "}";
         return out;
     }
 

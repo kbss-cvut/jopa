@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.CacheManager;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,16 +131,29 @@ public class TtlCacheManager implements CacheManager {
     }
 
     @Override
-    public void add(Object identifier, Object entity, Descriptor descriptor) {
+    public void add(Object identifier, Object entity, Descriptors descriptors) {
         Objects.requireNonNull(identifier);
         Objects.requireNonNull(entity);
-        Objects.requireNonNull(descriptor);
+        Objects.requireNonNull(descriptors);
 
         acquireWriteLock();
         try {
-            cache.put(identifier, entity, descriptor);
+            cache.put(identifier, entity, descriptors);
         } finally {
             releaseWriteLock();
+        }
+    }
+
+    @Override
+    public LoadStateDescriptor<?> getLoadStateDescriptor(Object instance) {
+        if (instance == null) {
+            return null;
+        }
+        readLock.lock();
+        try {
+            return cache.getLoadStateDescriptor(instance);
+        } finally {
+            readLock.unlock();
         }
     }
 
@@ -314,12 +327,12 @@ public class TtlCacheManager implements CacheManager {
         private final Map<URI, Long> ttl = new HashMap<>();
 
         @Override
-        void put(Object identifier, Object entity, Descriptor descriptor) {
-            if (!isCacheable(descriptor)) {
+        void put(Object identifier, Object entity, Descriptors descriptors) {
+            if (!isCacheable(descriptors.repositoryDescriptor())) {
                 return;
             }
-            super.put(identifier, entity, descriptor);
-            final URI ctx = descriptor.getSingleContext().orElse(defaultContext);
+            super.put(identifier, entity, descriptors);
+            final URI ctx = descriptors.repositoryDescriptor().getSingleContext().orElse(defaultContext);
             updateTimeToLive(ctx);
         }
 

@@ -17,8 +17,11 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMap;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
+import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Constructor;
@@ -42,8 +45,8 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
     @Override
     Object buildClone(Object cloneOwner, Field field, Object original, CloneConfiguration configuration) {
         Map<?, ?> orig = (Map<?, ?>) original;
-        if (original instanceof IndirectCollection) {
-            orig = ((IndirectCollection<Map<?, ?>>) original).unwrap();
+        if (original instanceof ChangeTrackingIndirectCollection) {
+            orig = ((ChangeTrackingIndirectCollection<Map<?, ?>>) original).unwrap();
         }
         if (orig == Collections.emptyMap()) {
             return orig;
@@ -60,7 +63,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
                 throw new IllegalArgumentException("Unsupported map type " + origCls);
             }
         }
-        clone = (Map<?, ?>) uow.createIndirectCollection(clone, cloneOwner, field);
+        clone = new ChangeTrackingIndirectMap<>(cloneOwner, field, uow, clone);
         return clone;
 
     }
@@ -105,7 +108,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
                 cloneObject(cloneOwner, field, e.getKey(), configuration);
         Object value = CloneBuilder.isImmutable(e.getValue()) ? e.getValue() :
                 cloneObject(cloneOwner, field, e.getValue(), configuration);
-        if ((value instanceof Collection || value instanceof Map) && !(value instanceof IndirectCollection)) {
+        if ((value instanceof Collection || value instanceof Map) && !(value instanceof ChangeTrackingIndirectCollection)) {
             value = uow.createIndirectCollection(value, cloneOwner, field);
         }
         return Collections.singletonMap(key, value);
@@ -144,7 +147,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         if (obj == null) {
             clone = null;
         } else if (builder.isTypeManaged(obj.getClass())) {
-            clone = uow.registerExistingObject(obj, configuration.getDescriptor(), configuration.getPostRegister());
+            clone = uow.registerExistingObject(obj, new CloneRegistrationDescriptor(configuration.getDescriptor()).postCloneHandlers(configuration.getPostRegister()));
         } else {
             clone = builder.buildClone(owner, field, obj, configuration.getDescriptor());
         }
@@ -157,8 +160,8 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         assert cloneValue instanceof Map;
 
         Map<Object, Object> orig = (Map<Object, Object>) originalValue;
-        final Map<Object, Object> clone = cloneValue instanceof IndirectCollection ?
-                ((IndirectCollection<Map<Object, Object>>) cloneValue).unwrap() : (Map<Object, Object>) cloneValue;
+        final Map<Object, Object> clone = cloneValue instanceof ChangeTrackingIndirectCollection ?
+                                          ((ChangeTrackingIndirectCollection<Map<Object, Object>>) cloneValue).unwrap() : (Map<Object, Object>) cloneValue;
         if (orig == null) {
             orig = (Map<Object, Object>) createNewInstance(clone.getClass(), clone.size()).orElseGet(() -> createDefaultMap(clone.size()));
             EntityPropertiesUtils.setFieldValue(field, target, orig);

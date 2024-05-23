@@ -17,7 +17,9 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.datatype.util.Pair;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
+import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -25,8 +27,10 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.oom.exception.EntityReconstructionException;
-import cz.cvut.kbss.jopa.model.CacheManager;
-import cz.cvut.kbss.jopa.sessions.LoadingParameters;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
@@ -37,8 +41,10 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import java.net.URI;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Root of the entity loading strategies.
@@ -52,6 +58,8 @@ abstract class EntityInstanceLoader {
     private final AxiomDescriptorFactory descriptorFactory;
     final EntityConstructor entityBuilder;
 
+    final LoadStateDescriptorRegistry loadStateRegistry;
+
     EntityInstanceLoader(EntityInstanceLoaderBuilder builder) {
         assert builder.storageConnection != null;
         assert builder.metamodel != null;
@@ -64,6 +72,7 @@ abstract class EntityInstanceLoader {
         this.cache = builder.cache;
         this.descriptorFactory = builder.descriptorFactory;
         this.entityBuilder = builder.entityBuilder;
+        this.loadStateRegistry = builder.loadStateRegistry;
     }
 
     /**
@@ -96,7 +105,9 @@ abstract class EntityInstanceLoader {
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
-            return axioms.isEmpty() ? null : entityBuilder.reconstructEntity(identifier, et, descriptor, axioms);
+            return axioms.isEmpty() ? null : entityBuilder.reconstructEntity(
+                    new EntityConstructor.EntityConstructionParameters<>(identifier, et, descriptor, loadingParameters.isForceEager()),
+                    axioms);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         } catch (cz.cvut.kbss.jopa.exception.InstantiationException e) {
@@ -111,26 +122,30 @@ abstract class EntityInstanceLoader {
 
     <T> T loadCached(EntityType<T> et, URI identifier, Descriptor descriptor) {
         final T cached = cache.get(et.getJavaType(), identifier, descriptor);
-        recursivelyReloadQueryAttributes(cached, et, new IdentityHashMap<>());
+        recursivelyProcessCachedEntityReferences(cached, et, new IdentityHashMap<>(), List.of(
+                pair -> loadStateRegistry.put(pair.first(), getLoadStatDescriptor(pair.first(), pair.second())),
+                pair -> entityBuilder.populateQueryAttributes(pair.first(), (EntityType<Object>) pair.second())
+        ));
         return cached;
     }
 
-    /**
-     * Recursively reloads query attribute values.
-     *
-     * @param instance Instance whose query attributes should be reloaded
-     * @param et       Entity type of the instance
-     * @param visited  Map of already visited objects to prevent infinite recursion
-     */
-    private void recursivelyReloadQueryAttributes(Object instance, EntityType<?> et, Map<Object, Object> visited) {
+    private LoadStateDescriptor<?> getLoadStatDescriptor(Object instance, EntityType<?> et) {
+        final LoadStateDescriptor<?> cached = cache.getLoadStateDescriptor(instance);
+        if (cached != null) {
+            return cached;
+        }
+        return LoadStateDescriptorFactory.createAllUnknown(instance, (EntityType<Object>) et);
+    }
+
+    private void recursivelyProcessCachedEntityReferences(Object instance, EntityType<?> et, Map<Object, Object> visited, List<Consumer<Pair<Object, EntityType<?>>>> handlers) {
         if (visited.containsKey(instance)) {
             return;
         }
         visited.put(instance, null);
-        entityBuilder.populateQueryAttributes(instance, (EntityType<Object>) et);
+        handlers.forEach(h -> h.accept(new Pair<>(instance, et)));
         et.getAttributes().stream().filter(Attribute::isAssociation).forEach(att -> {
             final Class<?> cls = att.isCollection() ? ((PluralAttribute) att).getElementType()
-                    .getJavaType() : att.getJavaType();
+                                                                             .getJavaType() : att.getJavaType();
             if (!metamodel.isEntityType(cls)) {
                 return;
             }
@@ -138,9 +153,9 @@ abstract class EntityInstanceLoader {
             if (value != null) {
                 // Resolve the value class instead of using the attribute type, as it may be a subclass at runtime
                 if (att.isCollection()) {
-                    ((Collection<?>) value).forEach(el -> recursivelyReloadQueryAttributes(el, metamodel.entity(el.getClass()), visited));
+                    ((Collection<?>) value).forEach(el -> recursivelyProcessCachedEntityReferences(el, metamodel.entity(el.getClass()), visited, handlers));
                 } else {
-                    recursivelyReloadQueryAttributes(value, metamodel.entity(value.getClass()), visited);
+                    recursivelyProcessCachedEntityReferences(value, metamodel.entity(value.getClass()), visited, handlers);
                 }
             }
         });
@@ -168,6 +183,8 @@ abstract class EntityInstanceLoader {
         private AxiomDescriptorFactory descriptorFactory;
         private EntityConstructor entityBuilder;
 
+        private LoadStateDescriptorRegistry loadStateRegistry;
+
         EntityInstanceLoaderBuilder connection(Connection connection) {
             this.storageConnection = Objects.requireNonNull(connection);
             return this;
@@ -190,6 +207,11 @@ abstract class EntityInstanceLoader {
 
         EntityInstanceLoaderBuilder cache(CacheManager cache) {
             this.cache = cache;
+            return this;
+        }
+
+        EntityInstanceLoaderBuilder loadStateRegistry(LoadStateDescriptorRegistry loadStateRegistry) {
+            this.loadStateRegistry = loadStateRegistry;
             return this;
         }
 

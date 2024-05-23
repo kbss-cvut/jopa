@@ -28,7 +28,7 @@ class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Li
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> head) {
+    void addAxiomValue(Axiom<?> head) {
         final ReferencedListDescriptor listDescriptor = createListDescriptor(head);
         final Collection<Axiom<?>> sequence = mapper.loadReferencedList(listDescriptor);
         sequence.stream()
@@ -50,15 +50,18 @@ class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Li
     }
 
     @Override
+    boolean hasValue() {
+        return !values.isEmpty();
+    }
+
+    @Override
     boolean isValidRange(Object value) {
         return elementType.isAssignableFrom(value.getClass()) || canBeConverted(value);
     }
 
     @Override
     void buildInstanceFieldValue(Object instance) {
-        if (!values.isEmpty()) {
-            setValueOnInstance(instance, values);
-        }
+        setValueOnInstance(instance, values);
     }
 
     @Override

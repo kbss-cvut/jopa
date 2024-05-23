@@ -96,11 +96,11 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
         final LruCache lruCache = getLruCache();
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptorTwo);
+        manager.add(testA.getUri(), testA, descriptors(descriptorTwo));
         final OWLClassA duplicate = new OWLClassA();
         duplicate.setUri(testA.getUri());
         duplicate.setStringAttribute("Duplicate entity.");
-        manager.add(duplicate.getUri(), duplicate, descriptorOne);
+        manager.add(duplicate.getUri(), duplicate, descriptors(descriptorOne));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorTwo));
         assertTrue(manager.contains(duplicate.getClass(), duplicate.getUri(), descriptorOne));
         final int size = lruCache.size();
@@ -117,10 +117,10 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
         this.manager = new LruCacheManager(
                 Collections.singletonMap(JOPAPersistenceProperties.LRU_CACHE_CAPACITY, "2"));
-        manager.add(testA.getUri(), testA, descriptorOne);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
 
-        manager.add(testB.getUri(), testB, descriptorTwo);
+        manager.add(testB.getUri(), testB, descriptors(descriptorTwo));
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
         assertTrue(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
     }
@@ -131,15 +131,15 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
         this.manager = new LruCacheManager(
                 Collections.singletonMap(JOPAPersistenceProperties.LRU_CACHE_CAPACITY, "4"));
-        manager.add(testA.getUri(), testA, descriptorOne);
-        manager.add(testB.getUri(), testB, descriptorTwo);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
+        manager.add(testB.getUri(), testB, descriptors(descriptorTwo));
         final OWLClassA aTwo = new OWLClassA(URI.create("http://aTwo"));
-        manager.add(aTwo.getUri(), aTwo, descriptorTwo);
+        manager.add(aTwo.getUri(), aTwo, descriptors(descriptorTwo));
 
         manager.get(testA.getClass(), testA.getUri(), descriptorOne);
         manager.get(aTwo.getClass(), aTwo.getUri(), descriptorTwo);
         final OWLClassA newA = new OWLClassA(URI.create("http://newA"));
-        manager.add(newA.getUri(), newA, descriptor(null));
+        manager.add(newA.getUri(), newA, descriptors(descriptor(null)));
 
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
         assertTrue(manager.contains(aTwo.getClass(), aTwo.getUri(), descriptorTwo));
@@ -172,7 +172,7 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
             } else {
                 retained.add(e);
             }
-            manager.add(e.getKey(), e.getValue(), descriptor(null));
+            manager.add(e.getKey(), e.getValue(), descriptors(descriptor(null)));
             i++;
         }
         evicted.forEach(e -> assertFalse(manager.contains(e.getValue().getClass(), e.getKey(), descriptor(null))));
@@ -183,7 +183,7 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
         final int count = capacity * 5;
         final LinkedHashMap<URI, Object> map = new LinkedHashMap<>(count);
         for (int i = 0; i < count; i++) {
-            int n = count % 4;
+            int n = count % (i + 1);
             switch (n) {
                 case 0:
                     final OWLClassA a = new OWLClassA(Generators.createIndividualIdentifier());

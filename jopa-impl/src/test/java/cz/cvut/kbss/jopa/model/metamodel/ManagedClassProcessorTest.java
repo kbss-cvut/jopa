@@ -22,26 +22,32 @@ import cz.cvut.kbss.jopa.environment.QMappedSuperclass;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.utils.ChangeTrackingMode;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("unused")
 class ManagedClassProcessorTest {
-
 
     @Test
     void processManagedTypeThrowsInitializationExceptionWhenClassIsMissingNoArgConstructor() {
         final MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class,
                 () -> ManagedClassProcessor.processManagedType(ClassWithoutNoArgConstructor.class, new Configuration()));
-        assertEquals("Class " + ClassWithoutNoArgConstructor.class + " is missing required no-arg constructor.",
+        assertEquals("Entity " + ClassWithoutNoArgConstructor.class + " is missing required no-arg constructor.",
                 ex.getMessage());
     }
 
@@ -120,6 +126,12 @@ class ManagedClassProcessorTest {
     void getManagedSuperClassReturnsOnlyManagedSuperClass() {
         Class<? super ChildClassWithMultipleParents> managedSuperClass = ManagedClassProcessor.getManagedSuperClass(ChildClassWithMultipleParents.class);
         assertEquals(OWLEntity.class, managedSuperClass);
+    }
+
+    @Test
+    void processManagedTypeCreatesEntityTypeWithEntityClassAsInstantiableTypeWhenOnCommitChangeTrackingModeIsConfigured() {
+        final TypeBuilderContext<OWLClassA> result = ManagedClassProcessor.processManagedType(OWLClassA.class, new Configuration(Map.of(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, ChangeTrackingMode.ON_COMMIT.toString())));
+        assertEquals(OWLClassA.class, result.getType().getInstantiableJavaType());
     }
 
     private interface NonManagedInterfaceA {

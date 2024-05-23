@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxy;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.typeCompatibleWith;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -704,5 +706,25 @@ class MetamodelImplTest {
             assertNotNull(et);
             assertEquals(cls, et.getJavaType());
         });
+    }
+
+    @Test
+    void getLazyLoadingProxyReturnsLazyLoadingProxyClassForSpecifiedType() {
+        final Set<Class<?>> entityClasses = new HashSet<>(List.of(OWLClassA.class));
+        final MetamodelImpl sut = new MetamodelImpl(conf);
+        sut.build(entityClasses);
+        final Class<? extends OWLClassA> result = sut.getLazyLoadingProxy(OWLClassA.class);
+        assertNotNull(result);
+        assertThat(result, typeCompatibleWith(OWLClassA.class));
+    }
+
+    @Test
+    void getLazyLoadingProxyCachesGeneratedProxyClasses() {
+        final Set<Class<?>> entityClasses = new HashSet<>(List.of(OWLClassA.class));
+        final MetamodelImpl sut = new MetamodelImpl(conf);
+        sut.build(entityClasses);
+        final Class<? extends OWLClassA> resultOne = sut.getLazyLoadingProxy(OWLClassA.class);
+        final Class<? extends OWLClassA> resultTwo = sut.getLazyLoadingProxy(OWLClassA.class);
+        assertSame(resultOne, resultTwo);
     }
 }

@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.CacheManager;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,14 +90,14 @@ public class LruCacheManager implements CacheManager {
     }
 
     @Override
-    public void add(Object identifier, Object entity, Descriptor descriptor) {
+    public void add(Object identifier, Object entity, Descriptors descriptors) {
         Objects.requireNonNull(identifier);
         Objects.requireNonNull(entity);
-        Objects.requireNonNull(descriptor);
+        Objects.requireNonNull(descriptors);
 
         writeLock.lock();
         try {
-            entityCache.put(identifier, entity, descriptor);
+            entityCache.put(identifier, entity, descriptors);
         } finally {
             writeLock.unlock();
         }
@@ -111,6 +111,19 @@ public class LruCacheManager implements CacheManager {
         readLock.lock();
         try {
             return entityCache.get(cls, identifier, descriptor);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    @Override
+    public LoadStateDescriptor<?> getLoadStateDescriptor(Object instance) {
+        if (instance == null) {
+            return null;
+        }
+        readLock.lock();
+        try {
+            return entityCache.getLoadStateDescriptor(instance);
         } finally {
             readLock.unlock();
         }
@@ -217,12 +230,12 @@ public class LruCacheManager implements CacheManager {
         }
 
         @Override
-        void put(Object identifier, Object entity, Descriptor descriptor) {
-            if (!isCacheable(descriptor)) {
+        void put(Object identifier, Object entity, Descriptors descriptors) {
+            if (!isCacheable(descriptors.repositoryDescriptor())) {
                 return;
             }
-            final URI ctx = descriptor.getSingleContext().orElse(defaultContext);
-            super.put(identifier, entity, descriptor);
+            final URI ctx = descriptors.repositoryDescriptor().getSingleContext().orElse(defaultContext);
+            super.put(identifier, entity, descriptors);
             cache.put(new LruCache.CacheNode(ctx, entity.getClass(), identifier), NULL_VALUE);
         }
 

@@ -97,7 +97,7 @@ class PluralAnnotationPropertyStrategyTest {
         final PluralAnnotationPropertyStrategy<OWLClassN> sut = strategyForN();
         final String value = "test";
         final Axiom<String> axiom = new AxiomImpl<>(INDIVIDUAL, createAnnotationAssertionForN(), new Value<>(value));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
 
         final OWLClassN instance = new OWLClassN();
         sut.buildInstanceFieldValue(instance);
@@ -114,7 +114,7 @@ class PluralAnnotationPropertyStrategyTest {
         final NamedResource value = NamedResource.create(Generators.createIndividualIdentifier());
         final Axiom<NamedResource> axiom =
                 new AxiomImpl<>(INDIVIDUAL, createAnnotationAssertionForN(), new Value<>(value));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
 
         final OWLClassN instance = new OWLClassN();
         sut.buildInstanceFieldValue(instance);
@@ -128,7 +128,7 @@ class PluralAnnotationPropertyStrategyTest {
         final NamedResource value = NamedResource.create(Generators.createIndividualIdentifier());
         final Axiom<NamedResource> axiom =
                 new AxiomImpl<>(INDIVIDUAL, createAnnotationAssertionForN(), new Value<>(value));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
 
         final WithPluralUriAnnotations instance = new WithPluralUriAnnotations();
         sut.buildInstanceFieldValue(instance);
@@ -218,7 +218,7 @@ class PluralAnnotationPropertyStrategyTest {
         final Integer value = 117;
         final Axiom<Integer> axiom = new AxiomImpl<>(INDIVIDUAL, Assertion.createAnnotationPropertyAssertion(URI.create(
                 DC.Terms.SOURCE), false), new Value<>(value));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         final WithPluralStringAnnotations instance = new WithPluralStringAnnotations();
         sut.buildInstanceFieldValue(instance);
         assertEquals(Collections.singleton(value.toString()), instance.sources);
@@ -241,7 +241,7 @@ class PluralAnnotationPropertyStrategyTest {
         final Axiom<NamedResource> axiom = new AxiomImpl<>(INDIVIDUAL,
                 Assertion.createAnnotationPropertyAssertion(URI.create(
                         DC.Terms.SOURCE), false), new Value<>(NamedResource.create(value)));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         final WithPluralStringAnnotations instance = new WithPluralStringAnnotations();
         sut.buildInstanceFieldValue(instance);
         assertEquals(Collections.singleton(value.toString()), instance.sources);
@@ -256,7 +256,7 @@ class PluralAnnotationPropertyStrategyTest {
         final URI identifier = Generators.createIndividualIdentifier();
         final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(PK), createAnnotationAssertionForN(),
                 new Value<>(NamedResource.create(identifier)));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
         sut.buildInstanceFieldValue(instance);
         assertEquals(Collections.singleton(identifier), instance.pluralAnnotation);

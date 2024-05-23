@@ -38,8 +38,8 @@ class AxiomValueGatherer {
     private final AxiomValueDescriptor axiomDescriptor;
     private final Collection<SimpleListValueDescriptor> simpleListDescriptors = new ArrayList<>();
     private final Collection<ReferencedListValueDescriptor> referencedListDescriptors = new ArrayList<>();
-    private Set<URI> typesToAdd;
-    private Set<URI> typesToRemove;
+    private final Set<URI> typesToAdd = new HashSet<>();
+    private final Set<URI> typesToRemove = new HashSet<>();
     private URI typesContext;
     private Map<Assertion, Set<Value<?>>> propertiesToAdd;
     private Map<Assertion, Set<Value<?>>> propertiesToRemove;
@@ -77,9 +77,6 @@ class AxiomValueGatherer {
     }
 
     void addTypes(Set<URI> types, URI context) {
-        if (typesToAdd == null) {
-            this.typesToAdd = new HashSet<>(types.size());
-        }
         appendTypes(typesToAdd, types, context);
     }
 
@@ -89,9 +86,6 @@ class AxiomValueGatherer {
     }
 
     void removeTypes(Set<URI> types, URI context) {
-        if (typesToRemove == null) {
-            this.typesToRemove = new HashSet<>(types.size());
-        }
         appendTypes(typesToRemove, types, context);
     }
 
@@ -124,7 +118,7 @@ class AxiomValueGatherer {
     void persist(Connection connection) {
         try {
             connection.persist(axiomDescriptor);
-            if (typesToAdd != null) {
+            if (!typesToAdd.isEmpty()) {
                 connection.types().addTypes(axiomDescriptor.getSubject(), typesContext, typesToAdd);
             }
             if (propertiesToAdd != null) {
@@ -144,10 +138,10 @@ class AxiomValueGatherer {
     void update(Connection connection) {
         try {
             connection.update(axiomDescriptor);
-            if (typesToAdd != null) {
+            if (!typesToAdd.isEmpty()) {
                 connection.types().addTypes(axiomDescriptor.getSubject(), typesContext, typesToAdd);
             }
-            if (typesToRemove != null) {
+            if (!typesToRemove.isEmpty()) {
                 connection.types().removeTypes(axiomDescriptor.getSubject(), typesContext, typesToRemove);
             }
             if (propertiesToAdd != null) {

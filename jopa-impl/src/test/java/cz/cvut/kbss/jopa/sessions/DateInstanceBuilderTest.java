@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +49,7 @@ class DateInstanceBuilderTest {
     void testBuildClone() {
         final Date original = new Date();
         final Object res = builder.buildClone(entityM, dateField, original, new CloneConfiguration(descriptor, false));
-        assertTrue(res instanceof Date);
+        assertInstanceOf(Date.class, res);
         assertNotSame(original, res);
         assertEquals(original, res);
     }

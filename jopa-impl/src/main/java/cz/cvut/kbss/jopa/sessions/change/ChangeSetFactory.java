@@ -37,25 +37,35 @@ public class ChangeSetFactory {
     /**
      * Creates new change set for the specified original-clone pair.
      *
-     * @param original
-     *            Original object
-     * @param clone
-     *            Clone
-     * @param descriptor
-     *            Entity descriptor
-     * @return New object change set
-     */
-    public static ObjectChangeSet createObjectChangeSet(Object original, Object clone, Descriptor descriptor) {
-        return new ObjectChangeSetImpl(original, clone, descriptor);
-    }
-
-    /**
-     * Creates a new change set representing object removal.
-     * @param toDelete Object to remove
+     * @param original   Original object
+     * @param clone      Clone
      * @param descriptor Entity descriptor
      * @return New object change set
      */
-    public static ObjectChangeSet createDeleteObjectChangeSet(Object toDelete, Descriptor descriptor) {
-        return new DeleteObjectChangeSet(toDelete, descriptor);
+    public static ObjectChangeSet createObjectChangeSet(Object original, Object clone, Descriptor descriptor) {
+        return new ObjectChangeSet(original, clone, descriptor);
+    }
+
+    /**
+     * Creates a change representing object deletion.
+     *
+     * @param clone   Deleted object clone
+     * @param original Original of the deleted object
+     * @param descriptor Entity descriptor
+     * @return Delete object change
+     */
+    public static DeleteObjectChange createDeleteObjectChange(Object clone, Object original, Descriptor descriptor) {
+        return new DeleteObjectChange(clone, original, descriptor);
+    }
+
+    /**
+     * Creates a change representing object persist.
+     *
+     * @param newObject  Persisted object
+     * @param descriptor Entity descriptor
+     * @return New object change
+     */
+    public static NewObjectChange createNewObjectChange(Object newObject, Descriptor descriptor) {
+        return new NewObjectChange(newObject, descriptor);
     }
 }

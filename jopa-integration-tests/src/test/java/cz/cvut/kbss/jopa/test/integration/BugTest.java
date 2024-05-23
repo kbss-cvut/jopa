@@ -31,6 +31,7 @@ import cz.cvut.kbss.jopa.test.OWLClassJ;
 import cz.cvut.kbss.jopa.test.OWLClassR;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.utils.JOPALazyUtils;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -44,16 +45,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -129,33 +130,25 @@ class BugTest extends IntegrationTestBase {
      * entity, nothing should be added into a plural attribute collection. The bug caused {@code null} to be added.
      */
     @Test
-    void readingInstanceReferenceWithoutCorrectTypeResultsInNullAddedToPluralAttribute() throws OntoDriverException {
+    void readingInstanceReferenceWithoutCorrectTypeDoesNotAddAnythingToPluralAttribute() throws OntoDriverException {
         final URI owner = Generators.generateUri();
         initAxiomsForNullReferenceLoad(owner);
         final OWLClassJ result = em.find(OWLClassJ.class, owner);
         assertNotNull(result);
-        assertThat(result.getOwlClassA(), anyOf(nullValue(), empty()));
+        assertTrue(result.getOwlClassA().isEmpty());
     }
 
     private void initAxiomsForNullReferenceLoad(URI owner) throws OntoDriverException {
         final NamedResource ownerResource = NamedResource.create(owner);
         final Assertion classAssertion = Assertion.createClassAssertion(false);
-        final NamedResource reference = NamedResource.create(Generators.generateUri());
         final Assertion opAssertion = Assertion
                 .createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_OWL_CLASS_A), false);
         final AxiomDescriptor fDesc = new AxiomDescriptor(ownerResource);
         fDesc.addAssertion(classAssertion);
+        fDesc.addAssertion(opAssertion);
         when(connectionMock.find(fDesc))
                 .thenReturn(Collections.singletonList(new AxiomImpl<>(ownerResource, classAssertion,
                         new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_J)))));
-        final AxiomDescriptor refDescriptor = new AxiomDescriptor(ownerResource);
-        refDescriptor.addAssertion(opAssertion);
-        when(connectionMock.find(refDescriptor)).thenReturn(
-                Collections.singletonList(new AxiomImpl<>(ownerResource, opAssertion, new Value<>(reference))));
-        final AxiomDescriptor aDesc = new AxiomDescriptor(reference);
-        aDesc.addAssertion(classAssertion);
-        aDesc.addAssertion(Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false));
-        when(connectionMock.find(aDesc)).thenReturn(Collections.emptyList());
     }
 
     /**
@@ -208,5 +201,45 @@ class BugTest extends IntegrationTestBase {
         em.persist(owner);
         final RollbackException ex = assertThrows(RollbackException.class, () -> em.getTransaction().commit());
         assertInstanceOf(UnpersistedChangeException.class, ex.getCause());
+    }
+
+    @Test
+    void triggeringLazyLoadingMultipleTimesDoesNotLeadToStackOverflow() throws Exception {
+        final OWLClassF owner = new OWLClassF(Generators.generateUri());
+        final OWLClassA a = new OWLClassA(Generators.generateUri());
+        a.setStringAttribute("Does not matter");
+        owner.setSimpleSet(Set.of(a));
+        initOWLClassFAxioms(owner);
+        initAxiomsForOWLClassA(NamedResource.create(a.getUri()), a.getStringAttribute(), false);
+
+        em.getTransaction().begin();
+        final OWLClassF instance = em.find(OWLClassF.class, owner.getUri());
+        assertNotNull(instance);
+        final Set<OWLClassA> proxy = instance.getSimpleSet();
+        assertFalse(JOPALazyUtils.isLoaded(proxy));
+        // Triggers lazy loading
+        assertFalse(proxy.isEmpty());
+        instance.setSimpleSet(proxy);
+        assertFalse(proxy.isEmpty());
+    }
+
+    private void initOWLClassFAxioms(OWLClassF instance) throws Exception {
+        final NamedResource subject = NamedResource.create(instance.getUri());
+        final List<Axiom<?>> axioms = new ArrayList<>();
+        final Axiom<?> classAssertion = new AxiomImpl<>(subject, Assertion.createClassAssertion(false),
+                new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_F)));
+        final Assertion aSetAssertion = Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_F_HAS_SIMPLE_SET), false);
+        axioms.add(classAssertion);
+        final List<AxiomImpl<NamedResource>> aSetAxioms = instance.getSimpleSet().stream().map(a -> new AxiomImpl<>(subject, aSetAssertion, new Value<>(NamedResource.create(a.getUri())))).toList();
+        axioms.addAll(aSetAxioms);
+        final AxiomDescriptor entityDesc = new AxiomDescriptor(subject);
+        entityDesc.addAssertion(Assertion.createClassAssertion(false));
+        entityDesc.addAssertion(aSetAssertion);
+        entityDesc.addAssertion(Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_F_STRING_ATTRIBUTE), true));
+        doReturn(axioms).when(connectionMock).find(entityDesc);
+
+        final AxiomDescriptor setDesc = new AxiomDescriptor(subject);
+        setDesc.addAssertion(aSetAssertion);
+        doReturn(aSetAxioms).when(connectionMock).find(setDesc);
     }
 }

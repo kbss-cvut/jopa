@@ -23,7 +23,11 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,13 +46,15 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
 
     private final Collection<Object> values;
 
+    private boolean hasLazyValues = false;
+
     PluralObjectPropertyStrategy(EntityType<X> et, Y att, Descriptor descriptor, EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
         this.values = CollectionFactory.createDefaultCollection(att.getCollectionType());
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         final NamedResource valueIdentifier = (NamedResource) ax.getValue().getValue();
         final Class<?> elementType = attribute.getBindableJavaType();
         if (IdentifierTransformer.isValidIdentifierType(elementType)) {
@@ -61,8 +67,7 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
             values.add(attribute.getConverter().convertToAttribute(valueIdentifier));
         } else {
             final Object value = mapper.getEntityFromCacheOrOntology(elementType, valueIdentifier.getIdentifier(),
-                                                                     entityDescriptor.getAttributeDescriptor(
-                                                                             attribute));
+                    entityDescriptor.getAttributeDescriptor(attribute));
             if (value != null) {
                 values.add(value);
             } else {
@@ -72,10 +77,23 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
     }
 
     @Override
-    void buildInstanceFieldValue(Object instance) {
-        if (!values.isEmpty()) {
-            setValueOnInstance(instance, values);
+    void lazilyAddAxiomValue(Axiom<?> ax) {
+        final Class<?> elementType = attribute.getBindableJavaType();
+        if (IdentifierTransformer.isValidIdentifierType(elementType) || elementType.isEnum()) {
+            addAxiomValue(ax);
+        } else {
+            hasLazyValues = true;
         }
+    }
+
+    @Override
+    boolean hasValue() {
+        return !values.isEmpty() || hasLazyValues;
+    }
+
+    @Override
+    void buildInstanceFieldValue(Object instance) {
+        setValueOnInstance(instance, values);
     }
 
     @Override

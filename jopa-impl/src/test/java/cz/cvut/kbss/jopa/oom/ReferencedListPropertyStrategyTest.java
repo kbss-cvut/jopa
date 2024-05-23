@@ -90,7 +90,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         final OWLClassC c = new OWLClassC(IDENTIFIER);
         final List<Axiom<?>> axioms = initRefListAxioms(true);
         when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(axioms);
-        strategy.addValueFromAxiom(axioms.iterator().next());
+        strategy.addAxiomValue(axioms.iterator().next());
         assertNull(c.getReferencedList());
         strategy.buildInstanceFieldValue(c);
 
@@ -152,7 +152,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         final OWLClassC c = new OWLClassC(IDENTIFIER);
         final List<Axiom<?>> axioms = initRefListAxioms(false);
         when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(axioms);
-        strategy.addValueFromAxiom(axioms.iterator().next());
+        strategy.addAxiomValue(axioms.iterator().next());
         assertNull(c.getReferencedList());
         strategy.buildInstanceFieldValue(c);
 
@@ -169,7 +169,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         final List<Axiom<?>> axioms = initRefListAxioms(true);
         when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(axioms);
 
-        strategy.addValueFromAxiom(axioms.iterator().next());
+        strategy.addAxiomValue(axioms.iterator().next());
         final OWLClassP p = new OWLClassP();
         p.setUri(IDENTIFIER);
         strategy.buildInstanceFieldValue(p);

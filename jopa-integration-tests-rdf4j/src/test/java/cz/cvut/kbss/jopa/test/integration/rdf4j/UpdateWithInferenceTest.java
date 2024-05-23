@@ -17,16 +17,28 @@
  */
 package cz.cvut.kbss.jopa.test.integration.rdf4j;
 
+import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.exceptions.RollbackException;
+import cz.cvut.kbss.jopa.test.OWLClassW;
+import cz.cvut.kbss.jopa.test.Vocabulary;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.test.environment.Rdf4jDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Rdf4jPersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.UpdateWithInferenceRunner;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jOntoDriverProperties;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UpdateWithInferenceTest extends UpdateWithInferenceRunner {
 
@@ -71,7 +83,21 @@ public class UpdateWithInferenceTest extends UpdateWithInferenceRunner {
     @Override
     public void removalOfInferredValueOfInferredAttributeThrowsInferredAttributeModifiedException() throws Exception {
         this.em = getEntityManager("removalOfInferredValueOfInferredAttributeThrowsInferredAttributeModifiedException", false, INFERENCE_PROPS);
-        super.removalOfInferredValueOfInferredAttributeThrowsInferredAttributeModifiedException();
+        final URI typeToRemove = URI.create(Vocabulary.C_OWL_CLASS_A);
+        final OWLClassW entityW = new OWLClassW();
+        persistTestData(Collections.singleton(
+                new Quad(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
+                        typeToRemove)), em);
+        persist(entityW);
+
+        final RollbackException ex = assertThrows(RollbackException.class, () -> {
+            em.getTransaction().begin();
+            final OWLClassW toUpdate = findRequired(OWLClassW.class, entityW.getUri());
+            assertThat(toUpdate.getTypes(), hasItem(typeToRemove));
+            toUpdate.getTypes().remove(typeToRemove);
+            em.getTransaction().commit();
+        });
+        assertInstanceOf(InferredAttributeModifiedException.class, ex.getCause());
     }
 
     @Test

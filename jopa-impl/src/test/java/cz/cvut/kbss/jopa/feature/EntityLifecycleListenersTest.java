@@ -31,13 +31,16 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.sessions.ChangeTrackingUnitOfWork;
 import cz.cvut.kbss.jopa.sessions.CloneBuilder;
-import cz.cvut.kbss.jopa.sessions.CloneConfiguration;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
+import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.sessions.LoadingParameters;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.ReflectionUtils;
@@ -110,15 +113,15 @@ public class EntityLifecycleListenersTest {
         this.concreteListenerMock = mocks.forOwlClassR().concreteListener();
         this.anotherListenerMock = mocks.forOwlClassR().anotherListener();
         final ServerSessionStub serverSessionStub = new ServerSessionStub(metamodelMock, storageMock);
-        this.uow = new UnitOfWorkImpl(serverSessionStub, config);
+        this.uow = new ChangeTrackingUnitOfWork(serverSessionStub, config);
         uow.begin();
-        TestEnvironmentUtils.setMock(uow, UnitOfWorkImpl.class.getDeclaredField("cloneBuilder"), cloneBuilderMock);
+        TestEnvironmentUtils.setMock(uow, AbstractUnitOfWork.class.getDeclaredField("cloneBuilder"), cloneBuilderMock);
     }
 
     @Test
     public void prePersistLifecycleListenerIsCalledBeforeInstanceIsInsertedIntoPersistenceContext() throws Exception {
         final Map<Object, Object> mockMap = spy(new HashMap<>());
-        TestEnvironmentUtils.setMock(uow, UnitOfWorkImpl.class.getDeclaredField("newObjectsKeyToClone"), mockMap);
+        TestEnvironmentUtils.setMock(uow, AbstractUnitOfWork.class.getDeclaredField("newObjectsKeyToClone"), mockMap);
         final URI rId = Generators.createIndividualIdentifier();
         final OWLClassR rInstance = spy(new OWLClassR());
         when(storageMock.generateIdentifier(metamodelMock.entity(OWLClassR.class))).thenReturn(rId);
@@ -213,6 +216,8 @@ public class EntityLifecycleListenersTest {
         final OWLClassR rInstance = spy(createInstance(OWLClassR.class));
         rInstance.setUri(rOriginal.getUri());
         when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rInstance);
+        uow.getLoadStateRegistry().put(rOriginal, LoadStateDescriptorFactory.createAllLoaded(rOriginal, metamodelMock.entity(OWLClassR.class)));
+        uow.getLoadStateRegistry().put(rInstance, LoadStateDescriptorFactory.createAllLoaded(rOriginal, metamodelMock.entity(OWLClassR.class)));
 
         uow.registerExistingObject(rOriginal, descriptor);
         rInstance.setStringAtt("Update");
@@ -262,6 +267,8 @@ public class EntityLifecycleListenersTest {
         final OWLClassR rInstance = spy(createInstance(OWLClassR.class));
         rInstance.setUri(rOriginal.getUri());
         when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenReturn(rInstance);
+        uow.getLoadStateRegistry().put(rOriginal, LoadStateDescriptorFactory.createAllLoaded(rOriginal, metamodelMock.entity(OWLClassR.class)));
+        uow.getLoadStateRegistry().put(rInstance, LoadStateDescriptorFactory.createAllLoaded(rOriginal, metamodelMock.entity(OWLClassR.class)));
 
         uow.registerExistingObject(rOriginal, descriptor);
         rInstance.setStringAtt("Update");
@@ -317,7 +324,7 @@ public class EntityLifecycleListenersTest {
 
         when(cloneBuilderMock.buildClone(eq(rOriginal), any())).thenAnswer(inv -> {
             final CloneConfiguration config = (CloneConfiguration) inv.getArguments()[1];
-            uow.registerExistingObject(aOriginal, config.getDescriptor(), config.getPostRegister());
+            uow.registerExistingObject(aOriginal, new CloneRegistrationDescriptor(config.getDescriptor()).postCloneHandlers(config.getPostRegister()));
             return rInstance;
         });
         when(cloneBuilderMock.buildClone(eq(aOriginal), any())).thenReturn(aInstance);
@@ -343,7 +350,7 @@ public class EntityLifecycleListenersTest {
         cInstance.setSimpleList(Collections.singletonList(aInstance));
         when(cloneBuilderMock.buildClone(eq(cOriginal), any())).thenAnswer(inv -> {
             final CloneConfiguration config = (CloneConfiguration) inv.getArguments()[1];
-            uow.registerExistingObject(aOriginal, config.getDescriptor(), config.getPostRegister());
+            uow.registerExistingObject(aOriginal, new CloneRegistrationDescriptor(config.getDescriptor()).postCloneHandlers(config.getPostRegister()));
             return cInstance;
         });
         when(cloneBuilderMock.buildClone(eq(aOriginal), any())).thenReturn(aInstance);

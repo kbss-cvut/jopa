@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.MetamodelBuilder;
 import cz.cvut.kbss.jopa.model.metamodel.StaticMetamodelInitializer;
+import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxyGenerator;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
@@ -40,6 +41,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -51,6 +53,8 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     private Map<Class<?>, EntityType<?>> entities;
     private Set<Class<?>> inferredClasses;
     private TypeReferenceMap typeReferenceMap;
+
+    private final Map<Class<?>, Class<?>> lazyLoadingProxyClasses = new ConcurrentHashMap<>();
 
     private NamedQueryManager namedQueryManager;
     private ResultSetMappingManager resultSetMappingManager;
@@ -69,8 +73,8 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     }
 
     /**
-     * Builds the metamodel for classes (entity classes, attribute converters etc.) discovered by the specified {@link
-     * PersistenceUnitClassFinder}.
+     * Builds the metamodel for classes (entity classes, attribute converters etc.) discovered by the specified
+     * {@link PersistenceUnitClassFinder}.
      *
      * @param classFinder Finder of PU classes
      */
@@ -213,5 +217,17 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
      */
     public Set<Class<?>> getReferringTypes(Class<?> cls) {
         return typeReferenceMap.getReferringTypes(cls);
+    }
+
+    /**
+     * Gets a {@link cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy} type for the specified class.
+     *
+     * @param cls Class to get lazy loading proxy for
+     * @param <X> Type to proxy
+     * @return Lazy loading proxy class
+     */
+    public <X> Class<? extends X> getLazyLoadingProxy(Class<X> cls) {
+        assert isEntityType(cls);
+        return (Class<? extends X>) lazyLoadingProxyClasses.computeIfAbsent(cls, c -> new LazyLoadingEntityProxyGenerator().generate(c));
     }
 }

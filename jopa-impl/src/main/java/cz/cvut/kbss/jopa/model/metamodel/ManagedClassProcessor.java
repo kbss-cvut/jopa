@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.model.annotations.Namespace;
 import cz.cvut.kbss.jopa.model.annotations.Namespaces;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.metamodel.gen.ManageableClassGenerator;
+import cz.cvut.kbss.jopa.utils.ChangeTrackingMode;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 
@@ -116,8 +117,16 @@ public class ManagedClassProcessor {
             return new AbstractEntityType<>(cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
         } else {
             checkForNoArgConstructor(cls);
-            final Class<? extends T> instantiableType = new ManageableClassGenerator(config).generate(cls);
+            final Class<? extends T> instantiableType = resolveInstantiableType(cls, config);
             return new ConcreteEntityType<>(cls, instantiableType, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
+        }
+    }
+
+    private static  <T> Class<? extends T> resolveInstantiableType(Class<T> cls, Configuration config) {
+        if (ChangeTrackingMode.IMMEDIATE == ChangeTrackingMode.resolve(config)) {
+            return new ManageableClassGenerator(config).generate(cls);
+        } else {
+            return cls;
         }
     }
 
@@ -125,7 +134,7 @@ public class ManagedClassProcessor {
         try {
             cls.getDeclaredConstructor();
         } catch (NoSuchMethodException e) {
-            throw new MetamodelInitializationException("Class " + cls + " is missing required no-arg constructor.", e);
+            throw new MetamodelInitializationException("Entity " + cls + " is missing required no-arg constructor.", e);
         }
     }
 

@@ -27,8 +27,10 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
+import cz.cvut.kbss.jopa.sessions.change.Change;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +42,8 @@ import org.mockito.quality.Strictness;
 
 import java.net.URI;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,7 +57,7 @@ class MergeManagerTest {
     private static Descriptor defaultDescriptor;
 
     @Mock
-    private UnitOfWork uow;
+    private AbstractUnitOfWork uow;
 
     @Mock
     private CloneBuilder cloneBuilder;
@@ -101,7 +105,7 @@ class MergeManagerTest {
         OWLClassB cloneOne = new OWLClassB(objOne.getUri());
         OWLClassB cloneTwo = new OWLClassB(objTwo.getUri());
         cloneOne.setStringAttribute("testAtt");
-        uowChangeSet.addDeletedObjectChangeSet(createChangeSet(objTwo, cloneTwo));
+        uowChangeSet.addDeletedObjectChangeSet(ChangeSetFactory.createDeleteObjectChange(cloneTwo, objTwo, defaultDescriptor));
         final ObjectChangeSet changeSet = createChangeSet(objOne, cloneOne);
         changeSet.addChangeRecord(
                 new ChangeRecord(metamodelMocks.forOwlClassB().stringAttribute(), cloneOne.getStringAttribute()));
@@ -112,12 +116,13 @@ class MergeManagerTest {
     }
 
     @Test
-    void mergeChangesFromChangeSetWithNewObjectPutsOriginalIntoCache() {
+    void mergeChangesFromUoWChangeSetWithNewObjectPutsOriginalIntoCache() {
         final OWLClassB objOne = new OWLClassB(Generators.createIndividualIdentifier());
         objOne.setStringAttribute("ABeautifulAttribute");
         final OWLClassB clone = new OWLClassB(objOne.getUri());
-        final ObjectChangeSet changeSet = createChangeSet(objOne, clone);
-        uowChangeSet.addNewObjectChangeSet(changeSet);
+        clone.setStringAttribute(objOne.getStringAttribute());
+        when(cloneBuilder.buildClone(eq(clone), any(CloneConfiguration.class))).thenReturn(objOne);
+        uowChangeSet.addNewObjectChangeSet(ChangeSetFactory.createNewObjectChange(clone, defaultDescriptor));
         mm.mergeChangesFromChangeSet(uowChangeSet);
         verify(uow).putObjectIntoCache(objOne.getUri(), objOne, defaultDescriptor);
     }
@@ -126,8 +131,8 @@ class MergeManagerTest {
     void mergeNewObjectPutsObjectIntoCache() {
         final OWLClassB newOne = new OWLClassB(Generators.createIndividualIdentifier());
         final OWLClassB clone = new OWLClassB(newOne.getUri());
-        final ObjectChangeSet changeSet = createChangeSet(newOne, clone);
-        changeSet.setNew(true);
+        when(cloneBuilder.buildClone(eq(clone), any(CloneConfiguration.class))).thenReturn(newOne);
+        final Change changeSet = ChangeSetFactory.createNewObjectChange(clone, defaultDescriptor);
         mm.mergeNewObject(changeSet);
         verify(uow).putObjectIntoCache(newOne.getUri(), newOne, defaultDescriptor);
     }

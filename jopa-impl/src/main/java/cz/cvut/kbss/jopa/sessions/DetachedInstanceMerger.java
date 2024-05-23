@@ -17,9 +17,9 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.sessions.merge.DetachedValueMerger;
 import cz.cvut.kbss.jopa.sessions.merge.ValueMerger;
 
@@ -40,8 +40,8 @@ class DetachedInstanceMerger {
      */
     Object mergeChangesFromDetachedToManagedInstance(ObjectChangeSet changeSet, Descriptor descriptor) {
         assert changeSet != null;
-        assert changeSet.getCloneObject() != null;
-        final Object target = changeSet.getChangedObject();
+        assert changeSet.getClone() != null;
+        final Object target = changeSet.getOriginal();
         assert target != null;
 
         for (ChangeRecord change : changeSet.getChanges()) {

@@ -20,7 +20,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.list;
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -42,10 +42,10 @@ import java.util.Set;
  */
 abstract class ListHandler<VD extends ListValueDescriptor<?>> {
 
-    final Connector connector;
+    final RepoConnection connector;
     final ValueFactory vf;
 
-    ListHandler(Connector connector, ValueFactory vf) {
+    ListHandler(RepoConnection connector, ValueFactory vf) {
         this.connector = connector;
         this.vf = vf;
     }

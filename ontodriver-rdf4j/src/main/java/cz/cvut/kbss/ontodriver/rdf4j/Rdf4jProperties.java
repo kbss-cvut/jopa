@@ -24,7 +24,7 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 
 import java.net.URI;
@@ -34,7 +34,7 @@ import java.util.Set;
 
 class Rdf4jProperties implements Properties {
 
-    private final Connector connector;
+    private final RepoConnection connector;
     private final RuntimeConfiguration config;
 
     private final Procedure beforeCallback;

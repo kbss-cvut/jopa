@@ -17,78 +17,326 @@
  */
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
+import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.Wrapper;
+import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
+import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
+import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
+import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jOntoDriverProperties;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RemoteRepositoryWrapper;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
-import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
-import org.eclipse.rdf4j.model.IRI;
+import cz.cvut.kbss.ontodriver.rdf4j.exception.RepositoryCreationException;
+import cz.cvut.kbss.ontodriver.rdf4j.exception.RepositoryNotFoundException;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.model.vocabulary.CONFIG;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.config.RepositoryConfig;
+import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
+import org.eclipse.rdf4j.repository.config.RepositoryConfigSchema;
+import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import org.eclipse.rdf4j.repository.manager.RemoteRepositoryManager;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
+import org.eclipse.rdf4j.repository.manager.RepositoryProvider;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.sail.Sail;
+import org.eclipse.rdf4j.sail.config.SailImplConfig;
 import org.eclipse.rdf4j.sail.helpers.SailWrapper;
+import org.eclipse.rdf4j.sail.inferencer.fc.SchemaCachingRDFSInferencer;
+import org.eclipse.rdf4j.sail.inferencer.fc.config.SchemaCachingRDFSInferencerConfig;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.eclipse.rdf4j.sail.nativerdf.config.NativeStoreConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class StorageConnector extends AbstractConnector {
+public class StorageConnector implements Closeable, Wrapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(StorageConnector.class);
 
+    private static final String[] KNOWN_REMOTE_SCHEMES = {"http", "https", "ftp"};
+    private static final String LOCAL_NATIVE_REPO = "repositories/";
+    private static final String FILE_SCHEME = "file";
+    private static final String CLASSPATH_PREFIX = "classpath:";
+
+    private final DriverConfiguration configuration;
     private final int maxReconnectAttempts;
 
+    private RepositoryManager manager;
     private Repository repository;
-    private final RepositoryManager manager;
-    private RepositoryConnection connection;
 
-    public StorageConnector(RepositoryConnectorInitializer repoInitializer) {
-        this.repository = repoInitializer.getRepository();
-        this.manager = repoInitializer.getManager();
-        this.maxReconnectAttempts = repoInitializer.getMaxReconnectAttempts();
+    private boolean open;
+
+    public StorageConnector(DriverConfiguration configuration) throws Rdf4jDriverException {
+        this.configuration = configuration;
+        this.maxReconnectAttempts = resolveMaxReconnectAttempts();
+    }
+
+    private int resolveMaxReconnectAttempts() throws Rdf4jDriverException {
+        try {
+            final int attempts = configuration.isSet(Rdf4jConfigParam.RECONNECT_ATTEMPTS) ? Integer.parseInt(
+                    configuration.getProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS)) :
+                    Constants.DEFAULT_RECONNECT_ATTEMPTS_COUNT;
+            if (attempts < 0) {
+                throw invalidReconnectAttemptsConfig();
+            }
+            return attempts;
+        } catch (NumberFormatException e) {
+            throw invalidReconnectAttemptsConfig();
+        }
+    }
+
+    private static Rdf4jDriverException invalidReconnectAttemptsConfig() {
+        return new Rdf4jDriverException(
+                "Invalid value of configuration parameter " + Rdf4jOntoDriverProperties.RECONNECT_ATTEMPTS +
+                        ". Must be a non-negative integer.");
+    }
+
+    public void initializeRepository() throws Rdf4jDriverException {
+        final URI serverUri = configuration.getStorageProperties().getPhysicalURI();
+        LOG.debug("Initializing connector to repository at {}", serverUri);
+        try {
+            final boolean isRemote = isRemoteRepository(serverUri);
+            if (isRemote) {
+                this.repository = connectToRemoteRepository(serverUri.toString());
+            } else {
+                this.repository = createLocalRepository();
+            }
+            verifyRepositoryCreated(serverUri, isRemote);
+            repository.init();
+        } catch (RepositoryException | RepositoryConfigException e) {
+            throw new Rdf4jDriverException("Failed to acquire RDF4J repository connection.", e);
+        }
         this.open = true;
     }
 
-    @Override
-    public void close() throws Rdf4jDriverException {
-        if (!open) {
-            return;
-        }
-        LOG.debug("Closing repository connector.");
-        try {
-            repository.shutDown();
-            if (manager != null) {
-                manager.shutDown();
+    private static boolean isRemoteRepository(URI uri) {
+        final String scheme = uri.getScheme();
+        for (String s : KNOWN_REMOTE_SCHEMES) {
+            if (s.equals(scheme)) {
+                return true;
             }
+        }
+        return false;
+    }
+
+    private Repository connectToRemoteRepository(String repoUri) {
+        this.manager = RepositoryProvider.getRepositoryManagerOfRepository(repoUri);
+        final RemoteRepositoryManager remoteManager = (RemoteRepositoryManager) manager;
+        final String username = configuration.getStorageProperties().getUsername();
+        if (username != null) {
+            final String password = configuration.getStorageProperties().getPassword();
+            remoteManager.setUsernameAndPassword(username, password);
+        }
+        return connectToRemote(repoUri, 1);
+    }
+
+    private Repository connectToRemote(String repoUri, int attempts) {
+        try {
+            return new RemoteRepositoryWrapper((HTTPRepository) manager.getRepository(RepositoryProvider.getRepositoryIdOfRepository(repoUri)), configuration);
         } catch (RepositoryException e) {
-            throw new Rdf4jDriverException("Exception caught when closing RDF4J repository connection.", e);
-        } finally {
-            this.open = false;
+            if (attempts < maxReconnectAttempts) {
+                LOG.warn("Unable to connect to repository {}. Error is: {}. Retrying...", repoUri, e.getMessage());
+                return connectToRemote(repoUri, attempts + 1);
+            }
+            LOG.error("Threshold of failed connection attempts reached, throwing exception.");
+            throw e;
         }
     }
 
-    @Override
-    public TupleQueryResult executeSelectQuery(QuerySpecification query) throws Rdf4jDriverException {
-        final RepositoryConnection conn = acquireConnection();
-        return new ConnectionStatementExecutor(conn).executeSelectQuery(query);
-        // The connection is released by the result set once it is closed
+    private Repository createLocalRepository() {
+        if (configuration.isSet(Rdf4jConfigParam.REPOSITORY_CONFIG)) {
+            return createRepositoryFromConfig();
+        }
+        final URI localUri = configuration.getStorageProperties().getPhysicalURI();
+        if (!isFileUri(localUri) && configuration.is(Rdf4jConfigParam.USE_VOLATILE_STORAGE)) {
+            return createInMemoryRepository();
+        } else {
+            return createNativeRepository(configuration, localUri.toString());
+        }
     }
 
-    RepositoryConnection acquireConnection() throws Rdf4jDriverException {
+    private Repository createRepositoryFromConfig() {
+        LOG.trace("Creating local repository from repository config file.");
+        final RepositoryConfig repoConfig = loadRepositoryConfig();
+        this.manager = RepositoryProvider.getRepositoryManager(getRepositoryManagerBaseDir().orElse(""));
+        manager.addRepositoryConfig(repoConfig);
+        return manager.getRepository(getRepositoryId());
+    }
+
+    @SuppressWarnings("deprecated")
+    private RepositoryConfig loadRepositoryConfig() {
+        try (final InputStream is = getConfigFileContent()) {
+            final Model configModel = Rio.parse(is, "", RDFFormat.TURTLE);
+            Set<Resource> resources =
+                    configModel.filter(null, RDF.TYPE, CONFIG.Rep.Repository).subjects();
+            if (resources.isEmpty()) {
+                // Support for legacy repository configuration vocabulary.
+                // https://rdf4j.org/documentation/reference/configuration/#migrating-old-configurations
+                resources = configModel.filter(null, RDF.TYPE, RepositoryConfigSchema.REPOSITORY).subjects();
+            }
+            assert resources.size() == 1;
+            return RepositoryConfig.create(configModel, resources.iterator().next());
+        } catch (IOException e) {
+            throw new RepositoryCreationException("Unable to create repository from the specified configuration.", e);
+        }
+    }
+
+    private InputStream getConfigFileContent() {
+        final String configPath = configuration.getProperty(Rdf4jConfigParam.REPOSITORY_CONFIG);
+        LOG.trace("Loading repository configuration file content from {}.", configPath);
+        if (configPath.startsWith(CLASSPATH_PREFIX)) {
+            final InputStream is =
+                    getClass().getClassLoader().getResourceAsStream(configPath.substring(CLASSPATH_PREFIX.length()));
+            if (is == null) {
+                throw new RepositoryCreationException(
+                        "Unable to find repository configuration file on classpath location " + configPath);
+            }
+            return is;
+        } else {
+            try {
+                return new FileInputStream(configPath);
+            } catch (FileNotFoundException e) {
+                throw new RepositoryCreationException("Unable to find repository configuration file at " + configPath,
+                        e);
+            }
+        }
+    }
+
+    private Optional<String> getRepositoryManagerBaseDir() {
+        final String physicalUri = configuration.getStorageProperties().getPhysicalURI().toString();
+        final String[] tmp = physicalUri.split(LOCAL_NATIVE_REPO);
+        return tmp.length == 2 ? Optional.of(tmp[0]) : Optional.empty();
+    }
+
+    private String getRepositoryId() {
+        final String physicalUri = configuration.getStorageProperties().getPhysicalURI().toString();
+        final String[] tmp = physicalUri.split(LOCAL_NATIVE_REPO);
+        if (tmp.length != 2) {
+            return physicalUri;
+        }
+        String repoId = tmp[1];
+        // Get rid of the trailing slash if necessary
+        return repoId.charAt(repoId.length() - 1) == '/' ? repoId.substring(0, repoId.length() - 1) : repoId;
+    }
+
+    private static boolean isFileUri(URI uri) {
+        return uri.getScheme() != null && uri.getScheme().equals(FILE_SCHEME);
+    }
+
+    /**
+     * Creates a local in-memory RDF4J repository which is disposed of when the VM shuts down.
+     */
+    private Repository createInMemoryRepository() {
+        LOG.trace("Creating local in-memory repository.");
+        final MemoryStore ms = new MemoryStore();
+        if (configuration.is(Rdf4jConfigParam.USE_INFERENCE)) {
+            return new SailRepository(new SchemaCachingRDFSInferencer(ms));
+        } else {
+            return new SailRepository(ms);
+        }
+    }
+
+    /**
+     * Creates native repository.
+     * <p>
+     * This kind of repository stores data in files and is persistent after the VM shuts down.
+     */
+    private Repository createNativeRepository(DriverConfiguration configuration, String localUri) {
+        LOG.trace("Creating local native repository at " + localUri);
+        validateNativeStorePath(localUri);
+        try {
+            this.manager = RepositoryProvider.getRepositoryManagerOfRepository(localUri);
+            final String repoId = getRepositoryId();
+            final RepositoryConfig cfg = createLocalNativeRepositoryConfig(repoId, configuration);
+            manager.addRepositoryConfig(cfg);
+            return manager.getRepository(repoId);
+        } catch (RepositoryConfigException | RepositoryException e) {
+            throw new RepositoryCreationException("Unable to create local repository at " + localUri, e);
+        }
+    }
+
+    private static void validateNativeStorePath(String path) {
+        if (path.split(LOCAL_NATIVE_REPO).length != 2) {
+            throw new RepositoryCreationException(
+                    "Unsupported local RDF4J repository path. Expected file://path/repositories/id but got " +
+                            path);
+        }
+    }
+
+    private static RepositoryConfig createLocalNativeRepositoryConfig(String repoId,
+                                                                      DriverConfiguration configuration) {
+        SailImplConfig backend = new NativeStoreConfig();
+        if (configuration.is(Rdf4jConfigParam.USE_INFERENCE)) {
+            backend = new SchemaCachingRDFSInferencerConfig(backend);
+        }
+        final SailRepositoryConfig repoType = new SailRepositoryConfig(backend);
+        return new RepositoryConfig(repoId, repoType);
+    }
+
+    private void verifyRepositoryCreated(URI serverUri, boolean isRemote) {
+        if (repository == null) {
+            if (isRemote) {
+                throw new RepositoryNotFoundException("Unable to reach repository at " + serverUri);
+            } else {
+                throw new RepositoryCreationException("Unable to create local repository at " + serverUri);
+            }
+        }
+    }
+
+    /**
+     * Replaces the currently open repository with the specified one.
+     * <p>
+     * Note that this functionality is only supported for in-memory stores.
+     *
+     * @param newRepository The new repository to set
+     */
+    public void setRepository(Repository newRepository) {
+        Objects.requireNonNull(newRepository);
+        verifyOpen();
+        if (!isInMemoryRepository(repository)) {
+            throw new UnsupportedOperationException("Cannot replace repository which is not in-memory.");
+        }
+        repository.shutDown();
+        assert newRepository.isInitialized();
+        this.repository = newRepository;
+        // Since in-memory repositories are not registered in RepositoryManager, we shouldn't need to deal with it
+    }
+
+    private static boolean isInMemoryRepository(Repository repo) {
+        if (!(repo instanceof SailRepository)) {
+            return false;
+        }
+        Sail sail = ((SailRepository) repo).getSail();
+        while (sail instanceof SailWrapper) {
+            sail = ((SailWrapper) sail).getBaseSail();
+        }
+        return sail instanceof MemoryStore;
+    }
+
+    public ValueFactory getValueFactory() {
+        verifyOpen();
+        return repository.getValueFactory();
+    }
+
+    public RepositoryConnection acquireConnection() throws Rdf4jDriverException {
+        verifyOpen();
         // Workaround for local native storage being reset when multiple drivers access it
         if (!repository.isInitialized()) {
             repository.init();
@@ -110,167 +358,37 @@ public class StorageConnector extends AbstractConnector {
         }
     }
 
-    void releaseConnection(RepositoryConnection conn) throws Rdf4jDriverException {
+    @Override
+    public void close() throws OntoDriverException {
+        if (!open) {
+            return;
+        }
         try {
-            if (conn != null) {
-                LOG.trace("Releasing repository connection.");
-                conn.close();
+            repository.shutDown();
+            if (manager != null) {
+                manager.shutDown();
             }
-        } catch (RepositoryException e) {
-            throw new Rdf4jDriverException(e);
-        }
-    }
-
-    @Override
-    public boolean executeBooleanQuery(QuerySpecification query) throws Rdf4jDriverException {
-        try (final RepositoryConnection conn = acquireConnection()) {
-            return new ConnectionStatementExecutor(conn).executeBooleanQuery(query);
-        }
-    }
-
-    @Override
-    public void executeUpdate(QuerySpecification query) throws Rdf4jDriverException {
-        try (final RepositoryConnection conn = acquireConnection()) {
-            new ConnectionStatementExecutor(conn).executeUpdate(query);
-        }
-    }
-
-    @Override
-    public List<Resource> getContexts() throws Rdf4jDriverException {
-        try (final RepositoryConnection conn = acquireConnection()) {
-            return conn.getContextIDs().stream().collect(Collectors.toList());
-        } catch (RepositoryException e) {
-            throw new Rdf4jDriverException(e);
-        }
-    }
-
-    @Override
-    public ValueFactory getValueFactory() {
-        return repository.getValueFactory();
-    }
-
-    @Override
-    public void begin() throws Rdf4jDriverException {
-        super.begin();
-        this.connection = acquireConnection();
-        try {
-            connection.begin();
-        } catch (RepositoryException e) {
-            transaction.rollback();
-            throw new Rdf4jDriverException(e);
-        }
-    }
-
-    @Override
-    public void commit() throws Rdf4jDriverException {
-        assert connection != null;
-
-        transaction.commit();
-        try {
-            connection.commit();
-            connection.close();
-            this.connection = null;
-            transaction.afterCommit();
-        } catch (RepositoryException e) {
-            transaction.rollback();
-            throw new Rdf4jDriverException(e);
-        }
-    }
-
-    @Override
-    public void rollback() throws Rdf4jDriverException {
-        assert connection != null;
-        transaction.rollback();
-        try {
-            connection.rollback();
-            connection.close();
-            this.connection = null;
-        } catch (RepositoryException e) {
-            throw new Rdf4jDriverException(e);
+        } catch (RuntimeException e) {
+            throw new Rdf4jDriverException("Exception caught when closing repository connector.", e);
         } finally {
-            transaction.afterRollback();
+            this.open = false;
         }
     }
 
     @Override
-    public void addStatements(Collection<Statement> statements) throws Rdf4jDriverException {
-        verifyTransactionActive();
-        assert connection != null;
-
-        try {
-            connection.add(statements);
-        } catch (RepositoryException e) {
-            throw new Rdf4jDriverException(e);
-        }
+    public boolean isOpen() {
+        return open;
     }
 
-    @Override
-    public void removeStatements(Collection<Statement> statements) throws Rdf4jDriverException {
-        verifyTransactionActive();
-        assert connection != null;
-
-        try {
-            connection.remove(statements);
-        } catch (RepositoryException e) {
-            throw new Rdf4jDriverException(e);
-        }
-    }
-
-    @Override
-    public void removePropertyValues(Collection<SubjectPredicateContext> spc) throws Rdf4jDriverException {
-        verifyTransactionActive();
-        assert connection != null;
-
-        try {
-            spc.forEach(spcItem -> connection.remove(spcItem.getSubject(), spcItem.getPredicate(), null, spcItem.getContexts()
-                                                                                                                .toArray(Resource[]::new)));
-        } catch (RepositoryException e) {
-            throw new Rdf4jDriverException(e);
-        }
-    }
-
-    @Override
-    public Collection<Statement> findStatements(Resource subject, IRI property, Value value, boolean includeInferred)
-            throws Rdf4jDriverException {
-        return findStatements(subject, property, value, includeInferred, Collections.emptySet());
-    }
-
-    @Override
-    public Collection<Statement> findStatements(Resource subject, org.eclipse.rdf4j.model.IRI property,
-                                                Value value, boolean includeInferred, Set<IRI> context)
-            throws Rdf4jDriverException {
-        try (final RepositoryConnection conn = acquireConnection()) {
-            return conn.getStatements(subject, property, null, includeInferred, context.toArray(new IRI[0])).stream()
-                       .collect(Collectors.toList());
-        } catch (RepositoryException e) {
-            throw new Rdf4jDriverException(e);
-        }
-    }
-
-    @Override
-    public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred,
-                                     Set<IRI> contexts) throws Rdf4jDriverException {
-        assert contexts != null;
-        try (final RepositoryConnection conn = acquireConnection()) {
-            return conn.hasStatement(subject, property, value, includeInferred, contexts.toArray(new IRI[0]));
-        } catch (RepositoryException e) {
-            throw new Rdf4jDriverException(e);
-        }
-    }
-
-    @Override
-    public boolean isInferred(Statement statement, Set<IRI> contexts) throws Rdf4jDriverException {
-        assert contexts != null;
-        try (final RepositoryConnection conn = acquireConnection()) {
-            final IRI[] ctxArr = contexts.toArray(new IRI[0]);
-            return conn.hasStatement(statement, true, ctxArr) && !conn.hasStatement(statement, false, ctxArr);
-        } catch (RepositoryException e) {
-            throw new Rdf4jDriverException(e);
+    private void verifyOpen() {
+        if (!open) {
+            throw new IllegalStateException("Connector is not open.");
         }
     }
 
     @Override
     public <T> T unwrap(Class<T> cls) throws OntoDriverException {
+        verifyOpen();
         if (cls.isAssignableFrom(getClass())) {
             return cls.cast(this);
         }
@@ -280,38 +398,6 @@ public class StorageConnector extends AbstractConnector {
         if (repository instanceof Wrapper) {
             return ((Wrapper) repository).unwrap(cls);
         }
-        throw new Rdf4jDriverException("No instance of class " + cls + " found.");
-    }
-
-    /**
-     * Replaces the currently open repository with the specified one.
-     * <p>
-     * Note that this functionality is only supported for in-memory stores.
-     *
-     * @param newRepository The new repository to set
-     */
-    public void setRepository(Repository newRepository) {
-        Objects.requireNonNull(newRepository);
-        if (!isInMemoryRepository(repository)) {
-            throw new UnsupportedOperationException("Cannot replace repository which is not in-memory.");
-        }
-        if (transaction.isActive()) {
-            throw new IllegalStateException("Cannot replace repository in transaction.");
-        }
-        repository.shutDown();
-        assert newRepository.isInitialized();
-        this.repository = newRepository;
-        // Since in-memory repositories are not registered in RepositoryManager, we shouldn't need to deal with it
-    }
-
-    private static boolean isInMemoryRepository(Repository repo) {
-        if (!(repo instanceof SailRepository)) {
-            return false;
-        }
-        Sail sail = ((SailRepository) repo).getSail();
-        while (sail instanceof SailWrapper) {
-            sail = ((SailWrapper) sail).getBaseSail();
-        }
-        return sail instanceof MemoryStore;
+        throw new Rdf4jDriverException("No class of type " + cls + " found.");
     }
 }

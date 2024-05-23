@@ -14,14 +14,14 @@ import java.util.Optional;
  *
  * @param <T> MethodDescription
  */
-class PersistentPropertySetterMatcher<T extends MethodDescription> extends PersistentPropertyMatcher<T> {
+public class PersistentPropertySetterMatcher<T extends MethodDescription> extends PersistentPropertyMatcher<T> {
 
-    PersistentPropertySetterMatcher(Class<?> parentType) {
+    public PersistentPropertySetterMatcher(Class<?> parentType) {
         super(parentType);
     }
 
     @Override
-    Optional<String> resolveFieldName(String methodName, MethodDescription methodDesc) {
+    protected Optional<String> resolveFieldName(String methodName, MethodDescription methodDesc) {
         assert methodName.startsWith(AnnotatedAccessor.SET_PREFIX) && methodDesc.getParameters().size() == 1;
 
         return Optional.of(Introspector.decapitalize(methodName.substring(AnnotatedAccessor.SET_PREFIX.length())));

@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
@@ -24,7 +25,7 @@ import java.net.URI;
 import java.util.List;
 
 @OWLClass(iri = Vocabulary.c_OwlClassC)
-public class OWLClassC {
+public class OWLClassC implements HasUri {
 
     private static final String REF_LIST_FIELD = "referencedList";
     private static final String SIMPLE_LIST_FIELD = "simpleList";

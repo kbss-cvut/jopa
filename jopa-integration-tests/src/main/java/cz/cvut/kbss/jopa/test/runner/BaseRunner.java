@@ -263,7 +263,7 @@ public abstract class BaseRunner {
      *
      * @return The found instance
      */
-    <T> T findRequired(Class<T> type, Object identifier) {
+    protected <T> T findRequired(Class<T> type, Object identifier) {
         final T result = em.find(type, identifier);
         assertNotNull(result);
         return result;

@@ -30,9 +30,10 @@ public class OWLClassWithQueryAttr {
     private static final String ENTITY_ATT_FIELD = "entityAttribute";
     private static final String ENTITY_QUERY_ATT_FIELD = "entityQueryAttribute";
 
-    private static final String QUERY = "PREFIX jopa:<http://krizik.felk.cvut.cz/ontologies/jopa/attributes#>\n" +
-            "SELECT ?stringAttribute\n" +
-            "WHERE {?this jopa:B-stringAttribute ?stringAttribute}";
+    private static final String QUERY = """
+            PREFIX jopa:<http://krizik.felk.cvut.cz/ontologies/jopa/attributes#>
+            SELECT ?stringAttribute
+            WHERE {?this jopa:B-stringAttribute ?stringAttribute}""";
     private static final String QUERY_ENTITY = "SELECT ?entityAttribute\n" +
             "WHERE {?this <" + Vocabulary.P_HAS_A + "> ?entityAttribute}";
 

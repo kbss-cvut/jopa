@@ -140,7 +140,7 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassF, String> fStringAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassF, Set<OWLClassA>, OWLClassA> fSetAtt;
+    private SetAttributeImpl<OWLClassF, OWLClassA> fSetAtt;
 
     @Mock
     private IdentifiableEntityType<OWLClassH> etH;
@@ -181,7 +181,7 @@ public class MetamodelMocks {
     @Mock
     private ListAttributeImpl<OWLClassL, OWLClassA> lReferencedList;
     @Mock
-    private AbstractPluralAttribute<OWLClassL, Set<OWLClassA>, OWLClassA> lSetAtt;
+    private SetAttributeImpl<OWLClassL, OWLClassA> lSetAtt;
     @Mock
     private SingularAttributeImpl<OWLClassL, OWLClassA> lOwlClassAAtt;
 
@@ -204,7 +204,7 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassM, OWLClassM.Severity> mOrdinalEnumAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassM, Set<Integer>, Integer> mIntegerSetAtt;
+    private SetAttributeImpl<OWLClassM, Integer> mIntegerSetAtt;
     @Mock
     private SingularAttributeImpl<OWLClassM, String> mLexicalFormAtt;
     @Mock
@@ -227,7 +227,7 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassN, String> nStringAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassN, Set<String>, String> nPluralAnnotationAtt;
+    private SetAttributeImpl<OWLClassN, String> nPluralAnnotationAtt;
     @Mock
     private PropertiesSpecification<OWLClassN, Map, String, String> nProperties;
 
@@ -245,7 +245,7 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassP, URI> pUriAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassP, Set<URL>, URL> pUrlsAtt;
+    private SetAttributeImpl<OWLClassP, URL> pUrlsAtt;
     @Mock
     private ListAttributeImpl<OWLClassP, URI> pSimpleList;
     @Mock
@@ -310,7 +310,9 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassU, MultilingualString> uSingularStringAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassU, Set<MultilingualString>, MultilingualString> uPluralStringAtt;
+    private SetAttributeImpl<OWLClassU, MultilingualString> uPluralStringAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassU, LocalDateTime> uModified;
 
     @Mock
     private IdentifiableEntityType<OWLClassWithQueryAttr> etQA;
@@ -382,7 +384,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
         MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
         MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, idT);
-        MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, idU);
+        MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, uModified, idU);
         MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, qaEntityQueryAtt,
                                                         qaEntityAtt, idQA);
         MetamodelFactory.initPhoneMocks(etPhone, phoneNumberAtt, idPhone);
@@ -462,6 +464,10 @@ public class MetamodelMocks {
 
     public OWLClassGMetamodel forOwlClassG() {
         return new OWLClassGMetamodel();
+    }
+
+    public OWLClassHMetamodel forOwlClassH() {
+        return new OWLClassHMetamodel();
     }
 
     public OWLClassIMetamodel forOwlClassI() {
@@ -968,6 +974,10 @@ public class MetamodelMocks {
 
         public AbstractPluralAttribute<OWLClassU, Set<MultilingualString>, MultilingualString> uPluralStringAtt() {
             return MetamodelMocks.this.uPluralStringAtt;
+        }
+
+        public AbstractAttribute<OWLClassU, LocalDateTime> uModified() {
+            return MetamodelMocks.this.uModified;
         }
     }
 

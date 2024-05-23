@@ -24,12 +24,13 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Represents a persistence context.
@@ -126,11 +127,12 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      *
      * @param entity    The entity to load field for
      * @param fieldSpec Metamodel element representing the field to load
+     * @return The loaded field value
      * @throws NullPointerException    If {@code entity} or {@code field} is {@code null}
      * @throws OWLPersistenceException If an error occurs, this may be e.g. that the field is not present on the entity,
      *                                 an ontology access error occurred etc.
      */
-    <T> void loadEntityField(T entity, FieldSpecification<? super T, ?> fieldSpec);
+    <T> Object loadEntityField(T entity, FieldSpecification<? super T, ?> fieldSpec);
 
     /**
      * Merges the state of the given entity into the current persistence context.
@@ -191,27 +193,26 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
     /**
      * Register an existing object in this Unit of Work.
      * <p>
-     * This method creates a working clone of this object and puts the given object into this Unit of Work cache.
+     * This is a shortcut for {@link #registerExistingObject(Object, CloneRegistrationDescriptor)}.
      *
      * @param object     Object
      * @param descriptor Entity descriptor identifying repository contexts
-     * @return Object Returns clone of the registered object
+     * @return Registered clone of the specified object
+     * @see #registerExistingObject(Object, CloneRegistrationDescriptor)
      */
     Object registerExistingObject(Object object, Descriptor descriptor);
 
     /**
-     * Registers an existing object in this Unit of Work.
+     * Register an existing object in this Unit of Work.
      * <p>
-     * Invokes the specified postClone procedures after the cloning takes place, passing the newly created clone as
-     * argument.
+     * Creates a working clone of the specified object according to the configuration and puts the given object into
+     * this Unit of Work cache.
      *
-     * @param object     The object to register
-     * @param descriptor Descriptor identifying repository contexts
-     * @param postClone  Handlers to be called after the original object is cloned on the clone
-     * @return Clone of the registered object
-     * @see #registerExistingObject(Object, Descriptor)
+     * @param object                 Object
+     * @param registrationDescriptor Configuration of the registration
+     * @return Registered clone of the specified object
      */
-    Object registerExistingObject(Object object, Descriptor descriptor, List<Consumer<Object>> postClone);
+    Object registerExistingObject(Object object, CloneRegistrationDescriptor registrationDescriptor);
 
     /**
      * Registers the specified new object in this Unit of Work.
@@ -262,9 +263,9 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
     void removeObjectFromCache(Object object, URI context);
 
     /**
-     * Release the current unit of work.
+     * Releases this unit of work.
      * <p>
-     * Calling this method disregards any changes.
+     * Releasing an active Unit of Work with uncommitted changes causes all pending changes to be discarded.
      */
     void release();
 
@@ -293,14 +294,6 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
     void unregisterObject(Object object);
 
     /**
-     * This method returns true, if the UnitOfWork should be released after the commit call. This is done for inferred
-     * attributes, which cause the whole session cache to be invalidated.
-     *
-     * @return True if the UnitOfWork should be released after commit.
-     */
-    boolean shouldReleaseAfterCommit();
-
-    /**
      * Writes any uncommitted changes into the ontology.
      */
     void writeUncommittedChanges();
@@ -311,6 +304,13 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * @return Unmodifiable list of context URIs
      */
     List<URI> getContexts();
+
+    /**
+     * Gets the registry of entity load state descriptors.
+     *
+     * @return {@code LoadStateDescriptorRegistry} for this persistence context
+     */
+    LoadStateDescriptorRegistry getLoadStateRegistry();
 
     /**
      * Gets the load status of the specified attribute on the specified entity.
