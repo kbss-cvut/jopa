@@ -347,12 +347,13 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final Map<String, String> props = new HashMap<>();
         final File storage = Files.createTempFile("reload-driver-test", ".owl").toFile();
         storage.deleteOnExit();
-        final String initialContent = "<?xml version=\"1.0\"?>\n" +
-                "<rdf:RDF\n" +
-                "  xmlns:owl = \"http://www.w3.org/2002/07/owl#\"\n" +
-                "  xmlns:rdf = \"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
-                "<owl:Ontology rdf:about=\"http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine\"></owl:Ontology>" +
-                "</rdf:RDF>";
+        final String initialContent = """
+                <?xml version="1.0"?>
+                <rdf:RDF
+                  xmlns:owl = "http://www.w3.org/2002/07/owl#"
+                  xmlns:rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#">\
+                <owl:Ontology rdf:about="http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine"></owl:Ontology>\
+                </rdf:RDF>""";
         Files.write(storage.toPath(), initialContent.getBytes());
         props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, storage.toURI().toString());
         props.put(JOPAPersistenceProperties.ONTOLOGY_URI_KEY, "http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine");
