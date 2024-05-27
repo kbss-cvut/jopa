@@ -113,7 +113,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     @Override
     public Field getJavaField() {
-        return propertyInfo.getField();
+        return propertyInfo.field();
     }
 
     @Override

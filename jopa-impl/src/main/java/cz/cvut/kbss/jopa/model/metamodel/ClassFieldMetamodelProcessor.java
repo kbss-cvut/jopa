@@ -251,7 +251,8 @@ class ClassFieldMetamodelProcessor<X> {
     private void processTypesField(Field field, Class<?> fieldValueCls, InferenceInfo inference) {
         Types tt = field.getAnnotation(Types.class);
         mappingValidator.validateTypesField(field);
-        final FetchType fetchType = inference.inferred ? FetchType.EAGER : tt.fetchType();
+        // Always use eager for Types, they are fetched eagerly anyway to ensure entity is of correct type
+        final FetchType fetchType = FetchType.EAGER;
         et.addDirectTypes(new TypesSpecificationImpl<>(et, fetchType, field, fieldValueCls, inference.inferred));
     }
 

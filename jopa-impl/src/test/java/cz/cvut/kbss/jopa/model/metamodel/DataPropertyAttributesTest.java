@@ -19,14 +19,18 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.EnumType;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -104,5 +108,19 @@ class DataPropertyAttributesTest {
         final DataPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassM.getEnumAttributePropertyInfo(), metamodelBuilder, OWLClassM.Severity.class);
         assertEquals(EnumType.STRING, sut.getEnumType());
+    }
+
+    @Test
+    void resolveSetsFetchTypeAlwaysToEager() throws Exception {
+        final DataPropertyAttributes sut = initSystemUnderTest();
+        sut.resolve(PropertyInfo.from(ClassWithLazyDataProperty.class.getDeclaredField("integers")), metamodelBuilder, Set.class);
+
+        assertEquals(FetchType.EAGER, sut.getFetchType());
+    }
+
+    private static final class ClassWithLazyDataProperty {
+
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "lazyIntegers", fetch = FetchType.LAZY)
+        private Set<Integer> integers;
     }
 }

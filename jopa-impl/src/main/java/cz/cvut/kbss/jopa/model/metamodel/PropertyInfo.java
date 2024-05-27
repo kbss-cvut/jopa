@@ -35,7 +35,7 @@ public interface PropertyInfo {
 
     Member getMember();
 
-    Field getField();
+    Field field();
 
     static PropertyInfo from(Field field) {
         return new FieldInfo(field);
@@ -45,46 +45,36 @@ public interface PropertyInfo {
         return new MethodInfo(method,field);
     }
 
-    class FieldInfo implements PropertyInfo {
-        private final Field field;
-
-        public FieldInfo(Field field) {
-            this.field = field;
-        }
+    record FieldInfo(Field field) implements PropertyInfo {
 
         @Override
-        public Class<?> getType() {
-            return field.getType();
-        }
+            public Class<?> getType() {
+                return field.getType();
+            }
 
-        @Override
-        public String getName() {
-            return field.getName();
-        }
+            @Override
+            public String getName() {
+                return field.getName();
+            }
 
-        @Override
-        public Member getMember() {
-            return field;
-        }
+            @Override
+            public Member getMember() {
+                return field;
+            }
 
-        @Override
-        public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-            return field.getAnnotation(annotationClass);
-        }
+            @Override
+            public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                return field.getAnnotation(annotationClass);
+            }
 
-        @Override
-        public Field getField() {
-            return field;
+            @Override
+            public String toString() {
+                return "FieldInfo{" +
+                        "class =" + field.getDeclaringClass().getName() +
+                        ", field=" + field.getName() +
+                        '}';
+            }
         }
-
-        @Override
-        public String toString() {
-            return "FieldInfo{" +
-                    "class =" + field.getDeclaringClass().getName() +
-                    ", field=" + field.getName() +
-                    '}';
-        }
-    }
 
     class MethodInfo implements PropertyInfo {
         private final Method method;
@@ -116,7 +106,7 @@ public interface PropertyInfo {
         }
 
         @Override
-        public Field getField() {
+        public Field field() {
             return rawField;
         }
 

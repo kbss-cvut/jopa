@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
 class DataPropertyAttributes extends PropertyAttributes {
@@ -35,7 +36,7 @@ class DataPropertyAttributes extends PropertyAttributes {
 
         this.persistentAttributeType = Attribute.PersistentAttributeType.DATA;
         this.iri = IRI.create(typeBuilderContext.resolveNamespace(odp.iri()));
-        this.fetchType = odp.fetch();
+        this.fetchType = FetchType.EAGER;
         this.type = BasicTypeImpl.get(fieldValueCls);
         this.lexicalForm = odp.lexicalForm();
         this.simpleLiteral = odp.simpleLiteral();

@@ -145,7 +145,7 @@ public class ConverterResolver {
     private boolean isMultilingualReferencedList(Class<?> elemType, PropertyInfo field) {
         return MultilingualString.class.isAssignableFrom(elemType)
                 && field.getAnnotation(Sequence.class) != null
-                && List.class.isAssignableFrom(field.getField().getType());
+                && List.class.isAssignableFrom(field.field().getType());
     }
 
     public static Class<?> resolveConverterAttributeType(Class<?> converterType) {
