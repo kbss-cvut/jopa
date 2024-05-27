@@ -19,7 +19,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.list;
 
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.TestRepositoryProvider;
 import org.junit.jupiter.api.AfterEach;
@@ -39,7 +39,7 @@ abstract class ListHandlerWithStorageTestBase {
 
     final TestRepositoryProvider repositoryProvider = new TestRepositoryProvider();
 
-    protected Connector connector;
+    protected RepoConnection connector;
 
     @AfterEach
     public void tearDown() throws Exception {

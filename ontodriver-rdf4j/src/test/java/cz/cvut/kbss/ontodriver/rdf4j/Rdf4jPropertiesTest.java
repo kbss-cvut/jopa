@@ -24,7 +24,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
 import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.loader.StatementLoader;
 import cz.cvut.kbss.ontodriver.rdf4j.loader.StatementLoaderFactory;
@@ -55,7 +55,7 @@ class Rdf4jPropertiesTest {
     private static final Assertion ASSERTION = Assertion.createDataPropertyAssertion(Generator.generateUri(), false);
 
     @Mock
-    private Connector connectorMock;
+    private RepoConnection connectorMock;
 
     @Mock
     private RuntimeConfiguration configMock;

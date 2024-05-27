@@ -30,7 +30,7 @@ public class OWLClassL implements HasUri {
     private URI uri;
 
     @Sequence(type = SequenceType.simple)
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence")
+    @OWLObjectProperty(iri = Vocabulary.p_l_simpleListAttribute, fetch = FetchType.LAZY)
     @ParticipationConstraints({
             @ParticipationConstraint(min = 1,
                     owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
@@ -38,21 +38,21 @@ public class OWLClassL implements HasUri {
     private List<OWLClassA> simpleList;
 
     @Sequence(type = SequenceType.referenced)
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence")
+    @OWLObjectProperty(iri = Vocabulary.p_l_referencedListAttribute, fetch = FetchType.LAZY)
     @ParticipationConstraints({
             @ParticipationConstraint(max = 2,
                     owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
     })
     private List<OWLClassA> referencedList;
 
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA")
+    @OWLObjectProperty(iri = Vocabulary.p_l_aSetAttribute, fetch = FetchType.LAZY)
     @ParticipationConstraints({
             @ParticipationConstraint(min = 1, max = 5,
                     owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
     })
     private Set<OWLClassA> set;
 
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasAExtra")
+    @OWLObjectProperty(iri = Vocabulary.p_l_singleOwlClassAAttribute, fetch = FetchType.LAZY)
     @ParticipationConstraints({
             @ParticipationConstraint(min = 1,
                     owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")

@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Field;
@@ -24,7 +25,7 @@ import java.util.Date;
 
 class DateInstanceBuilder extends AbstractInstanceBuilder {
 
-    DateInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
+    DateInstanceBuilder(CloneBuilder builder, UnitOfWork uow) {
         super(builder, uow);
     }
 

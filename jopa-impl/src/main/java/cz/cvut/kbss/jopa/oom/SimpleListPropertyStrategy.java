@@ -21,9 +21,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
-import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
@@ -39,20 +37,15 @@ class SimpleListPropertyStrategy<X> extends
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         final SimpleListDescriptor listDescriptor = createListDescriptor(ax);
         final Collection<Axiom<NamedResource>> sequence = mapper.loadSimpleList(listDescriptor);
-        sequence.forEach(super::addValueFromAxiom);
+        sequence.forEach(super::addAxiomValue);
     }
 
     SimpleListDescriptor createListDescriptor(Axiom<?> ax) {
         final NamedResource owner = ax.getSubject();
-        final Assertion listProperty = Assertion
-                .createObjectPropertyAssertion(attribute.getIRI().toURI(), attribute.isInferred());
-        final Assertion nextNodeProperty = Assertion
-                .createObjectPropertyAssertion(attribute.getOWLObjectPropertyHasNextIRI().toURI(),
-                        attribute.isInferred());
-        final SimpleListDescriptor listDescriptor = new SimpleListDescriptorImpl(owner, listProperty, nextNodeProperty);
+        final SimpleListDescriptor listDescriptor = ListDescriptorFactory.createSimpleListDescriptor(owner, attribute);
         listDescriptor.setContext(getAttributeWriteContext());
         return listDescriptor;
     }
@@ -71,12 +64,7 @@ class SimpleListPropertyStrategy<X> extends
 
     SimpleListValueDescriptor createListValueDescriptor(X instance) {
         final NamedResource owner = NamedResource.create(resolveValueIdentifier(instance, et));
-        final Assertion listProperty = Assertion
-                .createObjectPropertyAssertion(attribute.getIRI().toURI(), attribute.isInferred());
-        final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(attribute
-                .getOWLObjectPropertyHasNextIRI().toURI(), attribute.isInferred());
-        final SimpleListValueDescriptor listDescriptor = new SimpleListValueDescriptor(owner, listProperty,
-                nextNodeProperty);
+        final SimpleListValueDescriptor listDescriptor = ListDescriptorFactory.createSimpleListValueDescriptor(owner, attribute);
         listDescriptor.setContext(getAttributeWriteContext());
         return listDescriptor;
     }

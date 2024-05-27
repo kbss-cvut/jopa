@@ -189,7 +189,7 @@ class SimpleSetPropertyStrategyTest {
                 URI.create(OWLClassP.getIndividualUrlsField().getAnnotation(OWLObjectProperty.class).iri());
         final Set<OWLClassA> values = generateSet(true);
         final Collection<Axiom<NamedResource>> axioms = buildAxiomsForSet(property, values);
-        axioms.forEach(strategy::addValueFromAxiom);
+        axioms.forEach(strategy::addAxiomValue);
 
         final OWLClassP p = new OWLClassP();
         strategy.buildInstanceFieldValue(p);

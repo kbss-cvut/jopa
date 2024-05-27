@@ -71,7 +71,7 @@ public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute
         return collectionType;
     }
 
-    public abstract static class PluralAttributeBuilder<X, C, E> extends AbstractAttributeBuilder<X, C> {
+    abstract static class PluralAttributeBuilder<X, C, E> extends AbstractAttributeBuilder<X, C> {
         private Type<E> elementType;
         private Class<C> collectionType;
 

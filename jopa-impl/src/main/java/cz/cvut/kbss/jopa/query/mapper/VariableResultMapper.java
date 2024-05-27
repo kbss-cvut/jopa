@@ -22,7 +22,7 @@ import cz.cvut.kbss.jopa.exception.SparqlResultMappingException;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
 import cz.cvut.kbss.jopa.model.metamodel.Converters;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
@@ -56,7 +56,7 @@ class VariableResultMapper implements SparqlResultMapper {
      * @return The mapped value
      */
     @Override
-    public Object map(ResultRow resultRow, UnitOfWorkImpl uow) {
+    public Object map(ResultRow resultRow, UnitOfWork uow) {
         try {
             if (!resultRow.isBound(name)) {
                 return null;

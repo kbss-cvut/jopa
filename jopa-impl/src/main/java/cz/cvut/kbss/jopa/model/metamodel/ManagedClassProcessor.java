@@ -23,6 +23,9 @@ import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
 import cz.cvut.kbss.jopa.model.annotations.Namespace;
 import cz.cvut.kbss.jopa.model.annotations.Namespaces;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.metamodel.gen.ManageableClassGenerator;
+import cz.cvut.kbss.jopa.utils.ChangeTrackingMode;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 
 import java.lang.reflect.AnnotatedElement;
@@ -41,11 +44,11 @@ public class ManagedClassProcessor {
         throw new AssertionError();
     }
 
-    static <T> TypeBuilderContext<T> processManagedType(Class<T> cls) {
+    static <T> TypeBuilderContext<T> processManagedType(Class<T> cls, Configuration config) {
         final NamespaceResolver resolver = detectNamespaces(cls);
         final AbstractIdentifiableType<T> type;
         if (isEntityType(cls)) {
-            type = processEntityType(cls, resolver);
+            type = processEntityType(cls, resolver, config);
         } else if (isMappedSuperclassType(cls)) {
             type = processMappedSuperclassType(cls);
         } else {
@@ -105,15 +108,25 @@ public class ManagedClassProcessor {
         }
     }
 
-    private static <T> IdentifiableEntityType<T> processEntityType(Class<T> cls, NamespaceResolver namespaceResolver) {
+    private static <T> IdentifiableEntityType<T> processEntityType(Class<T> cls, NamespaceResolver namespaceResolver,
+                                                                   Configuration config) {
         final OWLClass c = cls.getDeclaredAnnotation(OWLClass.class);
         assert c != null;
 
         if (cls.isInterface() || Modifier.isAbstract(cls.getModifiers())) {
-            return new AbstractEntityType<>(cls.getSimpleName(), cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
+            return new AbstractEntityType<>(cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
         } else {
             checkForNoArgConstructor(cls);
-            return new ConcreteEntityType<>(cls.getSimpleName(), cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
+            final Class<? extends T> instantiableType = resolveInstantiableType(cls, config);
+            return new ConcreteEntityType<>(cls, instantiableType, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
+        }
+    }
+
+    private static  <T> Class<? extends T> resolveInstantiableType(Class<T> cls, Configuration config) {
+        if (ChangeTrackingMode.IMMEDIATE == ChangeTrackingMode.resolve(config)) {
+            return new ManageableClassGenerator(config).generate(cls);
+        } else {
+            return cls;
         }
     }
 
@@ -121,7 +134,7 @@ public class ManagedClassProcessor {
         try {
             cls.getDeclaredConstructor();
         } catch (NoSuchMethodException e) {
-            throw new MetamodelInitializationException("Class " + cls + " is missing required no-arg constructor.", e);
+            throw new MetamodelInitializationException("Entity " + cls + " is missing required no-arg constructor.", e);
         }
     }
 
@@ -138,7 +151,7 @@ public class ManagedClassProcessor {
         return null;
     }
 
-    public static <T> Set<Class<? super T>> getManagedSuperInterfaces(Class<T> cls) {
+    static <T> Set<Class<? super T>> getManagedSuperInterfaces(Class<T> cls) {
         return Arrays.stream(cls.getInterfaces()).filter(ManagedClassProcessor::isManagedType)
                      .map(clazz -> (Class<? super T>) clazz)
                      .collect(Collectors.toSet());

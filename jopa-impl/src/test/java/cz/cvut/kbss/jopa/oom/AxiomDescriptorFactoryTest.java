@@ -40,7 +40,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
-import cz.cvut.kbss.jopa.sessions.LoadingParameters;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -59,6 +59,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -70,7 +71,7 @@ import static org.mockito.Mockito.when;
 class AxiomDescriptorFactoryTest {
 
     private static final URI CONTEXT = URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne");
-    private static final URI ID = URI.create("http://krizik.felk.cvut.cz/ontologies/entityX");
+    private static final URI ID = URI.create(Vocabulary.INDIVIDUAL_BASE + "X");
 
     private static URI stringAttAUri;
     private static URI stringAttBUri;
@@ -85,9 +86,9 @@ class AxiomDescriptorFactoryTest {
 
     @BeforeAll
     static void setUpBeforeClass() throws Exception {
-        stringAttAUri = URI.create(OWLClassA.getStrAttField().getAnnotation(OWLDataProperty.class).iri());
+        stringAttAUri = URI.create(Vocabulary.p_a_stringAttribute);
         stringAttBUri = URI.create(OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class).iri());
-        owlClassAAttUri = URI.create(OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class).iri());
+        owlClassAAttUri = URI.create(Vocabulary.P_HAS_A);
     }
 
     @BeforeEach
@@ -177,17 +178,17 @@ class AxiomDescriptorFactoryTest {
     }
 
     @Test
-    void createForEntityLoadingWithLazilyLoadedAttribute() {
+    void createForEntityLoadingAddsAssertionsForLazilyLoadedAttributesToo() {
         when(metamodelMocks.forOwlClassA().stringAttribute().getFetchType()).thenReturn(FetchType.LAZY);
         final AxiomDescriptor res = sut
                 .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, ID, descriptor),
                         metamodelMocks.forOwlClassA().entityType());
         // Types specification (class assertion)
-        assertEquals(1, res.getAssertions().size());
+        assertEquals(2, res.getAssertions().size());
         assertEquals(NamedResource.create(ID), res.getSubject());
         assertThat(res.getSubjectContexts(), empty());
-        assertFalse(res.getAssertions().contains(
-                Assertion.createDataPropertyAssertion(stringAttAUri, false)));
+        assertTrue(res.getAssertions().contains(
+                Assertion.createDataPropertyAssertion(stringAttAUri, Generators.LANG, false)));
         assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
     }
 
@@ -594,5 +595,16 @@ class AxiomDescriptorFactoryTest {
         @Sequence(type = SequenceType.referenced)
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "literalReferencedList")
         private List<Integer> literalReferencedList;
+    }
+
+    @Test
+    void createForEntityLoadingMergesSubjectContextWithTypesContextsForClassAssertionRetrieval() {
+        final URI attContext = Generators.createIndividualIdentifier();
+        descriptorInContext.addAttributeContext(metamodelMocks.forOwlClassA().typesSpec(), attContext);
+        descriptorInContext.addAttributeContext(metamodelMocks.forOwlClassA().stringAttribute(), attContext);
+        final LoadingParameters<OWLClassA> lp = new LoadingParameters<>(OWLClassA.class, ID, descriptorInContext);
+        final AxiomDescriptor result = sut.createForEntityLoading(lp, metamodelMocks.forOwlClassA().entityType());
+        final Set<URI> contexts = result.getAssertionContexts(Assertion.createClassAssertion(false));
+        assertThat(contexts, hasItems(attContext, CONTEXT));
     }
 }

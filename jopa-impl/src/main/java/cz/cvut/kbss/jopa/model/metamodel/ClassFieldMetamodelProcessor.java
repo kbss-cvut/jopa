@@ -19,10 +19,22 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.BeanListenerAspect;
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.annotations.Convert;
+import cz.cvut.kbss.jopa.model.annotations.Enumerated;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.Inferred;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.RDFCollection;
+import cz.cvut.kbss.jopa.model.annotations.Sequence;
+import cz.cvut.kbss.jopa.model.annotations.Sparql;
+import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
@@ -32,7 +44,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 class ClassFieldMetamodelProcessor<X> {
 
@@ -94,10 +113,6 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
 
-        if (isAspectIntegrationField(field)) {
-            return;
-        }
-
         if (isIdentifierField(field)) {
             processIdentifierField(field);
             return;
@@ -114,9 +129,9 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
     /**
-     * Do a bottom top search of hierarchy in order to find annotated accessor belonging to given field.
-     * This is used when a property annotation ( {@link OWLDataProperty,OWLObjectProperty,OWLAnnotationProperty)
-     * is declared on method, not on field.
+     * Do a bottom top search of hierarchy in order to find annotated accessor belonging to given field. This is used
+     * when a property annotation (
+     * {@link OWLDataProperty,OWLObjectProperty,OWLAnnotationProperty) is declared on method, not on field.
      */
     private AnnotatedAccessor findAnnotatedMethodBelongingToField(Field field) {
         LOG.debug("finding property definition to field {} ", field);
@@ -334,6 +349,9 @@ class ClassFieldMetamodelProcessor<X> {
 
     private AbstractAttribute<X, ?> createListAttribute(PropertyInfo property, InferenceInfo
             inference, PropertyAttributes propertyAttributes) {
+        if (property.getAnnotation(RDFCollection.class) != null) {
+            return createRdfCollectionAttribute(property, inference, propertyAttributes);
+        }
         final Sequence os = property.getAnnotation(Sequence.class);
         if (os == null) {
             throw new MetamodelInitializationException("Expected Sequence annotation.");
@@ -343,10 +361,21 @@ class ClassFieldMetamodelProcessor<X> {
                                                                                 .propertyInfo(property)
                                                                                 .inferred(inference.inferred)
                                                                                 .includeExplicit(inference.includeExplicit)
-                                                                                .owlListClass(IRI.create(resolvePrefix(os.ClassOWLListIRI())))
-                                                                                .hasNextProperty(IRI.create(resolvePrefix(os.ObjectPropertyHasNextIRI())))
-                                                                                .hasContentsProperty(IRI.create(resolvePrefix(os.ObjectPropertyHasContentsIRI())))
+                                                                                .owlListClass(IRI.create(resolvePrefix(os.listClassIRI())))
+                                                                                .hasNextProperty(IRI.create(resolvePrefix(os.hasNextPropertyIRI())))
+                                                                                .hasContentsProperty(IRI.create(resolvePrefix(os.hasContentsPropertyIRI())))
                                                                                 .sequenceType(os.type());
+        context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
+        return builder.build();
+    }
+
+    private AbstractAttribute<X, ?> createRdfCollectionAttribute(PropertyInfo property, InferenceInfo inference,
+                                                                 PropertyAttributes propertyAttributes) {
+        final RDFCollectionAttribute.RDFCollectionAttributeBuilder builder = RDFCollectionAttribute.builder(propertyAttributes)
+                                                                                                   .declaringType(et)
+                                                                                                   .propertyInfo(property)
+                                                                                                   .inferred(inference.inferred)
+                                                                                                   .includeExplicit(inference.includeExplicit);
         context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
         return builder.build();
     }
@@ -368,12 +397,6 @@ class ClassFieldMetamodelProcessor<X> {
 
         mappingValidator.validateIdentifierType(field.getType());
         et.setIdentifier(new IRIIdentifierImpl<>(et, field, id.generated()));
-    }
-
-    private static boolean isAspectIntegrationField(Field field) {
-        // AspectJ integration fields cannot be declared transitive (they're generated by the AJC), so we have to
-        // skip them manually
-        return field.getType().equals(BeanListenerAspect.Manageable.class);
     }
 
     private static boolean isIdentifierField(Field field) {

@@ -2,9 +2,9 @@ package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,9 +33,9 @@ class ManagedTypeChangeDetectorTest {
     @ParameterizedTest
     @MethodSource("testParams")
     void hasChangesReturnsChangesWhenIdentifierDiffers(OWLClassA clone, OWLClassA original, Boolean expected) throws Exception {
-        final Metamodel metamodel = mock(Metamodel.class);
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
         when(metamodelProvider.getMetamodel()).thenReturn(metamodel);
-        final EntityType<OWLClassA> et = mock(EntityType.class);
+        final IdentifiableEntityType<OWLClassA> et = mock(IdentifiableEntityType.class);
         when(metamodel.entity(OWLClassA.class)).thenReturn(et);
         final Identifier idAtt = mock(Identifier.class);
         when(et.getIdentifier()).thenReturn(idAtt);

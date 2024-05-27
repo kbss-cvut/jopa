@@ -20,7 +20,7 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.SubjectPredicateContext;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -48,7 +48,7 @@ public class EpistemicAxiomRemoverTest {
     private AxiomDescriptor descriptor;
 
     @Mock
-    private Connector connectorMock;
+    private RepoConnection connectorMock;
 
     private ValueFactory vf;
 

@@ -43,7 +43,7 @@ class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<?
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         if (shouldSkipAxiom(ax)) {
             return;
         }
@@ -69,10 +69,12 @@ class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<?
     }
 
     @Override
+    boolean hasValue() {
+        return !value.map.isEmpty();
+    }
+
+    @Override
     void buildInstanceFieldValue(Object instance) {
-        if (value.getValue().isEmpty()) {
-            return;
-        }
         setValueOnInstance(instance, value.getValue());
     }
 

@@ -17,8 +17,10 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.merge.DefaultValueMerger;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
@@ -44,15 +46,13 @@ class RefreshInstanceMerger {
      * @param changeSet Changes done
      */
     void mergeChanges(ObjectChangeSet changeSet) {
-        final Object source = changeSet.getChangedObject();
-        final Object target = changeSet.getCloneObject();
+        final Object source = changeSet.getOriginal();
+        final Object target = changeSet.getClone();
         for (ChangeRecord change : changeSet.getChanges()) {
             final FieldSpecification<?, ?> att = change.getAttribute();
             final Object sourceValue = EntityPropertiesUtils.getAttributeValue(att, source);
-            if (sourceValue instanceof IndirectCollection) {
-                final IndirectCollection<?> col = (IndirectCollection<?>) sourceValue;
-                final Object ic = indirectWrapperHelper
-                        .createIndirectWrapper(col.unwrap(), target, att.getJavaField());
+            if (sourceValue instanceof ChangeTrackingIndirectCollection<?> col) {
+                final Object ic = indirectWrapperHelper.createIndirectWrapper(col.unwrap(), target, att.getJavaField());
                 merger.mergeValue(att, target, ic);
             } else {
                 merger.mergeValue(att, target, sourceValue);

@@ -19,7 +19,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.list;
 
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import org.eclipse.rdf4j.model.IRI;
@@ -40,12 +40,12 @@ abstract class AbstractListIterator<JT> implements ListIterator<JT> {
     protected final IRI context;
     protected final boolean includeInferred;
 
-    protected final Connector connector;
+    protected final RepoConnection connector;
     protected final ValueFactory vf;
 
     protected final ValueConverter valueConverter;
 
-    public AbstractListIterator(ListDescriptor listDescriptor, Connector connector, ValueFactory vf) {
+    public AbstractListIterator(ListDescriptor listDescriptor, RepoConnection connector, ValueFactory vf) {
         this.listOwner = Rdf4jUtils.toRdf4jIri(listDescriptor.getListOwner().getIdentifier(), vf);
         this.hasListProperty = Rdf4jUtils.toRdf4jIri(listDescriptor.getListProperty()
                                                                      .getIdentifier(), vf);

@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa;
 
 /**
- * Denotes class/member that is not present in JPA 2.0 
+ * Denotes class/member that is not present in JPA (Jakarta Persistence)
  */
 public @interface NonJPA {
 }

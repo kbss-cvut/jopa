@@ -40,7 +40,7 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         final Object val = ax.getValue().getValue();
         if (!isValidRange(val)) {
             return;

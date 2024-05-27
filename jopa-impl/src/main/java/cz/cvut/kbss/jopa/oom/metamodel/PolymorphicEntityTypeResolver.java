@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
-import cz.cvut.kbss.jopa.oom.exceptions.AmbiguousEntityTypeException;
+import cz.cvut.kbss.jopa.oom.exception.AmbiguousEntityTypeException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
@@ -37,7 +37,7 @@ public class PolymorphicEntityTypeResolver<T> {
     private final Set<URI> types;
     private final IdentifiableEntityType<T> root;
 
-    private final Set<EntityType<? extends T>> matches = new HashSet<>(2);
+    private final Set<IdentifiableEntityType<? extends T>> matches = new HashSet<>(2);
 
     public PolymorphicEntityTypeResolver(NamedResource individual, IdentifiableEntityType<T> root,
                                          Collection<Axiom<URI>> typeAxioms) {
@@ -58,7 +58,7 @@ public class PolymorphicEntityTypeResolver<T> {
      * @return The specified root entity type or the most specific non-abstract unique entity type
      * @throws AmbiguousEntityTypeException When multiple entity types match the specified types
      */
-    public EntityType<? extends T> determineActualEntityType() {
+    public IdentifiableEntityType<? extends T> determineActualEntityType() {
         if (types.contains(root.getIRI().toURI()) && !root.isAbstract()) {
             return root;
         }
@@ -85,6 +85,7 @@ public class PolymorphicEntityTypeResolver<T> {
         for (AbstractIdentifiableType<? extends T> subtype : parent.getSubtypes()) {
             final Set<EntityType<? extends T>> updatedAncestors = new HashSet<>(ancestors);
             if (subtype.getPersistenceType() == Type.PersistenceType.ENTITY && !subtype.isAbstract()) {
+                assert subtype instanceof IdentifiableEntityType;
                 final IdentifiableEntityType<? extends T> et = (IdentifiableEntityType<? extends T>) subtype;
                 final URI etUri = et.getIRI().toURI();
                 if (types.contains(etUri)) {
@@ -96,7 +97,7 @@ public class PolymorphicEntityTypeResolver<T> {
         }
     }
 
-    private void addMatchingType(EntityType<? extends T> et, Set<EntityType<? extends T>> ancestors) {
+    private void addMatchingType(IdentifiableEntityType<? extends T> et, Set<EntityType<? extends T>> ancestors) {
         matches.add(et);
         ancestors.forEach(matches::remove);
     }

@@ -22,8 +22,6 @@ package cz.cvut.kbss.jopa.exceptions;
  */
 public class StorageAccessException extends OWLPersistenceException {
 
-    private static final long serialVersionUID = 4661531292404254252L;
-
     public StorageAccessException(String message) {
         super(message);
     }

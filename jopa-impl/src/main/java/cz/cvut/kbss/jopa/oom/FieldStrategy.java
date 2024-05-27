@@ -19,9 +19,24 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.net.URI;
 import java.util.Collection;
@@ -33,6 +48,8 @@ import java.util.stream.Collectors;
  * @param <X> Entity class
  */
 abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
+
+    protected static final Object LAZILY_LOADED_REFERENCE_PLACEHOLDER = new Object();
 
     final EntityType<X> et;
     final T attribute;
@@ -122,17 +139,13 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralObjectPropertyStrategy(
             EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute, Descriptor descriptor,
             EntityMappingHelper mapper) {
-        switch (attribute.getCollectionType()) {
-            case LIST:
-                return createListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor,
-                        mapper);
-            case COLLECTION:
-            case SET:
-                return new SimpleSetPropertyStrategy<>(et, attribute, descriptor, mapper);
-            default:
-                throw new UnsupportedOperationException(
-                        "Unsupported plural attribute collection type " + attribute.getCollectionType());
-        }
+        return switch (attribute.getCollectionType()) {
+            case LIST -> createListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor,
+                    mapper);
+            case COLLECTION, SET -> new SimpleSetPropertyStrategy<>(et, attribute, descriptor, mapper);
+            default -> throw new UnsupportedOperationException(
+                    "Unsupported plural attribute collection type " + attribute.getCollectionType());
+        };
     }
 
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createListPropertyStrategy(
@@ -230,15 +243,38 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      *
      * @param ax Axiom to extract value from
      */
-    abstract void addValueFromAxiom(Axiom<?> ax);
+    abstract void addAxiomValue(Axiom<?> ax);
+
+    /**
+     * Adds value from axiom in case the field is lazily loaded.
+     * <p>
+     * This allows skipping loading of references of lazily loaded attributes while providing info whether there
+     * actually are any values to load eventually.
+     *
+     * @param ax Axiom to extract value from
+     */
+    void lazilyAddAxiomValue(Axiom<?> ax) {
+        addAxiomValue(ax);
+    }
 
     /**
      * Sets instance field from values gathered in this strategy.
+     * <p>
+     * Note that if this strategy represents a plural field and there were no values added from axioms, the field value
+     * should be set to an empty instance of the collection/map corresponding to the target field type.
      *
      * @param instance The instance to receive the field value
      * @throws IllegalArgumentException Access error
      */
     abstract void buildInstanceFieldValue(Object instance);
+
+    /**
+     * Checks whether any values have been added from axioms.
+     *
+     * @return {@code true} if this strategy holds values added from axioms, {@code false} otherwise
+     * @see #addAxiomValue(Axiom)
+     */
+    abstract boolean hasValue();
 
     /**
      * Extracts values of field represented by this strategy from the specified instance and adds them to the specified

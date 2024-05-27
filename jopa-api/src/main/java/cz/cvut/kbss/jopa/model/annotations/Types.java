@@ -17,7 +17,11 @@
  */
 package cz.cvut.kbss.jopa.model.annotations;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Set;
 
 /**
@@ -32,7 +36,7 @@ import java.util.Set;
 @Target(ElementType.FIELD)
 public @interface Types {
 
-    FetchType fetchType() default FetchType.LAZY;
+    FetchType fetchType() default FetchType.EAGER;
 
     /**
      * Denotes a member that is inferred (true) using the OWL reasoner or just asserted (false).

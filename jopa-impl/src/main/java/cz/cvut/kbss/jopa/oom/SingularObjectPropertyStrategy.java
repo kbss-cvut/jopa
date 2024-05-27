@@ -44,7 +44,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<AbstractAttribute<
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         assert ax.getValue().getValue() instanceof NamedResource;
         final NamedResource valueIdentifier = (NamedResource) ax.getValue().getValue();
         final Class<?> targetType = attribute.getJavaType();
@@ -78,7 +78,25 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<AbstractAttribute<
     }
 
     @Override
+    void lazilyAddAxiomValue(Axiom<?> ax) {
+        final Class<?> targetType = attribute.getJavaType();
+        if (IdentifierTransformer.isValidIdentifierType(targetType) || targetType.isEnum()) {
+            addAxiomValue(ax);
+        } else {
+            this.value = LAZILY_LOADED_REFERENCE_PLACEHOLDER;
+        }
+    }
+
+    @Override
+    boolean hasValue() {
+        return value != null;
+    }
+
+    @Override
     void buildInstanceFieldValue(Object instance) {
+        if (value == LAZILY_LOADED_REFERENCE_PLACEHOLDER) {
+            return;
+        }
         setValueOnInstance(instance, value);
     }
 

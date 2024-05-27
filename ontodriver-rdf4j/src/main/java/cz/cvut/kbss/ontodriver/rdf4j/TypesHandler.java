@@ -18,7 +18,7 @@
 package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.model.*;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import org.eclipse.rdf4j.model.Resource;
@@ -32,10 +32,10 @@ import java.util.stream.Collectors;
 
 class TypesHandler {
 
-    private final Connector connector;
+    private final RepoConnection connector;
     private final ValueFactory valueFactory;
 
-    TypesHandler(Connector connector, ValueFactory valueFactory) {
+    TypesHandler(RepoConnection connector, ValueFactory valueFactory) {
         this.connector = connector;
         this.valueFactory = valueFactory;
     }

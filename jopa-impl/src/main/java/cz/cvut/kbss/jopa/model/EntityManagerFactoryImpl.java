@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
-import cz.cvut.kbss.jopa.sessions.Cache;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -126,6 +126,13 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         }
     }
 
+    @Override
+    public CriteriaBuilder getCriteriaBuilder() {
+        ensureOpen();
+        initServerSession();
+        return serverSession.getCriteriaBuilder();
+    }
+
     /**
      * The server session should by initialized by now, but to make sure, there is default initialization with an empty
      * properties map.
@@ -197,7 +204,6 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     @Override
     public boolean isLoaded(Object entity) {
         Objects.requireNonNull(entity);
-        // Since we do not support getReference yet, all EAGER attributes are always loaded for managed instances
         return em.stream().anyMatch(emi -> emi.isLoaded(entity));
     }
 

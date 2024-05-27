@@ -78,9 +78,9 @@ class SingularObjectPropertyStrategyTest {
         final FieldStrategy<? extends FieldSpecification<? super OWLClassP, ?>, OWLClassP> strategy =
                 strategy(metamodelMocks.forOwlClassP().entityType(), metamodelMocks.forOwlClassP().pUriAttribute());
         strategy.setReferenceSavingResolver(referenceResolverMock);
-        strategy.addValueFromAxiom(
+        strategy.addAxiomValue(
                 new AxiomImpl<>(NamedResource.create(IDENTIFIER), propertyP(),
-                                new Value<>(NamedResource.create(VALUE))));
+                        new Value<>(NamedResource.create(VALUE))));
         final OWLClassP p = new OWLClassP();
         strategy.buildInstanceFieldValue(p);
         assertEquals(VALUE, p.getIndividualUri());
@@ -143,7 +143,7 @@ class SingularObjectPropertyStrategyTest {
 
         verify(referenceResolverMock)
                 .registerPendingReference(NamedResource.create(IDENTIFIER), strategy.createAssertion(),
-                                          d.getOwlClassA(), null);
+                        d.getOwlClassA(), null);
     }
 
     @Test
@@ -205,15 +205,15 @@ class SingularObjectPropertyStrategyTest {
         final OWLClassA existing = Generators.generateOwlClassAInstance();
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(VALUE), any())).thenReturn(existing);
         final Assertion assertion = Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
-        sut.addValueFromAxiom(
+        sut.addAxiomValue(
                 new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion, new Value<>(NamedResource.create(VALUE))));
         final OWLClassA another = Generators.generateOwlClassAInstance();
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(another.getUri()), any()))
                 .thenReturn(another);
         final Axiom<NamedResource> violationAxiom = new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion,
-                                                                    new Value<>(
-                                                                            NamedResource.create(another.getUri())));
-        assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addValueFromAxiom(violationAxiom));
+                new Value<>(
+                        NamedResource.create(another.getUri())));
+        assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addAxiomValue(violationAxiom));
     }
 
     @Test
@@ -223,12 +223,12 @@ class SingularObjectPropertyStrategyTest {
         final OWLClassA existing = Generators.generateOwlClassAInstance();
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(VALUE), any())).thenReturn(existing);
         final Assertion assertion = Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
-        sut.addValueFromAxiom(
+        sut.addAxiomValue(
                 new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion, new Value<>(NamedResource.create(VALUE))));
         final URI another = Generators.createIndividualIdentifier();
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(another), any())).thenReturn(null);
-        sut.addValueFromAxiom(new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion,
-                                              new Value<>(NamedResource.create(another))));
+        sut.addAxiomValue(new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion,
+                new Value<>(NamedResource.create(another))));
         final OWLClassD instance = new OWLClassD();
         sut.buildInstanceFieldValue(instance);
         assertSame(existing, instance.getOwlClassA());
@@ -244,7 +244,7 @@ class SingularObjectPropertyStrategyTest {
         final OWLClassA existing = Generators.generateOwlClassAInstance();
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(VALUE), any())).thenReturn(existing);
         final Assertion assertion = Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
-        sut.addValueFromAxiom(
+        sut.addAxiomValue(
                 new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion, new Value<>(NamedResource.create(VALUE))));
         verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, VALUE, aDescriptor);
     }
@@ -302,8 +302,8 @@ class SingularObjectPropertyStrategyTest {
         final NamedResource value = NamedResource.create(OWL.ANNOTATION_PROPERTY);
         final FieldStrategy<? extends FieldSpecification<? super OWLClassM, ?>, OWLClassM> sut =
                 strategy(metamodelMocks.forOwlClassM().entityType(),
-                         metamodelMocks.forOwlClassM().objectOneOfEnumAttribute());
-        sut.addValueFromAxiom(new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createObjectPropertyAssertion(
+                        metamodelMocks.forOwlClassM().objectOneOfEnumAttribute());
+        sut.addAxiomValue(new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createObjectPropertyAssertion(
                 URI.create(Vocabulary.p_m_objectOneOfEnumAttribute), false), new Value<>(value)));
         sut.buildInstanceFieldValue(m);
         assertEquals(OneOfEnum.ANNOTATION_PROPERTY, m.getObjectOneOfEnumAttribute());
@@ -316,12 +316,37 @@ class SingularObjectPropertyStrategyTest {
         m.setObjectOneOfEnumAttribute(OneOfEnum.DATATYPE_PROPERTY);
         final FieldStrategy<? extends FieldSpecification<? super OWLClassM, ?>, OWLClassM> sut =
                 strategy(metamodelMocks.forOwlClassM().entityType(),
-                         metamodelMocks.forOwlClassM().objectOneOfEnumAttribute());
+                        metamodelMocks.forOwlClassM().objectOneOfEnumAttribute());
         sut.setReferenceSavingResolver(referenceResolverMock);
         when(referenceResolverMock.shouldSaveReference(m.getObjectOneOfEnumAttribute(), Collections.emptySet())).thenReturn(true);
         sut.buildAxiomValuesFromInstance(m, gatherer);
         verify(gatherer).addValue(Assertion.createObjectPropertyAssertion(
-                                          URI.create(Vocabulary.p_m_objectOneOfEnumAttribute), false),
-                                  new Value<>(NamedResource.create(OWL.DATATYPE_PROPERTY)), null);
+                        URI.create(Vocabulary.p_m_objectOneOfEnumAttribute), false),
+                new Value<>(NamedResource.create(OWL.DATATYPE_PROPERTY)), null);
+    }
+
+    @Test
+    void lazilyAddAxiomValueSetsLazyLoadingPlaceholderAndDoesNotLoadReference() {
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> sut =
+                strategy(metamodelMocks.forOwlClassD().entityType(), metamodelMocks.forOwlClassD().owlClassAAtt());
+        sut.setReferenceSavingResolver(referenceResolverMock);
+        sut.lazilyAddAxiomValue(
+                new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false),
+                        new Value<>(NamedResource.create(VALUE))));
+        verify(mapperMock, never()).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(VALUE), any());
+        assertTrue(sut.hasValue());
+    }
+
+    @Test
+    void buildInstanceFieldAfterLazilyAddingReferenceDoesNotSetFieldValue() {
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> sut =
+                strategy(metamodelMocks.forOwlClassD().entityType(), metamodelMocks.forOwlClassD().owlClassAAtt());
+        sut.setReferenceSavingResolver(referenceResolverMock);
+        sut.lazilyAddAxiomValue(
+                new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false),
+                        new Value<>(NamedResource.create(VALUE))));
+        final OWLClassD target = new OWLClassD(IDENTIFIER);
+        sut.buildInstanceFieldValue(target);
+        assertNull(target.getOwlClassA());
     }
 }

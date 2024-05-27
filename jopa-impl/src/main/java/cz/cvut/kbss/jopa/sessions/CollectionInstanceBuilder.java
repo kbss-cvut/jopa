@@ -17,10 +17,12 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
+import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.MetamodelUtils;
@@ -30,9 +32,13 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Special class for cloning collections. Introduced because some Java collection have no no-argument constructor and
@@ -47,7 +53,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     private static final Class<?> singletonSetClass = Collections.singleton(null).getClass();
     private static final Class<?> arrayAsListClass = Arrays.asList(null, null).getClass();
 
-    CollectionInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
+    CollectionInstanceBuilder(CloneBuilder builder, UnitOfWork uow) {
         super(builder, uow);
     }
 
@@ -64,8 +70,8 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     Object buildClone(Object cloneOwner, Field field, Object collection, CloneConfiguration configuration) {
         assert collection instanceof Collection;
         Collection<?> container = (Collection<?>) collection;
-        if (container instanceof IndirectCollection<?>) {
-            container = (Collection<?>) ((IndirectCollection<?>) container).unwrap();
+        if (container instanceof ChangeTrackingIndirectCollection<?>) {
+            container = (Collection<?>) ((ChangeTrackingIndirectCollection<?>) container).unwrap();
         }
         if (Collections.emptyList() == container || Collections.emptySet() == container) {
             return container;
@@ -118,12 +124,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             throw new OWLPersistenceException(e);
         } catch (IllegalAccessException e) {
             logConstructorAccessException(ctor, e);
-            try {
-                result = (Collection<?>) AccessController.doPrivileged(new PrivilegedInstanceCreator(ctor));
-            } catch (PrivilegedActionException ex) {
-                logPrivilegedConstructorAccessException(ctor, ex);
-                // Do nothing
-            }
+            // Do nothing
         }
         return Optional.ofNullable(result);
     }
@@ -144,7 +145,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                 tg.add(null);
                 continue;
             }
-            if (CloneBuilderImpl.isImmutable(elem)) {
+            if (CloneBuilder.isImmutable(elem)) {
                 tg.addAll(source);
                 break;
             }
@@ -156,7 +157,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                                           CloneConfiguration configuration) {
         Object clone;
         if (builder.isTypeManaged(element.getClass())) {
-            clone = uow.registerExistingObject(element, configuration.getDescriptor(), configuration.getPostRegister());
+            clone = uow.registerExistingObject(element, new CloneRegistrationDescriptor(configuration.getDescriptor()).postCloneHandlers(configuration.getPostRegister()));
         } else {
             clone = builder.buildClone(cloneOwner, field, element, configuration.getDescriptor());
         }
@@ -172,10 +173,11 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             return arrayList;
         } else if (singletonListClass.isInstance(container) || singletonSetClass.isInstance(container)) {
             final Object element = container.iterator().next();
-            final Object elementClone = CloneBuilderImpl.isImmutable(element) ? element :
-                                        cloneCollectionElement(cloneOwner, field, element, configuration);
-            return singletonListClass.isInstance(container) ? Collections.singletonList(elementClone) :
-                   Collections.singleton(elementClone);
+            final Object elementClone = CloneBuilder.isImmutable(element) ? element :
+                    cloneCollectionElement(cloneOwner, field, element, configuration);
+            final Collection<Object> result = CollectionFactory.createDefaultCollection(singletonListClass.isInstance(container) ? CollectionType.LIST : CollectionType.SET);
+            result.add(elementClone);
+            return result;
         } else {
             return null;
         }
@@ -203,8 +205,8 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         assert cloneValue instanceof Collection;
 
         Collection<Object> clone = (Collection<Object>) cloneValue;
-        if (clone instanceof IndirectCollection) {
-            clone = ((IndirectCollection<Collection<Object>>) clone).unwrap();
+        if (clone instanceof ChangeTrackingIndirectCollection) {
+            clone = ((ChangeTrackingIndirectCollection<Collection<Object>>) clone).unwrap();
         }
         Collection<Object> orig;
         if (clone == Collections.emptyList() || clone == Collections.emptySet()) {

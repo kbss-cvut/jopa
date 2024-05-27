@@ -19,6 +19,11 @@ package cz.cvut.kbss.ontodriver.descriptor;
 
 import cz.cvut.kbss.ontodriver.model.Assertion;
 
+/**
+ * Describes storage of a referenced list.
+ * <p>
+ * A referenced list consists of nodes representing the list structure and values to which each node points.
+ */
 public interface ReferencedListDescriptor extends ListDescriptor {
 
     /**
@@ -27,4 +32,11 @@ public interface ReferencedListDescriptor extends ListDescriptor {
      * @return Property assertion
      */
     Assertion getNodeContent();
+
+    /**
+     * Whether the list is terminated by {@literal rdf:nil}.
+     *
+     * @return {@code true} if the list is terminated by nil, {@code false} otherwise
+     */
+    boolean isTerminatedByNil();
 }

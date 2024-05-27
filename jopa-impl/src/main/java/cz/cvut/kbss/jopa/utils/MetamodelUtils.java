@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.utils;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.metamodel.gen.GeneratedEntityClass;
 
 import java.net.URI;
 import java.util.Collection;
@@ -52,5 +53,19 @@ public class MetamodelUtils {
                 metamodel.addUriToModuleExtractionSignature(u);
             }
         }
+    }
+
+    /**
+     * Gets an entity class corresponding to the specified class.
+     * <p>
+     * This method returns either the provided class or its superclass in case when the provided class is a generated
+     * subclass created by JOPA.
+     *
+     * @param cls Class to process
+     * @param <T> Type
+     * @return Entity class
+     */
+    public static <T> Class<? super T> getEntityClass(Class<T> cls) {
+        return cls.getAnnotation(GeneratedEntityClass.class) != null ? cls.getSuperclass() : cls;
     }
 }

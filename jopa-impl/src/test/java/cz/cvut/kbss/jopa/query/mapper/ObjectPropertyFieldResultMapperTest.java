@@ -36,7 +36,11 @@ import org.mockito.quality.Strictness;
 import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -65,12 +69,12 @@ class ObjectPropertyFieldResultMapperTest {
         when(resultRow.getObject(fieldName)).thenReturn(identifier);
         final OWLClassA aInstance = Generators.generateOwlClassAInstance();
         aInstance.setUri(identifier);
-        when(uowMock.readObject(eq(OWLClassA.class), eq(identifier), any())).thenReturn(aInstance);
+        when(uowMock.readObjectWithoutRegistration(eq(OWLClassA.class), eq(identifier), any())).thenReturn(aInstance);
 
         final OWLClassD target = new OWLClassD();
         mapper.map(resultRow, target, uowMock);
         assertEquals(aInstance, target.getOwlClassA());
-        verify(uowMock).readObject(OWLClassA.class, identifier, new EntityDescriptor());
+        verify(uowMock).readObjectWithoutRegistration(OWLClassA.class, identifier, new EntityDescriptor());
     }
 
     @Test

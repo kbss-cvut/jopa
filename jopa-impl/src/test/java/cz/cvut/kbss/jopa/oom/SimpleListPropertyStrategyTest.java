@@ -92,7 +92,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
 
         when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class))).thenReturn(axioms);
 
-        strategy.addValueFromAxiom(ax);
+        strategy.addAxiomValue(ax);
         final OWLClassC instance = new OWLClassC();
         instance.setUri(IDENTIFIER);
         strategy.buildInstanceFieldValue(instance);
@@ -108,7 +108,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         for (OWLClassA item : lst) {
             final Axiom<NamedResource> a = new AxiomImpl<>(
                     NamedResource.create(previous),
-                    Assertion.createObjectPropertyAssertion(la.getOWLObjectPropertyHasNextIRI().toURI(), false),
+                    Assertion.createObjectPropertyAssertion(la.getHasNextPropertyIRI().toURI(), false),
                     new Value<>(NamedResource.create(item.getUri())));
             axioms.add(a);
             when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, item.getUri(),
@@ -132,7 +132,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         final Collection<Axiom<NamedResource>> axioms = buildAxiomsForList(simpleList, as);
         when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class))).thenReturn(axioms);
 
-        strategy.addValueFromAxiom(ax);
+        strategy.addAxiomValue(ax);
         final OWLClassP instance = new OWLClassP();
         instance.setUri(IDENTIFIER);
         strategy.buildInstanceFieldValue(instance);
@@ -153,14 +153,14 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class)))
                 .thenReturn(axioms);
 
-        strategy.addValueFromAxiom(ax);
+        strategy.addAxiomValue(ax);
         final ArgumentCaptor<SimpleListDescriptor> captor = ArgumentCaptor
                 .forClass(SimpleListDescriptor.class);
         verify(mapperMock).loadSimpleList(captor.capture());
         final SimpleListDescriptor res = captor.getValue();
         assertEquals(IDENTIFIER, res.getListOwner().getIdentifier());
         assertEquals(simpleList.getIRI().toURI(), res.getListProperty().getIdentifier());
-        assertEquals(simpleList.getOWLObjectPropertyHasNextIRI().toURI(), res
+        assertEquals(simpleList.getHasNextPropertyIRI().toURI(), res
                 .getNextNode().getIdentifier());
         assertNull(res.getContext());
     }
@@ -176,8 +176,8 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class)
                                     .iri(), res.getListProperty().getIdentifier().toString());
         assertEquals(simpleListField.getAnnotation(Sequence.class)
-                                    .ObjectPropertyHasNextIRI(), res.getNextNode().getIdentifier()
-                                                                    .toString());
+                                    .hasNextPropertyIRI(), res.getNextNode().getIdentifier()
+                                                              .toString());
         assertEquals(c.getSimpleList().size(), res.getValues().size());
         for (int i = 0; i < c.getSimpleList().size(); i++) {
             assertEquals(c.getSimpleList().get(i).getUri(), res.getValues()
@@ -202,7 +202,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         final Field simpleListField = OWLClassC.getSimpleListField();
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class).iri(),
                      res.getListProperty().getIdentifier().toString());
-        assertEquals(simpleListField.getAnnotation(Sequence.class).ObjectPropertyHasNextIRI(),
+        assertEquals(simpleListField.getAnnotation(Sequence.class).hasNextPropertyIRI(),
                      res.getNextNode().getIdentifier().toString());
         assertTrue(res.getValues().isEmpty());
     }
@@ -217,7 +217,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         final Field simpleListField = OWLClassC.getSimpleListField();
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class).iri(),
                      res.getListProperty().getIdentifier().toString());
-        assertEquals(simpleListField.getAnnotation(Sequence.class).ObjectPropertyHasNextIRI(),
+        assertEquals(simpleListField.getAnnotation(Sequence.class).hasNextPropertyIRI(),
                      res.getNextNode().getIdentifier().toString());
         assertTrue(res.getValues().isEmpty());
     }

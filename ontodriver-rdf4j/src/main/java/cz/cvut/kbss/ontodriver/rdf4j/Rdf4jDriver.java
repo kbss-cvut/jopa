@@ -26,7 +26,7 @@ import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
 import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactory;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectionFactory;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.init.FactoryOfFactories;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.loader.StatementLoaderFactory;
@@ -45,7 +45,7 @@ class Rdf4jDriver implements Closeable, ConnectionListener<Rdf4jConnection> {
 
     private final DriverConfiguration configuration;
     private boolean open;
-    private final ConnectorFactory connectorFactory;
+    private final ConnectionFactory connectionFactory;
     private final StatementLoaderFactory statementLoaderFactory;
 
     private final Set<Rdf4jConnection> openedConnections;
@@ -59,7 +59,7 @@ class Rdf4jDriver implements Closeable, ConnectionListener<Rdf4jConnection> {
         configuration.addConfiguration(properties, CONFIGS);
         this.openedConnections = new HashSet<>();
         final FactoryOfFactories factory = new FactoryOfFactories(configuration);
-        this.connectorFactory = factory.createConnectorFactory();
+        this.connectionFactory = factory.createConnectorFactory();
         this.statementLoaderFactory = factory.createStatementLoaderFactory();
         this.open = true;
     }
@@ -74,7 +74,7 @@ class Rdf4jDriver implements Closeable, ConnectionListener<Rdf4jConnection> {
                 c.removeListener();
                 c.close();
             }
-            connectorFactory.close();
+            connectionFactory.close();
         } catch (OntoDriverException e) {
             throw e;
         } catch (Exception e) {
@@ -93,7 +93,7 @@ class Rdf4jDriver implements Closeable, ConnectionListener<Rdf4jConnection> {
         assert open;
         final RuntimeConfiguration config = new RuntimeConfiguration(configuration);
         config.setStatementLoaderFactory(statementLoaderFactory);
-        final Rdf4jAdapter adapter = new Rdf4jAdapter(connectorFactory.createStorageConnector(), config);
+        final Rdf4jAdapter adapter = new Rdf4jAdapter(connectionFactory.createStorageConnection(), config);
         final Rdf4jConnection c = new Rdf4jConnection(adapter);
         c.setLists(new Rdf4jLists(adapter, c::ensureOpen, c::commitIfAuto));
         c.setTypes(new Rdf4jTypes(adapter, c::ensureOpen, c::commitIfAuto));
@@ -120,6 +120,6 @@ class Rdf4jDriver implements Closeable, ConnectionListener<Rdf4jConnection> {
      */
     void setRepository(Repository repository) throws Rdf4jDriverException {
         assert open;
-        connectorFactory.setRepository(repository);
+        connectionFactory.setRepository(repository);
     }
 }

@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 
 import java.net.URI;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class OWLClassN {
     @OWLDataProperty(iri = Vocabulary.P_N_STRING_ATTRIBUTE)
     private String stringAttribute;
 
-    @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
+    @OWLAnnotationProperty(iri = DC.Terms.SOURCE)
     private Set<String> pluralAnnotationProperty;
 
     @Inferred

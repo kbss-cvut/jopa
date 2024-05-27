@@ -19,13 +19,16 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -87,27 +90,40 @@ public class LruCacheManager implements CacheManager {
     }
 
     @Override
-    public void add(Object primaryKey, Object entity, Descriptor descriptor) {
-        Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
-        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+    public void add(Object identifier, Object entity, Descriptors descriptors) {
+        Objects.requireNonNull(identifier);
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(descriptors);
 
         writeLock.lock();
         try {
-            entityCache.put(primaryKey, entity, descriptor);
+            entityCache.put(identifier, entity, descriptors);
         } finally {
             writeLock.unlock();
         }
     }
 
     @Override
-    public <T> T get(Class<T> cls, Object primaryKey, Descriptor descriptor) {
-        if (cls == null || primaryKey == null || descriptor == null) {
+    public <T> T get(Class<T> cls, Object identifier, Descriptor descriptor) {
+        if (cls == null || identifier == null || descriptor == null) {
             return null;
         }
         readLock.lock();
         try {
-            return entityCache.get(cls, primaryKey, descriptor);
+            return entityCache.get(cls, identifier, descriptor);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    @Override
+    public LoadStateDescriptor<?> getLoadStateDescriptor(Object instance) {
+        if (instance == null) {
+            return null;
+        }
+        readLock.lock();
+        try {
+            return entityCache.getLoadStateDescriptor(instance);
         } finally {
             readLock.unlock();
         }
@@ -155,8 +171,8 @@ public class LruCacheManager implements CacheManager {
 
     @Override
     public void evict(Class<?> cls, Object identifier, URI context) {
-        Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
-        Objects.requireNonNull(identifier, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull(identifier);
 
         writeLock.lock();
         try {
@@ -214,12 +230,12 @@ public class LruCacheManager implements CacheManager {
         }
 
         @Override
-        void put(Object identifier, Object entity, Descriptor descriptor) {
-            if (!isCacheable(descriptor)) {
+        void put(Object identifier, Object entity, Descriptors descriptors) {
+            if (!isCacheable(descriptors.repositoryDescriptor())) {
                 return;
             }
-            final URI ctx = descriptor.getSingleContext().orElse(defaultContext);
-            super.put(identifier, entity, descriptor);
+            final URI ctx = descriptors.repositoryDescriptor().getSingleContext().orElse(defaultContext);
+            super.put(identifier, entity, descriptors);
             cache.put(new LruCache.CacheNode(ctx, entity.getClass(), identifier), NULL_VALUE);
         }
 

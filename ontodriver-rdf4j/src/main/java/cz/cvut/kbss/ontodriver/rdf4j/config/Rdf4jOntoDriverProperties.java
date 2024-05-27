@@ -127,6 +127,13 @@ public abstract class Rdf4jOntoDriverProperties {
      */
     public static final String MAX_CONNECTION_POOL_SIZE = "cz.cvut.kbss.ontodriver.rdf4j.max-connections";
 
+    /**
+     * RDF4J transaction isolation level.
+     *
+     * See {@link org.eclipse.rdf4j.common.transaction.IsolationLevels} for acceptable values.
+     */
+    public static final String TRANSACTION_ISOLATION_LEVEL = "cz.cvut.kbss.ontodriver.rdf4j.transaction-isolation";
+
     private Rdf4jOntoDriverProperties() {
         throw new AssertionError();
     }

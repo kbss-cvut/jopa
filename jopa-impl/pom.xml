@@ -6,7 +6,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>1.2.2</version>
+        <version>2.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -15,7 +15,8 @@
     <packaging>jar</packaging>
 
     <properties>
-        <org.antlr4.version>4.9.3</org.antlr4.version>
+        <org.antlr4.version>4.12.0</org.antlr4.version>
+        <net.bytebuddy.version>1.14.8</net.bytebuddy.version>
     </properties>
 
     <dependencies>
@@ -35,26 +36,14 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <version>${org.aspectj.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjweaver</artifactId>
-            <version>${org.aspectj.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jgrapht</groupId>
-            <artifactId>jgrapht-core</artifactId>
-            <version>1.1.0</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
             <version>${org.antlr4.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>${net.bytebuddy.version}</version>
         </dependency>
     </dependencies>
 
@@ -70,49 +59,6 @@
                         <id>antlr</id>
                         <goals>
                             <goal>antlr4</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>dev.aspectj</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-                <configuration combine.self="override">
-                    <complianceLevel>${jdk.version}</complianceLevel>
-                    <source>${jdk.version}</source>
-                    <target>${jdk.version}</target>
-                    <sources>
-                        <source>
-                            <basedir>${basedir}/src/main/java</basedir>
-                            <includes>
-                                <include>**/BeanListenerAspect.java</include>
-                            </includes>
-                        </source>
-                    </sources>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjtools</artifactId>
-                        <version>${org.aspectj.version}</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <id>compile</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>compile</goal>
-                            <!-- use this goal to weave all your main classes -->
-                        </goals>
-                    </execution>
-                    <execution>
-                        <!-- Split into two executions to ensure AJC runs AFTER regular compile in tests as well -->
-                        <id>test-compile</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <!-- use this goal to weave all test classes -->
-                            <goal>test-compile</goal>
                         </goals>
                     </execution>
                 </executions>

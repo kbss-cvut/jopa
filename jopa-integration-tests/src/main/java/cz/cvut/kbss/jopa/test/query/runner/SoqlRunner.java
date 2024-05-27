@@ -238,8 +238,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
     public void testSelectByAbsoluteValueOfAnInteger() {
         final List<OWLClassM> instances = QueryTestEnvironment.getData(OWLClassM.class);
         final int value = Math.abs(Generators.randomInt());
-        final List<OWLClassM> matching = instances.stream().filter(m -> Math.abs(m.getIntAttribute()) <= value).collect(
-                Collectors.toList());
+        final List<OWLClassM> matching = instances.stream().filter(m -> Math.abs(m.getIntAttribute()) <= value).toList();
         final List<OWLClassM> result = getEntityManager().createQuery("SELECT m FROM OWLClassM m WHERE ABS(m.intAttribute) <= :value", OWLClassM.class)
                 .setParameter("value", value)
                 .getResultList();

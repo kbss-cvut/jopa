@@ -26,7 +26,7 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Vocabulary;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
@@ -37,6 +37,7 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,9 +51,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -60,9 +63,12 @@ import static cz.cvut.kbss.ontodriver.rdf4j.list.ListHandlerTestHelper.LIST_PROP
 import static cz.cvut.kbss.ontodriver.rdf4j.list.ListHandlerTestHelper.NEXT_NODE_PROPERTY;
 import static cz.cvut.kbss.ontodriver.rdf4j.list.ListHandlerTestHelper.OWNER;
 import static cz.cvut.kbss.ontodriver.rdf4j.list.ListHandlerTestHelper.generateList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
@@ -94,7 +100,7 @@ public class ReferencedListHandlerTest {
             URI.create(ListHandlerTestHelper.NODE_CONTENT_PROPERTY), false);
 
     @Mock
-    private Connector connector;
+    private RepoConnection connector;
 
     private ReferencedListDescriptor listDescriptor;
 
@@ -266,7 +272,7 @@ public class ReferencedListHandlerTest {
 
     @Test
     public void clearsListOnUpdateWhenDescriptorHasNoValues() throws Exception {
-        final ReferencedListValueDescriptor<NamedResource> descriptor = initValues(0);
+        final ReferencedListValueDescriptor<NamedResource> descriptor = createValueDescriptor(Assertion.AssertionType.OBJECT_PROPERTY, false);
         // old list
         final List<NamedResource> refList = generateList();
         final List<Statement> oldList = initStatementsForList(initListNodes(refList), refList);
@@ -279,20 +285,21 @@ public class ReferencedListHandlerTest {
     }
 
     private static ReferencedListValueDescriptor<NamedResource> initValues(int count) {
-        final ReferencedListValueDescriptor<NamedResource> desc = createValueDescriptor(Assertion.AssertionType.OBJECT_PROPERTY);
+        final ReferencedListValueDescriptor<NamedResource> desc = createValueDescriptor(Assertion.AssertionType.OBJECT_PROPERTY, false);
         for (int i = 0; i < count; i++) {
             desc.addValue(NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + i));
         }
         return desc;
     }
 
-    private static <T> ReferencedListValueDescriptor<T> createValueDescriptor(Assertion.AssertionType assertionType) {
+    private static <T> ReferencedListValueDescriptor<T> createValueDescriptor(Assertion.AssertionType assertionType,
+                                                                              boolean nilTerminal) {
         final Assertion contentAssertion = assertionType == Assertion.AssertionType.OBJECT_PROPERTY ? Assertion.createObjectPropertyAssertion(
                 URI.create(ListHandlerTestHelper.NODE_CONTENT_PROPERTY), false) : Assertion.createDataPropertyAssertion(URI.create(ListHandlerTestHelper.NODE_CONTENT_PROPERTY), false);
         return new ReferencedListValueDescriptor<>(OWNER,
                 Assertion.createObjectPropertyAssertion(URI.create(LIST_PROPERTY), false),
                 Assertion.createObjectPropertyAssertion(URI.create(NEXT_NODE_PROPERTY),
-                        false), contentAssertion);
+                        false), contentAssertion, nilTerminal);
     }
 
     @Test
@@ -343,7 +350,7 @@ public class ReferencedListHandlerTest {
 
     @Test
     void persistListSupportsSavingDataPropertyValuesAsListElements() throws Exception {
-        final ReferencedListValueDescriptor<Integer> desc = createValueDescriptor(Assertion.AssertionType.DATA_PROPERTY);
+        final ReferencedListValueDescriptor<Integer> desc = createValueDescriptor(Assertion.AssertionType.DATA_PROPERTY, false);
         IntStream.range(0, 5).mapToObj(i -> Generator.randomInt()).forEach(desc::addValue);
 
         sut.persistList(desc);
@@ -387,7 +394,7 @@ public class ReferencedListHandlerTest {
                 new MultilingualString(Map.of("en", "one", "cs", "jedna")),
                 new MultilingualString(Map.of("en", "two", "cs", "dva"))
         );
-        final ReferencedListValueDescriptor<MultilingualString> desc = createValueDescriptor(Assertion.AssertionType.DATA_PROPERTY);
+        final ReferencedListValueDescriptor<MultilingualString> desc = createValueDescriptor(Assertion.AssertionType.DATA_PROPERTY, false);
         refList.forEach(desc::addValue);
 
         sut.persistList(desc);
@@ -414,5 +421,116 @@ public class ReferencedListHandlerTest {
             }
             i++;
         }
+    }
+
+    @Test
+    void persistListAppendsRdfNilAfterLastNodeWhenDescriptorIsConfiguredToTerminateListWithIt() throws Exception {
+        final List<NamedResource> values = generateList();
+        final ReferencedListValueDescriptor<NamedResource> desc = createValueDescriptor(Assertion.AssertionType.OBJECT_PROPERTY, true);
+        values.forEach(desc::addValue);
+
+        sut.persistList(desc);
+        final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
+        verify(connector).addStatements(captor.capture());
+        final Collection<Statement> stmts = captor.getValue();
+        final Iterator<Statement> it = stmts.iterator();
+        Statement statement = null;
+        while (it.hasNext()) {
+            statement = it.next();
+        }
+        assertNotNull(statement);
+        assertEquals(vf.createIRI(NEXT_NODE_PROPERTY), statement.getPredicate());
+        assertEquals(RDF.NIL, statement.getObject());
+    }
+
+    @Test
+    void loadListLoadsNilTerminatedList() throws Exception {
+        final List<NamedResource> refList = generateList();
+        final List<URI> listNodes = initListNodes(refList);
+        initStatementsForList(listNodes, refList);
+        final IRI lastNodeIri = vf.createIRI(listNodes.get(listNodes.size() - 1).toString());
+        when(connector.findStatements(lastNodeIri, vf.createIRI(NEXT_NODE_PROPERTY), null, false, Collections.emptySet()))
+                .thenReturn(Set.of(vf.createStatement(lastNodeIri, vf.createIRI(NEXT_NODE_PROPERTY), RDF.NIL)));
+        final Collection<Axiom<?>> res = sut.loadList(listDescriptor);
+        assertEquals(refList.size(), res.size());
+        for (Axiom<?> a : res) {
+            assertInstanceOf(NamedResource.class, a.getValue().getValue());
+            assertTrue(refList.contains((NamedResource) a.getValue().getValue()));
+        }
+    }
+
+    @Test
+    void clearListRemovesListNodesIncludingNilTerminal() throws Exception {
+        final ReferencedListValueDescriptor<NamedResource> descriptor = createValueDescriptor(Assertion.AssertionType.OBJECT_PROPERTY, true);
+        // old list
+        final List<NamedResource> refList = generateList();
+        final List<URI> oldListNodes = initListNodes(refList);
+        final List<Statement> oldList = initStatementsForList(oldListNodes, refList);
+        final IRI lastNodeIri = vf.createIRI(oldListNodes.get(oldListNodes.size() - 1).toString());
+        final Statement nilTerminal = vf.createStatement(lastNodeIri, vf.createIRI(NEXT_NODE_PROPERTY), RDF.NIL);
+        when(connector.findStatements(lastNodeIri, vf.createIRI(NEXT_NODE_PROPERTY), null, false, Collections.emptySet()))
+                .thenReturn(Set.of(nilTerminal));
+
+        sut.updateList(descriptor);
+        verify(connector).removeStatements(anyCollection());
+        verify(connector, never()).addStatements(anyCollection());
+        assertEquals(oldList.size() + 1, removed.size());
+        assertTrue(removed.containsAll(oldList));
+        assertThat(removed, hasItem(nilTerminal));
+    }
+
+    @Test
+    void updateListRemovesNilTerminalFromPreviouslyLastNodeAndAppendsItToNewLastNode() throws Exception {
+        final ReferencedListValueDescriptor<NamedResource> descriptor = createValueDescriptor(Assertion.AssertionType.OBJECT_PROPERTY, true);
+        final List<NamedResource> addedItems = IntStream.range(0, 5)
+                                                        .mapToObj(i -> NamedResource.create(Vocabulary.INDIVIDUAL_IRI_BASE + i))
+                                                        .toList();
+        final List<NamedResource> oldList = generateList();
+        final List<URI> oldNodes = initListNodes(oldList);
+        initStatementsForList(oldNodes, oldList);
+        final IRI lastNodeIri = vf.createIRI(oldNodes.get(oldNodes.size() - 1).toString());
+        final Statement nilTerminal = vf.createStatement(lastNodeIri, vf.createIRI(NEXT_NODE_PROPERTY), RDF.NIL);
+        when(connector.findStatements(lastNodeIri, vf.createIRI(NEXT_NODE_PROPERTY), null, false, Collections.emptySet()))
+                .thenReturn(Set.of(nilTerminal));
+        // The original items
+        for (NamedResource item : oldList) {
+            descriptor.addValue(item);
+        }
+        // Now add the new ones
+        for (NamedResource r : addedItems) {
+            descriptor.addValue(r);
+        }
+
+        sut.updateList(descriptor);
+        verify(connector).removeStatements(Set.of(nilTerminal));
+        verify(connector, atLeast(1)).addStatements(anyCollection());
+        // Added nodes with values + terminal
+        assertEquals(addedItems.size() * 2 + 1, added.size());
+        for (Statement stmt : added) {
+            if (stmt.getPredicate().equals(nodeContentProperty)) {
+                final URI u = URI.create(stmt.getObject().stringValue());
+                assertTrue(addedItems.contains(NamedResource.create(u)));
+            }
+        }
+        assertTrue(added.stream().anyMatch(s -> s.getObject().equals(RDF.NIL)));
+    }
+
+    @Test
+    void updateListRemovesNilTerminalFromLastNodeWhenItIsRemovedAndAddsItToNewLastNode() throws Exception {
+        final ReferencedListValueDescriptor<NamedResource> descriptor = createValueDescriptor(Assertion.AssertionType.OBJECT_PROPERTY, true);
+        final List<NamedResource> oldList = generateList();
+        final List<URI> oldNodes = initListNodes(oldList);
+        initStatementsForList(oldNodes, oldList);
+        final IRI lastNodeIri = vf.createIRI(oldNodes.get(oldNodes.size() - 1).toString());
+        final Statement nilTerminal = vf.createStatement(lastNodeIri, vf.createIRI(NEXT_NODE_PROPERTY), RDF.NIL);
+        when(connector.findStatements(lastNodeIri, vf.createIRI(NEXT_NODE_PROPERTY), null, false, Collections.emptySet()))
+                .thenReturn(Set.of(nilTerminal));
+        // The original items
+        for (NamedResource item : oldList.subList(0, oldList.size() / 2)) {
+            descriptor.addValue(item);
+        }
+        sut.updateList(descriptor);
+        assertThat(removed, hasItem(nilTerminal));
+        assertTrue(added.stream().anyMatch(s -> s.getObject().equals(RDF.NIL)));
     }
 }

@@ -37,10 +37,12 @@ import java.util.stream.Collectors;
 public abstract class Generators {
 
     public static final String LANG = "en";
+
     public static final int DEFAULT_SIZE = 5;
-    private static final Set<String> TYPES = generateTypes(DEFAULT_SIZE);
 
     private static final Random RAND = new Random();
+
+    private static final Set<String> TYPES = generateTypes(DEFAULT_SIZE);
 
     private Generators() {
         // Private constructor
@@ -162,7 +164,7 @@ public abstract class Generators {
     public static Set<String> generateTypes(int count) {
         final Set<String> types = new HashSet<>(count);
         for (int i = 0; i < count; i++) {
-            types.add(Vocabulary.CLASS_BASE + i);
+            types.add(Vocabulary.CLASS_BASE + RAND.nextInt(10000));
         }
         return types;
     }

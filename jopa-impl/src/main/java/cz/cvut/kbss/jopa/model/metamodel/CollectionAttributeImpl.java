@@ -37,11 +37,11 @@ public class CollectionAttributeImpl<X, V> extends AbstractPluralAttribute<X, Co
         return "CollectionAttribute[" + getName() + "]";
     }
 
-    public static PluralAttributeBuilder builder(PropertyAttributes config) {
+    static PluralAttributeBuilder builder(PropertyAttributes config) {
         return new CollectionAttributeBuilder().collectionType(Set.class).config(config);
     }
 
-    public static class CollectionAttributeBuilder<X, V> extends PluralAttributeBuilder<X, Collection<V>, V> {
+    static class CollectionAttributeBuilder<X, V> extends PluralAttributeBuilder<X, Collection<V>, V> {
 
         @Override
         public CollectionAttributeImpl<X, V> build() {

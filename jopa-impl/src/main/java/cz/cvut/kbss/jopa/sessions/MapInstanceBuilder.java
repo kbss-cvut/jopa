@@ -17,35 +17,36 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMap;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
+import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 class MapInstanceBuilder extends AbstractInstanceBuilder {
 
-    private static final Class<?> singletonMapClass = Collections.singletonMap(null, null)
-                                                                 .getClass();
+    private static final Class<?> singletonMapClass = Collections.singletonMap(null, null).getClass();
 
-    MapInstanceBuilder(CloneBuilderImpl builder, UnitOfWorkImpl uow) {
+    MapInstanceBuilder(CloneBuilder builder, UnitOfWork uow) {
         super(builder, uow);
     }
 
     @Override
     Object buildClone(Object cloneOwner, Field field, Object original, CloneConfiguration configuration) {
         Map<?, ?> orig = (Map<?, ?>) original;
-        if (original instanceof IndirectCollection) {
-            orig = ((IndirectCollection<Map<?, ?>>) original).unwrap();
+        if (original instanceof ChangeTrackingIndirectCollection) {
+            orig = ((ChangeTrackingIndirectCollection<Map<?, ?>>) original).unwrap();
         }
         if (orig == Collections.emptyMap()) {
             return orig;
@@ -58,26 +59,23 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
                 clone = buildSingletonClone(cloneOwner, field, orig, configuration);
             } else if (Collections.emptyMap().equals(orig)) {
                 clone = orig;
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("Unsupported map type " + origCls);
             }
         }
-        clone = (Map<?, ?>) uow.createIndirectCollection(clone, cloneOwner, field);
+        clone = new ChangeTrackingIndirectMap<>(cloneOwner, field, uow, clone);
         return clone;
 
     }
 
     private Map<?, ?> cloneUsingDefaultConstructor(Object cloneOwner, Field field, Class<?> origCls, Map<?, ?> original,
                                                    CloneConfiguration configuration) {
-        Map<?, ?> result = createNewInstance(origCls, original.size());
-        if (result != null) {
-            cloneMapContent(cloneOwner, field, original, result, configuration);
-        }
-        return result;
+        Optional<Map<?, ?>> result = createNewInstance(origCls, original.size());
+        result.ifPresent(r -> cloneMapContent(cloneOwner, field, original, r, configuration));
+        return result.orElse(null);
     }
 
-    private static Map<?, ?> createNewInstance(Class<?> type, int size) {
+    private static Optional<Map<?, ?>> createNewInstance(Class<?> type, int size) {
         Map<?, ?> result = null;
         final Class<?>[] types = {int.class};
         Object[] params;
@@ -90,7 +88,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
             params = null;
         }
         if (c == null) {
-            return null;
+            return Optional.empty();
         }
         try {
             result = (Map<?, ?>) c.newInstance(params);
@@ -98,25 +96,19 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
             throw new OWLPersistenceException(e);
         } catch (IllegalAccessException e) {
             logConstructorAccessException(c, e);
-            try {
-                result = (Map<?, ?>) AccessController
-                        .doPrivileged(new PrivilegedInstanceCreator(c));
-            } catch (PrivilegedActionException ex) {
-                logPrivilegedConstructorAccessException(c, ex);
-                // Do nothing
-            }
+            // Do nothing
         }
-        return result;
+        return Optional.ofNullable(result);
     }
 
     private Map<?, ?> buildSingletonClone(Object cloneOwner, Field field, Map<?, ?> orig,
                                           CloneConfiguration configuration) {
         Entry<?, ?> e = orig.entrySet().iterator().next();
-        Object key = CloneBuilderImpl.isImmutable(e.getKey()) ? e.getKey() :
-                     cloneObject(cloneOwner, field, e.getKey(), configuration);
-        Object value = CloneBuilderImpl.isImmutable(e.getValue()) ? e.getValue() :
-                       cloneObject(cloneOwner, field, e.getValue(), configuration);
-        if ((value instanceof Collection || value instanceof Map) && !(value instanceof IndirectCollection)) {
+        Object key = CloneBuilder.isImmutable(e.getKey()) ? e.getKey() :
+                cloneObject(cloneOwner, field, e.getKey(), configuration);
+        Object value = CloneBuilder.isImmutable(e.getValue()) ? e.getValue() :
+                cloneObject(cloneOwner, field, e.getValue(), configuration);
+        if ((value instanceof Collection || value instanceof Map) && !(value instanceof ChangeTrackingIndirectCollection)) {
             value = uow.createIndirectCollection(value, cloneOwner, field);
         }
         return Collections.singletonMap(key, value);
@@ -130,8 +122,8 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         final Map<Object, Object> m = (Map<Object, Object>) target;
         final Entry<?, ?> tmp = source.entrySet().iterator().next();
         // Note: If we encounter null -> null mapping first, the whole map will be treated as immutable type map, which can be incorrect
-        final boolean keyPrimitive = CloneBuilderImpl.isImmutable(tmp.getKey());
-        final boolean valuePrimitive = CloneBuilderImpl.isImmutable(tmp.getValue());
+        final boolean keyPrimitive = CloneBuilder.isImmutable(tmp.getKey());
+        final boolean valuePrimitive = CloneBuilder.isImmutable(tmp.getValue());
         for (Entry<?, ?> e : source.entrySet()) {
             Object key;
             Object value;
@@ -155,7 +147,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         if (obj == null) {
             clone = null;
         } else if (builder.isTypeManaged(obj.getClass())) {
-            clone = uow.registerExistingObject(obj, configuration.getDescriptor(), configuration.getPostRegister());
+            clone = uow.registerExistingObject(obj, new CloneRegistrationDescriptor(configuration.getDescriptor()).postCloneHandlers(configuration.getPostRegister()));
         } else {
             clone = builder.buildClone(owner, field, obj, configuration.getDescriptor());
         }
@@ -168,15 +160,10 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         assert cloneValue instanceof Map;
 
         Map<Object, Object> orig = (Map<Object, Object>) originalValue;
-        Map<Object, Object> clone = (Map<Object, Object>) cloneValue;
-        if (clone instanceof IndirectCollection) {
-            clone = ((IndirectCollection<Map<Object, Object>>) clone).unwrap();
-        }
+        final Map<Object, Object> clone = cloneValue instanceof ChangeTrackingIndirectCollection ?
+                                          ((ChangeTrackingIndirectCollection<Map<Object, Object>>) cloneValue).unwrap() : (Map<Object, Object>) cloneValue;
         if (orig == null) {
-            orig = (Map<Object, Object>) createNewInstance(clone.getClass(), clone.size());
-            if (orig == null) {
-                orig = createDefaultMap(clone.size());
-            }
+            orig = (Map<Object, Object>) createNewInstance(clone.getClass(), clone.size()).orElseGet(() -> createDefaultMap(clone.size()));
             EntityPropertiesUtils.setFieldValue(field, target, orig);
         }
         orig.clear();

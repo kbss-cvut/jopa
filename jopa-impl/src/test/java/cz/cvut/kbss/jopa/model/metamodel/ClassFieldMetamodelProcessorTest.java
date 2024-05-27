@@ -260,9 +260,9 @@ class ClassFieldMetamodelProcessorTest {
         assertInstanceOf(ListAttributeImpl.class, captor.getValue());
         final ListAttributeImpl<?, ?> result = (ListAttributeImpl<?, ?>) captor.getValue();
         assertEquals(SequenceType.referenced, result.getSequenceType());
-        assertEquals(RDF.LIST, result.getOWLListClass().toString());
-        assertEquals(RDF.FIRST, result.getOWLPropertyHasContentsIRI().toString());
-        assertEquals(RDF.REST, result.getOWLObjectPropertyHasNextIRI().toString());
+        assertEquals(RDF.LIST, result.getListClassIRI().toString());
+        assertEquals(RDF.FIRST, result.getHasContentsPropertyIRI().toString());
+        assertEquals(RDF.REST, result.getHasNextPropertyIRI().toString());
     }
 
     // Test classes
@@ -469,7 +469,7 @@ class ClassFieldMetamodelProcessorTest {
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "OWLClassWithRdfList")
     private static class OWLClassWithRdfList {
-        @Sequence(type = SequenceType.referenced, ClassOWLListIRI = "rdf:List",ObjectPropertyHasContentsIRI = "rdf:first", ObjectPropertyHasNextIRI = "rdf:rest")
+        @Sequence(type = SequenceType.referenced, listClassIRI = "rdf:List", hasContentsPropertyIRI = "rdf:first", hasNextPropertyIRI = "rdf:rest")
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "rdflist")
         private List<String> rdfList;
     }

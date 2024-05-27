@@ -17,7 +17,13 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
+import cz.cvut.kbss.jopa.environment.OWLClassE;
+import cz.cvut.kbss.jopa.environment.OWLClassH;
+import cz.cvut.kbss.jopa.environment.OWLClassJ;
+import cz.cvut.kbss.jopa.environment.OWLClassK;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -31,10 +37,12 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityLifecycleListenerManager;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.jopa.sessions.ChangeTrackingUnitOfWork;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
+import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import cz.cvut.kbss.jopa.sessions.cache.DisabledCacheManager;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,8 +60,25 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -70,10 +95,12 @@ class EntityManagerImplTest {
     @Mock
     private ConnectionWrapper connectorMock;
 
-    private UnitOfWorkImpl uow;
+    private UnitOfWork uow;
 
     @Mock
     private MetamodelImpl metamodelMock;
+
+    private ServerSession serverSessionMock;
 
     private MetamodelMocks mocks;
 
@@ -81,15 +108,14 @@ class EntityManagerImplTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        final ServerSessionStub serverSessionMock = spy(new ServerSessionStub(connectorMock));
-        when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
-        when(serverSessionMock.getLiveObjectCache()).thenReturn(new DisabledCacheManager());
-        this.uow = spy(new UnitOfWorkImpl(serverSessionMock));
-        doReturn(uow).when(serverSessionMock).acquireUnitOfWork();
+        final Configuration config = new Configuration();
+        this.serverSessionMock = spy(new ServerSessionStub(metamodelMock, connectorMock));
+        this.uow = spy(new ChangeTrackingUnitOfWork(serverSessionMock, config));
+        doReturn(uow).when(serverSessionMock).acquireUnitOfWork(any());
         when(emfMock.getMetamodel()).thenReturn(metamodelMock);
         this.mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
-        this.em = new EntityManagerImpl(emfMock, new Configuration(Collections.emptyMap()), serverSessionMock);
+        this.em = new EntityManagerImpl(emfMock, config, serverSessionMock);
     }
 
     @Test
@@ -317,7 +343,7 @@ class EntityManagerImplTest {
     @Test
     void exceptionInDetachMarksTransactionForRollbackOnly() {
         final OWLClassA a = Generators.generateOwlClassAInstance();
-        doReturn(EntityManagerImpl.State.MANAGED).when(uow).getState(a);
+        doReturn(EntityState.MANAGED).when(uow).getState(a);
         doThrow(OWLPersistenceException.class).when(uow).unregisterObject(a);
         final EntityTransaction tx = em.getTransaction();
         try {
@@ -370,10 +396,10 @@ class EntityManagerImplTest {
         final CascadeCycleTwo cloneTwo = new CascadeCycleTwo(cTwo.uri);
         cloneOne.two = cloneTwo;
         cloneTwo.one = cloneOne;
-        doReturn(EntityManagerImpl.State.NOT_MANAGED).when(uow).getState(cOne);
-        doReturn(EntityManagerImpl.State.NOT_MANAGED).when(uow).getState(cTwo);
-        doReturn(EntityManagerImpl.State.MANAGED).when(uow).getState(cloneOne);
-        doReturn(EntityManagerImpl.State.MANAGED).when(uow).getState(cloneTwo);
+        doReturn(EntityState.NOT_MANAGED).when(uow).getState(cOne);
+        doReturn(EntityState.NOT_MANAGED).when(uow).getState(cTwo);
+        doReturn(EntityState.MANAGED).when(uow).getState(cloneOne);
+        doReturn(EntityState.MANAGED).when(uow).getState(cloneTwo);
         doReturn(cloneOne).when(uow).mergeDetached(eq(cOne), any());
         doReturn(cloneTwo).when(uow).mergeDetached(eq(cTwo), any());
         doReturn(cloneOne).when(uow).getCloneForOriginal(cOne);
@@ -448,10 +474,10 @@ class EntityManagerImplTest {
         cOne.two = cTwo;
         cTwo.one = cOne;
         metamodelForCascadingTest();
-        doReturn(EntityManagerImpl.State.NOT_MANAGED).doReturn(EntityManagerImpl.State.MANAGED_NEW).when(uow)
-                .getState(cOne);
-        doReturn(EntityManagerImpl.State.NOT_MANAGED).doReturn(EntityManagerImpl.State.MANAGED_NEW).when(uow)
-                .getState(cTwo);
+        doReturn(EntityState.NOT_MANAGED).doReturn(EntityState.MANAGED_NEW).when(uow)
+                                         .getState(cOne);
+        doReturn(EntityState.NOT_MANAGED).doReturn(EntityState.MANAGED_NEW).when(uow)
+                                         .getState(cTwo);
         doReturn(cOne).when(uow).mergeDetached(eq(cOne), any());
         doReturn(cTwo).when(uow).mergeDetached(eq(cTwo), any());
         doReturn(cOne).when(uow).getCloneForOriginal(cOne);
@@ -473,12 +499,8 @@ class EntityManagerImplTest {
         final CascadeCycleTwo cloneTwo = new CascadeCycleTwo(cTwo.uri);
         cloneOne.two = cloneTwo;
         cloneTwo.one = cloneOne;
-        doReturn(EntityManagerImpl.State.MANAGED).doReturn(EntityManagerImpl.State.REMOVED).when(uow)
-                .getState(cloneOne);
-        doReturn(EntityManagerImpl.State.MANAGED).doReturn(EntityManagerImpl.State.REMOVED).when(uow)
-                .getState(cloneTwo);
-        doReturn(cOne).when(uow).getOriginal(cloneOne);
-        doReturn(cTwo).when(uow).getOriginal(cloneTwo);
+        doReturn(EntityState.MANAGED).doReturn(EntityState.REMOVED).when(uow).getState(cloneOne);
+        doReturn(EntityState.MANAGED).doReturn(EntityState.REMOVED).when(uow).getState(cloneTwo);
         doNothing().when(uow).removeObject(any());
         em.remove(cloneOne);
         verify(uow).removeObject(cloneOne);
@@ -623,5 +645,13 @@ class EntityManagerImplTest {
         assertThrows(IllegalStateException.class,
                 () -> em.getReference(OWLClassA.class, Generators.createIndividualIdentifier()));
         verify(uow, never()).getReference(any(), any(), any());
+    }
+
+    @Test
+    void entityManagerIsAutoCloseable() {
+        try (final EntityManager em = new EntityManagerImpl(emfMock, new Configuration(Collections.emptyMap()), serverSessionMock)) {
+            assertTrue(em.isOpen());
+        }
+        verify(emfMock).entityManagerClosed(any(AbstractEntityManager.class));
     }
 }

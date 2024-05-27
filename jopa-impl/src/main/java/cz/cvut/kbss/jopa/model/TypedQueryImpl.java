@@ -26,9 +26,7 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
@@ -42,22 +40,16 @@ import java.util.stream.Stream;
 public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     private final Class<X> resultType;
-    private final MetamodelProvider metamodelProvider;
 
-    private UnitOfWork uow;
+    private final UnitOfWork uow;
 
     private Descriptor descriptor = new EntityDescriptor();
 
     public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
-                          final ConnectionWrapper connection, MetamodelProvider metamodelProvider) {
+                          final ConnectionWrapper connection, UnitOfWork uow) {
         super(query, connection);
-        this.resultType = Objects.requireNonNull(resultType, ErrorUtils.getNPXMessageSupplier("resultType"));
-        this.metamodelProvider = Objects
-                .requireNonNull(metamodelProvider, ErrorUtils.getNPXMessageSupplier("metamodelProvider"));
-    }
-
-    public void setUnitOfWork(UnitOfWork uow) {
-        this.uow = uow;
+        this.resultType = Objects.requireNonNull(resultType);
+        this.uow = Objects.requireNonNull(uow);
     }
 
     @Override
@@ -75,7 +67,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     }
 
     private List<X> getResultListImpl() throws OntoDriverException {
-        final boolean isEntityType = metamodelProvider.isEntityType(resultType);
+        final boolean isEntityType = uow.isEntityType(resultType);
         final List<X> res = new ArrayList<>();
         executeQuery(rs -> {
             if (isEntityType) {
@@ -137,7 +129,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public Stream<X> getResultStream() {
-        final boolean isEntityType = metamodelProvider.isEntityType(resultType);
+        final boolean isEntityType = uow.isEntityType(resultType);
         try {
             return executeQueryForStream(row -> {
                 if (isEntityType) {

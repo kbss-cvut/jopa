@@ -20,7 +20,7 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 /**
@@ -29,10 +29,10 @@ import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 public class ResultSetMappingQuery extends QueryImpl {
 
     private final SparqlResultMapper mapper;
-    private final UnitOfWorkImpl uow;
+    private final UnitOfWork uow;
 
     public ResultSetMappingQuery(QueryHolder query, ConnectionWrapper connection, SparqlResultMapper mapper,
-                                 UnitOfWorkImpl uow) {
+                                 UnitOfWork uow) {
         super(query, connection);
         this.mapper = mapper;
         this.uow = uow;

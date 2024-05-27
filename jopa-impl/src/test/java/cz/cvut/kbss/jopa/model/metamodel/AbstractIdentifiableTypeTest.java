@@ -38,7 +38,6 @@ class AbstractIdentifiableTypeTest {
 
     private static Class<OWLClassA> cls;
     private static IRI classIri;
-    private static String className;
 
     private IdentifiableEntityType<OWLClassA> et;
 
@@ -46,12 +45,11 @@ class AbstractIdentifiableTypeTest {
     static void setUpBeforeClass() {
         cls = OWLClassA.class;
         classIri = IRI.create(OWLClassA.getClassIri());
-        className = OWLClassA.class.getName();
     }
 
     @BeforeEach
     void setUp() {
-        this.et = new ConcreteEntityType<>(className, cls, classIri);
+        this.et = new ConcreteEntityType<>(cls, cls, classIri);
         final Identifier<OWLClassA, URI> id = mock(Identifier.class);
         when(id.getName()).thenReturn(ID_NAME);
         et.setIdentifier(id);

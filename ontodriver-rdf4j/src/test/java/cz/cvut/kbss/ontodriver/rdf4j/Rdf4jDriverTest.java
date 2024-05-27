@@ -20,7 +20,7 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jOntoDriverProperties;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactory;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectionFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,13 +55,13 @@ public class Rdf4jDriverTest {
 
     @Test
     public void testClose() throws Exception {
-        final Field connectorFactoryField = Rdf4jDriver.class.getDeclaredField("connectorFactory");
+        final Field connectorFactoryField = Rdf4jDriver.class.getDeclaredField("connectionFactory");
         connectorFactoryField.setAccessible(true);
-        final ConnectorFactory connectorFactory = (ConnectorFactory) connectorFactoryField.get(driver);
+        final ConnectionFactory connectionFactory = (ConnectionFactory) connectorFactoryField.get(driver);
         assertTrue(driver.isOpen());
         driver.close();
         assertFalse(driver.isOpen());
-        assertFalse(connectorFactory.isOpen());
+        assertFalse(connectionFactory.isOpen());
     }
 
     @Test

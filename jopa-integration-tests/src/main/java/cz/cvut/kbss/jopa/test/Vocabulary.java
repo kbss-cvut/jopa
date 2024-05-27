@@ -76,6 +76,11 @@ public class Vocabulary {
     public static final String p_e_simpleList = ATTRIBUTE_IRI_BASE + "simpleList";
     public static final String p_e_enumeratedOrdinalColor = ATTRIBUTE_IRI_BASE + "enumeratedOrdinalColor";
 
+    public static final String p_l_simpleListAttribute = ATTRIBUTE_IRI_BASE + "l-hasSimpleSequence";
+    public static final String p_l_referencedListAttribute = ATTRIBUTE_IRI_BASE + "l-hasReferencedSequence";
+    public static final String p_l_aSetAttribute = ATTRIBUTE_IRI_BASE + "l-hasA";
+    public static final String p_l_singleOwlClassAAttribute = ATTRIBUTE_IRI_BASE + "has-singleA";
+
     public static final String p_m_booleanAttribute = ATTRIBUTE_IRI_BASE + "m-booleanAttribute";
     public static final String p_m_intAttribute = ATTRIBUTE_IRI_BASE + "m-intAttribute";
     public static final String p_m_longAttribute = ATTRIBUTE_IRI_BASE + "m-longAttribute";
@@ -122,13 +127,10 @@ public class Vocabulary {
 
     public static final String V_HAS_THING = ATTRIBUTE_IRI_BASE + "hasThing";
 
-    public static final String DC_DESCRIPTION = "http://purl.org/dc/terms/description";
-    public static final String DC_SOURCE = "http://purl.org/dc/terms/source";
+    public static final String P_HAS_SIMPLE_LIST = ATTRIBUTE_IRI_BASE + "hasSimpleSequence";
+    public static final String P_HAS_REFERENCED_LIST = ATTRIBUTE_IRI_BASE + "hasReferencedSequence";
 
-    public static final String P_HAS_SIMPLE_LIST =
-            "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";
-    public static final String P_HAS_REFERENCED_LIST =
-            "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence";
+    public static final String P_HAS_RDF_COLLECTION = ATTRIBUTE_IRI_BASE + "hasRdfCollection";
 
     public static final String P_X_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDate";
     public static final String P_X_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDateTime";

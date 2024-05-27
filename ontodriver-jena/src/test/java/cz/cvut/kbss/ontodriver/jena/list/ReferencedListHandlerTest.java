@@ -31,6 +31,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,25 +42,35 @@ import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -352,5 +363,115 @@ public class ReferencedListHandlerTest extends ListHandlerTestHelper {
             }
             i++;
         }
+    }
+
+    @Test
+    void persistListAppendsRdfNilAfterLastNodeWhenDescriptorIsConfiguredToTerminateListWithIt() {
+        final List<URI> values = listUtil.generateList();
+        final ReferencedListValueDescriptor<NamedResource> desc = new ReferencedListValueDescriptor<>(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT, true);
+        values.forEach(v -> desc.addValue(NamedResource.create(v)));
+
+        sut.persistList(desc);
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock).add(captor.capture(), isNull());
+        final Collection<Statement> stmts = captor.getValue();
+        final Iterator<Statement> it = stmts.iterator();
+        Statement statement = null;
+        while (it.hasNext()) {
+            statement = it.next();
+        }
+        assertNotNull(statement);
+        assertEquals(HAS_NEXT_PROPERTY, statement.getPredicate());
+        assertEquals(RDF.nil, statement.getObject());
+    }
+
+    @Test
+    void loadListLoadsNilTerminatedList() {
+        final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT, true);
+        final List<URI> refList = generateList(null);
+        final List<Resource> nodes = listUtil.getReferencedListNodes();
+        final Resource lastNodeIri = nodes.get(nodes.size() - 1);
+        when(connectorMock.find(lastNodeIri, HAS_NEXT_PROPERTY, null, Collections.emptySet())).thenReturn(
+                List.of(createStatement(lastNodeIri, HAS_NEXT_PROPERTY, RDF.nil)));
+        final Collection<Axiom<?>> res = sut.loadList(descriptor);
+        assertEquals(refList.size(), res.size());
+        for (Axiom<?> a : res) {
+            assertInstanceOf(NamedResource.class, a.getValue().getValue());
+            assertTrue(refList.contains(((NamedResource) a.getValue().getValue()).getIdentifier()));
+        }
+    }
+
+    @Test
+    void clearListRemovesListNodesIncludingNilTerminal() {
+        final ReferencedListValueDescriptor<NamedResource> desc = new ReferencedListValueDescriptor<>(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT, true);
+        // Generate old list
+        generateList(null);
+        final List<Resource> nodes = listUtil.getReferencedListNodes();
+        final Resource lastNodeIri = nodes.get(nodes.size() - 1);
+        when(connectorMock.find(lastNodeIri, HAS_NEXT_PROPERTY, null, Collections.emptySet())).thenReturn(
+                List.of(createStatement(lastNodeIri, HAS_NEXT_PROPERTY, RDF.nil)));
+
+        sut.updateList(desc);
+        final ArgumentCaptor<RDFNode> removedCaptor = ArgumentCaptor.forClass(Resource.class);
+        verify(connectorMock, times(nodes.size() * 2 + 1)).remove(any(Resource.class), any(Property.class), removedCaptor.capture(), any());
+        verify(connectorMock, never()).add(anyList(), any());
+        assertEquals(nodes.size() * 2 + 1, removedCaptor.getAllValues().size());
+        nodes.forEach(node -> assertThat(removedCaptor.getAllValues(), hasItem(node)));
+        assertThat(removedCaptor.getAllValues(), hasItem(RDF.nil));
+    }
+
+    @Test
+    void updateListRemovesNilTerminalFromPreviouslyLastNodeAndAppendsItToNewAddedLastNode() {
+        final ReferencedListValueDescriptor<NamedResource> desc = new ReferencedListValueDescriptor<>(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT, true);
+        final List<NamedResource> addedItems = IntStream.range(0, 5)
+                                                        .mapToObj(i -> NamedResource.create(Generator.generateUri()))
+                                                        .toList();
+        final List<URI> oldList = generateList(null);
+        final List<Resource> oldNodes = listUtil.getReferencedListNodes();
+        final Resource lastNodeIri = oldNodes.get(oldNodes.size() - 1);
+        when(connectorMock.find(lastNodeIri, HAS_NEXT_PROPERTY, null, Collections.emptySet()))
+                .thenReturn(Set.of(createStatement(lastNodeIri, HAS_NEXT_PROPERTY, RDF.nil)));
+        // The original items
+        for (URI item : oldList) {
+            desc.addValue(NamedResource.create(item));
+        }
+        // Now add the new ones
+        for (NamedResource r : addedItems) {
+            desc.addValue(r);
+        }
+
+        sut.updateList(desc);
+        verify(connectorMock).remove(lastNodeIri, HAS_NEXT_PROPERTY, RDF.nil, null);
+        final ArgumentCaptor<List<Statement>> addedCaptor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock, atLeast(1)).add(addedCaptor.capture(), isNull());
+        // Added nodes with values + terminal
+        assertEquals(addedItems.size() * 2 + 1, addedCaptor.getValue().size());
+        for (Statement stmt : addedCaptor.getValue()) {
+            if (stmt.getPredicate().equals(HAS_CONTENT_PROPERTY)) {
+                final URI u = URI.create(stmt.getObject().asResource().getURI());
+                assertTrue(addedItems.contains(NamedResource.create(u)));
+            }
+        }
+        assertTrue(addedCaptor.getValue().stream().anyMatch(s -> s.getObject().equals(RDF.nil)));
+    }
+
+    @Test
+    void updateListRemovesNilTerminalFromLastNodeWhenItIsRemovedAndAddsItToNewLastNode() {
+        final ReferencedListValueDescriptor<NamedResource> desc = new ReferencedListValueDescriptor<>(OWNER, HAS_LIST, HAS_NEXT, HAS_CONTENT, true);
+        final List<URI> oldList = generateList(null);
+        final List<Resource> oldNodes = listUtil.getReferencedListNodes();
+        final Resource lastNode = oldNodes.get(oldNodes.size() - 1);
+        when(connectorMock.find(lastNode, HAS_NEXT_PROPERTY, null, Collections.emptySet()))
+                .thenReturn(Set.of(createStatement(lastNode, HAS_NEXT_PROPERTY, RDF.nil)));
+        // The original items
+        for (URI item : oldList.subList(0, oldList.size() / 2)) {
+            desc.addValue(NamedResource.create(item));
+        }
+        sut.updateList(desc);
+        verify(connectorMock).remove(lastNode, HAS_NEXT_PROPERTY, RDF.nil, null);
+        final ArgumentCaptor<List<Statement>> addedCaptor = ArgumentCaptor.forClass(List.class);
+        verify(connectorMock).add(addedCaptor.capture(), isNull());
+        assertTrue(addedCaptor.getValue().stream().anyMatch(s -> s.getObject().equals(RDF.nil)));
+        assertThat(addedCaptor.getValue(), not(hasItem(createStatement(lastNode, HAS_NEXT_PROPERTY, RDF.nil))));
     }
 }

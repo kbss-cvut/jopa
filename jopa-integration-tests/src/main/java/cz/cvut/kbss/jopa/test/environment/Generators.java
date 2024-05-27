@@ -82,6 +82,14 @@ public abstract class Generators {
         return list;
     }
 
+    public static List<OWLClassA> createRDFCollection(int size) {
+        assert size > 0;
+        final List<OWLClassA> lst = new ArrayList<>(size);
+        generateInstances(lst,
+                "http://krizik.felk.cvut.cz/ontologies/jopa/tests/rdf-collection-item", size);
+        return lst;
+    }
+
     public static List<URI> createListOfIdentifiers() {
         return createSimpleList().stream().map(OWLClassA::getUri).collect(Collectors.toList());
     }

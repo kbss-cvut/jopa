@@ -40,7 +40,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         final Object val = ax.getValue().getValue();
         if (!isValidRange(val)) {
             return;
@@ -55,6 +55,11 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
                     "Expected single value of attribute " + attribute.getName() + " of instance " + subject +
                             ", but got multiple.");
         }
+    }
+
+    @Override
+    boolean hasValue() {
+        return value != null;
     }
 
     @Override

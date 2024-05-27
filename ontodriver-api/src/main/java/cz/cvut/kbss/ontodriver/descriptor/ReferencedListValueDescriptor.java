@@ -25,14 +25,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Descriptor of values of a referenced list.
+ *
+ * @param <T> List value type
+ */
 public class ReferencedListValueDescriptor<T> extends ReferencedListDescriptorImpl implements ListValueDescriptor<T> {
 
-    private final List<T> values;
+    private final List<T> values = new ArrayList<>();
 
     public ReferencedListValueDescriptor(NamedResource listOwner, Assertion listProperty,
                                          Assertion nextNode, Assertion nodeContent) {
         super(listOwner, listProperty, nextNode, nodeContent);
-        this.values = new ArrayList<>();
+    }
+
+    public ReferencedListValueDescriptor(NamedResource listOwner, Assertion listProperty,
+                                         Assertion nextNode, Assertion nodeContent, boolean terminatedByNil) {
+        super(listOwner, listProperty, nextNode, nodeContent, terminatedByNil);
     }
 
     @Override
@@ -56,15 +65,11 @@ public class ReferencedListValueDescriptor<T> extends ReferencedListDescriptorIm
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null || getClass() != obj.getClass())
-            return false;
+        if (this == obj) {return true;}
+        if (obj == null || getClass() != obj.getClass()) {return false;}
         ReferencedListValueDescriptor<?> other = (ReferencedListValueDescriptor<?>) obj;
-        if (!descriptor.equals(other.descriptor))
-            return false;
-        if (!getNodeContent().equals(other.getNodeContent()))
-            return false;
+        if (!descriptor.equals(other.descriptor)) {return false;}
+        if (!getNodeContent().equals(other.getNodeContent())) {return false;}
         return values.equals(other.values);
     }
 

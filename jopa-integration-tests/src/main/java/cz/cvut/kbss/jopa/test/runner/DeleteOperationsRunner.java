@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -37,6 +38,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class DeleteOperationsRunner extends BaseRunner {
@@ -309,7 +312,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
 
         final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
-        assertNull(res.getIndividuals());
+        assertThat(res.getIndividuals(), empty());
     }
 
     @Test
@@ -356,7 +359,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
 
         final OWLClassP result = findRequired(OWLClassP.class, entityP.getUri());
-        assertNull(result.getTypes());
+        assertTrue(result.getTypes().isEmpty());
     }
 
     @Test
@@ -465,7 +468,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
 
         assertTrue(em.createNativeQuery("SELECT * WHERE { ?x ?hasSource ?source . }")
-                     .setParameter("hasSource", URI.create(Vocabulary.DC_SOURCE)).getResultList().isEmpty());
+                     .setParameter("hasSource", URI.create(DC.Terms.SOURCE)).getResultList().isEmpty());
     }
 
     @Test

@@ -28,20 +28,37 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class PluralMultilingualStringFieldStrategyTest {
 
     private static final String LANG = "en";
@@ -56,7 +73,6 @@ class PluralMultilingualStringFieldStrategyTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         final Configuration configuration = new Configuration(
                 Collections.singletonMap(JOPAPersistenceProperties.LANG, LANG));
         when(mapperMock.getConfiguration()).thenReturn(configuration);
@@ -67,8 +83,8 @@ class PluralMultilingualStringFieldStrategyTest {
 
     private PluralMultilingualStringFieldStrategy<OWLClassU> createStrategy() {
         return new PluralMultilingualStringFieldStrategy<>(mocks.forOwlClassU().entityType(),
-                                                           mocks.forOwlClassU().uPluralStringAtt(), descriptor,
-                                                           mapperMock);
+                mocks.forOwlClassU().uPluralStringAtt(), descriptor,
+                mapperMock);
     }
 
     @Test
@@ -141,11 +157,11 @@ class PluralMultilingualStringFieldStrategyTest {
         final Assertion assertion = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE), false);
         final Axiom<LangString> axOne = new AxiomImpl<>(INDIVIDUAL, assertion,
-                                                        new Value<>(new LangString("construction", "en")));
+                new Value<>(new LangString("construction", "en")));
         final Axiom<LangString> axTwo = new AxiomImpl<>(INDIVIDUAL, assertion,
-                                                        new Value<>(new LangString("stavba", "cs")));
-        sut.addValueFromAxiom(axOne);
-        sut.addValueFromAxiom(axTwo);
+                new Value<>(new LangString("stavba", "cs")));
+        sut.addAxiomValue(axOne);
+        sut.addAxiomValue(axTwo);
         sut.buildInstanceFieldValue(u);
         assertEquals(1, u.getPluralStringAtt().size());
         final MultilingualString msResult = u.getPluralStringAtt().iterator().next();
@@ -160,11 +176,11 @@ class PluralMultilingualStringFieldStrategyTest {
         final Assertion assertion = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE), false);
         final Axiom<LangString> axOne = new AxiomImpl<>(INDIVIDUAL, assertion,
-                                                        new Value<>(new LangString("construction", "en")));
+                new Value<>(new LangString("construction", "en")));
         final Axiom<LangString> axTwo = new AxiomImpl<>(INDIVIDUAL, assertion,
-                                                        new Value<>(new LangString("building", "en")));
-        sut.addValueFromAxiom(axOne);
-        sut.addValueFromAxiom(axTwo);
+                new Value<>(new LangString("building", "en")));
+        sut.addAxiomValue(axOne);
+        sut.addAxiomValue(axTwo);
         sut.buildInstanceFieldValue(u);
         assertEquals(2, u.getPluralStringAtt().size());
         assertTrue(u.getPluralStringAtt().stream()
@@ -180,14 +196,14 @@ class PluralMultilingualStringFieldStrategyTest {
         final Assertion assertion = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE), false);
         final Axiom<LangString> axOne = new AxiomImpl<>(INDIVIDUAL, assertion,
-                                                        new Value<>(new LangString("construction", "en")));
+                new Value<>(new LangString("construction", "en")));
         final Axiom<LangString> axTwo = new AxiomImpl<>(INDIVIDUAL, assertion,
-                                                        new Value<>(new LangString("building", "en")));
+                new Value<>(new LangString("building", "en")));
         final Axiom<LangString> axThree = new AxiomImpl<>(INDIVIDUAL, assertion,
-                                                          new Value<>(new LangString("stavba", "cs")));
-        sut.addValueFromAxiom(axOne);
-        sut.addValueFromAxiom(axTwo);
-        sut.addValueFromAxiom(axThree);
+                new Value<>(new LangString("stavba", "cs")));
+        sut.addAxiomValue(axOne);
+        sut.addAxiomValue(axTwo);
+        sut.addAxiomValue(axThree);
         sut.buildInstanceFieldValue(u);
         assertEquals(2, u.getPluralStringAtt().size());
         assertTrue(
@@ -198,11 +214,12 @@ class PluralMultilingualStringFieldStrategyTest {
     }
 
     @Test
-    void buildInstanceFieldValueLeavesFieldNullWhenNoValuesWereAdded() {
+    void buildInstanceFieldValueSetsFieldValueToEmptyCollectionWhenNoValuesWereAdded() {
         final PluralMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
         final OWLClassU u = new OWLClassU(ID);
         sut.buildInstanceFieldValue(u);
-        assertNull(u.getPluralStringAtt());
+        assertNotNull(u.getPluralStringAtt());
+        assertTrue(u.getPluralStringAtt().isEmpty());
     }
 
     @Test
@@ -222,14 +239,8 @@ class PluralMultilingualStringFieldStrategyTest {
         final Assertion assertion = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE), false);
         u.getPluralStringAtt().forEach(ms ->
-                                               ms.getValue().forEach((lang, val) -> assertThat(result,
-                                                                                               hasItem(new AxiomImpl<>(
-                                                                                                       INDIVIDUAL,
-                                                                                                       assertion,
-                                                                                                       new Value<>(
-                                                                                                               new LangString(
-                                                                                                                       val,
-                                                                                                                       lang)))))));
+                ms.getValue().forEach((lang, val) -> assertThat(result,
+                        hasItem(new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(new LangString(val, lang)))))));
     }
 
     @Test

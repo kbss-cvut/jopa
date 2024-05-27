@@ -19,11 +19,10 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exception.InstantiationException;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
+import cz.cvut.kbss.jopa.oom.exception.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.metamodel.PolymorphicEntityTypeResolver;
-import cz.cvut.kbss.jopa.sessions.LoadingParameters;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -39,9 +38,9 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
 
     @Override
     <T> T loadEntity(LoadingParameters<T> loadingParameters) {
-        final IdentifiableEntityType<T> rootEt = metamodel.entity(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> rootEt = metamodel.entity(loadingParameters.getEntityClass());
         try {
-            final EntityType<? extends T> et = resolveEntityType(loadingParameters, rootEt);
+            final IdentifiableEntityType<? extends T> et = resolveEntityType(loadingParameters, rootEt);
             if (et == null) {
                 return null;
             }
@@ -53,9 +52,9 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
 
     @Override
     <T> T loadReference(LoadingParameters<T> loadingParameters) {
-        final IdentifiableEntityType<T> rootEt = metamodel.entity(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> rootEt = metamodel.entity(loadingParameters.getEntityClass());
         try {
-            final EntityType<? extends T> et = resolveEntityType(loadingParameters, rootEt);
+            final IdentifiableEntityType<? extends T> et = resolveEntityType(loadingParameters, rootEt);
             return et != null ? entityBuilder.createEntityInstance(loadingParameters.getIdentifier(), et) : null;
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
@@ -64,7 +63,7 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
         }
     }
 
-    private <T> EntityType<? extends T> resolveEntityType(LoadingParameters<T> loadingParameters,
+    private <T> IdentifiableEntityType<? extends T> resolveEntityType(LoadingParameters<T> loadingParameters,
                                                           IdentifiableEntityType<T> rootEt) throws OntoDriverException {
         NamedResource individual = NamedResource.create(loadingParameters.getIdentifier());
         final Set<Axiom<URI>> types = storageConnection.types().getTypes(individual,

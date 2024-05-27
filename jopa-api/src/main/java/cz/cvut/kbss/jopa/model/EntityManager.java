@@ -27,14 +27,14 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
-import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-public interface EntityManager {
+public interface EntityManager extends AutoCloseable {
 
     /**
      * Make an instance managed and persistent.
@@ -140,14 +140,7 @@ public interface EntityManager {
      *                                  null}
      * @see #getContexts()
      */
-    <T> T find(final Class<T> entityClass, final Object identifier,
-               final Descriptor descriptor);
-
-    // TODO JPA 2.0 find with properties
-
-    // TODO JPA 2.0 find with lock mode
-
-    // TODO JPA 2.0 find with lock mode and properties
+    <T> T find(final Class<T> entityClass, final Object identifier, final Descriptor descriptor);
 
     /**
      * Get an instance, whose state may be lazily fetched.
@@ -192,33 +185,6 @@ public interface EntityManager {
      */
     void flush();
 
-    // /**
-    // * Set the flush mode that applies to all objects contained in the
-    // * persistence context.
-    // *
-    // * @param flushMode
-    // */
-    // public void setFlushMode(FlushModeType flushMode);
-
-    // TODO JPA 2.0 getFlushMode
-
-    // /**
-    // * Set the lock mode for an entity object contained in the persistence
-    // * context.
-    // *
-    // * @param entity
-    // * @param lockMode
-    // * @throws PersistenceException
-    // * if an unsupported lock call is made
-    // * @throws IllegalArgumentException
-    // * if the instance is not an entity or is a detached entity
-    // * @throws TransactionRequiredException
-    // * if there is no transaction
-    // */
-    // public void lock(Object entity, LockModeType lockMode);
-
-    // TODO JPA 2.0 lock with lock mode and properties
-
     /**
      * Refresh the state of the instance from the data source, overwriting changes made to the entity, if any.
      *
@@ -228,10 +194,6 @@ public interface EntityManager {
      *                                      PersistenceContextType.TRANSACTION and there is no transaction.
      */
     void refresh(final Object entity);
-
-    // TODO JPA 2.0 refresh with lock mode
-    // TODO JPA 2.0 refresh with properties
-    // TODO JPA 2.0 refresh with lock mode and properties
 
     /**
      * Clear the persistence context, causing all managed entities to become detached. Changes made to entities that
@@ -284,8 +246,6 @@ public interface EntityManager {
      * @return {@code true} if the entity attribute value is inferred, {@code false} otherwise
      */
     <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value);
-
-    // TODO JPA 2.0 public LockModeType getLockMode(Object entity)
 
     /**
      * Get the properties and hints and associated values that are in effect for the entity manager.

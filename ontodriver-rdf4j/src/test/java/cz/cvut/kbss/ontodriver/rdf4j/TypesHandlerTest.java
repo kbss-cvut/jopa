@@ -19,7 +19,7 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
@@ -54,7 +54,7 @@ public class TypesHandlerTest {
     private static ValueFactory vf;
 
     @Mock
-    private Connector connectorMock;
+    private RepoConnection connectorMock;
 
     private TypesHandler handler;
 

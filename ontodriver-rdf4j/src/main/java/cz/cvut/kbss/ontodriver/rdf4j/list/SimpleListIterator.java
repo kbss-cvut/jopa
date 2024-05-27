@@ -23,7 +23,7 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
@@ -44,7 +44,7 @@ class SimpleListIterator extends AbstractListIterator<NamedResource> {
     private Statement current;
     private Collection<Statement> next;
 
-    public SimpleListIterator(SimpleListDescriptor listDescriptor, Connector connector, ValueFactory vf)
+    public SimpleListIterator(SimpleListDescriptor listDescriptor, RepoConnection connector, ValueFactory vf)
             throws Rdf4jDriverException {
         super(listDescriptor, connector, vf);
         this.listDescriptor = listDescriptor;

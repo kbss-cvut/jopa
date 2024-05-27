@@ -22,10 +22,10 @@ package cz.cvut.kbss.jopa.model.annotations;
  */
 public enum SequenceType {
     /**
-     * Used for simple (nonreferenced) sequences.
+     * Used for simple (non-referenced) sequences.
      * <p>
      * This means that elements of the sequence are unique to the sequence owner and are NOT shared with other
-     * sequences.
+     * sequences. It also means that only resources can be values of a simple sequence.
      * <p>
      * Example:
      * <pre>
@@ -36,15 +36,15 @@ public enum SequenceType {
 
     /**
      * Used for referenced sequences. This case is more general, but sequence representation requires more space (linear
-     * in the original size)
+     * in the original size).
      * <p>
-     * This means that elements of the sequence are not unique to the sequence owner. Thus these elements might be
-     * referenced by other sequences.
+     * This means that elements of the sequence are not unique to the sequence owner. Thus, these elements might be
+     * referenced by other sequences. It also means that elements of the sequence can be literals as well as resources.
      * <p>
      * Example:
      * <pre>
      * entity - nodeOne - nodeTwo - nodeThree
-     *              |          |           |
+     *               |         |           |
      *           itemOne    itemTwo    itemThree
      * </pre>
      */

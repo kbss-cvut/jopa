@@ -23,7 +23,16 @@ import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Manages entity lifecycle callbacks declared either in the entity (entity lifecycle callbacks) or in its entity
@@ -254,7 +263,7 @@ public class EntityLifecycleListenerManager {
         return Collections.unmodifiableMap(lifecycleCallbacks);
     }
 
-    boolean hasLifecycleCallback(LifecycleEvent event) {
+    boolean hasEntityLifecycleCallback(LifecycleEvent event) {
         return lifecycleCallbacks.containsKey(event);
     }
 
@@ -279,5 +288,18 @@ public class EntityLifecycleListenerManager {
     boolean hasEntityListenerCallback(Object listener, LifecycleEvent event) {
         return entityListenerCallbacks != null && entityListenerCallbacks.containsKey(listener) &&
                 entityListenerCallbacks.get(listener).containsKey(event);
+    }
+
+    /**
+     * Checks whether there is a lifecycle callback defined for the specified event.
+     * <p>
+     * This checks both callbacks declared in the entity class and in an entity listener class.
+     *
+     * @param event Lifecycle event to find callback for
+     * @return {@code true} if there is a matching callback, {@code false} otherwise
+     */
+    public boolean hasLifecycleCallback(LifecycleEvent event) {
+        return hasEntityLifecycleCallback(event) || getEntityListeners().stream()
+                                                                        .anyMatch(listener -> hasEntityListenerCallback(listener, event));
     }
 }

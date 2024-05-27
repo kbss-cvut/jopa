@@ -21,7 +21,7 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import org.eclipse.rdf4j.model.IRI;
@@ -29,12 +29,14 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class ReferencedListHandler extends ListHandler<ReferencedListValueDescriptor<?>> {
@@ -43,7 +45,7 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
 
     private final ValueConverter valueConverter;
 
-    public ReferencedListHandler(Connector connector, ValueFactory vf) {
+    public ReferencedListHandler(RepoConnection connector, ValueFactory vf) {
         super(connector, vf);
         this.valueConverter = new ValueConverter(vf);
     }
@@ -111,18 +113,23 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
         it.next();
         while (it.hasNext()) {
             final Collection<Value> content = toRdf4jValue(listValueDescriptor.getNodeContent(), it.next());
-            previous = createListNode(owner, hasNext, hasContent, content, context, previous, statements);
+            previous = appendListNode(owner, hasNext, hasContent, content, context, previous, statements);
         }
+        createNilTerminal(previous, hasNext, listValueDescriptor).ifPresent(statements::add);
         return statements;
     }
 
-    private IRI createListNode(IRI owner, IRI hasNext, IRI hasContent, Collection<Value> content, IRI context,
+    private IRI appendListNode(IRI owner, IRI hasNext, IRI hasContent, Collection<Value> content, IRI context,
                                Resource previous,
                                Collection<Statement> statements) throws Rdf4jDriverException {
         final IRI node = generateSequenceNode(owner, context);
         statements.add(vf.createStatement(previous, hasNext, node, context));
         content.forEach(item -> statements.add(vf.createStatement(node, hasContent, item, context)));
         return node;
+    }
+
+    private Optional<Statement> createNilTerminal(Resource lastNode, IRI hasNext, ReferencedListDescriptor descriptor) {
+        return descriptor.isTerminatedByNil() ? Optional.of(vf.createStatement(lastNode, hasNext, RDF.NIL)) : Optional.empty();
     }
 
     @Override
@@ -185,12 +192,20 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
         final IRI context = context(listDescriptor);
         assert i > 0;
         final Collection<Statement> toAdd = new ArrayList<>((listDescriptor.getValues().size() - i) * 2);
+        if (listDescriptor.isTerminatedByNil()) {
+            removePreviousNilTerminal(previous, hasNext, context);
+        }
         while (i < listDescriptor.getValues().size()) {
             final Collection<Value> content = toRdf4jValue(listDescriptor.getNodeContent(), listDescriptor.getValues()
                                                                                                           .get(i));
-            previous = createListNode(owner, hasNext, hasContent, content, context, previous, toAdd);
+            previous = appendListNode(owner, hasNext, hasContent, content, context, previous, toAdd);
             i++;
         }
+        createNilTerminal(previous, hasNext, listDescriptor).ifPresent(toAdd::add);
         connector.addStatements(toAdd);
+    }
+
+    private void removePreviousNilTerminal(Resource lastNode, IRI hasNext, IRI context) throws Rdf4jDriverException {
+        connector.removeStatements(Set.of(vf.createStatement(lastNode, hasNext, RDF.NIL, context)));
     }
 }

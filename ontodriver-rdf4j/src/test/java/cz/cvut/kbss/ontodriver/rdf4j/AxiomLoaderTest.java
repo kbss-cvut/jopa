@@ -27,7 +27,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
 import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.TestRepositoryProvider;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -54,7 +54,7 @@ class AxiomLoaderTest {
     private Generator.GeneratedData generatedData;
     private final ValueFactory vf = SimpleValueFactory.getInstance();
 
-    private Connector connector;
+    private RepoConnection connector;
 
     private AxiomLoader axiomLoader;
 
@@ -411,7 +411,7 @@ class AxiomLoaderTest {
     void loadAxiomsUsesSingleCallWhenLoadAllThresholdIsSetToLessThanAssertionCount() throws Exception {
         final DriverConfiguration driverConfig = new DriverConfiguration(TestRepositoryProvider.storageProperties());
         driverConfig.setProperty(Rdf4jConfigParam.LOAD_ALL_THRESHOLD, Integer.toString(1));
-        final Connector spiedConnector = spy(connector);
+        final RepoConnection spiedConnector = spy(connector);
 
         this.axiomLoader = new AxiomLoader(spiedConnector, new RuntimeConfiguration(driverConfig));
         spiedConnector.begin();

@@ -21,7 +21,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.AxiomBuilder;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 public class StatementLoader {
 
-    private final Connector connector;
+    private final RepoConnection connector;
     private final Resource subject;
     private final ValueFactory vf;
     private final AxiomBuilder axiomBuilder;
@@ -48,7 +48,7 @@ public class StatementLoader {
     private boolean loadAll;
     boolean includeInferred;
 
-    public StatementLoader(Connector connector, Resource subject, AxiomBuilder axiomBuilder) {
+    public StatementLoader(RepoConnection connector, Resource subject, AxiomBuilder axiomBuilder) {
         this.connector = connector;
         this.vf = connector.getValueFactory();
         this.subject = subject;

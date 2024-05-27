@@ -21,18 +21,32 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
-import cz.cvut.kbss.jopa.test.*;
-import cz.cvut.kbss.jopa.test.environment.*;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
+import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassC;
+import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassF;
+import cz.cvut.kbss.jopa.test.OWLClassI;
+import cz.cvut.kbss.jopa.test.OWLClassM;
+import cz.cvut.kbss.jopa.test.Vocabulary;
+import cz.cvut.kbss.jopa.test.environment.DataAccessor;
+import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
+import cz.cvut.kbss.jopa.test.environment.Quad;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
@@ -115,7 +129,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
     }
 
     @Test
-    void testRetrieveLazyReferenceFromContext() throws Exception {
+    void testRetrieveLazyReferenceFromContext() {
         this.em = getEntityManager("MultiRetrieveLazyReferenceFromContext", false);
         final Descriptor iDescriptor = new EntityDescriptor(CONTEXT_ONE, false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
@@ -130,10 +144,9 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         em.getTransaction().commit();
 
         final OWLClassI resI = findRequired(OWLClassI.class, entityI.getUri(), iDescriptor);
-        final Field refAField = OWLClassI.class.getDeclaredField("owlClassA");
-        refAField.setAccessible(true);
-        assertNull(refAField.get(resI));
-        assertNotNull(resI.getOwlClassA());
+        assertInstanceOf(LazyLoadingProxy.class, resI.getOwlClassA());
+        // Trigger lazy loading
+        assertNotNull(resI.getOwlClassA().getUri());
         final OWLClassA resA = findRequired(OWLClassA.class, entityA.getUri(), aDescriptor);
         // If we were using cache, ref.getOwlClassA() and resA would be the same
         assertEquals(resI.getOwlClassA().getStringAttribute(), resA.getStringAttribute());

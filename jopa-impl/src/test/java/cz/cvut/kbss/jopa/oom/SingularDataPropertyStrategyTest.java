@@ -101,7 +101,7 @@ class SingularDataPropertyStrategyTest {
         final OffsetDateTime value = OffsetDateTime.now();
         final Axiom<OffsetDateTime> axiom = new AxiomImpl<>(NamedResource.create(PK), strategy.createAssertion(),
                 new Value<>(value));
-        strategy.addValueFromAxiom(axiom);
+        strategy.addAxiomValue(axiom);
         strategy.buildInstanceFieldValue(t);
         assertNotNull(t.getLocalDateTime());
         assertEquals(value.toLocalDateTime(), t.getLocalDateTime());
@@ -117,7 +117,7 @@ class SingularDataPropertyStrategyTest {
 
         final Axiom<String> axiom = new AxiomImpl<>(NamedResource.create(PK), sut.createAssertion(),
                 new Value<>(OWLClassM.Severity.MEDIUM.toString()));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         sut.buildInstanceFieldValue(m);
         assertEquals(OWLClassM.Severity.MEDIUM, m.getEnumAttribute());
     }
@@ -133,7 +133,7 @@ class SingularDataPropertyStrategyTest {
         final Integer value = 117;
         final Axiom<Integer> axiom = new AxiomImpl<>(NamedResource.create(PK), sut.createAssertion(),
                 new Value<>(value));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         sut.buildInstanceFieldValue(m);
         assertEquals(value.toString(), m.getLexicalForm());
     }
@@ -165,7 +165,7 @@ class SingularDataPropertyStrategyTest {
         final String value = "-01:00";
         final Axiom<String> axiom = new AxiomImpl<>(NamedResource.create(PK), sut.createAssertion(),
                                                      new Value<>(value));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         sut.buildInstanceFieldValue(m);
         assertEquals(ZoneOffset.of(value), m.getWithConverter());
     }

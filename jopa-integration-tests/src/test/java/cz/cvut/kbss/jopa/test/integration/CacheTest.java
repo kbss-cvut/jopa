@@ -17,10 +17,10 @@
  */
 package cz.cvut.kbss.jopa.test.integration;
 
-import cz.cvut.kbss.jopa.adapters.IndirectSet;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
+import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassF;
@@ -49,6 +49,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -90,12 +93,9 @@ class CacheTest extends IntegrationTestBase {
         when(connectionMock.find(any())).thenReturn(axiomsForA(instanceUri));
         final OWLClassA firstA = em.find(OWLClassA.class, instanceUri);
         assertNotNull(firstA);
-        final EntityManager emTwo = emf.createEntityManager();
-        try {
+        try (EntityManager emTwo = emf.createEntityManager()) {
             final OWLClassA secondA = emTwo.createNativeQuery(query, OWLClassA.class).getSingleResult();
             assertNotNull(secondA);
-        } finally {
-            emTwo.close();
         }
         verify(connectionMock).find(any(AxiomDescriptor.class));
     }
@@ -124,7 +124,7 @@ class CacheTest extends IntegrationTestBase {
         final OWLClassA result = cacheManager.get(OWLClassA.class, id, new EntityDescriptor());
         assertNotNull(result);
         assertNotNull(result.getTypes());
-        assertFalse(result.getTypes() instanceof IndirectSet);
+        assertThat(result.getTypes(), not(instanceOf(ChangeTrackingIndirectSet.class)));
     }
 
     @Test

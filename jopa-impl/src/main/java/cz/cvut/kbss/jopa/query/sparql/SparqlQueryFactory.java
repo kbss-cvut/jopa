@@ -25,21 +25,22 @@ import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.sessions.QueryFactory;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 import java.util.Objects;
 
-public class SparqlQueryFactory implements QueryFactory {
+/**
+ * Factory for creating SPARQL queries.
+ */
+public class SparqlQueryFactory {
 
-    private final UnitOfWorkImpl uow;
+    private final UnitOfWork uow;
     private final ConnectionWrapper connection;
 
     private final QueryParser queryParser;
     private final SoqlQueryParser soqlQueryParser;
 
-    public SparqlQueryFactory(UnitOfWorkImpl uow, ConnectionWrapper connection) {
+    public SparqlQueryFactory(UnitOfWork uow, ConnectionWrapper connection) {
         assert uow != null;
         assert connection != null;
         this.uow = uow;
@@ -48,57 +49,102 @@ public class SparqlQueryFactory implements QueryFactory {
         this.soqlQueryParser = new SoqlQueryParser(queryParser, uow.getMetamodel());
     }
 
-    @Override
+    /**
+     * Creates query object representing a native SPARQL query.
+     *
+     * @param sparql The query
+     * @return Query object
+     * @throws NullPointerException If {@code sparql} is {@code null}
+     */
     public QueryImpl createNativeQuery(String sparql) {
         Objects.requireNonNull(sparql);
 
         return new QueryImpl(queryParser.parseQuery(sparql), connection);
     }
 
-    @Override
+    /**
+     * Creates typed query object representing a native SPARQL query.
+     *
+     * @param sparql      The query
+     * @param resultClass Type of the results
+     * @return Query object
+     * @throws NullPointerException If {@code sparql} or {@code resultClass} is {@code null}
+     */
     public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
-        Objects.requireNonNull(sparql, ErrorUtils.getNPXMessageSupplier("sparql"));
+        Objects.requireNonNull(sparql);
 
         return createQueryImpl(sparql, resultClass, queryParser);
     }
 
     private <T> TypedQueryImpl<T> createQueryImpl(String query, Class<T> resultClass, QueryParser parser) {
-        Objects.requireNonNull(resultClass, ErrorUtils.getNPXMessageSupplier("resultClass"));
+        Objects.requireNonNull(resultClass);
 
-        final TypedQueryImpl<T> tq = new TypedQueryImpl<>(parser.parseQuery(query), resultClass, connection, uow);
-        tq.setUnitOfWork(uow);
-        return tq;
+        return new TypedQueryImpl<>(parser.parseQuery(query), resultClass, connection, uow);
     }
 
-    @Override
+    /**
+     * Creates a query object representing a native SPARQL query.
+     *
+     * @param sparql           The query
+     * @param resultSetMapping Name of the result set mapping to apply
+     * @return Query object * @throws NullPointerException If {@code sparql} or {@code resultSetMapping} is {@code null}
+     */
     public QueryImpl createNativeQuery(String sparql, String resultSetMapping) {
-        Objects.requireNonNull(sparql, ErrorUtils.getNPXMessageSupplier("sparql"));
-        Objects.requireNonNull(resultSetMapping, ErrorUtils.getNPXMessageSupplier("resultSetMapping"));
+        Objects.requireNonNull(sparql);
+        Objects.requireNonNull(resultSetMapping);
 
         final SparqlResultMapper mapper = uow.getResultSetMappingManager().getMapper(resultSetMapping);
         return new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper, uow);
     }
 
-    @Override
+    /**
+     * Creates query object representing a native SPARQL query.
+     *
+     * @param query The query
+     * @return Query object
+     * @throws NullPointerException If {@code sparql} is {@code null}
+     */
     public QueryImpl createQuery(String query) {
         Objects.requireNonNull(query);
 
         return new QueryImpl(soqlQueryParser.parseQuery(query), connection);
     }
 
-    @Override
+    /**
+     * Creates typed query object representing a native SPARQL query.
+     *
+     * @param query       The query
+     * @param resultClass Type of the results param URI of the ontology context against which the query will be
+     *                    evaluated
+     * @return Query object
+     * @throws NullPointerException If {@code sparql} or {@code resultClass} is {@code null}
+     */
     public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
-        Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
+        Objects.requireNonNull(query);
         return createQueryImpl(query, resultClass, soqlQueryParser);
     }
 
-    @Override
+    /**
+     * Creates a query object representing a native SPARQL query.
+     *
+     * @param name The name of the query defined in metadata
+     * @return Query object
+     * @throws IllegalArgumentException If a query has not been defined with the given name
+     */
     public QueryImpl createNamedQuery(String name) {
         final String query = uow.getNamedQueryManager().getQuery(name);
         return createNativeQuery(query);
     }
 
-    @Override
+    /**
+     * Creates a typed query object representing a native SPARQL query.
+     *
+     * @param name        The name of the query defined in metadata
+     * @param resultClass Type of the results param URI of the ontology context against which the query will be
+     *                    evaluated
+     * @return Query object
+     * @throws IllegalArgumentException If a query has not been defined with the given name
+     */
     public <T> TypedQueryImpl<T> createNamedQuery(String name, Class<T> resultClass) {
         final String query = uow.getNamedQueryManager().getQuery(name);
         return createNativeQuery(query, resultClass);

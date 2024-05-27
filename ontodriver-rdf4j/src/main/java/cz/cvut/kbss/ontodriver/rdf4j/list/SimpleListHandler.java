@@ -21,7 +21,7 @@ import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
@@ -36,7 +36,7 @@ import java.util.Set;
 
 public class SimpleListHandler extends ListHandler<SimpleListValueDescriptor> {
 
-    public SimpleListHandler(Connector connector, ValueFactory vf) {
+    public SimpleListHandler(RepoConnection connector, ValueFactory vf) {
         super(connector, vf);
     }
 

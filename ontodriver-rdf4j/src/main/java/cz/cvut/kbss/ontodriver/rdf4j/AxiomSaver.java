@@ -21,7 +21,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
@@ -34,10 +34,10 @@ import java.util.*;
 
 class AxiomSaver {
 
-    private final Connector connector;
+    private final RepoConnection connector;
     private final ValueConverter valueConverter;
 
-    AxiomSaver(Connector connector) {
+    AxiomSaver(RepoConnection connector) {
         this.connector = connector;
         this.valueConverter = new ValueConverter(connector.getValueFactory());
     }

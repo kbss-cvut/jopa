@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.accessors;
 
+import cz.cvut.kbss.jopa.exception.DataSourceCreationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.utils.ReflectionUtils;

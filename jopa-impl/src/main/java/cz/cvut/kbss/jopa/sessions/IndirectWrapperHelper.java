@@ -17,11 +17,12 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectList;
-import cz.cvut.kbss.jopa.adapters.IndirectMap;
-import cz.cvut.kbss.jopa.adapters.IndirectMultilingualString;
-import cz.cvut.kbss.jopa.adapters.IndirectSet;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectList;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMap;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMultilingualString;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.model.MultilingualString;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -37,9 +38,9 @@ import java.util.Set;
  */
 class IndirectWrapperHelper {
 
-    private final UnitOfWorkImpl uow;
+    private final UnitOfWork uow;
 
-    IndirectWrapperHelper(UnitOfWorkImpl uow) {
+    IndirectWrapperHelper(UnitOfWork uow) {
         this.uow = uow;
     }
 
@@ -54,13 +55,13 @@ class IndirectWrapperHelper {
     Object createIndirectWrapper(Object wrapped, Object owner, Field field) {
         assert requiresIndirectWrapper(wrapped);
         if (wrapped instanceof List) {
-            return new IndirectList<>(owner, field, uow, (List<?>) wrapped);
+            return new ChangeTrackingIndirectList<>(owner, field, uow, (List<?>) wrapped);
         } else if (wrapped instanceof Set) {
-            return new IndirectSet<>(owner, field, uow, (Set<?>) wrapped);
+            return new ChangeTrackingIndirectSet<>(owner, field, uow, (Set<?>) wrapped);
         } else if (wrapped instanceof Map) {
-            return new IndirectMap<>(owner, field, uow, (Map<?, ?>) wrapped);
+            return new ChangeTrackingIndirectMap<>(owner, field, uow, (Map<?, ?>) wrapped);
         } else if (wrapped instanceof MultilingualString) {
-            return new IndirectMultilingualString(owner, field, uow, (MultilingualString) wrapped);
+            return new ChangeTrackingIndirectMultilingualString(owner, field, uow, (MultilingualString) wrapped);
         } else {
             throw new UnsupportedOperationException("Unsupported wrapped type " + wrapped.getClass());
         }
@@ -73,6 +74,6 @@ class IndirectWrapperHelper {
      * @return {@code true} if an indirect wrapper is used for the specified target
      */
     static boolean requiresIndirectWrapper(Object target) {
-        return target instanceof Collection || target instanceof MultilingualString || target instanceof Map;
+        return (!(target instanceof LazyLoadingProxy)) && (target instanceof Collection || target instanceof MultilingualString || target instanceof Map);
     }
 }

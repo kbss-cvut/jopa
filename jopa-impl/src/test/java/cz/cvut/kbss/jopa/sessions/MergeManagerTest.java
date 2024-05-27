@@ -25,20 +25,31 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
-import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSetImpl;
-import org.junit.jupiter.api.AfterEach;
+import cz.cvut.kbss.jopa.sessions.change.Change;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class MergeManagerTest {
 
     private static final URI DEFAULT_URI = URI.create("http://defaultContext");
@@ -46,10 +57,10 @@ class MergeManagerTest {
     private static Descriptor defaultDescriptor;
 
     @Mock
-    private UnitOfWorkImpl uow;
+    private AbstractUnitOfWork uow;
 
     @Mock
-    private CloneBuilderImpl cloneBuilder;
+    private CloneBuilder cloneBuilder;
 
     @Mock
     private MetamodelImpl metamodel;
@@ -58,7 +69,7 @@ class MergeManagerTest {
 
     private UnitOfWorkChangeSet uowChangeSet;
 
-    private MergeManagerImpl mm;
+    private MergeManager mm;
 
     @BeforeAll
     static void setUpBeforeClass() {
@@ -67,18 +78,11 @@ class MergeManagerTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
-        this.uowChangeSet = new UnitOfWorkChangeSetImpl();
+        this.uowChangeSet = ChangeSetFactory.createUoWChangeSet();
         when(uow.getMetamodel()).thenReturn(metamodel);
-        when(uow.getCloneBuilder()).thenReturn(cloneBuilder);
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodel);
-        this.mm = new MergeManagerImpl(uow);
-    }
-
-    @AfterEach
-    void tearDown() {
-        uow.release();
+        this.mm = new MergeManager(uow, cloneBuilder);
     }
 
     @Test
@@ -89,7 +93,7 @@ class MergeManagerTest {
         final ObjectChangeSet chs = createChangeSet(orig, clone);
         clone.setStringAttribute("AnotherStringAttribute");
         chs.addChangeRecord(
-                new ChangeRecordImpl(metamodelMocks.forOwlClassB().stringAttribute(), clone.getStringAttribute()));
+                new ChangeRecord(metamodelMocks.forOwlClassB().stringAttribute(), clone.getStringAttribute()));
         mm.mergeChangesOnObject(chs);
         verify(cloneBuilder).mergeChanges(chs);
     }
@@ -101,10 +105,10 @@ class MergeManagerTest {
         OWLClassB cloneOne = new OWLClassB(objOne.getUri());
         OWLClassB cloneTwo = new OWLClassB(objTwo.getUri());
         cloneOne.setStringAttribute("testAtt");
-        uowChangeSet.addDeletedObjectChangeSet(createChangeSet(objTwo, cloneTwo));
+        uowChangeSet.addDeletedObjectChangeSet(ChangeSetFactory.createDeleteObjectChange(cloneTwo, objTwo, defaultDescriptor));
         final ObjectChangeSet changeSet = createChangeSet(objOne, cloneOne);
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(metamodelMocks.forOwlClassB().stringAttribute(), cloneOne.getStringAttribute()));
+                new ChangeRecord(metamodelMocks.forOwlClassB().stringAttribute(), cloneOne.getStringAttribute()));
         uowChangeSet.addObjectChangeSet(changeSet);
         mm.mergeChangesFromChangeSet(uowChangeSet);
         verify(uow).removeObjectFromCache(objTwo, DEFAULT_URI);
@@ -112,12 +116,13 @@ class MergeManagerTest {
     }
 
     @Test
-    void mergeChangesFromChangeSetWithNewObjectPutsOriginalIntoCache() {
+    void mergeChangesFromUoWChangeSetWithNewObjectPutsOriginalIntoCache() {
         final OWLClassB objOne = new OWLClassB(Generators.createIndividualIdentifier());
         objOne.setStringAttribute("ABeautifulAttribute");
         final OWLClassB clone = new OWLClassB(objOne.getUri());
-        final ObjectChangeSet changeSet = createChangeSet(objOne, clone);
-        uowChangeSet.addNewObjectChangeSet(changeSet);
+        clone.setStringAttribute(objOne.getStringAttribute());
+        when(cloneBuilder.buildClone(eq(clone), any(CloneConfiguration.class))).thenReturn(objOne);
+        uowChangeSet.addNewObjectChangeSet(ChangeSetFactory.createNewObjectChange(clone, defaultDescriptor));
         mm.mergeChangesFromChangeSet(uowChangeSet);
         verify(uow).putObjectIntoCache(objOne.getUri(), objOne, defaultDescriptor);
     }
@@ -126,7 +131,8 @@ class MergeManagerTest {
     void mergeNewObjectPutsObjectIntoCache() {
         final OWLClassB newOne = new OWLClassB(Generators.createIndividualIdentifier());
         final OWLClassB clone = new OWLClassB(newOne.getUri());
-        final ObjectChangeSet changeSet = createChangeSet(newOne, clone);
+        when(cloneBuilder.buildClone(eq(clone), any(CloneConfiguration.class))).thenReturn(newOne);
+        final Change changeSet = ChangeSetFactory.createNewObjectChange(clone, defaultDescriptor);
         mm.mergeNewObject(changeSet);
         verify(uow).putObjectIntoCache(newOne.getUri(), newOne, defaultDescriptor);
     }
@@ -141,8 +147,8 @@ class MergeManagerTest {
         final OWLClassD clone = new OWLClassD(original.getUri());
         clone.setOwlClassA(new OWLClassA(Generators.createIndividualIdentifier()));
         final ObjectChangeSet changeSet = createChangeSet(original, clone);
-        final ChangeRecordImpl record =
-                new ChangeRecordImpl(metamodelMocks.forOwlClassD().owlClassAAtt(), clone.getOwlClassA());
+        final ChangeRecord record =
+                new ChangeRecord(metamodelMocks.forOwlClassD().owlClassAAtt(), clone.getOwlClassA());
         record.preventCaching();
         changeSet.addChangeRecord(record);
         mm.mergeChangesOnObject(changeSet);

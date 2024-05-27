@@ -74,7 +74,7 @@ public class ResultSetMappingProcessor {
 
     private void buildEntityMappers(SparqlResultSetMapping mapping, ResultRowMapper parent) {
         for (EntityResult er : mapping.entities()) {
-            final EntityType<?> et = getTargetType(er);
+            final IdentifiableEntityType<?> et = getTargetType(er);
             final EntityResultMapper<?> etMapper = new EntityResultMapper<>(et);
             generateFieldMappersForFieldResults(er, et, etMapper);
             generateFieldMappersForUnconfiguredFields(et, er).forEach(etMapper::addFieldMapper);
@@ -82,14 +82,14 @@ public class ResultSetMappingProcessor {
         }
     }
 
-    private EntityType<?> getTargetType(EntityResult er) {
+    private IdentifiableEntityType<?> getTargetType(EntityResult er) {
         final AbstractIdentifiableType<?> targetType = metamodelBuilder.entity(er.entityClass());
-        if (!(targetType instanceof EntityType)) {
+        if (targetType == null || targetType.isAbstract()) {
             throw new SparqlResultMappingException(
                     "Type " + er.entityClass() +
-                            " is not a known entity type and cannot be used as @EntityResult target class.");
+                            " is not a known instantiable entity type and cannot be used as @EntityResult target class.");
         }
-        return (EntityType<?>) targetType;
+        return (IdentifiableEntityType<?>) targetType;
     }
 
     private static void generateFieldMappersForFieldResults(EntityResult er, EntityType<?> et,

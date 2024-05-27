@@ -21,10 +21,14 @@ import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.PreUpdate;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.c_OwlClassU)
@@ -38,6 +42,9 @@ public class OWLClassU implements Serializable {
 
     @OWLDataProperty(iri = Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE)
     private Set<MultilingualString> pluralStringAtt;
+
+    @OWLDataProperty(iri = DC.Terms.MODIFIED)
+    private LocalDateTime modified;
 
     public OWLClassU() {
     }
@@ -70,12 +77,26 @@ public class OWLClassU implements Serializable {
         this.pluralStringAtt = pluralStringAtt;
     }
 
+    public LocalDateTime getModified() {
+        return modified;
+    }
+
+    public void setModified(LocalDateTime modified) {
+        this.modified = modified;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.modified = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+    }
+
     @Override
     public String toString() {
         return "OWLClassU{" +
                 "id=" + id +
                 ", singularStringAtt=" + singularStringAtt +
                 ", pluralStringAtt=" + pluralStringAtt +
+                ", modified=" + modified +
                 '}';
     }
 
@@ -93,5 +114,9 @@ public class OWLClassU implements Serializable {
 
     public static Field getPluralStringAttField() throws Exception {
         return OWLClassU.class.getDeclaredField("pluralStringAtt");
+    }
+
+    public static Field getModifiedField() throws Exception {
+        return OWLClassU.class.getDeclaredField("modified");
     }
 }
