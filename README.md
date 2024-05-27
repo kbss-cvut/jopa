@@ -15,6 +15,7 @@ The library architecture and API is similar to JPA (see [2]) so that Java develo
 * Explicit access to inferred knowledge
 * Access to unmapped properties and individual's types
 * Transactions
+* Multilingual strings
 * Separate storage access layer - Jena, OWLAPI, RDF4J drivers are available
 
 #### Object-ontological Mapping Based on Integrity Constraints
@@ -23,13 +24,13 @@ Similarly to object-relational mapping (ORM), OOM enables to map ontological con
 
 More specifically, OOM in JOPA maps (using the JLS [3] terminology):
 
-| Ontology            | OO Language                              |
-|---------------------|------------------------------------------|
-| OWL Class           | Reference type                           |
-| Object property     | Reference type member                    |
-| Data property       | Primitive type member (+ String, Date)   |
-| Annotation property | Reference or primitive type member       |
-| Class assertions    | Reference type instance or @Types record |
+| Ontology            | OO Language                                                |
+|---------------------|------------------------------------------------------------|
+| OWL Class           | Reference type                                             |
+| Object property     | Reference type member                                      |
+| Data property       | Primitive type member (+ String, Date, MultilingualString) |
+| Annotation property | Reference or primitive type member                         |
+| Class assertions    | Reference type instance or @Types record                   |
 
 All this means that individuals belonging to an OWL class can be retrieved as instances of a (Java) class.
 
@@ -101,15 +102,6 @@ Supported storages:
 * [OWLAPI](https://github.com/owlcs/owlapi)
 * [RDF4J](https://rdf4j.org/)
 
-### Not Supported, yet
-
-JOPA currently does not support referential integrity. This, for example, means that removing an instance that is referenced 
-by another instance is possible even though it should not. 
-Such feature is vital for object-oriented application, but not compatible with 
-the open-world nature of ontologies. Design possibilities and their implications are currently being studied.
-
-Other missing/planned stuff can be found in the GitHub issue tracker and in [TODO.md](TODO.md).
-
 ## Modules
 
 The whole framework consists of several modules:
@@ -141,14 +133,14 @@ JOPA examples can be found in a separate repository at [https://github.com/kbss-
 
 A real-world, up-to-date project using JOPA is [TermIt](https://github.com/kbss-cvut/termit) - a SKOS-compatible vocabulary manager.
 
-Note that JOPA requires **Java 11** or later.
+Note that JOPA requires **Java 17** or later.
 
 ## Getting JOPA
 
 There are two ways of getting JOPA for a project:
 
 * Clone repository/download zip and build it with Maven,
-* Use a Maven dependency from the [Maven central repository](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22cz.cvut.kbss.jopa%22).
+* Use a Maven/Gradle dependency from the [Maven central repository](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22cz.cvut.kbss.jopa%22).
 
 Basically, the _jopa-impl_ module and one of the OntoDriver implementations is all that is needed:
 
@@ -169,7 +161,7 @@ Basically, the _jopa-impl_ module and one of the OntoDriver implementations is a
 
 ## More Info
 
-More information about JOPA can be found for example in articles [4], [5], [6] and on the GitHub [Wiki](https://github.com/kbss-cvut/jopa/wiki).
+More information about JOPA can be found, for example, in articles [4], [5], [6] and on the GitHub [Wiki](https://github.com/kbss-cvut/jopa/wiki).
 
 JOPA build status and code metrics can be found at:
 
@@ -195,6 +187,7 @@ Some related libraries:
 
 Notable changes:
 
+* **2.0.0** - Major rewrite of change tracking and lazy loading, remove internal API from the `jopa-api` module etc.
 * **1.0.0** - Support for static metamodel generation and mapping multiple inheritance via Java interfaces.
 * **0.20.0** - Allow editing inferred attributes (See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details). Support `IN`, `NOT LIKE`, `<>` operators in SOQL.
 * **0.19.0** - Add RDF4J driver (renaming of Sesame driver, which has been deprecated and will be removed in the future)
