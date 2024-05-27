@@ -33,7 +33,6 @@ import cz.cvut.kbss.ontodriver.owlapi.util.MappingFileParser;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
@@ -236,7 +235,6 @@ public class BasicStorageConnector extends AbstractConnector {
         assert changes != null;
         WRITE.lock();
         try {
-            final OWLDataFactory df = ontologyManager.getOWLDataFactory();
             final List<OWLOntologyChange> toApply = changes.stream()
                                                            .flatMap(o -> o.toOwlChanges(ontology).stream())
                                                            .collect(Collectors.toList());

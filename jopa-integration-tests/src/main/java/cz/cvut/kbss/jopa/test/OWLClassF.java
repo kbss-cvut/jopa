@@ -17,10 +17,13 @@
  */
 package cz.cvut.kbss.jopa.test;
 
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.Inferred;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 
 import java.net.URI;
-import java.util.HashSet;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_F)
@@ -61,9 +64,6 @@ public class OWLClassF implements HasUri {
     }
 
     public Set<OWLClassA> getSimpleSet() {
-        if (simpleSet == null) {
-            this.simpleSet = new HashSet<>();
-        }
         return simpleSet;
     }
 

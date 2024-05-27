@@ -55,6 +55,6 @@ class ObjectPropertyFieldResultMapper extends FieldResultMapper {
         if (IdentifierTransformer.isValidIdentifierType(getFieldSpecification().getJavaType())) {
             return IdentifierTransformer.transformToIdentifier(id, getFieldSpecification().getJavaType());
         }
-        return uow.readObject(getFieldSpecification().getJavaType(), id, new EntityDescriptor());
+        return uow.readObjectWithoutRegistration(getFieldSpecification().getJavaType(), id, new EntityDescriptor());
     }
 }

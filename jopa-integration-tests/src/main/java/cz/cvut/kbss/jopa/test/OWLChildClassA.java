@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 
 import java.net.URI;
 import java.util.Set;
@@ -31,7 +32,7 @@ public class OWLChildClassA implements OWLParentA, OWLParentB {
     @Types(fetchType = FetchType.EAGER)
     private Set<String> types;
 
-    @OWLAnnotationProperty(iri = Vocabulary.DC_SOURCE)
+    @OWLAnnotationProperty(iri = DC.Terms.SOURCE)
     private Set<String> pluralAnnotationProperty;
 
     @OWLDataProperty(iri = Vocabulary.P_E_STRING_ATTRIBUTE)

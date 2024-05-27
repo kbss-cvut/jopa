@@ -19,24 +19,47 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.*;
-import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
-import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
-import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
-import cz.cvut.kbss.jopa.sessions.LoadingParameters;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
+import cz.cvut.kbss.jopa.oom.exception.EntityDeconstructionException;
+import cz.cvut.kbss.jopa.oom.exception.EntityReconstructionException;
+import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
+import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.descriptor.*;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import static cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException.individualAlreadyManaged;
 
@@ -44,8 +67,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     private static final Logger LOG = LoggerFactory.getLogger(ObjectOntologyMapperImpl.class);
 
-    private final UnitOfWorkImpl uow;
-    private final CacheManager cache;
+    private final AbstractUnitOfWork uow;
     private final Connection storageConnection;
 
     private final AxiomDescriptorFactory descriptorFactory;
@@ -57,24 +79,29 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     private final EntityInstanceLoader defaultInstanceLoader;
     private final EntityInstanceLoader twoStepInstanceLoader;
 
-    public ObjectOntologyMapperImpl(UnitOfWorkImpl uow, Connection connection) {
+    public ObjectOntologyMapperImpl(AbstractUnitOfWork uow, Connection connection) {
         this.uow = Objects.requireNonNull(uow);
-        this.cache = uow.getLiveObjectCache();
         this.storageConnection = Objects.requireNonNull(connection);
         this.descriptorFactory = new AxiomDescriptorFactory();
         this.instanceRegistry = new HashMap<>();
         this.pendingReferences = new PendingReferenceRegistry();
-        this.entityBuilder = new EntityConstructor(this);
+        this.entityBuilder = new EntityConstructor(this, uow.getLoadStateRegistry());
         this.entityBreaker = new EntityDeconstructor(this);
 
         this.defaultInstanceLoader = DefaultInstanceLoader.builder().connection(storageConnection)
                                                           .metamodel(uow.getMetamodel())
                                                           .descriptorFactory(descriptorFactory)
-                                                          .entityBuilder(entityBuilder).cache(cache).build();
+                                                          .entityBuilder(entityBuilder).cache(getCache())
+                                                          .loadStateRegistry(uow.getLoadStateRegistry()).build();
         this.twoStepInstanceLoader = TwoStepInstanceLoader.builder().connection(storageConnection)
                                                           .metamodel(uow.getMetamodel())
                                                           .descriptorFactory(descriptorFactory)
-                                                          .entityBuilder(entityBuilder).cache(cache).build();
+                                                          .entityBuilder(entityBuilder).cache(getCache())
+                                                          .loadStateRegistry(uow.getLoadStateRegistry()).build();
+    }
+
+    private CacheManager getCache() {
+        return uow.getLiveObjectCache();
     }
 
     @Override
@@ -86,7 +113,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         final EntityType<T> et = getEntityType(cls);
         final NamedResource classUri = NamedResource.create(et.getIRI().toURI());
         final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(identifier),
-                                                        Assertion.createClassAssertion(false), new Value<>(classUri));
+                Assertion.createClassAssertion(false), new Value<>(classUri));
         try {
             return storageConnection.contains(ax, descriptor.getContexts());
         } catch (OntoDriverException e) {
@@ -103,7 +130,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     private <T> T loadEntityInternal(LoadingParameters<T> loadingParameters) {
-        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityClass());
         final T result;
         if (et.hasSubtypes()) {
             result = twoStepInstanceLoader.loadEntity(loadingParameters);
@@ -111,7 +138,9 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             result = defaultInstanceLoader.loadEntity(loadingParameters);
         }
         if (result != null) {
-            cache.add(loadingParameters.getIdentifier(), result, loadingParameters.getDescriptor());
+            final LoadStateDescriptor<T> loadStateDescriptor = uow.getLoadStateRegistry().get(result);
+            assert loadStateDescriptor != null;
+            getCache().add(loadingParameters.getIdentifier(), result, new Descriptors(loadingParameters.getDescriptor(), loadStateDescriptor));
         }
         return result;
     }
@@ -120,7 +149,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public <T> T loadReference(LoadingParameters<T> loadingParameters) {
         assert loadingParameters != null;
 
-        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityType());
+        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityClass());
         if (et.hasSubtypes()) {
             return twoStepInstanceLoader.loadReference(loadingParameters);
         } else {
@@ -144,7 +173,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         assert fieldSpec != null;
         assert descriptor != null;
 
-        LOG.trace("Lazily loading value of field {} of entity {}.", fieldSpec, entity);
+        LOG.trace("Lazily loading value of field {} of entity {}.", fieldSpec, uow.stringify(entity));
 
         final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI primaryKey = EntityPropertiesUtils.getIdentifier(entity, et);
@@ -169,16 +198,12 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     @Override
     public <T> void persistEntity(URI identifier, T entity, Descriptor descriptor) {
+        assert identifier != null;
         assert entity != null;
         assert descriptor != null;
 
         @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         try {
-            if (identifier == null) {
-                identifier = generateIdentifier(et);
-                assert identifier != null;
-                EntityPropertiesUtils.setIdentifier(identifier, entity, et);
-            }
             entityBreaker.setReferenceSavingResolver(new ReferenceSavingResolver(this));
             final AxiomValueGatherer axiomBuilder = entityBreaker.mapEntityToAxioms(identifier, entity, et, descriptor);
             axiomBuilder.persist(storageConnection);
@@ -230,7 +255,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         if (orig != null) {
             return orig;
         }
-        if (cache.contains(cls, identifier, descriptor)) {
+        if (getCache().contains(cls, identifier, descriptor)) {
             return defaultInstanceLoader.loadCached(getEntityType(cls), identifier, descriptor);
         } else if (instanceRegistry.containsKey(identifier)) {
             final Object existing = instanceRegistry.get(identifier);
@@ -303,8 +328,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     private <T> void removePendingAssertions(FieldSpecification<? super T, ?> fs, URI identifier) {
-        if (fs instanceof Attribute) {
-            final Attribute<?, ?> att = (Attribute<?, ?>) fs;
+        if (fs instanceof Attribute<?, ?> att) {
             // We care only about object property assertions, others are never pending
             final Assertion assertion = Assertion.createObjectPropertyAssertion(att.getIRI().toURI(), att.isInferred());
             pendingReferences.removePendingReferences(NamedResource.create(identifier), assertion);
@@ -345,7 +369,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public boolean isInferred(Axiom<?> axiom, URI context) {
         try {
             return storageConnection.isInferred(axiom, context != null ? Collections.singleton(context) :
-                                                       Collections.emptySet());
+                    Collections.emptySet());
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         }
@@ -368,7 +392,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         }).reduce(false, Boolean::logicalOr);
     }
 
-    public UnitOfWorkImpl getUow() {
+    public UnitOfWork getUow() {
         return uow;
     }
 }

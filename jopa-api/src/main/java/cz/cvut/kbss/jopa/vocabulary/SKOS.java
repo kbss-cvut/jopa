@@ -30,6 +30,11 @@ public final class SKOS {
     public static final String NAMESPACE = "http://www.w3.org/2004/02/skos/core#";
 
     /**
+     * Typical prefix used for {@link #NAMESPACE}.
+     */
+    public static final String PREFIX = "skos";
+
+    /**
      * SKOS <a href="https://www.w3.org/2009/08/skos-reference/skos.html#Collection">Collection</a> class.
      *
      * @see <a href="http://www.w3.org/TR/skos-reference/#collections">http://www.w3.org/TR/skos-reference/#collections</a>

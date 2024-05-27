@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
@@ -27,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassP")
-public class OWLClassP {
+public class OWLClassP implements HasUri {
 
     @Id(generated = true)
     private URI uri;

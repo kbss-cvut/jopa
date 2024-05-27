@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
-import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
+import cz.cvut.kbss.jopa.oom.exception.EntityDeconstructionException;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;

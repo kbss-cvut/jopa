@@ -40,6 +40,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.PrePersist;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.model.annotations.RDFCollection;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
@@ -104,7 +105,7 @@ class MetamodelBuilderTest {
     @TestLocal
     @Namespace(prefix = "class", namespace = Vocabulary.CLASS_BASE)
     @OWLClass(iri = "class:EntityWithNamespace")
-    private static class EntityWithNamespace {
+    public static class EntityWithNamespace {
         @Id
         private URI uri;
     }
@@ -121,7 +122,7 @@ class MetamodelBuilderTest {
     @TestLocal
     @Namespaces({@Namespace(prefix = "class", namespace = Vocabulary.CLASS_BASE)})
     @OWLClass(iri = "class:EntityWithNamespaces")
-    private static class EntityWithNamespaces {
+    public static class EntityWithNamespaces {
         @Id
         private URI uri;
     }
@@ -143,7 +144,7 @@ class MetamodelBuilderTest {
     @Namespaces({@Namespace(prefix = "dc", namespace = DC.Elements.NAMESPACE),
             @Namespace(prefix = "ex2", namespace = "http://www.example2.org/")})
     @OWLClass(iri = "ex2:EntityWithNamespaceAttributes")
-    private static class EntityWithNamespaceAttributes {
+    public static class EntityWithNamespaceAttributes {
         @Id
         private URI uri;
 
@@ -165,7 +166,7 @@ class MetamodelBuilderTest {
 
     @TestLocal
     @OWLClass(iri = "ex:EntityWithNamespaceFromPackage")
-    private static class EntityWithNamespaceFromPackage {
+    public static class EntityWithNamespaceFromPackage {
         @Id
         private URI uri;
     }
@@ -210,11 +211,11 @@ class MetamodelBuilderTest {
                 .getEntityClass(ChildWithCallback.class);
         final EntityLifecycleListenerManager childLifecycleManager = result.getLifecycleListenerManager();
         assertFalse(childLifecycleManager.getLifecycleCallbacks().isEmpty());
-        assertTrue(childLifecycleManager.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST));
+        assertTrue(childLifecycleManager.hasEntityLifecycleCallback(LifecycleEvent.PRE_PERSIST));
         assertNotNull(childLifecycleManager.getParents());
         assertTrue(childLifecycleManager.getParents()
                                         .stream()
-                                        .anyMatch(parent -> parent.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST)));
+                                        .anyMatch(parent -> parent.hasEntityLifecycleCallback(LifecycleEvent.PRE_PERSIST)));
     }
 
     @TestLocal
@@ -277,7 +278,7 @@ class MetamodelBuilderTest {
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithPluralSimpleLiteral")
-    private static class WithPluralSimpleLiteral {
+    public static class WithPluralSimpleLiteral {
 
         @Id
         private URI uri;
@@ -311,7 +312,7 @@ class MetamodelBuilderTest {
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithCollectionAttributes")
-    private static class WithCollectionAttributes {
+    public static class WithCollectionAttributes {
         @Id
         private URI uri;
 
@@ -348,7 +349,7 @@ class MetamodelBuilderTest {
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithInvalidTypeField")
-    private static class WithInvalidTypeField {
+    public static class WithInvalidTypeField {
         @Id
         private URI uri;
 
@@ -384,7 +385,7 @@ class MetamodelBuilderTest {
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "InterfaceChild")
-    private static class InterfaceChild implements AParentI, BParentI {
+    public static class InterfaceChild implements AParentI, BParentI {
         @Id
         private URI uri;
     }
@@ -407,14 +408,14 @@ class MetamodelBuilderTest {
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "BParent")
-    private static class BParent {
+    public static class BParent {
         @Id
         private URI uri;
     }
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "Child")
-    private static class ClassChild extends BParent implements AParentI {
+    public static class ClassChild extends BParent implements AParentI {
 
     }
 
@@ -456,7 +457,7 @@ class MetamodelBuilderTest {
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "WithInferredTypesAndProperties")
-    private static class WithInferredTypesAndProperties {
+    public static class WithInferredTypesAndProperties {
 
         @Id
         private URI uri;
@@ -487,19 +488,19 @@ class MetamodelBuilderTest {
         final AbstractIdentifiableType<ClassWithDataPropertyReferencedList> et = builder.entity(ClassWithDataPropertyReferencedList.class);
         final ListAttribute<? super ClassWithDataPropertyReferencedList, MultilingualString> att = et.getList("altLabels", MultilingualString.class);
         assertEquals(SequenceType.referenced, att.getSequenceType());
-        assertEquals(RDF.REST, att.getOWLObjectPropertyHasNextIRI().toString());
-        assertEquals(RDF.FIRST, att.getOWLPropertyHasContentsIRI().toString());
+        assertEquals(RDF.REST, att.getHasNextPropertyIRI().toString());
+        assertEquals(RDF.FIRST, att.getHasContentsPropertyIRI().toString());
 
     }
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithDataPropertyReferencedList")
-    private static class ClassWithDataPropertyReferencedList {
+    public static class ClassWithDataPropertyReferencedList {
         @Id
         private URI uri;
 
-        @Sequence(type = SequenceType.referenced, ObjectPropertyHasNextIRI = RDF.REST,
-                  ObjectPropertyHasContentsIRI = RDF.FIRST)
+        @Sequence(type = SequenceType.referenced, hasNextPropertyIRI = RDF.REST,
+                  hasContentsPropertyIRI = RDF.FIRST)
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "dp-referenced-list")
         private List<MultilingualString> altLabels;
     }
@@ -514,12 +515,33 @@ class MetamodelBuilderTest {
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithDataPropertySimpleList")
-    private static class ClassWithDataPropertySimpleList {
+    public static class ClassWithDataPropertySimpleList {
         @Id
         private URI uri;
 
         @Sequence(type = SequenceType.simple)
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "dp-referenced-list")
         private List<MultilingualString> altLabels;
+    }
+
+    @Test
+    void buildMetamodelSupportsRDFCollectionAttributes() {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(ClassWithRDFCollectionAttribute.class));
+        builder.buildMetamodel(finderMock);
+        final AbstractIdentifiableType<ClassWithRDFCollectionAttribute> et = builder.entity(ClassWithRDFCollectionAttribute.class);
+        final ListAttribute<? super ClassWithRDFCollectionAttribute, Integer> result = et.getList("rdfCollection", Integer.class);
+        assertInstanceOf(RDFCollectionAttribute.class, result);
+        assertEquals(SequenceType.referenced, result.getSequenceType());
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithRDFCollection")
+    public static class ClassWithRDFCollectionAttribute {
+        @Id
+        private URI uri;
+
+        @RDFCollection
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "rdf-collection")
+        private List<Integer> rdfCollection;
     }
 }

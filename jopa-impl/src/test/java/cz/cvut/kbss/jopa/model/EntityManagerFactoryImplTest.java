@@ -21,21 +21,29 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.DataSourceStub;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
+import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.Types;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class EntityManagerFactoryImplTest {
@@ -50,64 +58,46 @@ class EntityManagerFactoryImplTest {
 
     @BeforeEach
     void setUp() {
-        final Map<String, String> props = new HashMap<>();
-        props.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, DataSourceStub.class.getName());
-        props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
-                  Generators.createIndividualIdentifier().toString());
-        props.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
-        this.emf = new EntityManagerFactoryImpl(props, closeListener);
+        this.emf = new EntityManagerFactoryImpl(getProps(), closeListener);
         emf.createEntityManager();
         emf.getServerSession().unwrap(DataSourceStub.class).setConnection(connection);
     }
 
+    private Map<String, String> getProps() {
+        return Map.of(JOPAPersistenceProperties.DATA_SOURCE_CLASS, DataSourceStub.class.getName(),
+                JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
+                Generators.createIndividualIdentifier().toString(),
+                JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
+    }
+
     @Test
     void isLoadedReturnsTrueForManagedInstance() {
-        when(connection.types()).thenReturn(mock(Types.class));
         final EntityManager em = emf.createEntityManager();
-        try {
-            final OWLClassA a = Generators.generateOwlClassAInstance();
-            em.persist(a);
-            assertTrue(emf.isLoaded(a));
-        } finally {
-            em.close();
-        }
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        em.persist(a);
+        assertTrue(emf.isLoaded(a));
     }
 
     @Test
     void isLoadedReturnsTrueForAttributeOfManagedInstance() throws Exception {
-        when(connection.types()).thenReturn(mock(Types.class));
         final EntityManager em = emf.createEntityManager();
-        try {
-            final OWLClassA a = Generators.generateOwlClassAInstance();
-            em.persist(a);
-            assertTrue(emf.isLoaded(a, OWLClassA.getStrAttField().getName()));
-        } finally {
-            em.close();
-        }
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        em.persist(a);
+        assertTrue(emf.isLoaded(a, OWLClassA.getStrAttField().getName()));
     }
 
     @Test
     void isLoadedReturnsFalseNonNonManagedInstance() {
-        final EntityManager emOne = emf.createEntityManager();
-        final EntityManager emTwo = emf.createEntityManager();
-        try {
-            assertFalse(emf.isLoaded(Generators.generateOwlClassAInstance()));
-        } finally {
-            emOne.close();
-            emTwo.close();
-        }
+        emf.createEntityManager();
+        emf.createEntityManager();
+        assertFalse(emf.isLoaded(Generators.generateOwlClassAInstance()));
     }
 
     @Test
     void isLoadedReturnsFalseNonNonManagedInstanceWithAttribute() throws Exception {
-        final EntityManager emOne = emf.createEntityManager();
-        final EntityManager emTwo = emf.createEntityManager();
-        try {
-            assertFalse(emf.isLoaded(Generators.generateOwlClassAInstance(), OWLClassA.getStrAttField().getName()));
-        } finally {
-            emOne.close();
-            emTwo.close();
-        }
+        emf.createEntityManager();
+        emf.createEntityManager();
+        assertFalse(emf.isLoaded(Generators.generateOwlClassAInstance(), OWLClassA.getStrAttField().getName()));
     }
 
     @Test
@@ -151,7 +141,7 @@ class EntityManagerFactoryImplTest {
     void closeClearsSecondLevelCache() {
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         final CacheManager cache = emf.unwrap(CacheManager.class);
-        cache.add(instance.getUri(), instance, new EntityDescriptor());
+        cache.add(instance.getUri(), instance, new Descriptors(new EntityDescriptor(), new LoadStateDescriptor<>(instance, mock(EntityType.class), LoadState.LOADED)));
         assertTrue(cache.contains(OWLClassA.class, instance.getUri(), new EntityDescriptor()));
         emf.close();
         assertFalse(cache.contains(OWLClassA.class, instance.getUri(), new EntityDescriptor()));
@@ -161,5 +151,13 @@ class EntityManagerFactoryImplTest {
     void closeInvokesCloseListener() {
         emf.close();
         verify(closeListener).accept(emf);
+    }
+
+    @Test
+    void entityManagerFactoryIsAutoCloseable() {
+        try (final EntityManagerFactory emf = new EntityManagerFactoryImpl(getProps(), closeListener)) {
+            assertTrue(emf.isOpen());
+        }
+        verify(closeListener).accept(any(EntityManagerFactoryImpl.class));
     }
 }

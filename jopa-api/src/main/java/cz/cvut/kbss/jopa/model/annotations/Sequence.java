@@ -30,7 +30,7 @@ import cz.cvut.kbss.jopa.model.SequencesVocabulary;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD,ElementType.METHOD})
+@Target({ElementType.FIELD, ElementType.METHOD})
 public @interface Sequence {
 
     /**
@@ -41,27 +41,27 @@ public @interface Sequence {
     SequenceType type() default SequenceType.referenced;
 
     /**
-     * URI of the class that represents the 'OWLList' concept.
-     *
-     * Relevant only for REFERENCED type.
+     * IRI of the class that represents the 'OWLList' concept.
+     * <p>
+     * Relevant only for {@link SequenceType#referenced} type.
      *
      * @return OWLList class IRI
      */
-    String ClassOWLListIRI() default SequencesVocabulary.s_c_OWLList;
+    String listClassIRI() default SequencesVocabulary.s_c_OWLList;
 
     /**
-     * URI of the object property that represents the 'hasContents' role.
-     *
-     * Relevant only for REFERENCED type.
+     * IRI of the object property that represents the 'hasContents' role.
+     * <p>
+     * Relevant only for {@link SequenceType#referenced} type.
      *
      * @return hasContents property IRI
      */
-    String ObjectPropertyHasContentsIRI() default SequencesVocabulary.s_p_hasContents;
+    String hasContentsPropertyIRI() default SequencesVocabulary.s_p_hasContents;
 
     /**
      * URI of the object property that represents the 'hasNext' role.
      *
      * @return hasNext property IRI
      */
-    String ObjectPropertyHasNextIRI() default SequencesVocabulary.s_p_hasNext;
+    String hasNextPropertyIRI() default SequencesVocabulary.s_p_hasNext;
 }

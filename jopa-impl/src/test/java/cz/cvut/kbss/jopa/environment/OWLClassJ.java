@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
@@ -24,7 +25,7 @@ import java.net.URI;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.c_OwlClassJ)
-public class OWLClassJ {
+public class OWLClassJ implements HasUri {
 
     private static final String CLS_A_FIELD = "owlClassA";
 

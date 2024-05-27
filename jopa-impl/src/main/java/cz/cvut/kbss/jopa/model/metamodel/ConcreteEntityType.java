@@ -28,12 +28,23 @@ import cz.cvut.kbss.jopa.model.IRI;
  */
 public class ConcreteEntityType<X> extends IdentifiableEntityType<X> {
 
-    public ConcreteEntityType(String name, Class<X> javaType, IRI iri) {
-        super(name, javaType, iri);
+    /**
+     * The java type that can be used to instantiate an object of the entity class represented by this entity type.
+     */
+    private final Class<? extends X> instantiableType;
+
+    public ConcreteEntityType(Class<X> javaType, Class<? extends X> instantiableType, IRI iri) {
+        super(javaType, iri);
+        this.instantiableType = instantiableType;
     }
 
     @Override
     public boolean isAbstract() {
         return false;
+    }
+
+    @Override
+    public Class<? extends X> getInstantiableJavaType() {
+        return instantiableType;
     }
 }

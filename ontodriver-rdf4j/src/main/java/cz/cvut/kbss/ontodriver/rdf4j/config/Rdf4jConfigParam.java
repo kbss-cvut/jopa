@@ -37,7 +37,8 @@ public enum Rdf4jConfigParam implements ConfigurationParameter {
     RECONNECT_ATTEMPTS(Rdf4jOntoDriverProperties.RECONNECT_ATTEMPTS),
     INFERENCE_IN_DEFAULT_CONTEXT(Rdf4jOntoDriverProperties.INFERENCE_IN_DEFAULT_CONTEXT),
     CONNECTION_REQUEST_TIMEOUT(Rdf4jOntoDriverProperties.CONNECTION_REQUEST_TIMEOUT),
-    MAX_CONNECTION_POOL_SIZE(Rdf4jOntoDriverProperties.MAX_CONNECTION_POOL_SIZE);
+    MAX_CONNECTION_POOL_SIZE(Rdf4jOntoDriverProperties.MAX_CONNECTION_POOL_SIZE),
+    TRANSACTION_ISOLATION_LEVEL(Rdf4jOntoDriverProperties.TRANSACTION_ISOLATION_LEVEL);
 
     private final String name;
 

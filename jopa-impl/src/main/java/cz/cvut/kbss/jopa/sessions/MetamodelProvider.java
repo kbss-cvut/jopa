@@ -17,7 +17,9 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.query.NamedQueryManager;
+import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 
 public interface MetamodelProvider {
 
@@ -26,13 +28,31 @@ public interface MetamodelProvider {
      *
      * @return Metamodel
      */
-    Metamodel getMetamodel();
+    MetamodelImpl getMetamodel();
 
     /**
-     * Checks whether the specified class is a managed (=entity) type.
+     * Checks whether the specified class is an entity type.
      *
      * @param cls The class to check
      * @return Whether type is managed
      */
     boolean isEntityType(Class<?> cls);
+
+    /**
+     * Gets {@link NamedQueryManager} for this persistence unit.
+     *
+     * @return {@code NamedQueryManager}
+     */
+    default NamedQueryManager getNamedQueryManager() {
+        return getMetamodel().getNamedQueryManager();
+    }
+
+    /**
+     * Gets the SPARQL result set mapping manager ({@link ResultSetMappingManager}) for this persistence unit.
+     *
+     * @return {@code ResultSetMappingManager}
+     */
+    default ResultSetMappingManager getResultSetMappingManager() {
+        return getMetamodel().getResultSetMappingManager();
+    }
 }

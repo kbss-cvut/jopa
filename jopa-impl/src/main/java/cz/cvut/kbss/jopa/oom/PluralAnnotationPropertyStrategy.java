@@ -43,7 +43,7 @@ class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         final Object value = ax.getValue().getValue();
         if (isValidRange(value)) {
             values.add(toAttributeValue(value));

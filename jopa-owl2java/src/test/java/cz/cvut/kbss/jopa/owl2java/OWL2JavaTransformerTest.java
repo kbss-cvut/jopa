@@ -76,7 +76,7 @@ public class OWL2JavaTransformerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        this.mappingFilePath = TestUtils.resolveMappingFilePath();
+        this.mappingFilePath = TestUtils.resolveTestResourcesFilePath(TestUtils.MAPPING_FILE_NAME);
         this.dataFactory = new OWLDataFactoryImpl();
         this.transformer = new OWL2JavaTransformer();
     }
@@ -347,8 +347,8 @@ public class OWL2JavaTransformerTest {
         transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
         final File vocabularyFile = targetDir.listFiles()[0];
         final String fileContents = readFile(vocabularyFile);
-        assertTrue(fileContents.contains("ONTOLOGY_IRI_model"));
-        assertTrue(fileContents.contains("ONTOLOGY_IRI_model_A"));
+        assertTrue(fileContents.contains("ONTOLOGY_IRI_MODEL"));
+        assertTrue(fileContents.contains("ONTOLOGY_IRI_MODEL_A"));
     }
 
     @Test

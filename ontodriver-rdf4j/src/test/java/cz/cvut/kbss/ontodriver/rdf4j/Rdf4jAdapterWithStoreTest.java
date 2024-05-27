@@ -25,11 +25,10 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
 import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactory;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectorFactoryImpl;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectionFactory;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectionFactoryImpl;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StorageConnector;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -56,8 +55,8 @@ public class Rdf4jAdapterWithStoreTest {
     private Repository repo;
     private ValueFactory vf;
 
-    private ConnectorFactory factory;
-    private Connector connector;
+    private ConnectionFactory factory;
+    private RepoConnection connector;
     private Rdf4jAdapter adapter;
 
     @BeforeEach
@@ -66,10 +65,10 @@ public class Rdf4jAdapterWithStoreTest {
                                                                       .physicalUri("memory-store").build();
         final DriverConfiguration configuration = new DriverConfiguration(sp);
         configuration.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.toString(true));
-        final RepositoryConnectorInitializer connectorInitializer = new RepositoryConnectorInitializer(configuration);
+        final StorageConnector connectorInitializer = new StorageConnector(configuration);
         connectorInitializer.initializeRepository();
-        this.factory = new ConnectorFactoryImpl(new StorageConnector(connectorInitializer));
-        this.connector = factory.createStorageConnector();
+        this.factory = new ConnectionFactoryImpl(connectorInitializer);
+        this.connector = factory.createStorageConnection();
         this.adapter = new Rdf4jAdapter(connector, new RuntimeConfiguration(configuration));
         this.repo = adapter.unwrap(Repository.class);
         this.vf = repo.getValueFactory();
@@ -103,8 +102,8 @@ public class Rdf4jAdapterWithStoreTest {
 
         try (RepositoryConnection connection = repo.getConnection()) {
             final Resource subj = vf.createIRI(SUBJECT.getIdentifier().toString());
-            final List<Statement> classAssertions = connection.getStatements(subj, RDF.TYPE, null, false).stream()
-                                                              .collect(Collectors.toList());
+            final List<Statement> classAssertions = connection.getStatements(subj, RDF.TYPE, null, false)
+                                                              .stream().toList();
             final Set<URI> types = classAssertions.stream().map(s -> URI.create(s.getObject().stringValue())).collect(
                     Collectors.toSet());
             assertTrue(types.contains(tOne));

@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -295,8 +297,8 @@ public abstract class ListsTestRunner extends BaseRunner {
 
         final OWLClassC result = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(result);
-        assertNull(result.getSimpleList());
-        assertNull(result.getReferencedList());
+        assertThat(result.getSimpleList(), empty());
+        assertThat(result.getReferencedList(), empty());
     }
 
     @Test
@@ -691,5 +693,52 @@ public abstract class ListsTestRunner extends BaseRunner {
                 .forEach((lang, val) -> assertFalse(em.createNativeQuery("ASK { ?node ?hasContent ?value }", Boolean.class)
                                                       .setParameter("hasContent", URI.create(Vocabulary.p_m_multilingualReferencedList))
                                                       .setParameter("value", val, lang).getSingleResult()));
+    }
+
+    @Test
+    public void persistSavesRdfCollectionTerminatedByNil() {
+        this.em = getEntityManager("persistSavesRdfCollectionTerminatedByNil", false);
+        entityC.setRdfCollection(Generators.createRDFCollection(5));
+        persistCWithLists(entityC);
+
+        final OWLClassC result = findRequired(OWLClassC.class, entityC.getUri());
+        assertEquals(entityC.getRdfCollection(), result.getRdfCollection());
+        assertTrue(em.createNativeQuery("ASK { ?node ?hasNext ?nil . }", Boolean.class)
+                     .setParameter("hasNext", URI.create(RDF.REST))
+                     .setParameter("nil", URI.create(RDF.NIL)).getSingleResult());
+    }
+
+    @Test
+    public void updateUpdatesRdfCollectionTerminatedByNilAndMaintainsCorrectListEnding() {
+        this.em = getEntityManager("updateUpdatesRdfCollectionTerminatedByNilAndMaintainsCorrectListEnding", false);
+        entityC.setRdfCollection(Generators.createRDFCollection(5));
+        persistCWithLists(entityC);
+
+        final List<OWLClassA> expectedList = new ArrayList<>(entityC.getRdfCollection());
+        entityC.getRdfCollection().remove(entityC.getRdfCollection().size() - 1);
+        expectedList.remove(expectedList.size() - 1);
+
+        transactional(() -> em.merge(entityC));
+        final OWLClassC midUpdate = findRequired(OWLClassC.class, entityC.getUri());
+        assertEquals(expectedList, midUpdate.getRdfCollection());
+        assertEquals(1, em.createNativeQuery("SELECT (COUNT(?node) as ?cnt) WHERE { ?node ?hasNext ?nil . }", Integer.class)
+                          .setParameter("hasNext", URI.create(RDF.REST))
+                          .setParameter("nil", URI.create(RDF.NIL)).getSingleResult());
+        em.clear();
+
+        final OWLClassA added = new OWLClassA(Generators.generateUri());
+        midUpdate.getRdfCollection().add(added);
+        expectedList.add(added);
+        transactional(() -> {
+            em.merge(midUpdate);
+            em.persist(added);
+        });
+        final OWLClassC result = findRequired(OWLClassC.class, entityC.getUri());
+        // Trigger lazy loading
+        assertFalse(result.getRdfCollection().isEmpty());
+        assertEquals(expectedList, result.getRdfCollection());
+        assertEquals(1, em.createNativeQuery("SELECT (COUNT(?node) as ?cnt) WHERE { ?node ?hasNext ?nil . }", Integer.class)
+                          .setParameter("hasNext", URI.create(RDF.REST))
+                          .setParameter("nil", URI.create(RDF.NIL)).getSingleResult());
     }
 }

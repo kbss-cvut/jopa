@@ -25,7 +25,7 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.*;
-import cz.cvut.kbss.jopa.oom.exceptions.AmbiguousEntityTypeException;
+import cz.cvut.kbss.jopa.oom.exception.AmbiguousEntityTypeException;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -186,8 +186,8 @@ public class PolymorphicEntityTypeResolverTest {
     public void determineActualEntityTypeReturnsNullWhenMostSpecificTypeIsAbstract() {
         final String abstractTypeIri = Generators.createIndividualIdentifier().toString();
         final IdentifiableEntityType<AbstractSubtype> etAbstract = spy(
-                new AbstractEntityType<>(AbstractSubtype.class.getSimpleName(),
-                                         AbstractSubtype.class, IRI.create(abstractTypeIri)));
+                new AbstractEntityType<>(
+                        AbstractSubtype.class, IRI.create(abstractTypeIri)));
         doReturn(Collections.singleton(etR)).when(etAbstract).getSupertypes();
         doReturn(Collections.singleton(etAbstract)).when(etR).getSubtypes();
 
@@ -202,8 +202,8 @@ public class PolymorphicEntityTypeResolverTest {
     public void determineActualEntityTypeIsNotAmbiguousWhenOneOfTheTypesIsAbstract() {
         final String abstractTypeIri = Generators.createIndividualIdentifier().toString();
         final IdentifiableEntityType<AbstractSubtype> etAbstract = spy(
-                new AbstractEntityType<>(AbstractSubtype.class.getSimpleName(),
-                                         AbstractSubtype.class, IRI.create(abstractTypeIri)));
+                new AbstractEntityType<>(
+                        AbstractSubtype.class, IRI.create(abstractTypeIri)));
         doReturn(Collections.singleton(etR)).when(etAbstract).getSupertypes();
         doReturn(Collections.singleton(etAbstract)).when(etR).getSubtypes();
         final IdentifiableEntityType mostSpecificEtOne = generateEntityTypeSubtree(Generators.randomPositiveInt(5), etR);
@@ -216,8 +216,8 @@ public class PolymorphicEntityTypeResolverTest {
     public void determineActualEntityTypeSearchesForMoreSpecificTypeWhenRootTypeIsAbstract() {
         final String abstractTypeIri = Generators.createIndividualIdentifier().toString();
         final IdentifiableEntityType<AbstractSubtype> etAbstract = spy(
-                new AbstractEntityType<>(AbstractSubtype.class.getSimpleName(),
-                                         AbstractSubtype.class, IRI.create(abstractTypeIri)));
+                new AbstractEntityType<>(
+                        AbstractSubtype.class, IRI.create(abstractTypeIri)));
         doReturn(Collections.singleton(etS)).when(etAbstract).getSubtypes();
         // We are abusing the type erasure here a little
         when(etS.getSupertypes()).thenReturn((Set) Collections.singleton(etAbstract));

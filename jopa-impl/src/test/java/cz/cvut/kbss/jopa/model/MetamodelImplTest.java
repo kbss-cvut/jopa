@@ -19,11 +19,13 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxy;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
@@ -41,6 +43,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.typeCompatibleWith;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -229,9 +232,9 @@ class MetamodelImplTest {
                                  simpleListField, simpleListProperty.fetch(), false, simpleListProperty.iri(),
                                  OWLClassA.class, CollectionType.LIST, simpleListProperty.cascade(),
                                  SequenceType.simple,
-                                 simpleListSequence.ClassOWLListIRI(),
-                                 simpleListSequence.ObjectPropertyHasContentsIRI(),
-                                 simpleListSequence.ObjectPropertyHasNextIRI());
+                                 simpleListSequence.listClassIRI(),
+                                 simpleListSequence.hasContentsPropertyIRI(),
+                                 simpleListSequence.hasNextPropertyIRI());
     }
 
     private void checkPluralListAttribute(FieldSpecification<?, ?> attribute, EntityType<?> declaringType, String name,
@@ -245,9 +248,9 @@ class MetamodelImplTest {
         assertThat(attribute, instanceOf(ListAttribute.class));
         final ListAttribute<?, ?> listAttribute = (ListAttribute<?, ?>) attribute;
         assertEquals(sequenceType, listAttribute.getSequenceType());
-        assertEquals(owlListClass, listAttribute.getOWLListClass().toString());
-        assertEquals(hasContents, listAttribute.getOWLPropertyHasContentsIRI().toString());
-        assertEquals(hasNext, listAttribute.getOWLObjectPropertyHasNextIRI().toString());
+        assertEquals(owlListClass, listAttribute.getListClassIRI().toString());
+        assertEquals(hasContents, listAttribute.getHasContentsPropertyIRI().toString());
+        assertEquals(hasNext, listAttribute.getHasNextPropertyIRI().toString());
     }
 
     @Test
@@ -266,9 +269,9 @@ class MetamodelImplTest {
                                  referencedListProperty.fetch(), false,
                                  referencedListProperty.iri(), OWLClassA.class, CollectionType.LIST,
                                  referencedListProperty.cascade(), SequenceType.referenced,
-                                 referencedListSequence.ClassOWLListIRI(),
-                                 referencedListSequence.ObjectPropertyHasContentsIRI(),
-                                 referencedListSequence.ObjectPropertyHasNextIRI());
+                                 referencedListSequence.listClassIRI(),
+                                 referencedListSequence.hasContentsPropertyIRI(),
+                                 referencedListSequence.hasNextPropertyIRI());
     }
 
     @Test
@@ -353,8 +356,9 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidTypes")
-    private static class ClassWithInvalidTypes {
+    public static class ClassWithInvalidTypes {
         @Id
         private String id;
         @Types
@@ -367,8 +371,9 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidProperties")
-    private static class ClassWithInvalidProperties {
+    public static class ClassWithInvalidProperties {
         @Id
         private String id;
         @Properties
@@ -381,8 +386,9 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithInvalidIdentifier")
-    private static class ClassWithInvalidIdentifier {
+    public static class ClassWithInvalidIdentifier {
         @Id
         private Integer id;
     }
@@ -393,8 +399,9 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithoutIdentifier")
-    private static class ClassWithoutIdentifier {
+    public static class ClassWithoutIdentifier {
         @Properties
         private Map<String, Set<String>> properties;
     }
@@ -478,8 +485,9 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithoutNoArgConstructor")
-    private static class ClassWithoutNoArgConstructor {
+    public static class ClassWithoutNoArgConstructor {
 
         @Id
         private URI id;
@@ -495,8 +503,9 @@ class MetamodelImplTest {
         assertThrows(MetamodelInitializationException.class, this::getMetamodel);
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithArrayAttribute")
-    private static class ClassWithArrayAttribute {
+    public static class ClassWithArrayAttribute {
 
         @Id
         private URI id;
@@ -519,8 +528,9 @@ class MetamodelImplTest {
         assertArrayEquals(new CascadeType[0], att.getCascadeTypes());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithOPUri")
-    private static class ClassWithOPUri {
+    public static class ClassWithOPUri {
 
         @Id
         private URI id;
@@ -546,8 +556,9 @@ class MetamodelImplTest {
         assertEquals(CollectionType.SET, ((PluralAttribute<?, ?, ?>) att).getCollectionType());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithOPUri")
-    private static class ClassWithPluralOPUrls {
+    public static class ClassWithPluralOPUrls {
 
         @Id
         private URI id;
@@ -566,8 +577,9 @@ class MetamodelImplTest {
         assertEquals(URI.class, et.getTypes().getElementType());
     }
 
+    @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithUriTypes")
-    private static class ClassWithUriTypes {
+    public static class ClassWithUriTypes {
         @Id
         private URI id;
 
@@ -593,12 +605,13 @@ class MetamodelImplTest {
         assertNotNull(queryManager.getQuery("askQuery"));
     }
 
+    @TestLocal
     @NamedNativeQueries({
             @NamedNativeQuery(name = "selectAll", query = "SELECT ?x ?y ?z WHERE { ?x ?y ?z . }"),
             @NamedNativeQuery(name = "askQuery", query = "ASK WHERE { ?x a ?type . }")
     })
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithNamedQueries")
-    private static class ClassWithNamedQueries {
+    public static class ClassWithNamedQueries {
         @Id
         private URI id;
 
@@ -693,5 +706,25 @@ class MetamodelImplTest {
             assertNotNull(et);
             assertEquals(cls, et.getJavaType());
         });
+    }
+
+    @Test
+    void getLazyLoadingProxyReturnsLazyLoadingProxyClassForSpecifiedType() {
+        final Set<Class<?>> entityClasses = new HashSet<>(List.of(OWLClassA.class));
+        final MetamodelImpl sut = new MetamodelImpl(conf);
+        sut.build(entityClasses);
+        final Class<? extends OWLClassA> result = sut.getLazyLoadingProxy(OWLClassA.class);
+        assertNotNull(result);
+        assertThat(result, typeCompatibleWith(OWLClassA.class));
+    }
+
+    @Test
+    void getLazyLoadingProxyCachesGeneratedProxyClasses() {
+        final Set<Class<?>> entityClasses = new HashSet<>(List.of(OWLClassA.class));
+        final MetamodelImpl sut = new MetamodelImpl(conf);
+        sut.build(entityClasses);
+        final Class<? extends OWLClassA> resultOne = sut.getLazyLoadingProxy(OWLClassA.class);
+        final Class<? extends OWLClassA> resultTwo = sut.getLazyLoadingProxy(OWLClassA.class);
+        assertSame(resultOne, resultTwo);
     }
 }

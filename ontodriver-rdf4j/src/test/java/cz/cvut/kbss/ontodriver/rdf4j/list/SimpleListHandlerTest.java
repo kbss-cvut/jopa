@@ -24,7 +24,7 @@ import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Vocabulary;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
@@ -82,7 +82,7 @@ public class SimpleListHandlerTest {
     private static IRI nextNodeProperty = vf.createIRI(NEXT_NODE_PROPERTY);
 
     @Mock
-    private Connector connector;
+    private RepoConnection connector;
 
     private SimpleListDescriptor listDescriptor;
 

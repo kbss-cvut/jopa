@@ -41,7 +41,7 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         if (MappingUtils.isEntityClassAssertion(ax, et)) {
             return;
         }
@@ -51,12 +51,13 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
     }
 
     @Override
+    boolean hasValue() {
+        return !values.isEmpty();
+    }
+
+    @Override
     void buildInstanceFieldValue(Object instance) {
         assert attribute.getJavaField().getType().isAssignableFrom(Set.class);
-
-        if (values.isEmpty()) {
-            return;
-        }
         setValueOnInstance(instance, values);
     }
 
@@ -97,7 +98,7 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
     private static Set<URI> typesDiff(Set<?> base, Set<?> difference) {
         final Set<URI> addedDiff = new HashSet<>(base.size());
         addedDiff.addAll(difference.stream().filter(t -> !base.contains(t)).map(t -> URI.create(t.toString()))
-                                   .collect(Collectors.toList()));
+                                   .toList());
         return addedDiff;
     }
 
@@ -108,7 +109,7 @@ class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, 
 
     private static Set<URI> prepareTypes(Set<?> types) {
         final Set<URI> toAdd = new HashSet<>(types.size());
-        toAdd.addAll(types.stream().map(t -> URI.create(t.toString())).collect(Collectors.toList()));
+        toAdd.addAll(types.stream().map(t -> URI.create(t.toString())).toList());
         return toAdd;
     }
 

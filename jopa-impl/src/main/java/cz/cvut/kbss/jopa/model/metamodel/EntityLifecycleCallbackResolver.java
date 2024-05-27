@@ -74,7 +74,7 @@ class EntityLifecycleCallbackResolver {
     }
 
     private void verifyCallbackNotAlreadyDefined(LifecycleEvent hookType) {
-        if (manager.hasLifecycleCallback(hookType)) {
+        if (manager.hasEntityLifecycleCallback(hookType)) {
             throw new MetamodelInitializationException("The type [" + managedType.getJavaType().getName() +
                     "] has multiple lifecycle callbacks for the lifecycle event [" + hookType + "].");
         }

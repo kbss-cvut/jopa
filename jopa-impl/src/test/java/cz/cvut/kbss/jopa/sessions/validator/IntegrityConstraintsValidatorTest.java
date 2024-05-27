@@ -17,7 +17,12 @@
  */
 package cz.cvut.kbss.jopa.sessions.validator;
 
-import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassJ;
+import cz.cvut.kbss.jopa.environment.OWLClassL;
+import cz.cvut.kbss.jopa.environment.OWLClassN;
+import cz.cvut.kbss.jopa.environment.OWLClassQ;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
@@ -30,10 +35,9 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
-import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSetImpl;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,8 +79,8 @@ public class IntegrityConstraintsValidatorTest {
         final OWLClassN clone = createInstanceWithMissingRequiredField();
         clone.setStringAttribute("newString");
         final OWLClassN orig = createInstanceWithMissingRequiredField();
-        final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, new EntityDescriptor());
-        changeSet.addChangeRecord(new ChangeRecordImpl(
+        final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(orig, clone, new EntityDescriptor());
+        changeSet.addChangeRecord(new ChangeRecord(
                 metamodel.entity(OWLClassN.class).getFieldSpecification(OWLClassN.getStringAttributeField().getName()),
                 "newString"));
 
@@ -110,8 +114,8 @@ public class IntegrityConstraintsValidatorTest {
     public void missingRequiredAttributeInChangeSetFailsValidation() throws Exception {
         final OWLClassN clone = createInstanceWithMissingRequiredField();
         final OWLClassN orig = createInstanceWithMissingRequiredField();
-        final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, new EntityDescriptor());
-        changeSet.addChangeRecord(new ChangeRecordImpl(
+        final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(orig, clone, new EntityDescriptor());
+        changeSet.addChangeRecord(new ChangeRecord(
                 metamodel.entity(OWLClassN.class).getFieldSpecification(OWLClassN.getStringAttributeField().getName()),
                 null));
 
@@ -122,7 +126,7 @@ public class IntegrityConstraintsValidatorTest {
     public void missingRequiredFieldValueFailsValidation() throws Exception {
         final OWLClassN n = createInstanceWithMissingRequiredField();
         final Attribute<?, ?> att = metamodel.entity(OWLClassN.class)
-                .getDeclaredAttribute(OWLClassN.getStringAttributeField().getName());
+                                             .getDeclaredAttribute(OWLClassN.getStringAttributeField().getName());
         assertThrows(IntegrityConstraintViolatedException.class,
                 () -> validator.validate(n.getId(), att, n.getStringAttribute()));
     }
@@ -149,10 +153,10 @@ public class IntegrityConstraintsValidatorTest {
         for (int i = 0; i < max + 1; i++) {
             clone.getReferencedList().add(new OWLClassA());
         }
-        final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, new EntityDescriptor());
+        final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(orig, clone, new EntityDescriptor());
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(metamodel.entity(OWLClassL.class)
-                        .getFieldSpecification(OWLClassL.getReferencedListField().getName()),
+                new ChangeRecord(metamodel.entity(OWLClassL.class)
+                                          .getFieldSpecification(OWLClassL.getReferencedListField().getName()),
                         clone.getReferencedList()));
 
         assertThrows(CardinalityConstraintViolatedException.class, () -> validator.validate(changeSet, metamodel));
@@ -182,7 +186,7 @@ public class IntegrityConstraintsValidatorTest {
         clone.setOwlClassA(Collections.emptySet());
         final ObjectChangeSet changeSet = ChangeSetFactory
                 .createObjectChangeSet(original, clone, new EntityDescriptor());
-        changeSet.addChangeRecord(new ChangeRecordImpl(
+        changeSet.addChangeRecord(new ChangeRecord(
                 metamodel.entity(OWLClassJ.class).getFieldSpecification(OWLClassJ.getOwlClassAField().getName()),
                 clone.getOwlClassA()));
         assertThrows(CardinalityConstraintViolatedException.class, () -> validator.validate(changeSet, metamodel));

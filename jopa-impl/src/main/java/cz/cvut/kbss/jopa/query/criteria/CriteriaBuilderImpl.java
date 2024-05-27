@@ -18,6 +18,8 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Order;
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
@@ -46,23 +48,21 @@ import cz.cvut.kbss.jopa.query.criteria.expressions.LowerFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.OrderImpl;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ParameterExpressionImpl;
 import cz.cvut.kbss.jopa.query.criteria.expressions.UpperFunction;
-import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 public class CriteriaBuilderImpl implements CriteriaBuilder {
 
-    private final UnitOfWorkImpl uow;
+    private final Metamodel metamodel;
 
-    public CriteriaBuilderImpl(UnitOfWorkImpl uow) {
-        this.uow = uow;
+    public CriteriaBuilderImpl(Metamodel metamodel) {
+        this.metamodel = metamodel;
     }
 
     @Override
     public <T> CriteriaQueryImpl<T> createQuery(Class<T> resultClass) {
-        return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(resultClass), uow.getMetamodel(), this);
+        return new CriteriaQueryImpl<>(new CriteriaQueryHolder<>(resultClass), metamodel, this);
     }
 
     @Override

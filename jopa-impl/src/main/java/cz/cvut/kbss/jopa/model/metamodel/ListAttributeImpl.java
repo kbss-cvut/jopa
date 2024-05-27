@@ -26,19 +26,19 @@ import java.util.List;
 public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>, V>
         implements ListAttribute<X, V> {
 
-    private final IRI owlListClass;
+    private final IRI listClass;
 
-    private final IRI owlObjectPropertyHasNext;
+    private final IRI hasNextProperty;
 
-    private final IRI owlPropertyHasContents;
+    private final IRI hasContentsProperty;
 
     private final SequenceType owlSequenceType;
 
-    private ListAttributeImpl(ListAttributeBuilder<X, V> builder) {
+    ListAttributeImpl(ListAttributeBuilder<X, V> builder) {
         super(builder);
-        this.owlListClass = builder.owlListClass;
-        this.owlObjectPropertyHasNext = builder.owlObjectPropertyHasNext;
-        this.owlPropertyHasContents = builder.owlPropertyHasContents;
+        this.listClass = builder.listClass;
+        this.hasNextProperty = builder.hasNextProperty;
+        this.hasContentsProperty = builder.hasContentsProperty;
         this.owlSequenceType = builder.owlSequenceType;
     }
 
@@ -48,18 +48,18 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
     }
 
     @Override
-    public IRI getOWLListClass() {
-        return owlListClass;
+    public IRI getListClassIRI() {
+        return listClass;
     }
 
     @Override
-    public IRI getOWLObjectPropertyHasNextIRI() {
-        return owlObjectPropertyHasNext;
+    public IRI getHasNextPropertyIRI() {
+        return hasNextProperty;
     }
 
     @Override
-    public IRI getOWLPropertyHasContentsIRI() {
-        return owlPropertyHasContents;
+    public IRI getHasContentsPropertyIRI() {
+        return hasContentsProperty;
     }
 
     @Override
@@ -68,18 +68,23 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
     }
 
     @Override
+    public boolean isRDFCollection() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return "ListAttribute[" + getName() + "]";
     }
 
-    public static ListAttributeBuilder builder(PropertyAttributes config) {
+    static ListAttributeBuilder builder(PropertyAttributes config) {
         return new ListAttributeBuilder().collectionType(List.class).config(config);
     }
 
-    public static class ListAttributeBuilder<X, V> extends PluralAttributeBuilder<X, List<V>, V> {
-        private IRI owlListClass;
-        private IRI owlObjectPropertyHasNext;
-        private IRI owlPropertyHasContents;
+    static class ListAttributeBuilder<X, V> extends PluralAttributeBuilder<X, List<V>, V> {
+        private IRI listClass;
+        private IRI hasNextProperty;
+        private IRI hasContentsProperty;
         private SequenceType owlSequenceType;
 
         @Override
@@ -125,17 +130,17 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
         }
 
         public ListAttributeBuilder<X, V> owlListClass(IRI owlListClass) {
-            this.owlListClass = owlListClass;
+            this.listClass = owlListClass;
             return this;
         }
 
         public ListAttributeBuilder<X, V> hasNextProperty(IRI hasNextProperty) {
-            this.owlObjectPropertyHasNext = hasNextProperty;
+            this.hasNextProperty = hasNextProperty;
             return this;
         }
 
         public ListAttributeBuilder<X, V> hasContentsProperty(IRI hasContentsProperty) {
-            this.owlPropertyHasContents = hasContentsProperty;
+            this.hasContentsProperty = hasContentsProperty;
             return this;
         }
 

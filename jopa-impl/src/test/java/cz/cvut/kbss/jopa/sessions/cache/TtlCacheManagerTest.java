@@ -19,7 +19,6 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TtlCacheManagerTest extends AbstractCacheManagerTest<TtlCacheManager> {
 
@@ -77,8 +79,8 @@ public class TtlCacheManagerTest extends AbstractCacheManagerTest<TtlCacheManage
         initSweepableManager();
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptorOne);
-        manager.add(testB.getUri(), testB, descriptorTwo);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
+        manager.add(testB.getUri(), testB, descriptors(descriptorTwo));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
         assertTrue(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
         // Give it enough time to sweep the cache
@@ -92,8 +94,8 @@ public class TtlCacheManagerTest extends AbstractCacheManagerTest<TtlCacheManage
         initSweepableManager();
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
-        manager.add(testA.getUri(), testA, descriptorOne);
-        manager.add(testB.getUri(), testB, descriptorTwo);
+        manager.add(testA.getUri(), testA, descriptors(descriptorOne));
+        manager.add(testB.getUri(), testB, descriptors(descriptorTwo));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
         assertTrue(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
         // The cycle ensures that testA is refreshed and stays in the cache

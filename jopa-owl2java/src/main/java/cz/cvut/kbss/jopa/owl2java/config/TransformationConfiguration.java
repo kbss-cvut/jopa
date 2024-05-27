@@ -20,6 +20,8 @@ package cz.cvut.kbss.jopa.owl2java.config;
 import cz.cvut.kbss.jopa.owl2java.cli.CliParams;
 import cz.cvut.kbss.jopa.owl2java.cli.Option;
 import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
+import cz.cvut.kbss.jopa.owl2java.prefix.PrefixCcRemotePrefixResolver;
+import cz.cvut.kbss.jopa.owl2java.prefix.RemotePrefixResolver;
 
 public class TransformationConfiguration {
 
@@ -41,7 +43,15 @@ public class TransformationConfiguration {
 
     private final boolean generateThing;
 
+    private final String ontologyPrefixProperty;
+
+    private final boolean alwaysUseOntologyPrefix;
+
+    private final String prefixMappingFile;
+
     private final CliParams cliParams;
+
+    private final RemotePrefixResolver remotePrefixResolver;
 
     private TransformationConfiguration(TransformationConfigurationBuilder builder) {
         this.context = builder.context;
@@ -53,6 +63,10 @@ public class TransformationConfiguration {
         this.propertiesType = builder.propertiesType;
         this.generateAnnotationFields = builder.generateAnnotationFields;
         this.generateThing = builder.generateThing;
+        this.ontologyPrefixProperty = builder.ontologyPrefixProperty;
+        this.alwaysUseOntologyPrefix = builder.alwaysUseOntologyPrefix;
+        this.prefixMappingFile = builder.prefixMappingFile;
+        this.remotePrefixResolver = builder.remotePrefixResolver;
         this.cliParams = CliParams.empty();
     }
 
@@ -68,6 +82,12 @@ public class TransformationConfiguration {
         this.propertiesType = PropertiesType.fromParam(cliParams.valueOf(Option.PROPERTIES_TYPE.arg));
         this.generateAnnotationFields = cliParams.is(Option.GENERATE_ANNOTATION_FIELDS.arg, Defaults.GENERATE_ANNOTATION_FIELDS);
         this.generateThing = cliParams.is(Option.GENERATE_THING.arg, Defaults.GENERATE_THING);
+        this.ontologyPrefixProperty = cliParams.has(Option.ONTOLOGY_PREFIX_PROPERTY.arg) ? cliParams.valueOf(Option.ONTOLOGY_PREFIX_PROPERTY.arg)
+                                                                                                    .toString() : Defaults.ONTOLOGY_PREFIX_PROPERTY;
+        this.alwaysUseOntologyPrefix = cliParams.is(Option.ALWAYS_USE_ONTOLOGY_PREFIX.arg, Defaults.ALWAYS_USE_ONTOLOGY_PREFIX);
+        this.prefixMappingFile = cliParams.has(Option.PREFIX_MAPPING_FILE.arg) ? cliParams.valueOf(Option.PREFIX_MAPPING_FILE.arg)
+                                                                                          .toString() : null;
+        this.remotePrefixResolver = new PrefixCcRemotePrefixResolver();
     }
 
     public String getContext() {
@@ -110,6 +130,22 @@ public class TransformationConfiguration {
         return generateThing;
     }
 
+    public String getOntologyPrefixProperty() {
+        return ontologyPrefixProperty;
+    }
+
+    public boolean shouldAlwaysUseOntologyPrefix() {
+        return alwaysUseOntologyPrefix;
+    }
+
+    public String getPrefixMappingFile() {
+        return prefixMappingFile;
+    }
+
+    public RemotePrefixResolver getRemotePrefixResolver() {
+        return remotePrefixResolver;
+    }
+
     public CliParams getCliParams() {
         return cliParams;
     }
@@ -132,6 +168,10 @@ public class TransformationConfiguration {
         private boolean preferMultilingualStrings = Defaults.PREFER_MULTILINGUAL_STRINGS;
         private boolean generateAnnotationFields = Defaults.GENERATE_ANNOTATION_FIELDS;
         private boolean generateThing = Defaults.GENERATE_THING;
+        private String ontologyPrefixProperty = Defaults.ONTOLOGY_PREFIX_PROPERTY;
+        private boolean alwaysUseOntologyPrefix = Defaults.ALWAYS_USE_ONTOLOGY_PREFIX;
+        private String prefixMappingFile = null;
+        private RemotePrefixResolver remotePrefixResolver = new PrefixCcRemotePrefixResolver();
 
         public TransformationConfigurationBuilder context(String context) {
             this.context = context;
@@ -175,6 +215,28 @@ public class TransformationConfiguration {
 
         public TransformationConfigurationBuilder generateThing(boolean generateThing) {
             this.generateThing = generateThing;
+            return this;
+        }
+
+        public TransformationConfigurationBuilder ontologyPrefixProperty(String ontologyPrefixProperty) {
+            if (ontologyPrefixProperty != null && !ontologyPrefixProperty.isBlank()) {
+                this.ontologyPrefixProperty = ontologyPrefixProperty;
+            }
+            return this;
+        }
+
+        public TransformationConfigurationBuilder alwaysUseOntologyPrefix(boolean alwaysUseOntologyPrefix) {
+            this.alwaysUseOntologyPrefix = alwaysUseOntologyPrefix;
+            return this;
+        }
+
+        public TransformationConfigurationBuilder prefixMappingFile(String prefixMappingFile) {
+            this.prefixMappingFile = prefixMappingFile;
+            return this;
+        }
+
+        public TransformationConfigurationBuilder remotePrefixResolver(RemotePrefixResolver resolver) {
+            this.remotePrefixResolver = resolver;
             return this;
         }
 

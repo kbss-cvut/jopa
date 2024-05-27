@@ -19,9 +19,11 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapper;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapperImpl;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import cz.cvut.kbss.ontodriver.Connection;
@@ -42,7 +44,7 @@ public class ConnectionWrapper implements Wrapper {
         this.connection = connection;
     }
 
-    void setUnitOfWork(UnitOfWorkImpl uow) {
+    void setUnitOfWork(AbstractUnitOfWork uow) {
         this.mapper = new ObjectOntologyMapperImpl(uow, connection);
     }
 
@@ -65,6 +67,10 @@ public class ConnectionWrapper implements Wrapper {
 
     public <T> void merge(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor) {
         mapper.updateFieldValue(entity, fieldSpec, descriptor);
+    }
+
+    public URI generateIdentifier(EntityType<?> et) {
+        return mapper.generateIdentifier(et);
     }
 
     public <T> void persist(Object identifier, T entity, Descriptor descriptor) {

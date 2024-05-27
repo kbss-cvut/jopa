@@ -21,7 +21,11 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.TypeReferenceMap;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Inheritance;
+import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.mapper.ResultSetMappingProcessor;
@@ -32,8 +36,13 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MetamodelBuilder {
 
@@ -90,7 +99,7 @@ public class MetamodelBuilder {
 
         LOG.debug("Processing OWL class: {}", cls);
 
-        final TypeBuilderContext<X> et = ManagedClassProcessor.processManagedType(cls);
+        final TypeBuilderContext<X> et = ManagedClassProcessor.processManagedType(cls, configuration);
         et.setConverterResolver(converterResolver);
         et.setPuLanguage(configuration.get(JOPAPersistenceProperties.LANG));
 
@@ -99,8 +108,8 @@ public class MetamodelBuilder {
 
     private <X> void processMethods(Class<X> cls, AbstractIdentifiableType<X> type) {
         Arrays.stream(cls.getDeclaredMethods())
-                .filter(MetamodelBuilder::isOWLPropertyMethod)
-                .forEach(m -> addAnnotatedAccessor(type, AnnotatedAccessor.from(m)));
+              .filter(MetamodelBuilder::isOWLPropertyMethod)
+              .forEach(m -> addAnnotatedAccessor(type, AnnotatedAccessor.from(m)));
     }
 
     private static boolean isOWLPropertyMethod(Method m) {
@@ -163,7 +172,7 @@ public class MetamodelBuilder {
             if (typeMap.containsKey(managedSupertype)) {
                 superTypes.add((AbstractIdentifiableType<? super X>) typeMap.get(managedSupertype));
             } else {
-                final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype);
+                final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype, configuration);
                 context.setConverterResolver(converterResolver);
                 context.setPuLanguage(configuration.get(JOPAPersistenceProperties.LANG));
                 processManagedType(context);
@@ -175,16 +184,16 @@ public class MetamodelBuilder {
 
     private static <X> boolean canDeclareInheritanceStrategy(IdentifiableType<X> et) {
         return et.getSupertypes() == null || et.getSupertypes()
-                .stream()
-                .noneMatch(supertype -> supertype.getPersistenceType() == Type.PersistenceType.ENTITY);
+                                               .stream()
+                                               .noneMatch(supertype -> supertype.getPersistenceType() == Type.PersistenceType.ENTITY);
     }
 
     private static <X> InheritanceType getInheritanceTypeFromParents(IdentifiableEntityType<X> et) {
         List<InheritanceType> superTypesInheritanceTypes = et.getSupertypes().stream()
-                .filter(superType -> superType.getPersistenceType() == Type.PersistenceType.ENTITY)
-                .map(abstractIdentifiableType -> ((IdentifiableEntityType<?>) abstractIdentifiableType).getInheritanceType())
-                .distinct()
-                .collect(Collectors.toList());
+                                                             .filter(superType -> superType.getPersistenceType() == Type.PersistenceType.ENTITY)
+                                                             .map(abstractIdentifiableType -> ((IdentifiableEntityType<?>) abstractIdentifiableType).getInheritanceType())
+                                                             .distinct()
+                                                             .toList();
         if (superTypesInheritanceTypes.size() == 1) { /// there is an agreement from all parents on inheritance type
             return superTypesInheritanceTypes.get(0);
         } else {
@@ -223,7 +232,7 @@ public class MetamodelBuilder {
     public Map<Class<?>, EntityType<?>> getEntities() {
         final Map<Class<?>, EntityType<?>> map = new HashMap<>();
         typeMap.entrySet().stream().filter(e -> e.getValue().getPersistenceType() == Type.PersistenceType.ENTITY)
-                .forEach(e -> map.put(e.getKey(), (EntityType<?>) e.getValue()));
+               .forEach(e -> map.put(e.getKey(), (EntityType<?>) e.getValue()));
         return map;
     }
 
@@ -272,6 +281,6 @@ public class MetamodelBuilder {
     }
 
     public Set<AnnotatedAccessor> getAnnotatedAccessorsForClass(IdentifiableType<?> k) {
-        return annotatedAccessors.getOrDefault(k,Collections.emptySet());
+        return annotatedAccessors.getOrDefault(k, Collections.emptySet());
     }
 }

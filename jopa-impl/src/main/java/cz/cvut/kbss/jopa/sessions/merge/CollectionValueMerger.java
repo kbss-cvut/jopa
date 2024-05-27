@@ -22,8 +22,8 @@ import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.MetamodelUtils;
@@ -32,10 +32,10 @@ import java.util.Collection;
 
 class CollectionValueMerger implements ValueMerger {
 
-    private final UnitOfWorkImpl uow;
+    private final UnitOfWork uow;
     private final ManagedTypeValueMerger managedTypeMerger;
 
-    CollectionValueMerger(UnitOfWorkImpl uow, ManagedTypeValueMerger managedTypeMerger) {
+    CollectionValueMerger(UnitOfWork uow, ManagedTypeValueMerger managedTypeMerger) {
         this.uow = uow;
         this.managedTypeMerger = managedTypeMerger;
     }

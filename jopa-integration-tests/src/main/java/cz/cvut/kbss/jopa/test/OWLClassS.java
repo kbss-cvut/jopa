@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 
 import java.util.Set;
@@ -31,7 +32,7 @@ public class OWLClassS extends OWLClassSParent {
     @OWLAnnotationProperty(iri = RDFS.LABEL)
     private String name;
 
-    @OWLDataProperty(iri = Vocabulary.DC_DESCRIPTION)
+    @OWLDataProperty(iri = DC.Terms.DESCRIPTION)
     private String description;
 
     @Types

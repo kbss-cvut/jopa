@@ -19,14 +19,19 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -126,16 +131,29 @@ public class TtlCacheManager implements CacheManager {
     }
 
     @Override
-    public void add(Object primaryKey, Object entity, Descriptor descriptor) {
-        Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
-        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+    public void add(Object identifier, Object entity, Descriptors descriptors) {
+        Objects.requireNonNull(identifier);
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(descriptors);
 
         acquireWriteLock();
         try {
-            cache.put(primaryKey, entity, descriptor);
+            cache.put(identifier, entity, descriptors);
         } finally {
             releaseWriteLock();
+        }
+    }
+
+    @Override
+    public LoadStateDescriptor<?> getLoadStateDescriptor(Object instance) {
+        if (instance == null) {
+            return null;
+        }
+        readLock.lock();
+        try {
+            return cache.getLoadStateDescriptor(instance);
+        } finally {
+            readLock.unlock();
         }
     }
 
@@ -162,13 +180,13 @@ public class TtlCacheManager implements CacheManager {
     }
 
     @Override
-    public <T> T get(Class<T> cls, Object primaryKey, Descriptor descriptor) {
-        if (cls == null || primaryKey == null || descriptor == null) {
+    public <T> T get(Class<T> cls, Object identifier, Descriptor descriptor) {
+        if (cls == null || identifier == null || descriptor == null) {
             return null;
         }
         acquireReadLock();
         try {
-            return cache.get(cls, primaryKey, descriptor);
+            return cache.get(cls, identifier, descriptor);
         } finally {
             releaseReadLock();
         }
@@ -177,7 +195,7 @@ public class TtlCacheManager implements CacheManager {
     /**
      * Get the set of inferred classes.
      * <p>
-     * Inferred classes (i. e. classes with inferred attributes) are tracked separately since they require special
+     * Inferred classes (i.e. classes with inferred attributes) are tracked separately since they require special
      * behavior.
      *
      * @return Set of inferred classes
@@ -202,13 +220,13 @@ public class TtlCacheManager implements CacheManager {
     }
 
     @Override
-    public boolean contains(Class<?> cls, Object primaryKey, Descriptor descriptor) {
-        if (cls == null || primaryKey == null || descriptor == null) {
+    public boolean contains(Class<?> cls, Object identifier, Descriptor descriptor) {
+        if (cls == null || identifier == null || descriptor == null) {
             return false;
         }
         acquireReadLock();
         try {
-            return cache.contains(cls, primaryKey, descriptor);
+            return cache.contains(cls, identifier, descriptor);
         } finally {
             releaseReadLock();
         }
@@ -228,8 +246,8 @@ public class TtlCacheManager implements CacheManager {
 
     @Override
     public void evict(Class<?> cls, Object identifier, URI context) {
-        Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
-        Objects.requireNonNull(identifier, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull(identifier);
 
         acquireWriteLock();
         try {
@@ -309,12 +327,12 @@ public class TtlCacheManager implements CacheManager {
         private final Map<URI, Long> ttl = new HashMap<>();
 
         @Override
-        void put(Object identifier, Object entity, Descriptor descriptor) {
-            if (!isCacheable(descriptor)) {
+        void put(Object identifier, Object entity, Descriptors descriptors) {
+            if (!isCacheable(descriptors.repositoryDescriptor())) {
                 return;
             }
-            super.put(identifier, entity, descriptor);
-            final URI ctx = descriptor.getSingleContext().orElse(defaultContext);
+            super.put(identifier, entity, descriptors);
+            final URI ctx = descriptors.repositoryDescriptor().getSingleContext().orElse(defaultContext);
             updateTimeToLive(ctx);
         }
 

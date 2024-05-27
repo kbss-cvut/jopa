@@ -1,5 +1,13 @@
 # JOPA - Change Log
 
+## 2.0.0 - 2024-05-27
+- Move internal API from `jopa-api` to the `jopa-impl` module (Enhancement #146).
+- Modify name resolution in OWL2Java, support prefixes so that terms are better disambiguated without appending the useless `_A` suffix if possible (Enhancement #85).
+- Remove dependency on AspectJ by rewriting object change tracking and lazy loading (Enhancement #145, #231). See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Change-Tracking-and-Lazy-Loading) for details.
+- Add support for RDF collections (Enhancement #51).
+- Update dependencies (Jena 5.0.0, RDF4J 4.3.11).
+- Require Java 17.
+
 ## 1.2.2 - 2024-01-30
 - Modify `DefaultClasspathScanner` to handle Spring Boot nested JAR introduced in 3.2.0 (Bug #227).
 

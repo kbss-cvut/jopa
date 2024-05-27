@@ -36,6 +36,10 @@ public class OWLClassC implements HasUri {
     @OWLObjectProperty(iri = Vocabulary.P_HAS_SIMPLE_LIST)
     private List<OWLClassA> simpleList;
 
+    @RDFCollection
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_RDF_COLLECTION)
+    private List<OWLClassA> rdfCollection;
+
     public OWLClassC() {
     }
 
@@ -68,6 +72,14 @@ public class OWLClassC implements HasUri {
         return simpleList;
     }
 
+    public List<OWLClassA> getRdfCollection() {
+        return rdfCollection;
+    }
+
+    public void setRdfCollection(List<OWLClassA> rdfCollection) {
+        this.rdfCollection = rdfCollection;
+    }
+
     @Override
     public String toString() {
         String out = "OWLClassC: uri = " + uri;
@@ -76,6 +88,9 @@ public class OWLClassC implements HasUri {
         }
         if (simpleList != null) {
             out += ", simpleList = {" + simpleList + "}";
+        }
+        if (rdfCollection != null) {
+            out += ", rdfCollection = {" + rdfCollection + "}";
         }
         return out;
     }

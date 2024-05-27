@@ -17,39 +17,87 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
-import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassG;
+import cz.cvut.kbss.jopa.environment.OWLClassH;
+import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.OWLClassO;
+import cz.cvut.kbss.jopa.environment.OWLClassQ;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
-import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.*;
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.IRIIdentifierImpl;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
+import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class CloneBuilderTest {
 
-    private CloneBuilderImpl builder;
+    private CloneBuilder builder;
 
     private OWLClassA entityA;
     private OWLClassB entityB;
@@ -61,7 +109,9 @@ public class CloneBuilderTest {
     private static EntityDescriptor defaultDescriptor;
 
     @Mock
-    private UnitOfWorkImpl uow;
+    private AbstractUnitOfWork uow;
+
+    private final LoadStateDescriptorRegistry loadStateRegistry = new LoadStateDescriptorRegistry(Object::toString);
 
     @Mock
     private MetamodelImpl metamodel;
@@ -89,27 +139,27 @@ public class CloneBuilderTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         when(uow.isEntityType(any())).thenAnswer(invocation -> {
             Class<?> cls = (Class<?>) invocation.getArguments()[0];
             return managedTypes.contains(cls);
         });
         when(uow.getMetamodel()).thenReturn(metamodel);
-        when(uow.registerExistingObject(any(), any(), any())).thenAnswer(
+        when(uow.registerExistingObject(any(), any(CloneRegistrationDescriptor.class))).thenAnswer(
                 invocation -> {
                     Object obj = invocation.getArguments()[0];
-                    Descriptor desc = (Descriptor) invocation.getArguments()[1];
-                    return builder.buildClone(obj, new CloneConfiguration(desc));
+                    CloneRegistrationDescriptor desc = (CloneRegistrationDescriptor) invocation.getArguments()[1];
+                    return builder.buildClone(obj, new CloneConfiguration(desc.getDescriptor(), true));
                 });
         this.metamodelMocks = new MetamodelMocks();
         metamodelMocks.setMocks(metamodel);
-        this.builder = new CloneBuilderImpl(uow);
+        this.builder = new CloneBuilder(uow);
         initValues();
         final IndirectWrapperHelper cf = new IndirectWrapperHelper(uow);
         when(uow.createIndirectCollection(any(), any(), any())).thenAnswer(call -> {
             final Object[] args = call.getArguments();
             return cf.createIndirectWrapper(args[0], args[1], (Field) args[2]);
         });
+        when(uow.getLoadStateRegistry()).thenReturn(loadStateRegistry);
     }
 
     private void initValues() {
@@ -142,16 +192,22 @@ public class CloneBuilderTest {
 
     @Test
     public void testBuildClone() {
-        OWLClassA res = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(entityA, metamodelMocks.forOwlClassA().entityType());
+        OWLClassA res = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor, false));
         assertEquals(res.getStringAttribute(), entityA.getStringAttribute());
         assertEquals(res.getUri(), entityA.getUri());
         assertEquals(entityA.getTypes(), res.getTypes());
     }
 
+    private <T> void defaultLoadStateDescriptor(T entity, EntityType<T> et) {
+        final LoadStateDescriptor<T> desc = LoadStateDescriptorFactory.createAllLoaded(entity, et);
+        loadStateRegistry.put(entity, desc);
+    }
+
     @Test
     public void testBuildCloneNullOriginal() {
         assertThrows(NullPointerException.class,
-                     () -> builder.buildClone(null, new CloneConfiguration(defaultDescriptor)));
+                () -> builder.buildClone(null, new CloneConfiguration(defaultDescriptor, false)));
     }
 
     @Test
@@ -162,12 +218,13 @@ public class CloneBuilderTest {
     @Test
     public void testBuildCloneNullCloneOwner() {
         assertThrows(NullPointerException.class,
-                     () -> builder.buildClone(null, OWLClassB.getPropertiesField(), entityB, defaultDescriptor));
+                () -> builder.buildClone(null, OWLClassB.getPropertiesField(), entityB, defaultDescriptor));
     }
 
     @Test
     public void testCloneCollection() {
-        final OWLClassA clone = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(entityA, metamodelMocks.forOwlClassA().entityType());
+        final OWLClassA clone = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor, false));
         assertEquals(entityA.getTypes().size(), clone.getTypes().size());
         for (String t : entityA.getTypes()) {
             assertTrue(clone.getTypes().contains(t));
@@ -176,20 +233,22 @@ public class CloneBuilderTest {
 
     @Test
     public void testBuildCloneTwice() {
-        OWLClassA res = (OWLClassA) this.builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(entityA, metamodelMocks.forOwlClassA().entityType());
+        OWLClassA res = (OWLClassA) this.builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor, false));
         assertEquals(res.getStringAttribute(), entityA.getStringAttribute());
         assertEquals(res.getUri(), entityA.getUri());
         assertEquals(entityA.getTypes(), res.getTypes());
         assertNotSame(entityA, res);
-        final OWLClassA resTwo = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
+        final OWLClassA resTwo = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor, false));
         assertSame(res, resTwo);
     }
 
     @Test
     public void testBuildCloneOriginalInUoW() {
+        defaultLoadStateDescriptor(entityA, metamodelMocks.forOwlClassA().entityType());
         when(uow.containsOriginal(entityA)).thenReturn(Boolean.TRUE);
         when(uow.getCloneForOriginal(entityA)).thenReturn(entityA);
-        final OWLClassA res = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
+        final OWLClassA res = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor, false));
         assertNotNull(res);
         assertSame(entityA, res);
     }
@@ -201,7 +260,7 @@ public class CloneBuilderTest {
         testList.add("Two");
         testList.add("Three");
         @SuppressWarnings("unchecked")
-        List<String> clone = (List<String>) builder.buildClone(testList, new CloneConfiguration(defaultDescriptor));
+        List<String> clone = (List<String>) builder.buildClone(testList, new CloneConfiguration(defaultDescriptor, false));
         assertEquals(testList.size(), clone.size());
         Iterator<String> it1 = testList.iterator();
         Iterator<String> it2 = clone.iterator();
@@ -212,22 +271,21 @@ public class CloneBuilderTest {
 
     @Test
     public void testCloneSingletonCollection() {
-        final OWLClassA obj = new OWLClassA();
-        final URI pk = URI.create("http://singletonTest");
-        obj.setUri(pk);
-        obj.setStringAttribute("TEST");
+        defaultLoadStateDescriptor(entityA, metamodelMocks.forOwlClassA().entityType());
         String type = "A_type";
-        obj.setTypes(Collections.singleton(type));
-        final OWLClassA result = (OWLClassA) builder.buildClone(obj, new CloneConfiguration(defaultDescriptor));
+        entityA.setTypes(Collections.singleton(type));
+        final OWLClassA result = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor, false));
         assertEquals(1, result.getTypes().size());
         assertEquals(type, result.getTypes().iterator().next());
     }
 
     @Test
     public void testCloneEmptyList() {
+        defaultLoadStateDescriptor(entityC, metamodelMocks.forOwlClassC().entityType());
         entityC.setSimpleList(Collections.emptyList());
         entityC.setReferencedList(Generators.generateInstances(10));
-        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
+        entityC.getReferencedList().forEach(a -> defaultLoadStateDescriptor(a, metamodelMocks.forOwlClassA().entityType()));
+        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor, false));
         assertNotNull(res);
         assertTrue(res.getSimpleList().isEmpty());
         for (int i = 0; i < res.getReferencedList().size(); i++) {
@@ -237,30 +295,28 @@ public class CloneBuilderTest {
 
     @Test
     public void testCloneEmptySet() {
-        final OWLClassA obj = new OWLClassA();
-        final URI pk = URI.create("http://singletonTest");
-        obj.setUri(pk);
-        obj.setStringAttribute("TEST");
-        obj.setTypes(Collections.emptySet());
-        final OWLClassA res = (OWLClassA) builder.buildClone(obj, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(entityA, metamodelMocks.forOwlClassA().entityType());
+        entityA.setTypes(Collections.emptySet());
+        final OWLClassA res = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor, false));
         assertNotNull(res);
         assertTrue(res.getTypes().isEmpty());
     }
 
     @Test
     public void testCloneProperties() {
+        defaultLoadStateDescriptor(entityB, metamodelMocks.forOwlClassB().entityType());
         entityB.setProperties(Generators.generateStringProperties());
-        OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor));
+        OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor, false));
         assertNotNull(res);
         assertEquals(entityB.getUri(), res.getUri());
         assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
         assertEquals(entityB.getProperties().size(), res.getProperties().size());
-        assertTrue(res.getProperties() instanceof IndirectCollection);
+        assertInstanceOf(ChangeTrackingIndirectCollection.class, res.getProperties());
         for (Entry<String, Set<String>> e : entityB.getProperties().entrySet()) {
             final String k = e.getKey();
             assertTrue(res.getProperties().containsKey(k));
             final Set<String> rv = res.getProperties().get(k);
-            assertTrue(rv instanceof IndirectCollection);
+            assertInstanceOf(ChangeTrackingIndirectCollection.class, rv);
             assertEquals(e.getValue().size(), rv.size());
             for (String s : e.getValue()) {
                 assertTrue(rv.contains(s));
@@ -270,24 +326,28 @@ public class CloneBuilderTest {
 
     @Test
     public void testCloneEmptyMap() {
+        defaultLoadStateDescriptor(entityB, metamodelMocks.forOwlClassB().entityType());
         entityB.setProperties(Collections.emptyMap());
-        OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor));
+        OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor, false));
         assertNotNull(res);
         assertTrue(res.getProperties().isEmpty());
     }
 
     @Test
     public void testCloneObjectProperty() {
+        defaultLoadStateDescriptor(entityD, metamodelMocks.forOwlClassD().entityType());
+        defaultLoadStateDescriptor(entityA, metamodelMocks.forOwlClassA().entityType());
         final OWLClassD another = new OWLClassD();
         another.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityDD"));
         another.setOwlClassA(entityA);
-        final OWLClassD clOne = (OWLClassD) builder.buildClone(entityD, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(another, metamodelMocks.forOwlClassD().entityType());
+        final OWLClassD clOne = (OWLClassD) builder.buildClone(entityD, new CloneConfiguration(defaultDescriptor, false));
         assertNotSame(entityD, clOne);
         assertNotSame(entityA, clOne.getOwlClassA());
-        final OWLClassD clTwo = (OWLClassD) builder.buildClone(another, new CloneConfiguration(defaultDescriptor));
+        final OWLClassD clTwo = (OWLClassD) builder.buildClone(another, new CloneConfiguration(defaultDescriptor, false));
         assertSame(clOne.getOwlClassA(), clTwo.getOwlClassA());
         assertEquals(entityA.getStringAttribute(), clOne.getOwlClassA().getStringAttribute());
-        assertTrue(clOne.getOwlClassA().getTypes() instanceof IndirectCollection);
+        assertInstanceOf(ChangeTrackingIndirectCollection.class, clOne.getOwlClassA().getTypes());
         final Set<String> tps = clOne.getOwlClassA().getTypes();
         assertEquals(entityA.getTypes().size(), tps.size());
         for (String t : entityA.getTypes()) {
@@ -297,64 +357,57 @@ public class CloneBuilderTest {
 
     @Test
     public void testCloneWithNullCollection() {
+        defaultLoadStateDescriptor(entityB, metamodelMocks.forOwlClassB().entityType());
         assertNull(entityB.getProperties());
-        final OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor));
+        final OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor, false));
         assertNotSame(entityB, res);
         assertNull(res.getProperties());
     }
 
     @Test
-    public void testCloneSingletonSet() {
-        final Set<String> singleton = Collections
-                .singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityY");
-        entityA.setTypes(singleton);
-        final OWLClassA res = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
-        assertNotSame(entityA, res);
-        assertTrue(res.getTypes() instanceof IndirectCollection);
-        assertEquals(1, res.getTypes().size());
-        assertTrue(res.getTypes().contains(singleton.iterator().next()));
-    }
-
-    @Test
     public void testCloneSingletonMap() {
+        defaultLoadStateDescriptor(entityB, metamodelMocks.forOwlClassB().entityType());
         final String key = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#attr";
         final String value = "stringValue";
         final Map<String, Set<String>> m = Collections.singletonMap(key,
-                                                                    Collections.singleton(value));
+                Collections.singleton(value));
         entityB.setProperties(m);
-        final OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor));
+        final OWLClassB res = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor, false));
         assertNotNull(res);
         assertNotSame(entityB, res);
         assertEquals(1, res.getProperties().size());
-        assertTrue(res.getProperties() instanceof IndirectCollection);
+        assertInstanceOf(ChangeTrackingIndirectCollection.class, res.getProperties());
         final Set<String> s = res.getProperties().get(key);
-        assertTrue(s instanceof IndirectCollection);
+        assertInstanceOf(ChangeTrackingIndirectCollection.class, s);
         assertEquals(1, s.size());
         assertEquals(value, s.iterator().next());
     }
 
     @Test
     public void testCloneSingletonListWithReference() {
+        defaultLoadStateDescriptor(entityC, metamodelMocks.forOwlClassC().entityType());
+        defaultLoadStateDescriptor(entityA, metamodelMocks.forOwlClassA().entityType());
         entityC.setReferencedList(Collections.singletonList(entityA));
-        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
+        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor, false));
         assertNotSame(res, entityC);
         assertEquals(1, res.getReferencedList().size());
-        assertTrue(res.getReferencedList() instanceof IndirectCollection);
+        assertInstanceOf(ChangeTrackingIndirectCollection.class, res.getReferencedList());
         final OWLClassA a = res.getReferencedList().get(0);
         assertNotSame(entityA, a);
         assertEquals(entityA.getUri(), a.getUri());
-        assertTrue(a.getTypes() instanceof IndirectCollection);
+        assertInstanceOf(ChangeTrackingIndirectCollection.class, a.getTypes());
     }
 
     @Test
     public void testCloneReferencedList() {
-        // Let's see how long this takes
-        entityC.setReferencedList(Generators.generateInstances(100));
-        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(entityC, metamodelMocks.forOwlClassC().entityType());
+        entityC.setReferencedList(Generators.generateInstances(10));
+        entityC.getReferencedList().forEach(a -> defaultLoadStateDescriptor(a, metamodelMocks.forOwlClassA().entityType()));
+        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor, false));
         assertNotSame(entityC, res);
         int size = entityC.getReferencedList().size();
         assertEquals(size, res.getReferencedList().size());
-        assertTrue(res.getReferencedList() instanceof IndirectCollection);
+        assertInstanceOf(ChangeTrackingIndirectCollection.class, res.getReferencedList());
         for (int i = 0; i < size; i++) {
             final OWLClassA or = entityC.getReferencedList().get(i);
             final OWLClassA cl = res.getReferencedList().get(i);
@@ -362,22 +415,20 @@ public class CloneBuilderTest {
             assertEquals(or.getUri(), cl.getUri());
             assertEquals(or.getStringAttribute(), cl.getStringAttribute());
             assertEquals(or.getTypes().size(), cl.getTypes().size());
-            assertTrue(cl.getTypes() instanceof IndirectCollection);
+            assertInstanceOf(ChangeTrackingIndirectCollection.class, cl.getTypes());
         }
     }
 
     @Test
     public void testCloneReferencedListWithNulls() {
-        final List<OWLClassA> nulls = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            nulls.add(null);
-        }
+        defaultLoadStateDescriptor(entityC, metamodelMocks.forOwlClassC().entityType());
+        final List<OWLClassA> nulls = new ArrayList<>(Arrays.asList(null, null, null, null));
         entityC.setReferencedList(nulls);
-        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
+        final OWLClassC res = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor, false));
         assertNotSame(entityC, res);
         int size = entityC.getReferencedList().size();
         assertEquals(size, res.getReferencedList().size());
-        assertTrue(res.getReferencedList() instanceof IndirectCollection);
+        assertInstanceOf(ChangeTrackingIndirectCollection.class, res.getReferencedList());
         for (OWLClassA a : res.getReferencedList()) {
             assertNull(a);
         }
@@ -385,16 +436,15 @@ public class CloneBuilderTest {
 
     @Test
     public void testMergeChangesOnString() {
-        final OWLClassA a = new OWLClassA();
-        a.setUri(entityA.getUri());
+        final OWLClassA a = new OWLClassA(entityA.getUri());
         a.setStringAttribute("oldString");
-        final OWLClassA cloneA = (OWLClassA) builder.buildClone(a, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(a, metamodelMocks.forOwlClassA().entityType());
+        final OWLClassA cloneA = (OWLClassA) builder.buildClone(a, new CloneConfiguration(defaultDescriptor, false));
         final String newStrAtt = "newString";
         cloneA.setStringAttribute(newStrAtt);
-        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(a, cloneA,
-                                                                             defaultDescriptor);
-        chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassA().stringAttribute(),
-                                                   newStrAtt));
+        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(a, cloneA, defaultDescriptor);
+        chSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassA().stringAttribute(),
+                newStrAtt));
         builder.mergeChanges(chSet);
 
         assertEquals(newStrAtt, a.getStringAttribute());
@@ -402,13 +452,14 @@ public class CloneBuilderTest {
 
     @Test
     public void testMergeChangesPropertiesFromNull() {
-        final OWLClassB b = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(entityB, metamodelMocks.forOwlClassB().entityType());
+        final OWLClassB b = (OWLClassB) builder.buildClone(entityB, new CloneConfiguration(defaultDescriptor, false));
         assertNull(b.getProperties());
         b.setProperties(Generators.generateStringProperties());
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityB, b,
-                                                                             defaultDescriptor);
-        chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassB().propertiesSpec(),
-                                                   b.getProperties()));
+                defaultDescriptor);
+        chSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassB().propertiesSpec(),
+                b.getProperties()));
         builder.mergeChanges(chSet);
 
         assertNotNull(entityB.getProperties());
@@ -417,14 +468,14 @@ public class CloneBuilderTest {
 
     @Test
     public void testMergeChangesRefListFromNull() {
-        final OWLClassC c = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(entityC, metamodelMocks.forOwlClassC().entityType());
+        final OWLClassC c = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor, false));
         assertNotSame(entityC, c);
         assertNull(entityC.getReferencedList());
         c.setReferencedList(Generators.generateInstances(5));
-        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c,
-                                                                             defaultDescriptor);
-        chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassC().referencedListAtt(),
-                                                   c.getReferencedList()));
+        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c, defaultDescriptor);
+        chSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassC().referencedListAtt(),
+                c.getReferencedList()));
         builder.mergeChanges(chSet);
 
         assertNotNull(entityC.getReferencedList());
@@ -436,14 +487,15 @@ public class CloneBuilderTest {
 
     @Test
     public void mergeChangesHandlesSingletonCollection() {
+        defaultLoadStateDescriptor(entityC, metamodelMocks.forOwlClassC().entityType());
+        defaultLoadStateDescriptor(entityA, metamodelMocks.forOwlClassA().entityType());
         entityC.setReferencedList(Collections.singletonList(entityA));
-        final OWLClassC c = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
+        final OWLClassC c = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor, false));
         final OWLClassA newA = new OWLClassA();
         c.setReferencedList(Collections.singletonList(newA));
-        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c,
-                                                                             defaultDescriptor);
+        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c, defaultDescriptor);
         chSet.addChangeRecord(
-                new ChangeRecordImpl(metamodelMocks.forOwlClassC().referencedListAtt(), c.getReferencedList()));
+                new ChangeRecord(metamodelMocks.forOwlClassC().referencedListAtt(), c.getReferencedList()));
 
         builder.mergeChanges(chSet);
         assertNotNull(entityC.getReferencedList());
@@ -453,7 +505,8 @@ public class CloneBuilderTest {
 
     @Test
     public void testBuildCloneWithMultipleWrapperTypesAndStringKey() {
-        final OWLClassM m = (OWLClassM) builder.buildClone(entityM, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(entityM, metamodelMocks.forOwlClassM().entityType());
+        final OWLClassM m = (OWLClassM) builder.buildClone(entityM, new CloneConfiguration(defaultDescriptor, false));
         assertNotSame(entityM, m);
         assertEquals(entityM.getKey(), m.getKey());
         assertEquals(entityM.getBooleanAttribute(), m.getBooleanAttribute());
@@ -465,25 +518,25 @@ public class CloneBuilderTest {
 
     @Test
     public void testMergeChangesWithMultipleWrapperTypesAndStringKey() {
-        final OWLClassM m = (OWLClassM) builder.buildClone(entityM, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(entityM, metamodelMocks.forOwlClassM().entityType());
+        final OWLClassM m = (OWLClassM) builder.buildClone(entityM, new CloneConfiguration(defaultDescriptor, false));
         assertNotSame(entityM, m);
         final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(entityM, m, defaultDescriptor);
         m.setBooleanAttribute(!m.getBooleanAttribute());
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(metamodelMocks.forOwlClassM().booleanAttribute(), m.getBooleanAttribute()));
+                new ChangeRecord(metamodelMocks.forOwlClassM().booleanAttribute(), m.getBooleanAttribute()));
         m.setIntAttribute(11111);
-        changeSet
-                .addChangeRecord(
-                        new ChangeRecordImpl(metamodelMocks.forOwlClassM().integerAttribute(), m.getIntAttribute()));
+        changeSet.addChangeRecord(
+                new ChangeRecord(metamodelMocks.forOwlClassM().integerAttribute(), m.getIntAttribute()));
         m.setLongAttribute(999L);
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(metamodelMocks.forOwlClassM().longAttribute(), m.getLongAttribute()));
+                new ChangeRecord(metamodelMocks.forOwlClassM().longAttribute(), m.getLongAttribute()));
         m.setDoubleAttribute(1.1);
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(metamodelMocks.forOwlClassM().doubleAttribute(), m.getDoubleAttribute()));
+                new ChangeRecord(metamodelMocks.forOwlClassM().doubleAttribute(), m.getDoubleAttribute()));
         m.setDateAttribute(new Date(System.currentTimeMillis() + 10000L));
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(metamodelMocks.forOwlClassM().dateAttribute(), m.getDateAttribute()));
+                new ChangeRecord(metamodelMocks.forOwlClassM().dateAttribute(), m.getDateAttribute()));
 
         builder.mergeChanges(changeSet);
         assertEquals(m.getBooleanAttribute(), entityM.getBooleanAttribute());
@@ -500,8 +553,9 @@ public class CloneBuilderTest {
         entityO.setStringAttribute("String");
         entityO.setTransientField("Transient");
         entityO.setTransientFieldWithAnnotation("TransientAnnotated");
+        defaultLoadStateDescriptor(entityO, metamodelMocks.forOwlClassO().entityType());
 
-        final OWLClassO clone = (OWLClassO) builder.buildClone(entityO, new CloneConfiguration(defaultDescriptor));
+        final OWLClassO clone = (OWLClassO) builder.buildClone(entityO, new CloneConfiguration(defaultDescriptor, false));
         assertNotNull(clone);
         assertEquals(entityO.getUri(), clone.getUri());
         assertEquals(entityO.getStringAttribute(), clone.getStringAttribute());
@@ -511,11 +565,13 @@ public class CloneBuilderTest {
 
     @Test
     public void reusesAlreadyClonedInstancesWhenCloningCollections() {
-        final OWLClassA cloneA = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(entityA, metamodelMocks.forOwlClassA().entityType());
+        final OWLClassA cloneA = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor, false));
         entityC.setReferencedList(new ArrayList<>());
         entityC.getReferencedList().add(entityA);
+        defaultLoadStateDescriptor(entityC, metamodelMocks.forOwlClassC().entityType());
 
-        final OWLClassC cloneC = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor));
+        final OWLClassC cloneC = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor, false));
         assertNotNull(cloneC.getReferencedList());
         assertEquals(1, cloneC.getReferencedList().size());
         assertSame(cloneA, cloneC.getReferencedList().get(0));
@@ -524,16 +580,18 @@ public class CloneBuilderTest {
     @Test
     public void cloneBuildingHandlesCyclesInObjectGraphByRegisteringAlreadyVisitedObjects() {
         final OWLClassG entityG = initGWithBackwardReference();
+        defaultLoadStateDescriptor(entityG, metamodelMocks.forOwlClassG().entityType());
+        defaultLoadStateDescriptor(entityG.getOwlClassH(), metamodelMocks.forOwlClassH().entityType());
 
-        final OWLClassG cloneG = (OWLClassG) builder.buildClone(entityG, new CloneConfiguration(defaultDescriptor));
+        final OWLClassG cloneG = (OWLClassG) builder.buildClone(entityG, new CloneConfiguration(defaultDescriptor, false));
         assertNotNull(cloneG);
         assertNotNull(cloneG.getOwlClassH());
         assertSame(cloneG, cloneG.getOwlClassH().getOwlClassG());
     }
 
     private OWLClassG initGWithBackwardReference() {
-        final OWLClassG g = new OWLClassG(URI.create("http://krizik.felk.cvut.cz/ontologies#entityG"));
-        final OWLClassH h = new OWLClassH(URI.create("http://krizik.felk.cvut.cz/ontologies#entityH"));
+        final OWLClassG g = new OWLClassG(URI.create(Vocabulary.INDIVIDUAL_BASE + "entityG"));
+        final OWLClassH h = new OWLClassH(URI.create(Vocabulary.INDIVIDUAL_BASE + "entityH"));
         g.setOwlClassH(h);
         h.setOwlClassG(g);
         return g;
@@ -544,8 +602,11 @@ public class CloneBuilderTest {
         final OWLClassC instance = new OWLClassC(URI.create("http://test"));
         final OWLClassA another = new OWLClassA(URI.create("http://anotherA"));
         instance.setSimpleList(Arrays.asList(entityA, another));
+        defaultLoadStateDescriptor(instance, metamodelMocks.forOwlClassC().entityType());
+        defaultLoadStateDescriptor(entityA, metamodelMocks.forOwlClassA().entityType());
+        defaultLoadStateDescriptor(another, metamodelMocks.forOwlClassA().entityType());
 
-        final OWLClassC result = (OWLClassC) builder.buildClone(instance, new CloneConfiguration(defaultDescriptor));
+        final OWLClassC result = (OWLClassC) builder.buildClone(instance, new CloneConfiguration(defaultDescriptor, false));
         assertNotNull(result);
         for (int i = 0; i < instance.getSimpleList().size(); i++) {
             assertEquals(instance.getSimpleList().get(i).getUri(), result.getSimpleList().get(i).getUri());
@@ -554,6 +615,7 @@ public class CloneBuilderTest {
 
     @Test
     public void mergeOfFieldOfManagedTypeUsesOriginalValueForMerge() {
+        defaultLoadStateDescriptor(entityD, metamodelMocks.forOwlClassD().entityType());
         entityD.setOwlClassA(entityA);
         final OWLClassD dClone = new OWLClassD();
         dClone.setUri(entityD.getUri());
@@ -566,8 +628,8 @@ public class CloneBuilderTest {
         newValueClone.setStringAttribute(newValue.getStringAttribute());
         dClone.setOwlClassA(newValueClone);
 
-        final ObjectChangeSet chSet = TestEnvironmentUtils.createObjectChangeSet(entityD, dClone, null);
-        chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassD().owlClassAAtt(), newValueClone));
+        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityD, dClone, new EntityDescriptor());
+        chSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassD().owlClassAAtt(), newValueClone));
         when(uow.getOriginal(newValueClone)).thenReturn(newValue);
         builder.mergeChanges(chSet);
         assertSame(newValue, entityD.getOwlClassA());
@@ -577,8 +639,9 @@ public class CloneBuilderTest {
 
     @Test
     public void buildCloneClonesMappedSuperclassFieldsAsWell() {
-
-        final OWLClassQ clone = (OWLClassQ) builder.buildClone(entityQ, new CloneConfiguration(defaultDescriptor));
+        defaultLoadStateDescriptor(entityQ, metamodelMocks.forOwlClassQ().entityType());
+        defaultLoadStateDescriptor(entityA, metamodelMocks.forOwlClassA().entityType());
+        final OWLClassQ clone = (OWLClassQ) builder.buildClone(entityQ, new CloneConfiguration(defaultDescriptor, false));
         assertNotNull(clone);
         assertEquals(entityQ.getUri(), clone.getUri());
         assertEquals(entityQ.getStringAttribute(), clone.getStringAttribute());
@@ -591,6 +654,7 @@ public class CloneBuilderTest {
 
     @Test
     public void mergeChangesMergesChangesOnMappedSuperclassFields() {
+        defaultLoadStateDescriptor(entityQ, metamodelMocks.forOwlClassQ().entityType());
         final OWLClassQ qClone = new OWLClassQ();
         qClone.setUri(entityQ.getUri());
         qClone.setStringAttribute("newStringAtt");
@@ -598,13 +662,13 @@ public class CloneBuilderTest {
         final OWLClassA newA = new OWLClassA();
         newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/newA"));
         qClone.setOwlClassA(newA);
-        final ObjectChangeSet changeSet = TestEnvironmentUtils.createObjectChangeSet(entityQ, qClone, null);
+        final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(entityQ, qClone, new EntityDescriptor());
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(metamodelMocks.forOwlClassQ().qStringAtt(), qClone.getStringAttribute()));
+                new ChangeRecord(metamodelMocks.forOwlClassQ().qStringAtt(), qClone.getStringAttribute()));
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(metamodelMocks.forOwlClassQ().qParentStringAtt(), qClone.getParentString()));
+                new ChangeRecord(metamodelMocks.forOwlClassQ().qParentStringAtt(), qClone.getParentString()));
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(metamodelMocks.forOwlClassQ().qOwlClassAAtt(), qClone.getOwlClassA()));
+                new ChangeRecord(metamodelMocks.forOwlClassQ().qOwlClassAAtt(), qClone.getOwlClassA()));
 
         builder.mergeChanges(changeSet);
         assertEquals(qClone.getStringAttribute(), entityQ.getStringAttribute());
@@ -623,14 +687,16 @@ public class CloneBuilderTest {
         initMetamodelForAB();
         doAnswer(invocation -> {
             Object obj = invocation.getArguments()[0];
-            Descriptor desc = (Descriptor) invocation.getArguments()[1];
-            final Object clone = builder.buildClone(obj, new CloneConfiguration(desc));
+            CloneRegistrationDescriptor desc = (CloneRegistrationDescriptor) invocation.getArguments()[1];
+            final Object clone = builder.buildClone(obj, new CloneConfiguration(desc.getDescriptor(), false));
             // THIS is the important verification
             assertNotNull(EntityPropertiesUtils.getIdentifier(clone, metamodel));
             return clone;
-        }).when(uow).registerExistingObject(any(), any(), any());
+        }).when(uow).registerExistingObject(any(), any(CloneRegistrationDescriptor.class));
+        defaultLoadStateDescriptor(b, metamodel.entity(B.class));
+        defaultLoadStateDescriptor(a, metamodel.entity(A.class));
 
-        final B result = (B) builder.buildClone(b, new CloneConfiguration(defaultDescriptor));
+        final B result = (B) builder.buildClone(b, new CloneConfiguration(defaultDescriptor, false));
         assertNotNull(result);
         assertNotNull(result.a);
         assertEquals(result, result.a.b.iterator().next());
@@ -642,7 +708,9 @@ public class CloneBuilderTest {
         when(uow.isEntityType(A.class)).thenReturn(true);
         when(uow.isEntityType(B.class)).thenReturn(true);
         final IdentifiableEntityType<A> etA = mock(IdentifiableEntityType.class);
+        when(etA.getJavaType()).thenReturn(A.class);
         final IdentifiableEntityType<B> etB = mock(IdentifiableEntityType.class);
+        when(etB.getJavaType()).thenReturn(B.class);
         final Identifier idA = new IRIIdentifierImpl<>(etA, A.class.getDeclaredField("uri"), true);
         final Identifier idB = new IRIIdentifierImpl<>(etB, B.class.getDeclaredField("uri"), true);
         when(etA.getIdentifier()).thenReturn(idA);
@@ -669,7 +737,7 @@ public class CloneBuilderTest {
         doReturn(etB).when(metamodel).entity(B.class);
     }
 
-    private static class A {
+    public static class A {
         @Id
         private URI uri;
 
@@ -677,7 +745,7 @@ public class CloneBuilderTest {
         private Set<B> b;
     }
 
-    private static class B {
+    public static class B {
         @Id
         private URI uri;
 
@@ -688,12 +756,68 @@ public class CloneBuilderTest {
     @Test
     public void buildCloneReturnsSameInstanceForImmutableClasses() {
         final LocalDateTime instance = LocalDateTime.now();
-        assertSame(instance, builder.buildClone(instance, new CloneConfiguration(defaultDescriptor)));
+        assertSame(instance, builder.buildClone(instance, new CloneConfiguration(defaultDescriptor, false)));
     }
 
     @Test
     public void buildCloneReturnsSameInstanceForJava8Instant() {
         final Instant instance = Instant.now();
-        assertSame(instance, builder.buildClone(instance, new CloneConfiguration(defaultDescriptor)));
+        assertSame(instance, builder.buildClone(instance, new CloneConfiguration(defaultDescriptor, false)));
+    }
+
+    @Test
+    void buildCloneCreatesAndRegistersLoadStateDescriptorForClone() {
+        loadStateRegistry.put(entityA, LoadStateDescriptorFactory.createAllLoaded(entityA, metamodelMocks.forOwlClassA()
+                                                                                           .entityType()));
+        final OWLClassA res = (OWLClassA) builder.buildClone(entityA, new CloneConfiguration(defaultDescriptor, true));
+        assertTrue(uow.getLoadStateRegistry().contains(res));
+        final LoadStateDescriptor<OWLClassA> originalLoadState = loadStateRegistry.get(entityA);
+        final LoadStateDescriptor<OWLClassA> resultLoadState = loadStateRegistry.get(res);
+        metamodelMocks.forOwlClassA().entityType().getFieldSpecifications()
+                      .forEach(fs -> assertEquals(originalLoadState.isLoaded(fs), resultLoadState.isLoaded(fs)));
+    }
+
+    @Test
+    void buildCloneSetsLazyLoadingProxiesForPluralAttributesWithNotLoadedState() {
+        final LoadStateDescriptor<OWLClassC> loadState = LoadStateDescriptorFactory.createAllUnknown(entityC, metamodelMocks.forOwlClassC()
+                                                                                                                            .entityType());
+        loadStateRegistry.put(entityC, loadState);
+        loadState.setLoaded(metamodelMocks.forOwlClassC().referencedListAtt(), LoadState.LOADED);
+        loadState.setLoaded(metamodelMocks.forOwlClassC().simpleListAtt(), LoadState.NOT_LOADED);
+
+        final OWLClassC result = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor, true));
+        assertNotNull(result.getSimpleList());
+        assertInstanceOf(LazyLoadingProxy.class, result.getSimpleList());
+    }
+
+    @Test
+    void buildCloneSetsLazyLoadingProxiesForSingularAttributesWithNotLoadedState() {
+        when(metamodelMocks.forOwlClassD().owlClassAAtt().getFetchType()).thenReturn(FetchType.LAZY);
+        final LoadStateDescriptor<OWLClassD> loadState = LoadStateDescriptorFactory.createAllUnknown(entityD, metamodelMocks.forOwlClassD()
+                                                                                                                            .entityType());
+        loadStateRegistry.put(entityD, loadState);
+        entityD.setOwlClassA(null);
+        loadState.setLoaded(metamodelMocks.forOwlClassD().owlClassAAtt(), LoadState.LOADED);
+
+        final OWLClassD result = (OWLClassD) builder.buildClone(entityD, new CloneConfiguration(defaultDescriptor, true));
+        assertNull(result.getOwlClassA());
+    }
+
+    @Test
+    public void mergeChangesUpdatesLoadStateOfOriginalLoadStateDescriptor() {
+        final LoadStateDescriptor<OWLClassC> loadStateDescriptor = LoadStateDescriptorFactory.createNotLoaded(entityC, metamodelMocks.forOwlClassC()
+                                                                                                                      .entityType());
+        loadStateDescriptor.setLoaded(metamodelMocks.forOwlClassC().referencedListAtt(), LoadState.LOADED);
+        loadStateRegistry.put(entityC, loadStateDescriptor);
+        final OWLClassC c = (OWLClassC) builder.buildClone(entityC, new CloneConfiguration(defaultDescriptor, false));
+        assertNotSame(entityC, c);
+        c.setSimpleList(null);
+        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c, defaultDescriptor);
+        chSet.addChangeRecord(new ChangeRecord(metamodelMocks.forOwlClassC().simpleListAtt(),
+                c.getSimpleList()));
+        builder.mergeChanges(chSet);
+
+        assertNull(entityC.getSimpleList());
+        assertEquals(LoadState.LOADED, loadStateDescriptor.isLoaded(metamodelMocks.forOwlClassC().simpleListAtt()));
     }
 }

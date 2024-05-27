@@ -19,17 +19,10 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.init.RepositoryConnectorInitializer;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.RepositoryCreationException;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -54,14 +47,13 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -75,12 +67,12 @@ class StorageConnectorTest {
 
     private File repositoryFolder;
 
-    private StorageConnector connector;
+    private StorageConnector sut;
 
     @AfterEach
     void tearDown() throws Exception {
-        if (connector != null && connector.isOpen()) {
-            connector.close();
+        if (sut != null && sut.isOpen()) {
+            sut.close();
         }
         if (repositoryFolder != null && repositoryFolder.exists()) {
             deleteRecursive(repositoryFolder);
@@ -106,7 +98,7 @@ class StorageConnectorTest {
         final File parentDir = new File(projectRootPath + File.separator + "internal");
         assertFalse(parentDir.exists());
         this.repositoryFolder = parentDir;
-        connector =createConnector(TestUtils.createDriverConfig(fileUri.toString()));
+        this.sut = createSut(TestUtils.createDriverConfig(fileUri.toString()));
         assertTrue(parentDir.exists());
         final File repositoryDir = new File(fileUri);
         assertTrue(repositoryDir.exists());
@@ -118,10 +110,10 @@ class StorageConnectorTest {
         return projectRootPath;
     }
 
-    private static StorageConnector createConnector(DriverConfiguration config) throws Rdf4jDriverException {
-        final RepositoryConnectorInitializer initializer = new RepositoryConnectorInitializer(config);
-        initializer.initializeRepository();
-        return new StorageConnector(initializer);
+    private static StorageConnector createSut(DriverConfiguration config) throws Rdf4jDriverException {
+        final StorageConnector connector = new StorageConnector(config);
+        connector.initializeRepository();
+        return connector;
     }
 
     @Test
@@ -132,7 +124,7 @@ class StorageConnectorTest {
         assertFalse(parentDir.exists());
         this.repositoryFolder = parentDir;
         assertThrows(RepositoryCreationException.class,
-                () -> createConnector(TestUtils.createDriverConfig(invalidUri.toString())));
+                () -> createSut(TestUtils.createDriverConfig(invalidUri.toString())));
     }
 
     @Test
@@ -148,21 +140,21 @@ class StorageConnectorTest {
         repoManager.addRepositoryConfig(config);
         repoManager.getRepository(repoId);
 
-        final StorageConnector connector = createConnector(TestUtils.createDriverConfig(repoUri.toString()));
-        assertTrue(connector.isOpen());
-        connector.close();
+        this.sut = createSut(TestUtils.createDriverConfig(repoUri.toString()));
+        assertTrue(sut.isOpen());
+        sut.close();
     }
 
     @Test
     void unwrapReturnsItselfWhenClassMatches() throws Exception {
         createInMemoryConnector();
-        assertSame(connector, connector.unwrap(StorageConnector.class));
+        assertSame(sut, sut.unwrap(StorageConnector.class));
     }
 
     @Test
     void unwrapReturnsUnderlyingRepository() throws Exception {
         createInMemoryConnector();
-        final Repository repo = connector.unwrap(Repository.class);
+        final Repository repo = sut.unwrap(Repository.class);
         assertNotNull(repo);
         assertTrue(repo.isInitialized());
     }
@@ -170,13 +162,13 @@ class StorageConnectorTest {
     private void createInMemoryConnector() throws Rdf4jDriverException {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        this.connector = createConnector(conf);
+        this.sut = createSut(conf);
     }
 
     @Test
     void unwrapOfUnsupportedClassThrowsException() throws Exception {
         createInMemoryConnector();
-        assertThrows(Rdf4jDriverException.class, () -> connector.unwrap(Boolean.class));
+        assertThrows(Rdf4jDriverException.class, () -> sut.unwrap(Boolean.class));
     }
 
     @Test
@@ -184,23 +176,25 @@ class StorageConnectorTest {
         createInMemoryConnector();
         final Repository newRepository = new SailRepository(new MemoryStore());
         Generator.initTestData(newRepository);
-        connector.setRepository(newRepository);
-        final Collection<Statement> content = connector.findStatements(null, null, null, false);
-        try (RepositoryConnection conn = newRepository.getConnection()) {
-            assertEquals(conn.getStatements(null, null, null, false).stream().collect(Collectors.toList()), content);
+        sut.setRepository(newRepository);
+        try (RepositoryConnection expectedConn = newRepository.getConnection()) {
+            try (RepositoryConnection actualConn = sut.acquireConnection()) {
+                assertEquals(expectedConn.getStatements(null, null, null, false).stream().toList(),
+                        actualConn.getStatements(null, null, null, false).stream().toList());
+            }
         }
     }
 
     @Test
     void setRepositoryThrowsUnsupportedOperationWhenOriginalRepositoryIsNotInMemory() throws Exception {
         this.repositoryFolder = Files.createTempDirectory("rdf4j-storage-connector-test").toFile();
-        connector = createConnector(TestUtils.createDriverConfig(Paths.get(repositoryFolder
+        this.sut = createSut(TestUtils.createDriverConfig(Paths.get(repositoryFolder
                 .getAbsolutePath() + File.separator + "repositories" + File.separator + "test").toUri().toString()));
 
         final Repository newRepository = new SailRepository(new MemoryStore());
         try {
             final UnsupportedOperationException result =
-                    assertThrows(UnsupportedOperationException.class, () -> connector.setRepository(newRepository));
+                    assertThrows(UnsupportedOperationException.class, () -> sut.setRepository(newRepository));
             assertEquals("Cannot replace repository which is not in-memory.", result.getMessage());
         } finally {
             newRepository.shutDown();
@@ -208,39 +202,23 @@ class StorageConnectorTest {
     }
 
     @Test
-    void setRepositoryThrowsIllegalStateExceptionWhenConnectorIsInTransaction() throws Exception {
-        createInMemoryConnector();
-        connector.begin();
-        final Repository newRepository = new SailRepository(new MemoryStore());
-
-        try {
-            final IllegalStateException result =
-                    assertThrows(IllegalStateException.class, () -> connector.setRepository(newRepository));
-            assertEquals("Cannot replace repository in transaction.", result.getMessage());
-        } finally {
-            newRepository.shutDown();
-            connector.rollback();
-        }
-    }
-
-    @Test
     void initializationLoadsRepositoryConfigurationFromFileOnClasspathAndCreatesRepo() throws Exception {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/memory-rdfs.ttl");
-        this.connector = createConnector(conf);
-        final Repository repo = connector.unwrap(Repository.class);
-        assertTrue(repo instanceof SailRepository);
-        assertTrue(((SailRepository) repo).getSail() instanceof SchemaCachingRDFSInferencer);
+        this.sut = createSut(conf);
+        final Repository repo = sut.unwrap(Repository.class);
+        assertInstanceOf(SailRepository.class, repo);
+        assertInstanceOf(SchemaCachingRDFSInferencer.class, ((SailRepository) repo).getSail());
     }
 
     @Test
     void initializationSupportsLegacyRepositoryConfigurationVocabulary() throws Exception {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/memory-rdfs-legacy.ttl");
-        this.connector = createConnector(conf);
-        final Repository repo = connector.unwrap(Repository.class);
-        assertTrue(repo instanceof SailRepository);
-        assertTrue(((SailRepository) repo).getSail() instanceof SchemaCachingRDFSInferencer);
+        this.sut = createSut(conf);
+        final Repository repo = sut.unwrap(Repository.class);
+        assertInstanceOf(SailRepository.class, repo);
+        assertInstanceOf(SchemaCachingRDFSInferencer.class, ((SailRepository) repo).getSail());
     }
 
     @Test
@@ -255,10 +233,10 @@ class StorageConnectorTest {
         file.toFile().deleteOnExit();
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, file.toString());
-        this.connector = createConnector(conf);
-        final Repository repo = connector.unwrap(Repository.class);
-        assertTrue(repo instanceof SailRepository);
-        assertTrue(((SailRepository) repo).getSail() instanceof SchemaCachingRDFSInferencer);
+        this.sut = createSut(conf);
+        final Repository repo = sut.unwrap(Repository.class);
+        assertInstanceOf(SailRepository.class, repo);
+        assertInstanceOf(SchemaCachingRDFSInferencer.class, ((SailRepository) repo).getSail());
     }
 
     @Test
@@ -266,7 +244,7 @@ class StorageConnectorTest {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/memory-rdfs-unknown.ttl");
         final RepositoryCreationException result =
-                assertThrows(RepositoryCreationException.class, () -> createConnector(conf));
+                assertThrows(RepositoryCreationException.class, () -> createSut(conf));
         assertThat(result.getMessage(), containsString("repo-configs/memory-rdfs-unknown.ttl"));
     }
 
@@ -275,7 +253,7 @@ class StorageConnectorTest {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, "/tmp/memory-rdfs-unknown.ttl");
         final RepositoryCreationException result =
-                assertThrows(RepositoryCreationException.class, () -> createConnector(conf));
+                assertThrows(RepositoryCreationException.class, () -> createSut(conf));
         assertThat(result.getMessage(), containsString("/tmp/memory-rdfs-unknown.ttl"));
     }
 
@@ -287,10 +265,10 @@ class StorageConnectorTest {
                 .toString(), File.separator + "repositories" + File.separator + "native-lucene").toUri().toString();
         final DriverConfiguration conf = TestUtils.createDriverConfig(physicalUri);
         conf.setProperty(Rdf4jConfigParam.REPOSITORY_CONFIG, "classpath:repo-configs/native-lucene.ttl");
-        this.connector = createConnector(conf);
-        final Repository repo = connector.unwrap(Repository.class);
-        assertTrue(repo instanceof SailRepository);
-        assertTrue(((SailRepository) repo).getSail() instanceof LuceneSail);
+        this.sut = createSut(conf);
+        final Repository repo = sut.unwrap(Repository.class);
+        assertInstanceOf(SailRepository.class, repo);
+        assertInstanceOf(LuceneSail.class, ((SailRepository) repo).getSail());
         final File repoDir = new File(URI.create(physicalUri));
         assertTrue(repoDir.exists());
     }
@@ -300,7 +278,7 @@ class StorageConnectorTest {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS, "not-a-number");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        assertThrows(Rdf4jDriverException.class, () -> createConnector(conf));
+        assertThrows(Rdf4jDriverException.class, () -> createSut(conf));
     }
 
     @Test
@@ -308,7 +286,7 @@ class StorageConnectorTest {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS, "-1");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        assertThrows(Rdf4jDriverException.class, () -> createConnector(conf));
+        assertThrows(Rdf4jDriverException.class, () -> createSut(conf));
     }
 
     @Test
@@ -317,44 +295,16 @@ class StorageConnectorTest {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         conf.setProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS, Integer.toString(attempts));
-        this.connector = createConnector(conf);
+        this.sut = createSut(conf);
         final Repository repoMock = mock(Repository.class);
         final Field repoField = StorageConnector.class.getDeclaredField("repository");
         repoField.setAccessible(true);
-        ((Repository) repoField.get(connector)).shutDown();
-        repoField.set(connector, repoMock);
+        ((Repository) repoField.get(sut)).shutDown();
+        repoField.set(sut, repoMock);
         when(repoMock.getConnection()).thenThrow(RepositoryException.class);
         when(repoMock.isInitialized()).thenReturn(true);
 
-        assertThrows(Rdf4jDriverException.class, () -> connector.acquireConnection());
+        assertThrows(Rdf4jDriverException.class, () -> sut.acquireConnection());
         verify(repoMock, times(attempts)).getConnection();
-    }
-
-    @Test
-    void isInferredReturnsTrueWhenStatementIsInferredInSpecifiedContext() throws Exception {
-        final DriverConfiguration conf = TestUtils.createDriverConfig("test");
-        conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        conf.setProperty(Rdf4jConfigParam.USE_INFERENCE, Boolean.TRUE.toString());
-        this.connector = createConnector(conf);
-        final ValueFactory vf = SimpleValueFactory.getInstance();
-        final IRI childType = vf.createIRI(Generator.generateUri().toString());
-        final IRI parentType = vf.createIRI(Generator.generateUri().toString());
-        final IRI instance = vf.createIRI(Generator.generateUri().toString());
-        final URI context = Generator.generateUri();
-        try (final RepositoryConnection conn = connector.unwrap(Repository.class).getConnection()) {
-            conn.begin();
-            conn.add(childType, RDFS.SUBCLASSOF, parentType, vf.createIRI(context.toString()));
-            conn.add(instance, RDF.TYPE, childType, vf.createIRI(context.toString()));
-            conn.commit();
-        }
-
-        connector.begin();
-        try {
-            assertFalse(connector.isInferred(vf.createStatement(instance, RDF.TYPE, parentType), Collections.singleton(vf.createIRI(Generator.generateUri().toString()))));
-            assertTrue(connector.isInferred(vf.createStatement(instance, RDF.TYPE, parentType), Collections.singleton(vf.createIRI(context.toString()))));
-            assertTrue(connector.isInferred(vf.createStatement(instance, RDF.TYPE, parentType), Collections.emptySet()));
-        } finally {
-            connector.rollback();
-        }
     }
 }

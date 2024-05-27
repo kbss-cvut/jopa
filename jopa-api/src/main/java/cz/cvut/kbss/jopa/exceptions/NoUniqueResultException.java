@@ -28,8 +28,6 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
  */
 public class NoUniqueResultException extends OWLPersistenceException {
 
-    private static final long serialVersionUID = -6340735954399074847L;
-
     public NoUniqueResultException(String message) {
         super(message);
     }

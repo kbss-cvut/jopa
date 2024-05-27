@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,8 +36,7 @@ class DateInstanceBuilderTest {
     private Field dateField;
     private Descriptor descriptor;
 
-    private final DateInstanceBuilder builder = new DateInstanceBuilder(mock(CloneBuilderImpl.class),
-            mock(UnitOfWorkImpl.class));
+    private final DateInstanceBuilder builder = new DateInstanceBuilder(mock(CloneBuilder.class), mock(UnitOfWork.class));
 
     @BeforeEach
     void setUp() throws Exception {
@@ -48,15 +48,15 @@ class DateInstanceBuilderTest {
     @Test
     void testBuildClone() {
         final Date original = new Date();
-        final Object res = builder.buildClone(entityM, dateField, original, new CloneConfiguration(descriptor));
-        assertTrue(res instanceof Date);
+        final Object res = builder.buildClone(entityM, dateField, original, new CloneConfiguration(descriptor, false));
+        assertInstanceOf(Date.class, res);
         assertNotSame(original, res);
         assertEquals(original, res);
     }
 
     @Test
     void testBuildCloneOfNull() {
-        final Object res = builder.buildClone(entityM, dateField, null, new CloneConfiguration(descriptor));
+        final Object res = builder.buildClone(entityM, dateField, null, new CloneConfiguration(descriptor, false));
         assertNull(res);
     }
 

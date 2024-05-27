@@ -20,7 +20,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.loader;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.Connector;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.util.AxiomBuilder;
 import org.eclipse.rdf4j.model.Statement;
@@ -56,7 +56,7 @@ class DefaultContextInferenceStatementLoaderTest {
     private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
     @Mock
-    private Connector connector;
+    private RepoConnection connector;
 
     @Mock
     private AxiomBuilder axiomBuilder;

@@ -19,14 +19,25 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.model.query.criteria.*;
-import cz.cvut.kbss.jopa.query.criteria.*;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.Expression;
+import cz.cvut.kbss.jopa.model.query.criteria.Order;
+import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
+import cz.cvut.kbss.jopa.model.query.criteria.Root;
+import cz.cvut.kbss.jopa.model.query.criteria.Selection;
+import cz.cvut.kbss.jopa.query.criteria.AbstractPredicate;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaQueryHolder;
+import cz.cvut.kbss.jopa.query.criteria.RootImpl;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
 import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
@@ -36,7 +47,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
 
     public CriteriaQueryImpl(CriteriaQueryHolder<T> query, Metamodel metamodel, CriteriaBuilderImpl cb) {
-        this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
+        this.query = Objects.requireNonNull(query);
         this.metamodel = metamodel;
         this.cb = cb;
     }

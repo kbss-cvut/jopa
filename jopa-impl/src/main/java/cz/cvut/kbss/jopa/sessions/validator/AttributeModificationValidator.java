@@ -34,7 +34,7 @@ public class AttributeModificationValidator {
 
     /**
      * Checks whether the specified field can be modified.
-     *
+     * <p>
      * Currently, only modification of lexical form attributes are rejected immediately.
      *
      * @param fieldSpec Specification of mapped field to verify

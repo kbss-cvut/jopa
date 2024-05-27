@@ -38,7 +38,7 @@ import static uk.ac.manchester.cs.owl.owlapi.InternalizedEntities.*;
  * true} for direct whenever the called method allows it. All other calls are just forwarded to the underlying
  * reasoner.
  */
-class NoOpReasoner implements OWLReasoner {
+public class NoOpReasoner implements OWLReasoner {
 
     private final OWLReasoner wrapped;
 

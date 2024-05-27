@@ -24,7 +24,11 @@ import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.exceptions.InvalidAssertionIdentifierException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,10 +38,21 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.net.URI;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -341,7 +356,7 @@ public class StringPropertiesFieldStrategyTest {
     public void buildsInstanceFieldFroAxiomValues() {
         final Map<String, Set<String>> properties = Generators.generateStringProperties();
         final Collection<Axiom<?>> axioms = createAxiomsForProperties(properties);
-        axioms.forEach(ax -> strategy.addValueFromAxiom(ax));
+        axioms.forEach(ax -> strategy.addAxiomValue(ax));
         strategy.buildInstanceFieldValue(entity);
         assertEquals(properties, entity.getProperties());
     }
@@ -353,7 +368,7 @@ public class StringPropertiesFieldStrategyTest {
             axioms.addAll(e.getValue().stream()
                     .map(val -> new AxiomImpl<>(subject,
                             Assertion.createPropertyAssertion(URI.create(e.getKey()), false), new Value<>(val)))
-                    .collect(Collectors.toList()));
+                    .toList());
         }
         return axioms;
     }
@@ -371,5 +386,12 @@ public class StringPropertiesFieldStrategyTest {
         final Set<Axiom<?>> result = strategy.buildAxiomsFromInstance(entity);
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void buildInstanceFieldValueSetsInstanceFieldValueToEmptyMapWhenNoValuesWereAdded() {
+        strategy.buildInstanceFieldValue(entity);
+        assertNotNull(entity.getProperties());
+        assertTrue(entity.getProperties().isEmpty());
     }
 }

@@ -67,6 +67,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                     found = true;
                     assertNotNull(dd.getOwlClassA());
                     assertEquals(d.getOwlClassA().getUri(), dd.getOwlClassA().getUri());
+                    assertNotNull(dd.getOwlClassA().getStringAttribute());
                     break;
                 }
             }
@@ -102,8 +103,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                         URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
                 .setParameter("y", a.getUri());
 
-        final List<OWLClassD> expected = ds.stream().filter(d -> d.getOwlClassA().getUri().equals(a.getUri())).collect(
-                Collectors.toList());
+        final List<OWLClassD> expected = ds.stream().filter(d -> d.getOwlClassA().getUri().equals(a.getUri())).toList();
         final List<OWLClassD> res = q.getResultList();
         assertEquals(expected.size(), res.size());
     }
@@ -232,7 +232,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test
     void testCreateTypedNamedNativeQuery() {
         final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
-        final List<URI> uris = expected.stream().map(OWLClassA::getUri).collect(Collectors.toList());
+        final List<URI> uris = expected.stream().map(OWLClassA::getUri).toList();
         final List<OWLClassA> res = getEntityManager().createNamedQuery("OWLClassA.findAll", OWLClassA.class)
                 .getResultList();
         assertEquals(expected.size(), res.size());
@@ -300,7 +300,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
         final List<OWLClassD> expected = ds.stream().filter(d -> d.getOwlClassA().getUri().equals(a.getUri()))
                 .sorted(Comparator.comparing(OWLClassD::getUri))
-                .collect(Collectors.toList());
+                .toList();
         final List<OWLClassD> res = q.getResultList();
         res.sort(Comparator.comparing(OWLClassD::getUri));
         assertEquals(expected.size(), res.size());
@@ -315,11 +315,11 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         final String query = "SELECT ?x WHERE { ?x a ?type . FILTER (?x IN (?values)) }";
         final List<OWLClassA> as = QueryTestEnvironment.getData(OWLClassA.class).stream()
                 .filter(a -> Generators.randomBoolean())
-                .collect(Collectors.toList());
+                .toList();
         final TypedQuery<OWLClassA> q = getEntityManager().createNativeQuery(query, OWLClassA.class)
                 .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_A))
                 .setParameter("values", as.stream().map(OWLClassA::getUri)
-                        .collect(Collectors.toList()));
+                        .toList());
         final List<OWLClassA> result = q.getResultList();
         assertEquals(as.size(), result.size());
         for (OWLClassA exp : as) {
@@ -336,14 +336,14 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
             // Now minus i * hour
             m.setDateAttribute(new Date(now - i * 60 * 60L));
             return m;
-        }).collect(Collectors.toList());
+        }).toList();
         getEntityManager().getTransaction().begin();
         mInstances.forEach(getEntityManager()::persist);
         getEntityManager().getTransaction().commit();
         final LocalDateTime param = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS).minusHours(3);
         final List<OWLClassM> matching = mInstances.stream()
                 .filter(m -> m.getDateAttribute().toInstant().atOffset(ZoneOffset.UTC).isBefore(param.atOffset(ZoneOffset.UTC)))
-                .collect(Collectors.toList());
+                .toList();
         try {
             final List<OWLClassM> result = getEntityManager().createQuery("SELECT m FROM OWLClassM m WHERE m.dateAttribute < :date", OWLClassM.class)
                     .setParameter("date", param).getResultList();

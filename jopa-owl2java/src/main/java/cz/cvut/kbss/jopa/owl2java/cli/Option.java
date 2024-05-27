@@ -99,14 +99,30 @@ public enum Option {
     GENERATE_JAVADOC_FROM_COMMENT("doc", "generate Javadoc from rdfs:comment annotations"),
 
     /**
-     * Whether to automatically generate name ({@literal rdfs:label}) and description ({@literal dc:description}) fields.
+     * Whether to automatically generate name ({@literal rdfs:label}) and description ({@literal dc:description})
+     * fields.
      */
     GENERATE_ANNOTATION_FIELDS("ann", "automatically generate rdfs:label and dc:description attributes for all entities"),
 
     /**
      * Whether to automatically generate an entity class corresponding to {@literal owl:Thing}.
      */
-    GENERATE_THING("thing", "automatically generate an entity class corresponding to owl:Thing");
+    GENERATE_THING("thing", "automatically generate an entity class corresponding to owl:Thing"),
+
+    /**
+     * Property whose value represents the ontology IRI prefix.
+     */
+    ONTOLOGY_PREFIX_PROPERTY("prefixProperty", "identifier of the property whose value represents the ontology IRI prefix"),
+
+    /**
+     * Specifies whether to always use ontology prefix (if available) when generating vocabulary and model.
+     */
+    ALWAYS_USE_ONTOLOGY_PREFIX("usePrefixes", "whether to always use ontology prefix for generating vocabulary and model"),
+
+    /**
+     * Specifies file containing ontology prefix mapping.
+     */
+    PREFIX_MAPPING_FILE("prefixFile", "file containing prefix mapping");
 
     public final String arg;
     final String description;

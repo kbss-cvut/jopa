@@ -17,13 +17,13 @@
  */
 package cz.cvut.kbss.jopa.sessions.change;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,26 +33,39 @@ import static org.mockito.Mockito.when;
 
 public class ObjectChangeSetTest {
 
-    private String testObject;
-    private String testClone;
+    private static final OWLClassA original = new OWLClassA(URI.create(Vocabulary.c_OwlClassA));
 
-    @BeforeEach
-    public void setUp() {
-        this.testObject = "TEST";
-        this.testClone = "TEST";
+    private static final OWLClassA clone = new OWLClassA(URI.create(Vocabulary.c_OwlClassA));
+
+    private final ObjectChangeSet sut = new ObjectChangeSet(original, clone, new EntityDescriptor());
+
+    @Test
+    public void addChangeRecordAddsChangeRecordToChanges() {
+        final String attName = "stringAttribute";
+        final FieldSpecification<?, ?> fs = mock(FieldSpecification.class);
+        when(fs.getName()).thenReturn(attName);
+        ChangeRecord record = new ChangeRecord(fs, "newValue");
+        sut.addChangeRecord(record);
+        final Optional<ChangeRecord> result = sut.getChanges().stream().filter(ch -> ch.getAttribute().equals(fs))
+                                                 .findAny();
+
+        assertTrue(result.isPresent());
+        assertEquals(record.getNewValue(), result.get().getNewValue());
     }
 
     @Test
-    public void testAddChangeRecord() {
-        final String attName = "testAtt";
+    void addChangeRecordOverwritesPreviousChangeRecordOfAttribute() {
+        final String attName = "stringAttribute";
         final FieldSpecification<?, ?> fs = mock(FieldSpecification.class);
         when(fs.getName()).thenReturn(attName);
-        ChangeRecord record = new ChangeRecordImpl(fs, testObject);
-        ObjectChangeSet chs = new ObjectChangeSetImpl(testObject, testClone, new EntityDescriptor());
-        chs.addChangeRecord(record);
-        final Optional<ChangeRecord> result = chs.getChanges().stream().filter(ch -> ch.getAttribute().equals(fs))
-                .findAny();
+        ChangeRecord firstRecord = new ChangeRecord(fs, "firstValue");
+        sut.addChangeRecord(firstRecord);
+        final ChangeRecord secondRecord = new ChangeRecord(fs, "secondValue");
+        sut.addChangeRecord(secondRecord);
+
+        final Optional<ChangeRecord> result = sut.getChanges().stream().filter(ch -> ch.getAttribute().equals(fs))
+                                                 .findAny();
         assertTrue(result.isPresent());
-        assertEquals(testObject, result.get().getNewValue());
+        assertEquals(secondRecord.getNewValue(), result.get().getNewValue());
     }
 }

@@ -29,6 +29,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
@@ -92,7 +93,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
         assertFalse(res.isEmpty());
         assertEquals(exp.size(), res.size());
         for (Object lst2 : res) {
-            assertTrue(lst2 instanceof LangString);
+            assertInstanceOf(LangString.class, lst2);
             // False means we got the expected value
             assertFalse(exp.add(((LangString) lst2).getValue()));
         }
@@ -244,7 +245,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
                                                        new LangString(a.getStringAttribute(), "en")));
         assertEquals(expected.size(), res.size());
         for (Object row : res) {
-            assertTrue(row instanceof Object[]);
+            assertInstanceOf(Object[].class, row);
             final Object[] elems = (Object[]) row;
             assertEquals(2, elems.length);
             assertTrue(expected.containsKey(elems[0]));
@@ -267,7 +268,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     private void verifyOWLClassAInstances(List res, Map<URI, OWLClassA> expected) {
         for (Object item : res) {
-            assertTrue(item instanceof OWLClassA);
+            assertInstanceOf(OWLClassA.class, item);
             final OWLClassA a = (OWLClassA) item;
             assertTrue(expected.containsKey(a.getUri()));
             assertEquals(expected.get(a.getUri()).getStringAttribute(), a.getStringAttribute());
@@ -302,7 +303,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
         assertEquals(expected.size(), res.size());
         for (Object row : res) {
-            assertTrue(row instanceof OWLClassD);
+            assertInstanceOf(OWLClassD.class, row);
             final OWLClassD inst = (OWLClassD) row;
             assertTrue(expected.containsKey(inst.getUri()));
             assertNotNull(inst.getOwlClassA());
@@ -336,7 +337,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
                                            .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_T))
                                            .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
                                            .setParameter("rdfsLabel", URI.create(RDFS.LABEL))
-                                           .setParameter("hasDescription", URI.create(Vocabulary.DC_DESCRIPTION))
+                                           .setParameter("hasDescription", URI.create(DC.Terms.DESCRIPTION))
                                            .setParameter("hasInt", URI.create(Vocabulary.P_T_INTEGER_ATTRIBUTE))
                                            .getResultList();
         final Map<URI, OWLClassT> expected = new HashMap<>();
@@ -344,7 +345,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
         assertEquals(expected.size(), res.size());
         for (Object row : res) {
-            assertTrue(row instanceof OWLClassT);
+            assertInstanceOf(OWLClassT.class, row);
             final OWLClassT tActual = (OWLClassT) row;
             assertTrue(expected.containsKey(tActual.getUri()));
             final OWLClassT tExpected = expected.get(tActual.getUri());

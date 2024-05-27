@@ -95,7 +95,7 @@ class SingularAnnotationPropertyStrategyTest {
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final Axiom<String> ax = new AxiomImpl<>(NamedResource.create(ID), annotationForN(), new Value<>(str));
 
-        strategy.addValueFromAxiom(ax);
+        strategy.addAxiomValue(ax);
         final OWLClassN n = new OWLClassN();
         strategy.buildInstanceFieldValue(n);
         assertEquals(str, n.getAnnotationProperty());
@@ -116,7 +116,7 @@ class SingularAnnotationPropertyStrategyTest {
         final SingularAnnotationPropertyStrategy<OWLClassN> strategy = forN(mocks.forOwlClassN().annotationAttribute());
         final Axiom<Integer> ax = new AxiomImpl<>(NamedResource.create(ID), annotationForN(), new Value<>(117));
 
-        strategy.addValueFromAxiom(ax);
+        strategy.addAxiomValue(ax);
         final OWLClassN n = new OWLClassN();
         strategy.buildInstanceFieldValue(n);
         assertNull(n.getAnnotationProperty());
@@ -130,7 +130,7 @@ class SingularAnnotationPropertyStrategyTest {
         final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(ID), annotationWithUriForN(),
                                                         new Value<>(NamedResource.create(value)));
 
-        strategy.addValueFromAxiom(ax);
+        strategy.addAxiomValue(ax);
         final OWLClassN n = new OWLClassN();
         strategy.buildInstanceFieldValue(n);
         assertEquals(value, n.getAnnotationUri());
@@ -149,7 +149,7 @@ class SingularAnnotationPropertyStrategyTest {
             axioms.add(new AxiomImpl<>(NamedResource.create(ID), annotationForN(), new Value<>("String" + i)));
         }
 
-        assertThrows(IntegrityConstraintViolatedException.class, () -> axioms.forEach(strategy::addValueFromAxiom));
+        assertThrows(IntegrityConstraintViolatedException.class, () -> axioms.forEach(strategy::addAxiomValue));
     }
 
     @Test
@@ -236,7 +236,7 @@ class SingularAnnotationPropertyStrategyTest {
         final Integer value = 117;
         final Axiom<Integer> axiom = new AxiomImpl<>(NamedResource.create(ID), lexicalFormAssertion(),
                                                      new Value<>(value));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         final OWLClassM result = new OWLClassM();
         result.setKey(ID.toString());
         sut.buildInstanceFieldValue(result);
@@ -257,7 +257,7 @@ class SingularAnnotationPropertyStrategyTest {
         final URI identifier = Generators.createIndividualIdentifier();
         final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID), lexicalFormAssertion(),
                                                            new Value<>(NamedResource.create(identifier)));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         final OWLClassM result = new OWLClassM();
         result.setKey(ID.toString());
         sut.buildInstanceFieldValue(result);
@@ -273,7 +273,7 @@ class SingularAnnotationPropertyStrategyTest {
         final URI identifier = Generators.createIndividualIdentifier();
         final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID), annotationWithUriForN(),
                                                            new Value<>(NamedResource.create(identifier)));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
         sut.buildInstanceFieldValue(instance);
         assertEquals(identifier, instance.singularAnnotation);
@@ -348,7 +348,7 @@ class SingularAnnotationPropertyStrategyTest {
         final LangString langString = new LangString("test", "en");
         final Axiom<LangString> axiom = new AxiomImpl<>(NamedResource.create(ID), annotationWithUriForN(),
                                                         new Value<>(langString));
-        sut.addValueFromAxiom(axiom);
+        sut.addAxiomValue(axiom);
         final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
         sut.buildInstanceFieldValue(instance);
         assertEquals(MultilingualString.create(langString.getValue(), langString.getLanguage().get()),

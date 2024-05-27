@@ -21,8 +21,8 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.util.Objects;
@@ -77,7 +77,7 @@ public abstract class IntegrityConstraintsValidator {
         Objects.requireNonNull(metamodel);
 
         final EntityType<?> et = metamodel.entity(changeSet.getObjectClass());
-        final Object id = EntityPropertiesUtils.getIdentifier(changeSet.getCloneObject(), et);
+        final Object id = EntityPropertiesUtils.getIdentifier(changeSet.getClone(), et);
         for (ChangeRecord change : changeSet.getChanges()) {
             validate(id, change.getAttribute(), change.getNewValue());
         }

@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.environment.listener.ParentListener;
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 
@@ -30,7 +31,7 @@ import java.util.Set;
 @EntityListeners(ParentListener.class)
 @Inheritance(strategy = InheritanceType.TWO_STEP)
 @OWLClass(iri = Vocabulary.c_OwlClassS)
-public abstract class OWLClassS implements Serializable {
+public abstract class OWLClassS implements HasUri, Serializable {
 
     @Id(generated = true)
     private URI uri;

@@ -43,15 +43,6 @@ public final class OntoDriverProperties {
     public static final String REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
 
     /**
-     * Ontology language property.
-     *
-     * @deprecated Ontology language should be set at persistence unit level. The driver uses language specified per
-     * {@link cz.cvut.kbss.ontodriver.model.Assertion}.
-     */
-    @Deprecated
-    public static final String ONTOLOGY_LANGUAGE = "cz.cvut.jopa.lang";
-
-    /**
      * This setting tells the driver whether to use the transactional ontology for retrieving entities and answering
      * queries.
      * <p>

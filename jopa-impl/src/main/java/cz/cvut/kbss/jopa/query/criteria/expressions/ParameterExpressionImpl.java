@@ -20,7 +20,7 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
-import cz.cvut.kbss.jopa.sessions.CriteriaBuilder;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 import java.util.Objects;
 

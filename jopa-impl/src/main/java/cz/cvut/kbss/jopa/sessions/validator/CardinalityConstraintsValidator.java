@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -80,7 +81,7 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
     }
 
     private static int extractValueCount(Object value) {
-        if (value == null) {
+        if (value == null || value instanceof LazyLoadingProxy<?>) {
             return 0;
         }
         return value instanceof Collection ? ((Collection<?>) value).size() : 1;

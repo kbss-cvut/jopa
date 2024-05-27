@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.exceptions.InferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.test.OWLClassF;
 import cz.cvut.kbss.jopa.test.OWLClassW;
 import cz.cvut.kbss.jopa.test.Vocabulary;
@@ -33,8 +34,15 @@ import java.net.URI;
 import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Testing implementation of Feature #121 - editable inferred attributes.
@@ -84,7 +92,7 @@ public abstract class UpdateWithInferenceRunner extends BaseRunner {
         final OWLClassW entityW = new OWLClassW();
         persistTestData(Collections.singleton(
                 new Quad(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
-                         URI.create(Vocabulary.C_OWL_CLASS_A))), em);
+                        URI.create(Vocabulary.C_OWL_CLASS_A))), em);
         persist(entityW);
 
         final URI newType = Generators.generateUri();
@@ -107,7 +115,7 @@ public abstract class UpdateWithInferenceRunner extends BaseRunner {
         final URI typeToAdd = Generators.generateUri();
         persistTestData(Collections.singleton(
                 new Quad(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
-                         URI.create(Vocabulary.C_OWL_CLASS_A))), em);
+                        URI.create(Vocabulary.C_OWL_CLASS_A))), em);
         persist(entityW);
 
         transactional(() -> {
@@ -129,16 +137,21 @@ public abstract class UpdateWithInferenceRunner extends BaseRunner {
         final OWLClassW entityW = new OWLClassW();
         persistTestData(Collections.singleton(
                 new Quad(URI.create(Vocabulary.C_OWL_CLASS_W), URI.create(RDFS.SUB_CLASS_OF),
-                         typeToRemove)), em);
+                        typeToRemove)), em);
         persist(entityW);
 
-        assertThrows(InferredAttributeModifiedException.class, () -> {
+        final OWLPersistenceException ex = assertThrows(OWLPersistenceException.class, () -> {
             em.getTransaction().begin();
             final OWLClassW toUpdate = findRequired(OWLClassW.class, entityW.getUri());
             assertThat(toUpdate.getTypes(), hasItem(typeToRemove));
             toUpdate.getTypes().remove(typeToRemove);
             em.getTransaction().commit();
         });
+        // Depending on the change tracking strategy, the exception may be thrown immediately on change and being InferredAttributeException
+        // Or on commit, in which case it will be a RollbackException with InferredAttributeModifiedException as cause
+        if (!(ex instanceof InferredAttributeModifiedException)) {
+            assertInstanceOf(InferredAttributeModifiedException.class, ex.getCause());
+        }
     }
 
     @Test
@@ -149,7 +162,7 @@ public abstract class UpdateWithInferenceRunner extends BaseRunner {
         final OWLClassW entityW = new OWLClassW();
         entityW.setTypes(Collections.singleton(typeToRemove));
         persistTestData(Collections.singleton(new Quad(typeToRemove, URI.create(RDFS.SUB_CLASS_OF), inferredSupertype)),
-                        em);
+                em);
         persist(entityW);
 
         final OWLClassW toUpdate = findRequired(OWLClassW.class, entityW.getUri());

@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 
 import java.net.URI;
 import java.util.Set;
@@ -26,12 +26,18 @@ import java.util.Set;
 public class DisabledCacheManager implements CacheManager {
 
     @Override
-    public void add(Object identifier, Object entity, Descriptor descriptor) {
+    public void add(Object identifier, Object entity, Descriptors descriptors) {
         // Do nothing
     }
 
     @Override
     public <T> T get(Class<T> cls, Object identifier, Descriptor descriptor) {
+        return null;
+    }
+
+
+    @Override
+    public LoadStateDescriptor<?> getLoadStateDescriptor(Object instance) {
         return null;
     }
 

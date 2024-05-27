@@ -36,11 +36,11 @@ public class SetAttributeImpl<X, V> extends AbstractPluralAttribute<X, Set<V>, V
         return "SetAttribute[" + getName() + "]";
     }
 
-    public static PluralAttributeBuilder builder(PropertyAttributes config) {
+    static PluralAttributeBuilder builder(PropertyAttributes config) {
         return new SetAttributeBuilder().collectionType(Set.class).config(config);
     }
 
-    public static class SetAttributeBuilder<X, V> extends PluralAttributeBuilder<X, Set<V>, V> {
+    static class SetAttributeBuilder<X, V> extends PluralAttributeBuilder<X, Set<V>, V> {
 
         @Override
         public SetAttributeImpl<X, V> build() {

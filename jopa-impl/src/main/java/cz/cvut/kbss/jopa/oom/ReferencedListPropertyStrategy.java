@@ -22,13 +22,10 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
-import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
@@ -41,25 +38,17 @@ class ReferencedListPropertyStrategy<X> extends
     }
 
     @Override
-    void addValueFromAxiom(Axiom<?> ax) {
+    void addAxiomValue(Axiom<?> ax) {
         final ReferencedListDescriptor listDescriptor = createListDescriptor(ax);
         final Collection<Axiom<?>> sequence = mapper.loadReferencedList(listDescriptor);
         sequence.stream()
-                .filter(a -> a.getAssertion().getIdentifier().equals(attribute.getOWLPropertyHasContentsIRI().toURI()))
-                .forEach(super::addValueFromAxiom);
+                .filter(a -> a.getAssertion().getIdentifier().equals(attribute.getHasContentsPropertyIRI().toURI()))
+                .forEach(super::addAxiomValue);
     }
 
     ReferencedListDescriptor createListDescriptor(Axiom<?> ax) {
         final NamedResource owner = ax.getSubject();
-
-        final boolean inferred = attribute.isInferred();
-        final Assertion listProperty = Assertion.createObjectPropertyAssertion(attribute.getIRI().toURI(), inferred);
-        final Assertion nextNodeProperty = Assertion
-                .createObjectPropertyAssertion(attribute.getOWLObjectPropertyHasNextIRI().toURI(), inferred);
-        final Assertion nodeContentProperty = Assertion.createObjectPropertyAssertion(attribute.getOWLPropertyHasContentsIRI()
-                                                                                               .toURI(), inferred);
-        final ReferencedListDescriptor listDescriptor = new ReferencedListDescriptorImpl(owner, listProperty,
-                nextNodeProperty, nodeContentProperty);
+        final ReferencedListDescriptor listDescriptor = ListDescriptorFactory.createReferencedListDescriptor(owner, attribute);
         listDescriptor.setContext(getAttributeWriteContext());
         return listDescriptor;
     }
@@ -77,16 +66,8 @@ class ReferencedListPropertyStrategy<X> extends
     }
 
     <V> ReferencedListValueDescriptor<V> createListValueDescriptor(X instance) {
-        final URI owner = EntityPropertiesUtils.getIdentifier(instance, et);
-        final boolean inferred = attribute.isInferred();
-        final Assertion hasList = Assertion
-                .createObjectPropertyAssertion(attribute.getIRI().toURI(), inferred);
-        final Assertion hasNext = Assertion.createObjectPropertyAssertion(attribute
-                .getOWLObjectPropertyHasNextIRI().toURI(), inferred);
-        final Assertion hasContent = Assertion.createObjectPropertyAssertion(attribute.getOWLPropertyHasContentsIRI()
-                                                                                      .toURI(), inferred);
-        final ReferencedListValueDescriptor<V> descriptor = new ReferencedListValueDescriptor<>(
-                NamedResource.create(owner), hasList, hasNext, hasContent);
+        final NamedResource owner = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
+        final ReferencedListValueDescriptor<V> descriptor = ListDescriptorFactory.createReferencedListValueDescriptor(owner, attribute);
         descriptor.setContext(getAttributeWriteContext());
         return descriptor;
     }
