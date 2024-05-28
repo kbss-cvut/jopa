@@ -85,9 +85,9 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
     boolean isInTransaction();
 
     /**
-     * Returns true if this Unit of Work is currently committing changes to the repository.
+     * Returns true if this Unit of Work is currently flushing changes to the repository.
      *
-     * @return {@code true} if the UoW is in commit, {@code false} otherwise
+     * @return {@code true} if the UoW is flushing changes, {@code false} otherwise
      */
     boolean isFlushingChanges();
 
