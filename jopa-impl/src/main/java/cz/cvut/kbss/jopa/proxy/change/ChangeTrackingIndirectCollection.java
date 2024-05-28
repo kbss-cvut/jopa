@@ -55,7 +55,7 @@ public abstract class ChangeTrackingIndirectCollection<T> implements IndirectWra
 
     protected void persistChange() {
         assert persistenceContext != null;
-        if (persistenceContext.isInTransaction() && !persistenceContext.isInCommit()) {
+        if (persistenceContext.isInTransaction() && !persistenceContext.isFlushingChanges()) {
             persistenceContext.attributeChanged(owner, field);
         }
     }

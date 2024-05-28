@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.test.integration;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassF;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
@@ -30,6 +31,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
@@ -77,5 +79,18 @@ public class EntityManagerTest extends IntegrationTestBase {
         final OWLClassF result = em.merge(toMerge);
         verify(connectionMock, never()).update(any(AxiomValueDescriptor.class));
         assertEquals(inferredValue, result.getSecondStringAttribute());
+    }
+
+    @Test
+    void flushWritesChangesToRepository() throws Exception {
+        final OWLClassA entity = new OWLClassA(Generators.generateUri());
+        entity.setStringAttribute("Test string");
+        em.getTransaction().begin();
+        em.persist(entity);
+        em.flush();
+        final ArgumentCaptor<AxiomValueDescriptor> captor = ArgumentCaptor.forClass(AxiomValueDescriptor.class);
+        verify(connectionMock).persist(captor.capture());
+        assertEquals(entity.getUri(), captor.getValue().getSubject().getIdentifier());
+        em.getTransaction().commit();
     }
 }

@@ -89,7 +89,7 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      *
      * @return {@code true} if the UoW is in commit, {@code false} otherwise
      */
-    boolean isInCommit();
+    boolean isFlushingChanges();
 
     /**
      * Return true if the given entity is managed.
