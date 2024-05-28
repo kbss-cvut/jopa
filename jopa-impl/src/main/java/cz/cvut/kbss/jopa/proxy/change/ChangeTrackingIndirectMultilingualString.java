@@ -56,7 +56,7 @@ public class ChangeTrackingIndirectMultilingualString extends MultilingualString
 
     private void notifyPersistenceContext() {
         assert persistenceContext != null;
-        if (persistenceContext.isInTransaction() && !persistenceContext.isInCommit()) {
+        if (persistenceContext.isInTransaction() && !persistenceContext.isFlushingChanges()) {
             persistenceContext.attributeChanged(owner, field);
         }
     }

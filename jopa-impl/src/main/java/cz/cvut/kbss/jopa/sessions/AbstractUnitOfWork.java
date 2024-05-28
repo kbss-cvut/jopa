@@ -93,7 +93,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
     private boolean transactionActive;
     private boolean isActive;
-    private boolean inCommit;
+    private boolean flushingChanges;
 
     UnitOfWorkChangeSet uowChangeSet = ChangeSetFactory.createUoWChangeSet();
 
@@ -185,7 +185,6 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         if (!isActive()) {
             throw new IllegalStateException("Cannot commit inactive Unit of Work!");
         }
-        this.inCommit = true;
         commitUnitOfWork();
         LOG.trace("UnitOfWork commit finished.");
     }
@@ -194,6 +193,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
      * Commit this Unit of Work.
      */
     private void commitUnitOfWork() {
+        this.flushingChanges = true;
         commitToStorage();
         mergeChangesIntoParent();
         postCommit();
@@ -228,7 +228,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     private void postCommit() {
         final boolean changes = hasChanges();
         clear();
-        this.inCommit = false;
+        this.flushingChanges = false;
         if (changes) {
             getLiveObjectCache().evictInferredObjects();
         }
@@ -420,7 +420,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             return getCloneForOriginal(entity);
         }
         final CloneConfiguration cloneConfig = CloneConfiguration.withDescriptor(registrationDescriptor.getDescriptor())
-                                                                 .forPersistenceContext(!isInCommit())
+                                                                 .forPersistenceContext(!isFlushingChanges())
                                                                  .addPostRegisterHandlers(registrationDescriptor.getPostCloneHandlers());
         Object clone = cloneBuilder.buildClone(entity, cloneConfig);
         assert clone != null;
@@ -515,7 +515,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
      * @param original Original to register
      */
     public void registerOriginalForNewClone(Object clone, Object original) {
-        assert inCommit;
+        assert flushingChanges;
         assert newObjectsCloneToOriginal.containsKey(clone);
         newObjectsCloneToOriginal.put(clone, original);
     }
@@ -772,8 +772,8 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     @Override
-    public boolean isInCommit() {
-        return inCommit;
+    public boolean isFlushingChanges() {
+        return flushingChanges;
     }
 
     @Override
