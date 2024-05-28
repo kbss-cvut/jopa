@@ -84,6 +84,7 @@ public class RDFCollectionAttribute<X, V> extends ListAttributeImpl<X, V> {
             return this;
         }
 
+        @Override
         public RDFCollectionAttribute<X, V> build() {
             return new RDFCollectionAttribute<>(this);
         }

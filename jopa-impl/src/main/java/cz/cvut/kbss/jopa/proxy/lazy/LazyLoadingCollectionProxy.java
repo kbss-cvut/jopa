@@ -15,11 +15,11 @@ import java.util.Iterator;
  */
 abstract class LazyLoadingCollectionProxy<O, T extends Collection<E>, E> implements LazyLoadingProxy<T>, Collection<E> {
 
-    protected final transient O owner;
-    protected final transient FieldSpecification<? super O, T> fieldSpec;
-    protected final transient UnitOfWork persistenceContext;
+    protected final O owner;
+    protected final FieldSpecification<? super O, T> fieldSpec;
+    protected final UnitOfWork persistenceContext;
 
-    private transient T value;
+    private T value;
 
     public LazyLoadingCollectionProxy(O owner, FieldSpecification<? super O, T> fieldSpec,
                                       UnitOfWork persistenceContext) {

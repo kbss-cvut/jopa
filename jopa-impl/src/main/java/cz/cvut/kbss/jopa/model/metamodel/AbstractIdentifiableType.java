@@ -28,8 +28,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Instances of the type AbstractIdentifiableType represent entity or mapped superclass
- * types which can be queried for attributes, subtypes and so on.
+ * Instances of the type AbstractIdentifiableType represent entity or mapped superclass types which can be queried for
+ * attributes, subtypes and so on.
  *
  * @param <X> Entity type being represented by this instance
  */
@@ -70,8 +70,8 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     /**
-     * Set supertypes of this instance, and for all given supertypes add this as their subtype.
-     * This method should not be called multiple times on one instance.
+     * Set supertypes of this instance, and for all given supertypes add this as their subtype. This method should not
+     * be called multiple times on one instance.
      *
      * @param supertypes Supertypes to set
      */
@@ -138,9 +138,10 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     /**
      * Gets the Java type represented by the metamodel instance that can be instantiated.
-     *
+     * <p>
      * The purpose of this method is mainly to return the generated subclass of {@link #getJavaType()} that is used for
      * instantiation.
+     *
      * @return Instantiable Java type
      */
     public Class<? extends X> getInstantiableJavaType() {

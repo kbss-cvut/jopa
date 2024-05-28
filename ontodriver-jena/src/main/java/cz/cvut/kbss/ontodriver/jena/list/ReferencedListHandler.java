@@ -107,7 +107,7 @@ public class ReferencedListHandler {
         return node;
     }
 
-    private Optional<Statement> createNilTerminal(Resource lastNode, Property hasNext,
+    private static Optional<Statement> createNilTerminal(Resource lastNode, Property hasNext,
                                                   ReferencedListDescriptor descriptor) {
         return descriptor.isTerminatedByNil() ? Optional.of(createStatement(lastNode, hasNext, RDF.nil)) : Optional.empty();
     }

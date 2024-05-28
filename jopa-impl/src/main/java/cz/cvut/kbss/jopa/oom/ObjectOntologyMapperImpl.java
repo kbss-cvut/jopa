@@ -238,7 +238,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
                 final ListValueDescriptor desc = list.getDescriptor();
                 ListPropertyStrategy.addIndividualsToDescriptor(desc, list.getValues(), et);
                 if (desc instanceof SimpleListValueDescriptor) {
-                    // TODO This can be an update or a persist
+                    // This can be a persist or an update, calling update works for both
                     storageConnection.lists().updateSimpleList((SimpleListValueDescriptor) desc);
                 } else {
                     storageConnection.lists().updateReferencedList((ReferencedListValueDescriptor) desc);

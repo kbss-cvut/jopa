@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+@FunctionalInterface
 public interface IdentifierVisitor {
 
     void visit(IRIIdentifier i);

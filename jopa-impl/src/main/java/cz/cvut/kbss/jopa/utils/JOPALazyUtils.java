@@ -10,6 +10,10 @@ import java.util.Objects;
  */
 public class JOPALazyUtils {
 
+    private JOPALazyUtils() {
+        throw new AssertionError();
+    }
+
     /**
      * Triggers loading on the specified lazy loading proxy.
      * <p>

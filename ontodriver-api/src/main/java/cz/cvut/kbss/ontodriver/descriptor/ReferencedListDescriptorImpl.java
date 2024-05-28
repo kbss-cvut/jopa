@@ -97,9 +97,15 @@ public class ReferencedListDescriptorImpl implements ReferencedListDescriptor {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {return true;}
-        if (obj == null) {return false;}
-        if (getClass() != obj.getClass()) {return false;}
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         ReferencedListDescriptorImpl other = (ReferencedListDescriptorImpl) obj;
         return descriptor.equals(other.descriptor) && nodeContent.equals(other.nodeContent) && terminatedByNil == other.terminatedByNil;
     }

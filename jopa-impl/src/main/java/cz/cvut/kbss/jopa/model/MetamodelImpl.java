@@ -151,10 +151,12 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         return Collections.unmodifiableSet(inferredClasses);
     }
 
+    @Override
     public NamedQueryManager getNamedQueryManager() {
         return namedQueryManager;
     }
 
+    @Override
     public ResultSetMappingManager getResultSetMappingManager() {
         return resultSetMappingManager;
     }

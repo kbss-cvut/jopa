@@ -87,7 +87,11 @@ public class ManageableClassGenerator implements PersistenceContextAwareClassGen
 
     public static class SetterInterceptor {
 
-        public static void set(@This Manageable instance, @Origin Method setter) throws Exception {
+        private SetterInterceptor() {
+            throw new AssertionError();
+        }
+
+        public static void set(@This Manageable instance, @Origin Method setter) {
             final UnitOfWork pc = instance.getPersistenceContext();
             if (pc == null || !pc.isInTransaction()) {
                 return;
