@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.MetamodelBuilder;
 import cz.cvut.kbss.jopa.model.metamodel.StaticMetamodelInitializer;
 import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxyGenerator;
+import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxyGenerator;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
@@ -55,6 +56,8 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     private TypeReferenceMap typeReferenceMap;
 
     private final Map<Class<?>, Class<?>> lazyLoadingProxyClasses = new ConcurrentHashMap<>();
+    // Proxy classes for results of EntityManager.getReference
+    private final Map<Class<?>, Class<?>> referenceProxyClasses = new ConcurrentHashMap<>();
 
     private NamedQueryManager namedQueryManager;
     private ResultSetMappingManager resultSetMappingManager;
@@ -224,12 +227,24 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     /**
      * Gets a {@link cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy} type for the specified class.
      *
-     * @param cls Class to get lazy loading proxy for
+     * @param cls Class to get lazy loading proxy for, should be an entity class
      * @param <X> Type to proxy
      * @return Lazy loading proxy class
      */
     public <X> Class<? extends X> getLazyLoadingProxy(Class<X> cls) {
         assert isEntityType(cls);
         return (Class<? extends X>) lazyLoadingProxyClasses.computeIfAbsent(cls, c -> new LazyLoadingEntityProxyGenerator().generate(c));
+    }
+
+    /**
+     * Gets a {@link cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxy} type for the specified class.
+     *
+     * @param cls Class to get reference proxy for, should be an entity class
+     * @param <X> Type to proxy
+     * @return Entity proxy class
+     */
+    public <X> Class<? extends X> getEntityReferenceProxy(Class<X> cls) {
+        assert isEntityType(cls);
+        return (Class<? extends X>) referenceProxyClasses.computeIfAbsent(cls, c -> new EntityReferenceProxyGenerator().generate(cls));
     }
 }
