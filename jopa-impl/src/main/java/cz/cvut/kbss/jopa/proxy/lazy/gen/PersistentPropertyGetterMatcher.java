@@ -17,9 +17,9 @@ import java.util.Optional;
  *
  * @param <T> MethodDescription
  */
-class PersistentPropertyGetterMatcher<T extends MethodDescription> extends PersistentPropertyMatcher<T> {
+public class PersistentPropertyGetterMatcher<T extends MethodDescription> extends PersistentPropertyMatcher<T> {
 
-    PersistentPropertyGetterMatcher(Class<?> parentType) {
+    public PersistentPropertyGetterMatcher(Class<?> parentType) {
         super(parentType);
     }
 
