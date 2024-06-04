@@ -21,10 +21,9 @@ import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 
 /**
- *  Instances of the type IdentifiableEntityType represent entity
- *  types which can be saved to and read from storage.
+ * Instances of this type represent entity classes that can be saved to and read from storage.
  *
- * @param <X> Entity type being represented by this instance
+ * @param <X> Entity class being represented by this instance
  */
 public abstract class IdentifiableEntityType<X> extends AbstractIdentifiableType<X> implements EntityType<X> {
 
@@ -69,9 +68,10 @@ public abstract class IdentifiableEntityType<X> extends AbstractIdentifiableType
     /**
      * Gets inheritance type of this entity type.
      * <p>
-     * If the entity type is a root if an inheritance hierarchy, the type can be defined using the {@link
-     * cz.cvut.kbss.jopa.model.annotations.Inheritance} annotation. If the entity is deeper in inheritance hierarchy, it
-     * is inherited from the supertype. Otherwise, it defaults to {@link cz.cvut.kbss.jopa.utils.Constants#DEFAULT_INHERITANCE_TYPE}.
+     * If the entity type is a root if an inheritance hierarchy, the type can be defined using the
+     * {@link cz.cvut.kbss.jopa.model.annotations.Inheritance} annotation. If the entity is deeper in inheritance
+     * hierarchy, it is inherited from the supertype. Otherwise, it defaults to
+     * {@link cz.cvut.kbss.jopa.utils.Constants#DEFAULT_INHERITANCE_TYPE}.
      *
      * @return Inheritance strategy for this entity type
      */

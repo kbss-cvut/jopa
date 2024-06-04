@@ -100,6 +100,8 @@ public class EntityReferenceProxyGenerator implements PersistenceContextAwareCla
         public static <T> void set(@This EntityReferenceProxy<T> proxy, @Origin Method setter,
                                    @AllArguments Object[] args) {
             if (isIdentifierField(proxy, setter)) {
+                // This is not expected (calls to identifier setter of an entity reference proxy), but
+                // be sure to handle it somehow
                 assert args.length == 1;
                 proxy.setIdentifier(args[0]);
                 return;

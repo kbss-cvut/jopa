@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxy;
+import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxy;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
@@ -715,6 +716,7 @@ class MetamodelImplTest {
         sut.build(entityClasses);
         final Class<? extends OWLClassA> result = sut.getLazyLoadingProxy(OWLClassA.class);
         assertNotNull(result);
+        assertTrue(LazyLoadingEntityProxy.class.isAssignableFrom(result));
         assertThat(result, typeCompatibleWith(OWLClassA.class));
     }
 
@@ -725,6 +727,27 @@ class MetamodelImplTest {
         sut.build(entityClasses);
         final Class<? extends OWLClassA> resultOne = sut.getLazyLoadingProxy(OWLClassA.class);
         final Class<? extends OWLClassA> resultTwo = sut.getLazyLoadingProxy(OWLClassA.class);
+        assertSame(resultOne, resultTwo);
+    }
+
+    @Test
+    void getEntityReferenceProxyReturnsGeneratedEntityReferenceProxyClassForSpecifiedType() {
+        final Set<Class<?>> entityClasses = new HashSet<>(List.of(OWLClassA.class));
+        final MetamodelImpl sut = new MetamodelImpl(conf);
+        sut.build(entityClasses);
+        final Class<? extends OWLClassA> result = sut.getEntityReferenceProxy(OWLClassA.class);
+        assertNotNull(result);
+        assertTrue(EntityReferenceProxy.class.isAssignableFrom(result));
+        assertThat(result, typeCompatibleWith(OWLClassA.class));
+    }
+
+    @Test
+    void getEntityReferenceProxyCachesGeneratedProxyClasses() {
+        final Set<Class<?>> entityClasses = new HashSet<>(List.of(OWLClassA.class));
+        final MetamodelImpl sut = new MetamodelImpl(conf);
+        sut.build(entityClasses);
+        final Class<? extends OWLClassA> resultOne = sut.getEntityReferenceProxy(OWLClassA.class);
+        final Class<? extends OWLClassA> resultTwo = sut.getEntityReferenceProxy(OWLClassA.class);
         assertSame(resultOne, resultTwo);
     }
 }
