@@ -793,4 +793,14 @@ public class SoqlQueryParserTest {
         final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . FILTER NOT EXISTS { ?x a ?disabledType . } }";
         parseAndAssertEquality(soql, expectedSparql);
     }
+
+    /**
+     * Bug #234
+     */
+    @Test
+    void parseQueryTranslatesQueryUsingRootIdentifierAfterReferenceIdentifier() {
+        final String soql = "SELECT DISTINCT h FROM OWLClassH h WHERE h.owlClassA.uri = :aUri AND h.owlClassG.uri = :gUri AND h.uri = :hUri";
+        final String expectedSparql = "SELECT DISTINCT ?hUri WHERE { ?hUri a " + strUri(Vocabulary.c_OwlClassH) + " . ?hUri " + strUri(Vocabulary.p_h_hasA) + " ?aUri . ?hUri " + strUri(Vocabulary.p_h_hasG) + " ?gUri . }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
 }

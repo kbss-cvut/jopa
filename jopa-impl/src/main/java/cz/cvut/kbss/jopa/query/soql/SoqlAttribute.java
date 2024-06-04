@@ -169,4 +169,9 @@ public class SoqlAttribute extends SoqlParameter {
         final String nodeIri = node.getIri();
         return SparqlConstants.RDF_TYPE_SHORTCUT.equals(nodeIri) ? nodeIri : IdentifierTransformer.stringifyIri(nodeIri);
     }
+
+    @Override
+    public String toString() {
+        return (value != null ? value + "." : "") + (getFirstNode() != null ? getFirstNode().toString() : " ");
+    }
 }

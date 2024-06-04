@@ -135,6 +135,10 @@ public class SoqlQueryListener implements SoqlListener {
         this.attrPointer = myAttr;
     }
 
+    private void popAttribute() {
+        this.attrPointer = attributes.remove(attributes.size() - 1);
+    }
+
     @Override
     public void exitJoinedParams(SoqlParser.JoinedParamsContext ctx) {
     }
@@ -192,15 +196,18 @@ public class SoqlQueryListener implements SoqlListener {
         SoqlNode objectNode = new AttributeNode(owner);
         SoqlNode attributeNode = new AttributeNode(objectNode, attribute);
         objectNode.setChild(attributeNode);
+        setIris(objectNode);
+        SoqlAttribute newAttr = new SoqlAttribute(objectNode);
         if (isIdentifier(objectNode, attributeNode)) {
             this.isInObjectIdentifierExpression = true;
-            if (projectedVariable.equals(objectNode.getValue())) {
+            if (projectedVariable.equals(objectNode.getValue()) && currentPointerIsNotAttributeReference()) {
                 attrPointer.setProjected(true);
+            } else {
+                newAttr.setProjected(true);
+                pushNewAttribute(newAttr);
             }
         } else {
-            setIris(objectNode);
-            SoqlAttribute myAttr = new SoqlAttribute(objectNode);
-            pushNewAttribute(myAttr);
+            pushNewAttribute(newAttr);
         }
     }
 
@@ -214,6 +221,10 @@ public class SoqlQueryListener implements SoqlListener {
             return false;
         }
         return entityType.getIdentifier().getName().equals(attributeNode.getValue());
+    }
+
+    private boolean currentPointerIsNotAttributeReference() {
+        return !attrPointer.getFirstNode().hasChild();
     }
 
     @Override
@@ -402,16 +413,27 @@ public class SoqlQueryListener implements SoqlListener {
             if (attrPointer.isProjected()) {
                 this.rootVariable = SoqlUtils.soqlVariableToSparqlVariable(whereClauseValue.getText());
             }
-            if (attributes.size() > 1 && !attrPointer.getFirstNode().getChild().hasChild()) {
-                final String varName = whereClauseValue.getText();
-                attrPointer.getFirstNode().getChild().setValue(
-                        varName.charAt(0) == SoqlConstants.VARIABLE_PREFIX ? varName.substring(1) : varName);
+            if (attributes.size() > 1) {
+                if (isRootIdentifier(attrPointer)) {
+                    // If the current attribute is identifier (i.e., something like root.iri = :iri) and there are other attributes to work with,
+                    // just pop it and not use it in the query anymore
+                    popAttribute();
+                } else {
+                    final String varName = whereClauseValue.getText();
+                    attrPointer.getFirstNode().getChild().setValue(
+                            varName.charAt(0) == SoqlConstants.VARIABLE_PREFIX ? varName.substring(1) : varName);
+                }
             }
         } else {
             attrPointer.setOperator(new ComparisonOperator(operator));
             attrPointer.setValue(whereClauseValue.getText());
         }
         this.isInObjectIdentifierExpression = false;
+    }
+
+    private boolean isRootIdentifier(SoqlAttribute attribute) {
+        return isIdentifier(attribute.getFirstNode(), attribute.getFirstNode().getChild()) &&
+                !attribute.getFirstNode().getChild().hasChild();
     }
 
     @Override
