@@ -88,9 +88,15 @@ public class DefaultClasspathScanner implements ClasspathScanner {
                 continue;
             }
             visited.add(elemUri);
-            LOG.trace("Processing classpath element {}", url);
+            LOG.trace("Processing classpath element {}", elemUri);
             if (isJar(elemUri)) {
-                processJarFile(createJarFile(url));
+                final JarFile jarFile = createJarFile(url);
+                if (!elemUri.equals(jarFile.getName()) && visited.contains(jarFile.getName())) {
+                    LOG.trace("Classpath element {} maps to a JAR file {} and it has already been processed.", elemUri, jarFile.getName());
+                } else {
+                    visited.add(jarFile.getName());
+                    processJarFile(jarFile);
+                }
             } else {
                 processDirectory(new File(URI.create(elemUri).getPath()), scanPath);
             }
