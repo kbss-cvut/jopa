@@ -20,9 +20,12 @@ package cz.cvut.kbss.jopa.exceptions;
 import cz.cvut.kbss.jopa.model.EntityManager;
 
 /**
- * Thrown when {@link EntityManager#refresh(Object)}  is called and the object no longer exists in the database.
+ * Thrown by the persistence provider when an entity reference obtained by
+ * {@link EntityManager#getReference(Class, Object)} is accessed but the entity does not exist. Thrown when
+ * {@link EntityManager#refresh} is called and the object no longer exists in the database.
  * <p>
- * The current transaction, if one is active and the persistence context has been joined to it, will be marked for rollback.
+ * The current transaction, if one is active and the persistence context has been joined to it, will be marked for
+ * rollback.
  */
 public class EntityNotFoundException extends OWLPersistenceException {
 
