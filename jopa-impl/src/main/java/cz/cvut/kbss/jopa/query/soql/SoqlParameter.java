@@ -57,4 +57,9 @@ public class SoqlParameter {
         }
         return buildParam.toString();
     }
+
+    @Override
+    public String toString() {
+        return firstNode != null ? firstNode.toString() : getClass().getSimpleName();
+    }
 }
