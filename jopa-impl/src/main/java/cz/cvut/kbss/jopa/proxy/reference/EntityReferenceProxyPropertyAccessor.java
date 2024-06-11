@@ -3,6 +3,8 @@ package cz.cvut.kbss.jopa.proxy.reference;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
+import java.net.URI;
+
 /**
  * Provides access to persistence context-related attributes needed by entity reference proxies.
  * <p>
@@ -10,9 +12,9 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWork;
  */
 public interface EntityReferenceProxyPropertyAccessor<T> {
 
-    Object getIdentifier();
+    URI getIdentifier();
 
-    void setIdentifier(Object identifier);
+    void setIdentifier(URI identifier);
 
     Class<T> getType();
 

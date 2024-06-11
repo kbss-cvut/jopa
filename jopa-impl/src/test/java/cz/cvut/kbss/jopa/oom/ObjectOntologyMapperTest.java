@@ -30,7 +30,6 @@ import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.LoadState;
-import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -38,7 +37,10 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxy;
+import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxyGenerator;
 import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
+import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
@@ -354,7 +356,7 @@ class ObjectOntologyMapperTest {
     }
 
     @Test
-    void loadReferencedListThrowsStorageAccessExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
+    void getReferencedListThrowsStorageAccessExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
         final String message = "OntoDriver exception was thrown";
         final Lists listsMock = mock(Lists.class);
         when(listsMock.loadReferencedList(any(ReferencedListDescriptor.class)))
@@ -380,7 +382,7 @@ class ObjectOntologyMapperTest {
                 aDescriptor);
         doReturn(entity).when(twoStepLoader).loadEntity(loadingParameters);
         final LoadStateDescriptor<OWLClassS> loadStateDescriptor = new LoadStateDescriptor<>(entity, mocks.forOwlClassS()
-                                                                                                           .entityType(), LoadState.UNKNOWN);
+                                                                                                          .entityType(), LoadState.UNKNOWN);
         loadStateRegistry.put(entity, loadStateDescriptor);
 
         final OWLClassS result = mapper.loadEntity(loadingParameters);
@@ -409,7 +411,7 @@ class ObjectOntologyMapperTest {
         when(cacheMock.contains(OWLClassR.class, IDENTIFIER, aDescriptor)).thenReturn(true);
         when(cacheMock.get(OWLClassR.class, IDENTIFIER, aDescriptor)).thenReturn(entity);
         final LoadStateDescriptor<OWLClassR> loadStateDescriptor = new LoadStateDescriptor<>(entity, mocks.forOwlClassR()
-                                                                                                           .entityType(), LoadState.UNKNOWN);
+                                                                                                          .entityType(), LoadState.UNKNOWN);
         doReturn(loadStateDescriptor).when(cacheMock).getLoadStateDescriptor(entity);
         final Types typesMock = mock(Types.class);
         final NamedResource individual = NamedResource.create(IDENTIFIER);
@@ -638,74 +640,24 @@ class ObjectOntologyMapperTest {
     }
 
     @Test
-    void loadReferenceRetrievesEntityReferenceViaDefaultInstanceLoader() throws Exception {
-        when(entityConstructorMock.createEntityInstance(IDENTIFIER, mocks.forOwlClassA().entityType()))
-                .thenReturn(new OWLClassA(IDENTIFIER));
-        final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(IDENTIFIER),
-                Assertion.createClassAssertion(false),
-                new Value<>(NamedResource.create(Vocabulary.c_OwlClassA)));
-        when(connectionMock.contains(axiom, Collections.emptySet())).thenReturn(true);
-        final OWLClassA result = mapper
-                .loadReference(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, aDescriptor));
-        assertNotNull(result);
-        assertEquals(IDENTIFIER, result.getUri());
-        assertNull(result.getStringAttribute());
-        verify(connectionMock).contains(eq(axiom), eq(Collections.emptySet()));
-    }
-
-    @Test
-    void loadReferenceUsesTwoStepLoaderWhenEntityTypeHasSubclasses() throws Exception {
-        final Types typesMock = mock(Types.class);
-        when(connectionMock.types()).thenReturn(typesMock);
-        final NamedResource idResource = NamedResource.create(IDENTIFIER);
-        final Set<Axiom<URI>> typesAxioms = Collections.singleton(
-                new AxiomImpl<>(idResource, Assertion.createClassAssertion(false),
-                        new Value<>(URI.create(Vocabulary.C_OWLClassR))));
-        when(typesMock.getTypes(idResource, Collections.emptySet(), false)).thenReturn(typesAxioms);
-        final OWLClassS result = mapper
-                .loadReference(new LoadingParameters<>(OWLClassS.class, IDENTIFIER, new EntityDescriptor()));
-        assertNotNull(result);
-        assertInstanceOf(OWLClassR.class, result);
-        verify(typesMock).getTypes(eq(idResource), eq(Collections.emptySet()), eq(false));
-    }
-
-    @Test
-    void loadReferenceUsesContextWhenGettingDataFromConnection() throws Exception {
-        final URI context = Generators.createIndividualIdentifier();
-        final EntityDescriptor descriptor = new EntityDescriptor(context);
-        when(entityConstructorMock.createEntityInstance(IDENTIFIER, mocks.forOwlClassA().entityType()))
-                .thenReturn(new OWLClassA(IDENTIFIER));
-        when(connectionMock.contains(
-                new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
-                        new Value<>(NamedResource.create(Vocabulary.c_OwlClassA))),
-                Collections.singleton(context)))
-                .thenReturn(true);
-        final OWLClassA result = mapper
-                .loadReference(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, descriptor));
-        assertNotNull(result);
-        verify(connectionMock).contains(any(Axiom.class), eq(Collections.singleton(context)));
-    }
-
-    @Test
-    void loadReferenceUsesContextWhenGettingTypesFromConnection() throws Exception {
-        final URI context = Generators.createIndividualIdentifier();
-        final EntityDescriptor descriptor = new EntityDescriptor(context);
-        final Types typesMock = mock(Types.class);
-        when(connectionMock.types()).thenReturn(typesMock);
-        final NamedResource idResource = NamedResource.create(IDENTIFIER);
-        final Set<Axiom<URI>> typesAxioms = Collections.singleton(
-                new AxiomImpl<>(idResource, Assertion.createClassAssertion(false),
-                        new Value<>(URI.create(Vocabulary.C_OWLClassR))));
-        when(typesMock.getTypes(idResource, Collections.singleton(context), false)).thenReturn(typesAxioms);
-        final OWLClassS result = mapper.loadReference(new LoadingParameters<>(OWLClassS.class, IDENTIFIER, descriptor));
-        assertNotNull(result);
-        verify(typesMock).getTypes(idResource, Collections.singleton(context), false);
-    }
-
-    @Test
     void getEntityFromCacheOrOntologyThrowsEntityExistsWhenObjectIsAlreadyRegisteredUnderDifferentType() {
         mapper.registerInstance(IDENTIFIER, entityA);
         assertThrows(OWLEntityExistsException.class,
                 () -> mapper.getEntityFromCacheOrOntology(OWLClassB.class, IDENTIFIER, aDescriptor));
+    }
+
+    @Test
+    void getReferenceReturnsReferenceObjectOfRequestedEntityTypeWithIdentifierSet() throws Exception {
+        when(metamodelMock.getEntityReferenceProxy(OWLClassA.class)).thenReturn((Class) new EntityReferenceProxyGenerator().generate(OWLClassA.class));
+        final OWLClassA result = mapper.getReference(loadingParameters);
+        assertNotNull(result);
+        assertEquals(IDENTIFIER, result.getUri());
+        assertInstanceOf(EntityReferenceProxy.class, result);
+        final EntityReferenceProxy<OWLClassA> proxy = (EntityReferenceProxy<OWLClassA>) result;
+        assertEquals(uowMock, proxy.getPersistenceContext());
+        assertEquals(aDescriptor, proxy.getDescriptor());
+        assertEquals(IDENTIFIER, proxy.getIdentifier());
+        assertEquals(OWLClassA.class, proxy.getType());
+        verify(connectionMock, never()).find(any());
     }
 }
