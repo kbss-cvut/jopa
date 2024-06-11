@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.proxy.reference;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
@@ -151,7 +152,7 @@ class EntityReferenceProxyGeneratorTest {
 
     // This makes no sense, but let's be sure we are handling it
     @Test
-    void generateGeneratesProxyClassThatDoesNotTriggerLoadingOnIdentifierSetter() throws Exception {
+    void generateGeneratesProxyClassThatThrowsAttributeModificationForbiddenExceptionOnIdentifierSetter() throws Exception {
         initMetamodel();
         final Class<? extends OWLClassA> result = sut.generate(OWLClassA.class);
         final OWLClassA instance = result.getConstructor().newInstance();
@@ -160,8 +161,7 @@ class EntityReferenceProxyGeneratorTest {
         aInstance.setIdentifier(storedInstance.getUri());
         aInstance.setType(OWLClassA.class);
         final URI newId = Generators.createIndividualIdentifier();
-        instance.setUri(newId);
-        assertEquals(newId, aInstance.getIdentifier());
+        assertThrows(AttributeModificationForbiddenException.class, () -> instance.setUri(newId));
         verify(uow, never()).readObject(OWLClassA.class, storedInstance.getUri(), null);
     }
 }

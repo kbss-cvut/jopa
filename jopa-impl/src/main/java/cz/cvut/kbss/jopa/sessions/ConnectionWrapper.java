@@ -62,7 +62,7 @@ public class ConnectionWrapper implements Wrapper {
     }
 
     public <T> T getReference(LoadingParameters<T> loadingParameters) {
-        return mapper.loadReference(loadingParameters);
+        return mapper.getReference(loadingParameters);
     }
 
     public <T> void merge(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor) {

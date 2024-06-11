@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.proxy.reference;
 
 import cz.cvut.kbss.jopa.exception.LazyLoadingException;
+import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AnnotatedAccessor;
 import cz.cvut.kbss.jopa.model.metamodel.gen.PersistenceContextAwareClassGenerator;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.Objects;
 
 import static net.bytebuddy.matcher.ElementMatchers.isGetter;
@@ -46,7 +48,7 @@ public class EntityReferenceProxyGenerator implements PersistenceContextAwareCla
         LOG.trace("Generating reference proxy for entity class {}.", entityClass);
         DynamicType.Unloaded<? extends T> typeDef = byteBuddy.subclass(entityClass)
                                                              .annotateType(new GeneratedEntityReferenceProxyImpl())
-                                                             .defineField("identifier", Object.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
+                                                             .defineField("identifier", URI.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
                                                              .defineField("type", Class.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
                                                              .defineField("descriptor", Descriptor.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
                                                              .defineField("persistenceContext", UnitOfWork.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
@@ -100,11 +102,7 @@ public class EntityReferenceProxyGenerator implements PersistenceContextAwareCla
         public static <T> void set(@This EntityReferenceProxy<T> proxy, @Origin Method setter,
                                    @AllArguments Object[] args) {
             if (isIdentifierField(proxy, setter)) {
-                // This is not expected (calls to identifier setter of an entity reference proxy), but
-                // be sure to handle it somehow
-                assert args.length == 1;
-                proxy.setIdentifier(args[0]);
-                return;
+                throw new AttributeModificationForbiddenException("Cannot change entity reference identifier.");
             }
             final Object loaded = proxy.triggerLoading();
             try {
