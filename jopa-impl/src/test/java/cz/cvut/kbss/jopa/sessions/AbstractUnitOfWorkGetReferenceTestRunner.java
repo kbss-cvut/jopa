@@ -25,22 +25,20 @@ import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxy;
 import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxyGenerator;
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -163,12 +161,8 @@ public abstract class AbstractUnitOfWorkGetReferenceTestRunner extends UnitOfWor
         toMerge.setOwlClassA(ref);
 
         uow.mergeDetached(toMerge, descriptor);
+        uow.commit();
 
-        final ObjectChangeSet changeSet = uow.uowChangeSet.getExistingObjectChanges(owner);
-        assertFalse(changeSet.getChanges().isEmpty());
-        final Optional<ChangeRecord> changeRecord =
-                changeSet.getChanges().stream().filter(chr -> chr.getNewValue().equals(ref)).findFirst();
-        assertTrue(changeRecord.isPresent());
-        assertTrue(changeRecord.get().doesPreventCaching());
+        verify(serverSessionStub.getLiveObjectCache(), never()).add(eq(toMerge.getUri()), eq(owner), any());
     }
 }
