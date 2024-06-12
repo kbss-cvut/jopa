@@ -203,6 +203,8 @@ class EntityConstructor {
             if (queryAttribute.getFetchType() != FetchType.LAZY) {
                 populateQueryAttribute(instance, queryAttribute, queryFactory, et);
                 loadStateDescriptor.setLoaded(queryAttribute, LoadState.LOADED);
+            } else {
+                loadStateDescriptor.setLoaded(queryAttribute, LoadState.NOT_LOADED);
             }
         }
     }

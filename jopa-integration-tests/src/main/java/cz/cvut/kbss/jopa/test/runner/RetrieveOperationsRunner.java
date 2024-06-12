@@ -385,9 +385,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     protected abstract void addFileStorageProperties(Map<String, String> properties);
 
     @Test
-    @Disabled
-    void getReferenceRetrievesReferenceToInstanceWithDataPropertiesWhoseAttributesAreLoadedLazily()
-            throws Exception {
+    void getReferenceRetrievesReferenceToInstanceWithDataPropertiesWhoseAttributesAreLoadedLazily() throws Exception {
         this.em = getEntityManager(
                 "getReferenceRetrievesReferenceToInstanceWithDataPropertiesWhoseAttributesAreLoadedLazily", false);
         persist(entityM);
@@ -512,27 +510,24 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    @Disabled
     void testRetrieveWithLazyQueryAttribute() throws Exception {
         this.em = getEntityManager("RetrieveLazyQueryAttr", false);
 
-        Set<OWLClassA> simpleSet = Generators.createSimpleSet(20);
-        entityWithQueryAttr6.setPluralAttribute(simpleSet);
+        entityWithQueryAttr6.setOwlClassA(entityA);
+        entityD.setOwlClassA(entityA);
 
-        persist(entityWithQueryAttr6);
+
+        persist(entityWithQueryAttr6, entityD);
 
         final OWLClassWithQueryAttr6 res = findRequired(OWLClassWithQueryAttr6.class, entityWithQueryAttr6.getUri());
-        final Field f = OWLClassWithQueryAttr6.class.getDeclaredField("pluralQueryAttribute");
+        final Field f = OWLClassWithQueryAttr6.class.getDeclaredField("lazyQueryAttribute");
         f.setAccessible(true);
         Object value = f.get(res);
         assertInstanceOf(LazyLoadingProxy.class, value);
-        assertNotNull(res.getPluralQueryAttribute());
+        assertNotNull(res.getLazyQueryAttribute());
         value = f.get(res);
         assertNotNull(value);
-        assertEquals(entityWithQueryAttr6.getPluralAttribute(), res.getPluralQueryAttribute());
-        for (OWLClassA classA : res.getPluralQueryAttribute()) {
-            assertTrue(em.contains(classA));
-        }
+        assertEquals(entityD.getUri(), res.getLazyQueryAttribute().getUri());
     }
 
     @Test

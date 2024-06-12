@@ -195,6 +195,13 @@ public abstract class Generators {
         }
     }
 
+    public static OWLClassA generateOwlClassA() {
+        final OWLClassA a = new OWLClassA(generateUri());
+        a.setStringAttribute("String attribute " + randomInt(10000));
+        a.setTypes(TYPES);
+        return a;
+    }
+
     private static Set<String> getTypes() {
         final Set<String> types = new HashSet<>(3);
         types.add(Vocabulary.CLASS_IRI_BASE + "OWLClassDF");

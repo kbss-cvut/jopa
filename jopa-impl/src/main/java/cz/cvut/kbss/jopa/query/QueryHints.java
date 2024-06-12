@@ -33,10 +33,10 @@ public class QueryHints {
      * By target ontology, it is meant either the shared ontology, which does not contain pending transactional changes,
      * or the transactional ontology (w.r.t. the persistence context issuing the query), where transactional changes may
      * influence the query results.
-     *
+     * <p>
      * Note that OntoDriver implementations may choose to ignore the selection depending on their internal transaction
      * and query execution mechanism.
-     *
+     * <p>
      * Valid values are {@literal CENTRAL} and {@literal TRANSACTIONAL}.
      */
     public static final String TARGET_ONTOLOGY = "cz.cvut.kbss.jopa.query.targetOntology";
