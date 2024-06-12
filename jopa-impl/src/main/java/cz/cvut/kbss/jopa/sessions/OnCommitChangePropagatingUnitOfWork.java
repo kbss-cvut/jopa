@@ -55,6 +55,7 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
             chSet.getChanges()
                  .forEach(record -> {
                      AttributeModificationValidator.verifyCanModify(record.getAttribute());
+                     preventCachingIfReferenceIsNotLoaded(record);
                      storage.merge(entity, (FieldSpecification<? super Object, ?>) record.getAttribute(), chSet.getDescriptor());
                  });
             et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
