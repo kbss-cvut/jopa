@@ -113,12 +113,6 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
     }
 
     @Override
-    public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
-        // TODO
-        return readObject(cls, identifier, descriptor);
-    }
-
-    @Override
     public void removeObject(Object entity) {
         assert entity != null;
         ensureManaged(entity);

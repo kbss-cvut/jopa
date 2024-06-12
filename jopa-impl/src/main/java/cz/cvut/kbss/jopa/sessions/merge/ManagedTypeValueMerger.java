@@ -43,6 +43,9 @@ class ManagedTypeValueMerger implements ValueMerger {
         if (mergedValue == null) {
             return null;
         }
+        if (uow.contains(mergedValue)) {
+            return mergedValue;
+        }
         final Object identifier = EntityPropertiesUtils.getIdentifier(mergedValue, uow.getMetamodel());
         if (identifier == null) {
             return mergedValue;
