@@ -38,11 +38,6 @@ public class DeleteObjectChange implements Change {
         this.descriptor = Objects.requireNonNull(descriptor);
     }
 
-    @Override
-    public Class<?> getObjectClass() {
-        return clone.getClass();
-    }
-
 
     @Override
     public Object getClone() {

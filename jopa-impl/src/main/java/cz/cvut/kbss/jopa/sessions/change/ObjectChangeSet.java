@@ -72,11 +72,6 @@ public class ObjectChangeSet implements Change {
     }
 
     @Override
-    public Class<?> getObjectClass() {
-        return cloneObject.getClass();
-    }
-
-    @Override
     public Object getOriginal() {
         return changedObject;
     }

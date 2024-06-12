@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.utils;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.gen.GeneratedEntityClass;
+import cz.cvut.kbss.jopa.proxy.reference.GeneratedEntityReferenceProxy;
 
 import java.net.URI;
 import java.util.Collection;
@@ -66,6 +67,7 @@ public class MetamodelUtils {
      * @return Entity class
      */
     public static <T> Class<? super T> getEntityClass(Class<T> cls) {
-        return cls.getAnnotation(GeneratedEntityClass.class) != null ? cls.getSuperclass() : cls;
+        return (cls.getAnnotation(GeneratedEntityClass.class) != null || cls.getAnnotation(GeneratedEntityReferenceProxy.class) != null)
+                ? cls.getSuperclass() : cls;
     }
 }

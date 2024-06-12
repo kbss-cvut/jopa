@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.utils.MetamodelUtils;
 
 import java.net.URI;
 
@@ -31,12 +32,14 @@ public interface Change {
      *
      * @return Object type
      */
-    Class<?> getObjectClass();
+    default Class<?> getObjectClass() {
+        return MetamodelUtils.getEntityClass(getClone().getClass());
+    }
 
     /**
      * Gets the clone with changes.
      *
-     * @return Clone
+     * @return Clone, never {@code null}
      */
     Object getClone();
 
