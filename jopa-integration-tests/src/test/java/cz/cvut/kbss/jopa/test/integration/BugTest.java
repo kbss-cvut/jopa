@@ -269,15 +269,6 @@ class BugTest extends IntegrationTestBase {
                 new AxiomImpl<>(NamedResource.create(owner.getUri()), eAssertion, new Value<>(NamedResource.create(reference.getUri())))
         );
         when(connectionMock.find(ownerDesc)).thenReturn(ownerAxioms);
-        final AxiomDescriptor eReferenceDesc = new AxiomDescriptor(ownerSubject);
-        eReferenceDesc.addAssertion(eAssertion);
-        when(connectionMock.find(eReferenceDesc)).thenReturn(List.of(new AxiomImpl<>(NamedResource.create(owner.getUri()), eAssertion, new Value<>(NamedResource.create(reference.getUri())))));
-        final AxiomDescriptor eDesc = new AxiomDescriptor(NamedResource.create(reference.getUri()));
-        eDesc.addAssertion(classAssertion);
-        final List<Axiom<?>> referenceAxioms = List.of(
-                new AxiomImpl<>(NamedResource.create(reference.getUri()), Assertion.createClassAssertion(false), new Value<>(URI.create(Vocabulary.C_OWL_CLASS_E)))
-        );
-        when(connectionMock.find(eDesc)).thenReturn(referenceAxioms);
 
         em.getTransaction().begin();
         final OWLClassO subject = em.find(OWLClassO.class, owner.getUri());
