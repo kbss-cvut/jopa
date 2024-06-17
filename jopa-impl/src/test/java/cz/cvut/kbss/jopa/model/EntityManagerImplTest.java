@@ -62,6 +62,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -706,5 +707,29 @@ class EntityManagerImplTest {
         em.refresh(toRefresh);
         assertNotNull(toRefresh.getOwlClassA());
         assertEquals(1, toRefresh.getOwlClassA().size());
+    }
+
+    @Test
+    void cascadeRemoveTriggersLazyLoadingAndCascadesRemoval() {
+        final OWLClassJ lazyOriginal = new OWLClassJ(Generators.createIndividualIdentifier());
+        lazyOriginal.setOwlClassA(null);
+        uow.getLoadStateRegistry()
+           .put(lazyOriginal, LoadStateDescriptorFactory.createNotLoaded(lazyOriginal, mocks.forOwlClassJ()
+                                                                                            .entityType()));
+        when(connectorMock.find(new LoadingParameters<>(OWLClassJ.class, lazyOriginal.getUri(), new EntityDescriptor()))).thenReturn(lazyOriginal);
+        final OWLClassJ toRemove = em.find(OWLClassJ.class, lazyOriginal.getUri());
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        uow.getLoadStateRegistry()
+           .put(a, LoadStateDescriptorFactory.createAllLoaded(a, mocks.forOwlClassA().entityType()));
+        doAnswer(inv -> {
+            final OWLClassJ target = inv.getArgument(0);
+            target.setOwlClassA(new HashSet<>(Set.of(a)));
+            return null;
+        }).when(connectorMock).loadFieldValue(toRemove, mocks.forOwlClassJ().setAttribute(), new EntityDescriptor());
+
+        em.remove(toRemove);
+        verify(connectorMock).remove(toRemove.getUri(), OWLClassJ.class, new EntityDescriptor());
+        verify(connectorMock).remove(a.getUri(), OWLClassA.class, new ObjectPropertyCollectionDescriptor(mocks.forOwlClassJ()
+                                                                                                              .setAttribute()));
     }
 }
