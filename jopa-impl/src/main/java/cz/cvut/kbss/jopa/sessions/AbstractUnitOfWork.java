@@ -201,6 +201,17 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         postCommit();
     }
 
+    void removeLazyLoadingProxies(Object entity) {
+        assert entity != null;
+        final EntityType<?> et = entityType(entity.getClass());
+        for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
+            final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
+            if (value instanceof LazyLoadingProxy<?> lazyLoadingProxy) {
+                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, lazyLoadingProxy.unwrap());
+            }
+        }
+    }
+
     /**
      * If there are any changes, commit them to the ontology.
      */
@@ -667,8 +678,9 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             uowChangeSet.cancelObjectChanges(getOriginal(object));
             T original = connection.find(params);
             if (original == null) {
-                throw new EntityNotFoundException("Entity " + object + " no longer exists in the repository.");
+                throw new EntityNotFoundException("Entity " + stringify(object) + " no longer exists in the repository.");
             }
+            removeLazyLoadingProxies(object);
             T source = (T) cloneBuilder.buildClone(original, CloneConfiguration.withDescriptor(descriptor));
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(source, object, descriptor);
             changeCalculator.calculateChanges(chSet);

@@ -33,6 +33,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityLifecycleListenerManager;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
@@ -43,6 +44,8 @@ import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
@@ -520,7 +523,7 @@ class EntityManagerImplTest {
     void isLoadedReturnsTrueForEagerlyLoadedAttributeOfManagedInstance() throws Exception {
         final OWLClassA a = Generators.generateOwlClassAInstance();
         doAnswer((invocationOnMock) -> a).when(uow)
-                .readObject(eq(OWLClassA.class), eq(a.getUri()), any(Descriptor.class));
+                                         .readObject(eq(OWLClassA.class), eq(a.getUri()), any(Descriptor.class));
         doReturn(LoadState.LOADED).when(uow).isLoaded(a, OWLClassA.getStrAttField().getName());
         final OWLClassA found = em.find(OWLClassA.class, a.getUri());
         assertTrue(em.isLoaded(found, OWLClassA.getStrAttField().getName()));
@@ -539,7 +542,7 @@ class EntityManagerImplTest {
         inst.setUri(Generators.createIndividualIdentifier());
         inst.setOwlClassE(new OWLClassE());
         doAnswer((invocationOnMock) -> inst).when(uow)
-                .readObject(eq(OWLClassK.class), eq(inst.getUri()), any(Descriptor.class));
+                                            .readObject(eq(OWLClassK.class), eq(inst.getUri()), any(Descriptor.class));
         doReturn(LoadState.LOADED).when(uow).isLoaded(inst, OWLClassK.getOwlClassEField().getName());
         final OWLClassK found = em.find(OWLClassK.class, inst.getUri());
         assertTrue(em.isLoaded(found, OWLClassK.getOwlClassEField().getName()));
@@ -662,5 +665,46 @@ class EntityManagerImplTest {
             assertTrue(em.isOpen());
         }
         verify(emfMock).entityManagerClosed(any(AbstractEntityManager.class));
+    }
+
+    @Test
+    void cascadeDetachDoesNothingWithLazyLoadingProxy() {
+        final OWLClassJ original = new OWLClassJ(Generators.createIndividualIdentifier());
+        original.setOwlClassA(null);
+        uow.getLoadStateRegistry()
+           .put(original, LoadStateDescriptorFactory.createNotLoaded(original, mocks.forOwlClassJ().entityType()));
+        when(connectorMock.find(any(LoadingParameters.class))).thenReturn(original);
+        final OWLClassJ toDetach = em.find(OWLClassJ.class, original.getUri());
+        em.detach(toDetach);
+        assertNotNull(toDetach.getOwlClassA());
+        assertTrue(toDetach.getOwlClassA().isEmpty());
+    }
+
+    @Test
+    void cascadeRefreshLoadsTriggersLazyLoading() {
+        final OWLClassJ lazyOriginal = new OWLClassJ(Generators.createIndividualIdentifier());
+        lazyOriginal.setOwlClassA(null);
+        uow.getLoadStateRegistry()
+           .put(lazyOriginal, LoadStateDescriptorFactory.createNotLoaded(lazyOriginal, mocks.forOwlClassJ()
+                                                                                            .entityType()));
+        when(connectorMock.find(new LoadingParameters<>(OWLClassJ.class, lazyOriginal.getUri(), new EntityDescriptor()))).thenReturn(lazyOriginal);
+        final OWLClassJ loadedOriginal = new OWLClassJ(lazyOriginal.getUri());
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        loadedOriginal.setOwlClassA(Collections.singleton(a));
+        uow.getLoadStateRegistry()
+           .put(loadedOriginal, LoadStateDescriptorFactory.createAllLoaded(lazyOriginal, mocks.forOwlClassJ()
+                                                                                              .entityType()));
+        final LoadingParameters<OWLClassJ> refreshLoadParams = new LoadingParameters<>(OWLClassJ.class, lazyOriginal.getUri(), new EntityDescriptor(), true);
+        refreshLoadParams.bypassCache();
+        when(connectorMock.find(refreshLoadParams)).thenReturn(loadedOriginal);
+        final LoadingParameters<OWLClassA> refreshALoadParams = new LoadingParameters<>(OWLClassA.class, a.getUri(), new ObjectPropertyCollectionDescriptor(mocks.forOwlClassJ()
+                                                                                                                                                                 .setAttribute()), true);
+        refreshALoadParams.bypassCache();
+        when(connectorMock.find(refreshALoadParams)).thenReturn(a);
+
+        final OWLClassJ toRefresh = em.find(OWLClassJ.class, lazyOriginal.getUri());
+        em.refresh(toRefresh);
+        assertNotNull(toRefresh.getOwlClassA());
+        assertEquals(1, toRefresh.getOwlClassA().size());
     }
 }

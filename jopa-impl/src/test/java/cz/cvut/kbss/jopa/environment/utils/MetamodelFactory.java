@@ -586,6 +586,7 @@ public class MetamodelFactory {
         when(setAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(setAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(setAMock.getDeclaringType()).thenReturn(etMock);
+        when(etMock.getFieldSpecification(OWLClassJ.getOwlClassAField().getName())).thenReturn(setAMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassJ.class.getDeclaredField("uri"));
         when(idMock.getDeclaringType()).thenReturn(etMock);
