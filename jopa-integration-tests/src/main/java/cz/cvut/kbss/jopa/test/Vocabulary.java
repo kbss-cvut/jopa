@@ -110,6 +110,9 @@ public class Vocabulary {
     public static final String P_N_URI_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationUri";
     public static final String P_N_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "N-stringAttribute";
 
+    public static final String P_O_SET_OF_E_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "hasESet";
+    public static final String P_O_SINGLE_E_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "hasE";
+
     public static final String P_A_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "A-stringAttribute";
     public static final String P_B_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "B-stringAttribute";
     public static final String P_E_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "E-stringAttribute";

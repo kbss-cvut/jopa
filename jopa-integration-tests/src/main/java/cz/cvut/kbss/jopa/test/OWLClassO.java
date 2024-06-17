@@ -28,8 +28,11 @@ public class OWLClassO implements HasUri {
     @Id
     private URI uri;
 
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasE", cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @OWLObjectProperty(iri = Vocabulary.P_O_SET_OF_E_ATTRIBUTE, cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
     private Set<OWLClassE> owlClassESet;
+
+    @OWLObjectProperty(iri = Vocabulary.P_O_SINGLE_E_ATTRIBUTE, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private OWLClassE owlClassE;
 
     public OWLClassO() {
     }
@@ -55,11 +58,20 @@ public class OWLClassO implements HasUri {
         this.owlClassESet = owlClassESet;
     }
 
+    public OWLClassE getOwlClassE() {
+        return owlClassE;
+    }
+
+    public void setOwlClassE(OWLClassE owlClassE) {
+        this.owlClassE = owlClassE;
+    }
+
     @Override
     public String toString() {
         return "OWLClassO{" +
                 "uri=" + uri +
                 ", owlClassESet=" + owlClassESet +
+                ", owlClassE=" + owlClassE +
                 '}';
     }
 }
