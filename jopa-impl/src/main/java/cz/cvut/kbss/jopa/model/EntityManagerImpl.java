@@ -262,7 +262,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
                     registerProcessedInstance(object);
                     // Intentional fall-through
                 case REMOVED:
-                    new SimpleOneLevelCascadeExplorer(this::remove).start(this, object, CascadeType.REMOVE);
+                    new OneLevelRemoveCascadeExplorer(this::remove).start(this, object, CascadeType.REMOVE);
                     break;
                 default:
                     throw new IllegalArgumentException("Entity " + object + " is not managed and cannot be removed.");
