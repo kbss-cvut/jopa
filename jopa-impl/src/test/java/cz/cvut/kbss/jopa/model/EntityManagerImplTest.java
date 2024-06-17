@@ -37,12 +37,12 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityLifecycleListenerManager;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingSetProxy;
 import cz.cvut.kbss.jopa.sessions.ChangeTrackingUnitOfWork;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
@@ -131,6 +131,15 @@ class EntityManagerImplTest {
         assertSame(j, argumentCaptor.getValue());
         // Check that there is no exception thrown (there was a NPX bug in merging null collections) and that
         // the merged object is correctly passed to merge in UoW
+    }
+
+    @Test
+    void cascadeMergeDoesNothingForLazyLoadingProxy() {
+        final OWLClassJ j = new OWLClassJ(Generators.createIndividualIdentifier());
+        j.setOwlClassA(new LazyLoadingSetProxy<>(j, mocks.forOwlClassJ().setAttribute(), uow));
+
+        em.merge(j);
+        verify(uow).mergeDetached(j, new EntityDescriptor());
     }
 
     @Test

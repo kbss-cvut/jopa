@@ -15,6 +15,16 @@ public class JOPALazyUtils {
     }
 
     /**
+     * Checks if this specified object is a lazy loading proxy (instance of {@link LazyLoadingProxy}).
+     *
+     * @param object Object to investigate
+     * @return {@code true} if argument is lazy loading proxy, {@code false} otherwise
+     */
+    public static boolean isLazyLoadingProxy(Object object) {
+        return object instanceof LazyLoadingProxy<?>;
+    }
+
+    /**
      * Triggers loading on the specified lazy loading proxy.
      * <p>
      * If the specified object is not a {@link cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy} or is a proxy that is
