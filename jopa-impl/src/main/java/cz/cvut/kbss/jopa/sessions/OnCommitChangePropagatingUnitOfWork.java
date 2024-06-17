@@ -3,10 +3,8 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
@@ -25,17 +23,6 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
     @Override
     void detachAllManagedInstances() {
         cloneMapping.forEach(this::removeLazyLoadingProxies);
-    }
-
-    private void removeLazyLoadingProxies(Object entity) {
-        assert entity != null;
-        final EntityType<?> et = entityType(entity.getClass());
-        for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
-            final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
-            if (value instanceof LazyLoadingProxy<?> lazyLoadingProxy) {
-                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, lazyLoadingProxy.unwrap());
-            }
-        }
     }
 
     @Override

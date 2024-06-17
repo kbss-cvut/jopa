@@ -250,6 +250,9 @@ class BugTest extends IntegrationTestBase {
         doReturn(aSetAxioms).when(connectionMock).find(setDesc);
     }
 
+    /**
+     * Bug #248
+     */
     @Test
     void cascadeMergeOnLazyLoadingProxyDoesNothing() throws Exception {
         final OWLClassO owner = new OWLClassO(Generators.generateUri());
