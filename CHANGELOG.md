@@ -1,5 +1,13 @@
 # JOPA - Change Log
 
+## 2.0.1 - 2024-06-17
+- Proper implementation of `EntityManager.getReference` after 2.0.0 rewrite (Enhancement #233).
+- Log JOPA version and build date on persistence unit startup (Enhancement #243).
+- Prevent `AssertionError` on `EntityManager.flush` calls (Bug #240).
+- Fix incorrect SOQL to SPARQL translation when traversing reference and using identifier (Bug #234).
+- Fix issues with interaction of lazy loading with cascading (Bug #248).
+- Dependency updates: RDF4J 4.3.12.
+
 ## 2.0.0 - 2024-05-27
 - Move internal API from `jopa-api` to the `jopa-impl` module (Enhancement #146).
 - Modify name resolution in OWL2Java, support prefixes so that terms are better disambiguated without appending the useless `_A` suffix if possible (Enhancement #85).
