@@ -17,17 +17,44 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 public class JOPAPersistenceProvider implements PersistenceProvider, ProviderUtil {
 
+    private static final Logger LOG = LoggerFactory.getLogger(JOPAPersistenceProvider.class);
+
     private static final Set<EntityManagerFactoryImpl> EMFS = Collections.synchronizedSet(new HashSet<>());
+
+    public JOPAPersistenceProvider() {
+        logVersionInfo();
+    }
 
     @Override
     public EntityManagerFactoryImpl createEntityManagerFactory(String emName, Map<String, String> properties) {
         final EntityManagerFactoryImpl emf = new EntityManagerFactoryImpl(properties, this::emfClosed);
         EMFS.add(emf);
         return emf;
+    }
+
+    private static void logVersionInfo() {
+        try {
+            final Properties props = new Properties();
+            props.load(JOPAPersistenceProvider.class.getClassLoader().getResourceAsStream("jopa.properties"));
+            assert props.containsKey("cz.cvut.jopa.version");
+            assert props.containsKey("cz.cvut.jopa.build.timestamp");
+            LOG.info("This is JOPA {}, built on {}...", props.get("cz.cvut.jopa.version"), props.get("cz.cvut.jopa.build.timestamp"));
+        } catch (IOException e) {
+            LOG.warn("Unable to load properties file to log version info.", e);
+        }
     }
 
     void emfClosed(EntityManagerFactoryImpl emf) {

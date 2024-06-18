@@ -17,25 +17,31 @@
  */
 package cz.cvut.kbss.jopa.test;
 
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.CascadeType;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.Sparql;
 
 import java.net.URI;
-import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OwlClassWithQueryAttr6)
 public class OWLClassWithQueryAttr6 implements HasUri {
 
-    private static final String QUERY = "SELECT ?pluralAttribute\n" +
-            "WHERE {?this <" + Vocabulary.P_HAS_SIMPLE_LIST + "> ?pluralAttribute}";
+    private static final String QUERY = "SELECT ?d WHERE { " +
+            "?d a <" + Vocabulary.C_OWL_CLASS_D + "> ;" +
+            "     <" + Vocabulary.P_HAS_OWL_CLASS_A + "> ?a . " +
+            "?this <" + Vocabulary.P_HAS_OWL_CLASS_A + "> ?a . }";
 
     @Id
     private URI uri;
 
-    @OWLObjectProperty(iri = Vocabulary.P_HAS_SIMPLE_LIST, cascade = CascadeType.ALL)
-    private Set<OWLClassA> pluralAttribute;
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_OWL_CLASS_A, cascade = CascadeType.ALL)
+    private OWLClassA owlClassA;
 
-    @Sparql(query=QUERY, fetchType = FetchType.LAZY)
-    private Set<OWLClassA> pluralQueryAttribute;
+    @Sparql(query = QUERY, fetchType = FetchType.LAZY)
+    private OWLClassD lazyQueryAttribute;
 
     public OWLClassWithQueryAttr6() {
     }
@@ -53,30 +59,26 @@ public class OWLClassWithQueryAttr6 implements HasUri {
         return uri;
     }
 
-    public Set<OWLClassA> getPluralAttribute() {
-        return pluralAttribute;
+    public OWLClassA getOwlClassA() {
+        return owlClassA;
     }
 
-    public void setPluralAttribute(Set<OWLClassA> pluralAttribute) {
-        this.pluralAttribute = pluralAttribute;
+    public void setOwlClassA(OWLClassA owlClassA) {
+        this.owlClassA = owlClassA;
     }
 
-    public Set<OWLClassA> getPluralQueryAttribute() {
-        return pluralQueryAttribute;
+    public OWLClassD getLazyQueryAttribute() {
+        return lazyQueryAttribute;
     }
 
-    public void setPluralQueryAttribute(Set<OWLClassA> pluralQueryAttribute) {
-        this.pluralQueryAttribute = pluralQueryAttribute;
-    }
-
-    public static String getSparqlQuery() {
-        return QUERY;
+    public void setLazyQueryAttribute(OWLClassD lazyQueryAttribute) {
+        this.lazyQueryAttribute = lazyQueryAttribute;
     }
 
     @Override
     public String toString() {
         String out = "OWLClassWithQueryAttr: uri = " + uri;
-        out += ", pluralAttribute = " + pluralAttribute;
+        out += ", owlClassA = " + owlClassA;
         return out;
     }
 }

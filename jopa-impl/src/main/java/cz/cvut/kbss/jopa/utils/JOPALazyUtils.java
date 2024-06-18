@@ -10,6 +10,20 @@ import java.util.Objects;
  */
 public class JOPALazyUtils {
 
+    private JOPALazyUtils() {
+        throw new AssertionError();
+    }
+
+    /**
+     * Checks if this specified object is a lazy loading proxy (instance of {@link LazyLoadingProxy}).
+     *
+     * @param object Object to investigate
+     * @return {@code true} if argument is lazy loading proxy, {@code false} otherwise
+     */
+    public static boolean isLazyLoadingProxy(Object object) {
+        return object instanceof LazyLoadingProxy<?>;
+    }
+
     /**
      * Triggers loading on the specified lazy loading proxy.
      * <p>

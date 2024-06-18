@@ -23,10 +23,12 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import cz.cvut.kbss.ontodriver.Statement;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -211,6 +213,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                     "ASK { ?individual a ?type . }",
                     Boolean.class).setParameter("individual", e.getUri()).setParameter("type",
                     URI.create(Vocabulary.C_OWL_CLASS_E));
+            query.setHint(QueryHints.TARGET_ONTOLOGY, Statement.StatementOntology.TRANSACTIONAL.toString());
             final Boolean res = query.getSingleResult();
             assertTrue(res);
         } finally {

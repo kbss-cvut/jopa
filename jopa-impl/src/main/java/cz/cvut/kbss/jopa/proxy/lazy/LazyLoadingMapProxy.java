@@ -18,9 +18,9 @@ import java.util.Set;
  */
 public class LazyLoadingMapProxy<T, K, V> implements LazyLoadingProxy<Map<K, V>>, Map<K, V> {
 
-    protected final transient T owner;
-    protected final transient FieldSpecification<? super T, Map<K, V>> fieldSpec;
-    protected final transient UnitOfWork persistenceContext;
+    protected final T owner;
+    protected final FieldSpecification<? super T, Map<K, V>> fieldSpec;
+    protected final UnitOfWork persistenceContext;
 
     private Map<K, V> value;
 

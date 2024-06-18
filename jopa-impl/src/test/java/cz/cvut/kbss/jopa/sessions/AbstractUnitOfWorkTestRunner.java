@@ -794,7 +794,7 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         when(storageMock.find(loadingParams)).thenReturn(null);
 
         final EntityNotFoundException result = assertThrows(EntityNotFoundException.class, () -> uow.refreshObject(d));
-        assertThat(result.getMessage(), containsString(d + " no longer exists in the repository"));
+        assertThat(result.getMessage(), containsString(" no longer exists in the repository"));
     }
 
     @Test

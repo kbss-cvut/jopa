@@ -46,8 +46,12 @@ import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -132,42 +136,5 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
         final StorageAccessException ex =
                 assertThrows(StorageAccessException.class, () -> instanceLoader.loadEntity(loadingParameters));
         assertThat(ex.getMessage(), containsString(msg));
-    }
-
-    @Test
-    void loadReferenceLoadsReferenceFromStorageWhenEntityTypeIsDetermined() throws Exception {
-        final Axiom<URI> type = new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false),
-                new Value<>(URI.create(OWLClassA.getClassIri())));
-        when(typesMock.getTypes(INDIVIDUAL, Collections.emptySet(), false)).thenReturn(Collections.singleton(type));
-        when(entityConstructorMock.createEntityInstance(IDENTIFIER, metamodelMock.entity(OWLClassA.class)))
-                .thenReturn(new OWLClassA(IDENTIFIER));
-
-        final OWLClassA result =
-                instanceLoader.loadReference(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, descriptor));
-        assertNotNull(result);
-        verify(typesMock).getTypes(INDIVIDUAL, Collections.emptySet(), false);
-    }
-
-    @Test
-    void loadReferenceReturnsNullWhenTypeCannotBeResolved() throws Exception {
-        when(typesMock.getTypes(INDIVIDUAL, null, false)).thenReturn(Collections.emptySet());
-        when(entityConstructorMock.createEntityInstance(IDENTIFIER, metamodelMock.entity(OWLClassA.class)))
-                .thenReturn(new OWLClassA(IDENTIFIER));
-
-        final OWLClassA result =
-                instanceLoader.loadReference(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, descriptor));
-        assertNull(result);
-        verify(entityConstructorMock, never()).createEntityInstance(any(), any());
-    }
-
-    @Test
-    void loadReferenceThrowsStorageAccessExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
-        final String msg = "Exception message.";
-        when(typesMock.getTypes(INDIVIDUAL, Collections.emptySet(), false)).thenThrow(new OntoDriverException(msg));
-
-        final StorageAccessException ex =
-                assertThrows(StorageAccessException.class, () -> instanceLoader.loadReference(loadingParameters));
-        assertThat(ex.getMessage(), containsString(msg));
-        verify(entityConstructorMock, never()).createEntityInstance(any(), any());
     }
 }

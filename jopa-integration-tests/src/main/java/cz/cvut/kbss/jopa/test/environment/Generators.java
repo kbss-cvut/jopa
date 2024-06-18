@@ -155,31 +155,26 @@ public abstract class Generators {
 
     private static Object generateRandomPropertyValue(int valueIndex, int propertyIndex) {
         final int random = randomInt(10);
-        switch (random) {
-            case 0: // boolean
-                return valueIndex % 2 == 0;
-            case 1: // int
-                return valueIndex;
-            case 2: // long
-                return System.currentTimeMillis();
-            case 3: //double
-                return ((double) propertyIndex + 1) / (valueIndex + 1);
-            case 4: // datetime
+        return switch (random) {
+            case 0 -> // boolean
+                    valueIndex % 2 == 0;
+            case 1 -> // int
+                    valueIndex;
+            case 2 -> // long
+                    System.currentTimeMillis();
+            case 3 -> //double
+                    ((double) propertyIndex + 1) / (valueIndex + 1);
+            case 4 -> // datetime
                 // Generate date rounded to milliseconds to prevent issues with time rounding
-                return OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-            case 5:
-                return OffsetTime.now().truncatedTo(ChronoUnit.MILLIS);
-            case 6:
-                return LocalDate.now();
-            case 7: // String
-                return "TypedProperty_" + propertyIndex + "Value_" + valueIndex;
-            case 8:
-                return BigInteger.valueOf(valueIndex);
-            case 9:
-                return BigDecimal.valueOf(Math.PI);
-            default:
-                throw new IllegalArgumentException();
-        }
+                    OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
+            case 5 -> OffsetTime.now().truncatedTo(ChronoUnit.MILLIS);
+            case 6 -> LocalDate.now();
+            case 7 -> // String
+                    "TypedProperty_" + propertyIndex + "Value_" + valueIndex;
+            case 8 -> BigInteger.valueOf(valueIndex);
+            case 9 -> BigDecimal.valueOf(Math.PI);
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     private static void generateInstances(Collection<OWLClassA> col, String uriBase, int size) {
@@ -193,6 +188,13 @@ public abstract class Generators {
             a.setTypes(TYPES);
             col.add(a);
         }
+    }
+
+    public static OWLClassA generateOwlClassA() {
+        final OWLClassA a = new OWLClassA(generateUri());
+        a.setStringAttribute("String attribute " + randomInt(10000));
+        a.setTypes(TYPES);
+        return a;
     }
 
     private static Set<String> getTypes() {

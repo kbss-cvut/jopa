@@ -44,8 +44,12 @@ public class CloneRegistrationDescriptor {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CloneRegistrationDescriptor that)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof CloneRegistrationDescriptor that)) {
+            return false;
+        }
         return isAllEager() == that.isAllEager() && Objects.equals(getDescriptor(),
                 that.getDescriptor()) && Objects.equals(
                 getPostCloneHandlers(), that.getPostCloneHandlers());

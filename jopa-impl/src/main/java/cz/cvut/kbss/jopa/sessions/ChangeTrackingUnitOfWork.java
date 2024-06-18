@@ -131,7 +131,7 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
     }
 
     private void attachPersistenceContextToEntity(Object entity) {
-        if (isInCommit()) {
+        if (isFlushingChanges()) {
             return;
         }
         assert entity instanceof Manageable;

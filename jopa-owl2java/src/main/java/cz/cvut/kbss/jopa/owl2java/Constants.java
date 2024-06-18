@@ -17,8 +17,12 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
+
+import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Properties;
 
 public class Constants {
 
@@ -86,10 +90,21 @@ public class Constants {
     /**
      * Tool version.
      */
-    public static final String VERSION = "$VERSION$";
+    public static final String VERSION = resolveVersion();
 
 
     private Constants() {
         throw new AssertionError();
+    }
+
+    private static String resolveVersion() {
+        final Properties properties = new Properties();
+        try {
+            properties.load(Constants.class.getClassLoader().getResourceAsStream("owl2java.properties"));
+            assert properties.containsKey("cz.cvut.jopa.owl2java.version");
+            return properties.getProperty("cz.cvut.jopa.owl2java.version");
+        } catch (IOException e) {
+            throw new OWL2JavaException("Unable to load OWL2Java version from properties file.");
+        }
     }
 }

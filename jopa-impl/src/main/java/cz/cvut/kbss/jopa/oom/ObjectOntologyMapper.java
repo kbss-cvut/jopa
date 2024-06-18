@@ -48,16 +48,15 @@ public interface ObjectOntologyMapper {
     <T> T loadEntity(LoadingParameters<T> loadingParameters);
 
     /**
-     * Loads a reference to an entity corresponding to the specified parameters.
+     * Gets a reference to an entity corresponding to the specified parameters.
      * <p>
-     * The reference is usually an empty object with attributes being loaded lazily. However, it may be also be
-     * retrieved from the cache, in which case its attributes will be loaded.
+     * The reference is an empty object with state fetched upon first access.
      *
      * @param loadingParameters Reference loading parameters
      * @param <T>               Entity type
-     * @return Loaded entity reference or {@code null} if there is none such
+     * @return Entity reference
      */
-    <T> T loadReference(LoadingParameters<T> loadingParameters);
+    <T> T getReference(LoadingParameters<T> loadingParameters);
 
     /**
      * Loads entity field value and sets it on the specified entity.
@@ -126,8 +125,8 @@ public interface ObjectOntologyMapper {
      * Checks if the specified attribute value of the specified entity is inferred in the repository.
      * <p>
      * Note that attribute context may be ignored by the underlying repository, based on its inference storing strategy.
-     * Also note that if the corresponding statement is both inferred and asserted, this method will return {@code
-     * true}.
+     * Also note that if the corresponding statement is both inferred and asserted, this method will return
+     * {@code true}.
      *
      * @param entity           Entity whose attribute value to examine
      * @param fieldSpec        Field specification representing the property to examine

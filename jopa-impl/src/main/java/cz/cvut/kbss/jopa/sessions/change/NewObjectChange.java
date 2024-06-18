@@ -19,11 +19,6 @@ public class NewObjectChange implements Change {
     }
 
     @Override
-    public Class<?> getObjectClass() {
-        return object.getClass();
-    }
-
-    @Override
     public Object getClone() {
         return object;
     }

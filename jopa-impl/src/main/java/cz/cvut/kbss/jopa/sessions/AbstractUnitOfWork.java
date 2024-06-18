@@ -83,6 +83,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     final Map<Object, Object> deletedObjects;
     final Map<Object, Object> newObjectsCloneToOriginal;
     final Map<Object, Object> newObjectsKeyToClone = new HashMap<>();
+    private final Map<Object, Object> referenceProxies;
     RepositoryMap repoMap;
 
     final LoadStateDescriptorRegistry loadStateRegistry;
@@ -93,7 +94,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
     private boolean transactionActive;
     private boolean isActive;
-    private boolean inCommit;
+    private boolean flushingChanges;
 
     UnitOfWorkChangeSet uowChangeSet = ChangeSetFactory.createUoWChangeSet();
 
@@ -113,6 +114,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         this.cloneMapping = cloneToOriginals.keySet();
         this.deletedObjects = new IdentityHashMap<>();
         this.newObjectsCloneToOriginal = new IdentityHashMap<>();
+        this.referenceProxies = new IdentityHashMap<>();
         this.repoMap = new RepositoryMap();
         this.loadStateRegistry = new LoadStateDescriptorRegistry(this::stringify);
         this.indirectWrapperHelper = new IndirectWrapperHelper(this);
@@ -185,7 +187,6 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         if (!isActive()) {
             throw new IllegalStateException("Cannot commit inactive Unit of Work!");
         }
-        this.inCommit = true;
         commitUnitOfWork();
         LOG.trace("UnitOfWork commit finished.");
     }
@@ -194,9 +195,21 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
      * Commit this Unit of Work.
      */
     private void commitUnitOfWork() {
+        this.flushingChanges = true;
         commitToStorage();
         mergeChangesIntoParent();
         postCommit();
+    }
+
+    void removeLazyLoadingProxies(Object entity) {
+        assert entity != null;
+        final EntityType<?> et = entityType(entity.getClass());
+        for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
+            final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
+            if (value instanceof LazyLoadingProxy<?> lazyLoadingProxy) {
+                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, lazyLoadingProxy.unwrap());
+            }
+        }
     }
 
     /**
@@ -228,7 +241,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     private void postCommit() {
         final boolean changes = hasChanges();
         clear();
-        this.inCommit = false;
+        this.flushingChanges = false;
         if (changes) {
             getLiveObjectCache().evictInferredObjects();
         }
@@ -307,8 +320,22 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
     @Override
     public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
-        // TODO Temporary just so that the API works
-        return readObject(cls, identifier, descriptor);
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull(identifier);
+        Objects.requireNonNull(descriptor);
+
+        final T managed = readManagedObject(cls, identifier, descriptor);
+        if (managed != null) {
+            return managed;
+        }
+        if (keysToClones.containsKey(identifier)) {
+            throw new EntityNotFoundException("Entity '" + cls.getSimpleName() + "' with id " + IdentifierTransformer.stringifyIri(identifier) + " not found.");
+        }
+        final T reference = storage.getReference(new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor));
+        registerEntityWithOntologyContext(reference, descriptor);
+        referenceProxies.put(reference, reference);
+        loadStateRegistry.put(reference, LoadStateDescriptorFactory.createNotLoaded(reference, entityType(cls)));
+        return reference;
     }
 
     @Override
@@ -332,7 +359,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             return EntityState.REMOVED;
         } else if (newObjectsCloneToOriginal.containsKey(entity)) {
             return EntityState.MANAGED_NEW;
-        } else if (cloneMapping.contains(entity)) {
+        } else if (cloneMapping.contains(entity) || referenceProxies.containsKey(entity)) {
             return EntityState.MANAGED;
         } else {
             return EntityState.NOT_MANAGED;
@@ -348,7 +375,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             return EntityState.REMOVED;
         } else if (newObjectsCloneToOriginal.containsKey(entity) && isInRepository(descriptor, entity)) {
             return EntityState.MANAGED_NEW;
-        } else if (cloneMapping.contains(entity) && isInRepository(descriptor, entity)) {
+        } else if ((cloneMapping.contains(entity) || referenceProxies.containsKey(entity)) && isInRepository(descriptor, entity)) {
             return EntityState.MANAGED;
         } else {
             return EntityState.NOT_MANAGED;
@@ -364,7 +391,12 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     public boolean isObjectManaged(Object entity) {
         Objects.requireNonNull(entity);
 
-        return cloneMapping.contains(entity) && !deletedObjects.containsKey(entity) || newObjectsCloneToOriginal.containsKey(entity);
+        return (cloneMapping.contains(entity) || isManagedReference(entity)) && !deletedObjects.containsKey(entity)
+                || newObjectsCloneToOriginal.containsKey(entity);
+    }
+
+    private boolean isManagedReference(Object entity) {
+        return referenceProxies.containsKey(entity);
     }
 
     @Override
@@ -420,7 +452,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             return getCloneForOriginal(entity);
         }
         final CloneConfiguration cloneConfig = CloneConfiguration.withDescriptor(registrationDescriptor.getDescriptor())
-                                                                 .forPersistenceContext(!isInCommit())
+                                                                 .forPersistenceContext(!isFlushingChanges())
                                                                  .addPostRegisterHandlers(registrationDescriptor.getPostCloneHandlers());
         Object clone = cloneBuilder.buildClone(entity, cloneConfig);
         assert clone != null;
@@ -466,7 +498,11 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     private void calculateDeletedObjects(final UnitOfWorkChangeSet changeSet) {
         for (Object clone : deletedObjects.keySet()) {
             final Descriptor descriptor = getDescriptor(clone);
-            final Object original = getOriginal(clone);
+            Object original = getOriginal(clone);
+            if (original == null) {
+                assert referenceProxies.containsKey(clone);
+                original = clone;
+            }
             changeSet.addDeletedObjectChangeSet(ChangeSetFactory.createDeleteObjectChange(clone, original, descriptor));
             changeSet.cancelObjectChanges(original);
         }
@@ -515,7 +551,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
      * @param original Original to register
      */
     public void registerOriginalForNewClone(Object clone, Object original) {
-        assert inCommit;
+        assert flushingChanges;
         assert newObjectsCloneToOriginal.containsKey(clone);
         newObjectsCloneToOriginal.put(clone, original);
     }
@@ -642,8 +678,9 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             uowChangeSet.cancelObjectChanges(getOriginal(object));
             T original = connection.find(params);
             if (original == null) {
-                throw new EntityNotFoundException("Entity " + object + " no longer exists in the repository.");
+                throw new EntityNotFoundException("Entity " + stringify(object) + " no longer exists in the repository.");
             }
+            removeLazyLoadingProxies(object);
             T source = (T) cloneBuilder.buildClone(original, CloneConfiguration.withDescriptor(descriptor));
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(source, object, descriptor);
             changeCalculator.calculateChanges(chSet);
@@ -772,8 +809,8 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     @Override
-    public boolean isInCommit() {
-        return inCommit;
+    public boolean isFlushingChanges() {
+        return flushingChanges;
     }
 
     @Override

@@ -35,12 +35,6 @@ class DefaultInstanceLoader extends EntityInstanceLoader {
         return loadInstance(loadingParameters, et);
     }
 
-    @Override
-    <T> T loadReference(LoadingParameters<T> loadingParameters) {
-        final IdentifiableEntityType<T> et = metamodel.entity(loadingParameters.getEntityClass());
-        return loadReferenceInstance(loadingParameters, et);
-    }
-
     static DefaultInstanceLoaderBuilder builder() {
         return new DefaultInstanceLoaderBuilder();
     }

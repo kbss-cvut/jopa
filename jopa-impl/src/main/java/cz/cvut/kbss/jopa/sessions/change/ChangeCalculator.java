@@ -19,10 +19,9 @@ package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
-import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxy;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.JOPALazyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,7 +140,7 @@ public class ChangeCalculator {
             }
             Object clVal = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), clone);
             Object origVal = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), original);
-            if (shouldSkipLazyLoadedField(origVal, clVal)) {
+            if (JOPALazyUtils.isLazyLoadingProxy(clVal)) {
                 continue;
             }
             boolean changed = valueChanged(origVal, clVal);
@@ -151,10 +150,5 @@ public class ChangeCalculator {
             }
         }
         return changesFound;
-    }
-
-    private static boolean shouldSkipLazyLoadedField(Object originalValue, Object cloneValue) {
-        return (cloneValue instanceof LazyLoadingEntityProxy<?> && originalValue == null)
-                || (cloneValue instanceof LazyLoadingProxy<?> && !ChangeDetectors.isNonEmptyCollection(originalValue));
     }
 }

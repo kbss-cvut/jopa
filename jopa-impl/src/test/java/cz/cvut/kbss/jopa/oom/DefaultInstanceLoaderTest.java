@@ -19,21 +19,15 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
-import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.AxiomImpl;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -133,68 +127,6 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
         final OWLClassA res = instanceLoader.loadEntity(loadingParameters);
         assertNotNull(res);
         verify(cacheMock, never()).contains(etAMock.getJavaType(), IDENTIFIER, descriptor);
-    }
-
-    @Test
-    void loadReferenceVerifiesClassAssertionExistenceAndBuildsEntityInstanceWithIdentifier() throws Exception {
-        final Axiom<NamedResource> typeAxiom =
-                new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
-                        new Value<>(NamedResource.create(
-                                Vocabulary.c_OwlClassA)));
-        when(connectionMock.contains(typeAxiom, Collections.emptySet())).thenReturn(true);
-        when(descriptorFactoryMock.createForReferenceLoading(IDENTIFIER, etAMock)).thenReturn(typeAxiom);
-        when(entityConstructorMock.createEntityInstance(IDENTIFIER, etAMock)).thenReturn(entityA);
-
-        final OWLClassA result = instanceLoader.loadReference(loadingParameters);
-        assertNotNull(result);
-        verify(descriptorFactoryMock).createForReferenceLoading(IDENTIFIER, etAMock);
-        verify(connectionMock).contains(typeAxiom, Collections.emptySet());
-        verify(entityConstructorMock).createEntityInstance(IDENTIFIER, etAMock);
-    }
-
-    @Test
-    void loadReferenceChecksForClassAssertionInCorrectContext() throws Exception {
-        final EntityDescriptor descriptor = new EntityDescriptor(Generators.createIndividualIdentifier());
-        final Axiom<NamedResource> typeAxiom =
-                new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
-                        new Value<>(NamedResource.create(
-                                Vocabulary.c_OwlClassA)));
-        when(connectionMock.contains(eq(typeAxiom), any())).thenReturn(true);
-        when(descriptorFactoryMock.createForReferenceLoading(IDENTIFIER, etAMock)).thenReturn(typeAxiom);
-        when(entityConstructorMock.createEntityInstance(IDENTIFIER, etAMock)).thenReturn(entityA);
-
-        final OWLClassA result =
-                instanceLoader.loadReference(new LoadingParameters<>(OWLClassA.class, IDENTIFIER, descriptor));
-        assertNotNull(result);
-        verify(connectionMock).contains(typeAxiom, descriptor.getContexts());
-    }
-
-    @Test
-    void loadReferenceReturnsNullWhenStorageDoesNotContainTypeAssertionAxiom() throws Exception {
-        final Axiom<NamedResource> typeAxiom =
-                new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
-                        new Value<>(NamedResource.create(
-                                Vocabulary.c_OwlClassA)));
-        when(connectionMock.contains(any(), any())).thenReturn(false);
-        when(descriptorFactoryMock.createForReferenceLoading(IDENTIFIER, etAMock)).thenReturn(typeAxiom);
-        when(entityConstructorMock.createEntityInstance(IDENTIFIER, etAMock)).thenReturn(entityA);
-
-        final OWLClassA result = instanceLoader.loadReference(loadingParameters);
-        assertNull(result);
-        verify(entityConstructorMock, never()).createEntityInstance(IDENTIFIER, etAMock);
-    }
-
-    @Test
-    void loadReferenceThrowsStorageAccessExceptionOnDriverException() throws Exception {
-        final Axiom<NamedResource> typeAxiom =
-                new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
-                        new Value<>(NamedResource.create(
-                                Vocabulary.c_OwlClassA)));
-        when(descriptorFactoryMock.createForReferenceLoading(IDENTIFIER, etAMock)).thenReturn(typeAxiom);
-        when(connectionMock.contains(any(), any())).thenThrow(new OntoDriverException());
-
-        assertThrows(StorageAccessException.class, () -> instanceLoader.loadReference(loadingParameters));
-        verify(entityConstructorMock, never()).createEntityInstance(IDENTIFIER, etAMock);
     }
 
     @Test

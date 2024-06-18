@@ -26,14 +26,17 @@ import cz.cvut.kbss.jopa.model.annotations.PrePersist;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassF;
 import cz.cvut.kbss.jopa.test.OWLClassJ;
+import cz.cvut.kbss.jopa.test.OWLClassO;
 import cz.cvut.kbss.jopa.test.OWLClassR;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.utils.JOPALazyUtils;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -62,6 +65,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -230,7 +235,9 @@ class BugTest extends IntegrationTestBase {
                 new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_F)));
         final Assertion aSetAssertion = Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_F_HAS_SIMPLE_SET), false);
         axioms.add(classAssertion);
-        final List<AxiomImpl<NamedResource>> aSetAxioms = instance.getSimpleSet().stream().map(a -> new AxiomImpl<>(subject, aSetAssertion, new Value<>(NamedResource.create(a.getUri())))).toList();
+        final List<AxiomImpl<NamedResource>> aSetAxioms = instance.getSimpleSet().stream()
+                                                                  .map(a -> new AxiomImpl<>(subject, aSetAssertion, new Value<>(NamedResource.create(a.getUri()))))
+                                                                  .toList();
         axioms.addAll(aSetAxioms);
         final AxiomDescriptor entityDesc = new AxiomDescriptor(subject);
         entityDesc.addAssertion(Assertion.createClassAssertion(false));
@@ -241,5 +248,34 @@ class BugTest extends IntegrationTestBase {
         final AxiomDescriptor setDesc = new AxiomDescriptor(subject);
         setDesc.addAssertion(aSetAssertion);
         doReturn(aSetAxioms).when(connectionMock).find(setDesc);
+    }
+
+    /**
+     * Bug #248
+     */
+    @Test
+    void cascadeMergeOnLazyLoadingProxyDoesNothing() throws Exception {
+        final OWLClassO owner = new OWLClassO(Generators.generateUri());
+        final OWLClassE reference = new OWLClassE();
+        reference.setUri(Generators.generateUri());
+        owner.setOwlClassE(reference);
+        final Assertion classAssertion = Assertion.createClassAssertion(false);
+        final Assertion eAssertion = Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_O_SINGLE_E_ATTRIBUTE), false);
+        final Assertion eSetAssertion = Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_O_SET_OF_E_ATTRIBUTE), false);
+        final NamedResource ownerSubject = NamedResource.create(owner.getUri());
+        final AxiomDescriptor ownerDesc = new AxiomDescriptor(ownerSubject);
+        ownerDesc.addAssertion(classAssertion);
+        ownerDesc.addAssertion(eAssertion);
+        ownerDesc.addAssertion(eSetAssertion);
+        final List<Axiom<?>> ownerAxioms = List.of(
+                new AxiomImpl<>(NamedResource.create(owner.getUri()), classAssertion, new Value<>(URI.create(Vocabulary.C_OWL_CLASS_O))),
+                new AxiomImpl<>(NamedResource.create(owner.getUri()), eAssertion, new Value<>(NamedResource.create(reference.getUri())))
+        );
+        when(connectionMock.find(ownerDesc)).thenReturn(ownerAxioms);
+
+        em.getTransaction().begin();
+        final OWLClassO subject = em.find(OWLClassO.class, owner.getUri());
+        em.merge(subject);
+        verify(connectionMock, never()).update(any(AxiomValueDescriptor.class));
     }
 }

@@ -72,6 +72,10 @@ public class LazyLoadingEntityProxyGenerator implements PersistenceContextAwareC
 
     public static class GetterInterceptor {
 
+        private GetterInterceptor() {
+            throw new AssertionError();
+        }
+
         @RuntimeType
         public static <T> Object get(@This LazyLoadingEntityProxy<T> proxy, @Origin Method getter) {
             final Object loaded = proxy.triggerLazyLoading();
@@ -85,6 +89,10 @@ public class LazyLoadingEntityProxyGenerator implements PersistenceContextAwareC
 
     public static class SetterInterceptor {
 
+        private SetterInterceptor() {
+            throw new AssertionError();
+        }
+
         public static <T> void set(@This LazyLoadingEntityProxy<T> proxy, @Origin Method setter,
                                    @AllArguments Object[] args) {
             final Object loaded = proxy.triggerLazyLoading();
@@ -97,6 +105,10 @@ public class LazyLoadingEntityProxyGenerator implements PersistenceContextAwareC
     }
 
     public static class ProxyMethodsInterceptor {
+
+        private ProxyMethodsInterceptor() {
+            throw new AssertionError();
+        }
 
         public static <T> boolean isLoaded(@This LazyLoadingEntityProxy<T> proxy, @FieldValue("value") T value) {
             return value != null;

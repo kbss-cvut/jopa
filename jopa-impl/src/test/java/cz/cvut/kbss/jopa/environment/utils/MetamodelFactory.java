@@ -496,7 +496,6 @@ public class MetamodelFactory {
         when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassH.class));
         when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassH.getClassIri()));
-        when(etMock.getAttribute(OWLClassH.getOwlClassAField().getName())).thenReturn(clsAMock);
         when(etMock.getName()).thenReturn(OWLClassH.class.getSimpleName());
         when(etMock.getAttributes()).thenReturn(
                 new HashSet<>(Arrays.<Attribute<OWLClassH, ?>>asList(clsAMock, clsGMock)));
@@ -525,6 +524,8 @@ public class MetamodelFactory {
 
         when(etMock.getFieldSpecification(clsAMock.getName())).thenReturn(clsAMock);
         when(etMock.getFieldSpecification(clsGMock.getName())).thenReturn(clsGMock);
+        when(etMock.getAttribute(clsAMock.getName())).thenReturn(clsAMock);
+        when(etMock.getAttribute(clsGMock.getName())).thenReturn(clsGMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getName()).thenReturn(OWLClassH.class.getDeclaredField("uri").getName());
         when(idMock.getJavaField()).thenReturn(OWLClassH.class.getDeclaredField("uri"));
@@ -585,6 +586,7 @@ public class MetamodelFactory {
         when(setAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(setAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(setAMock.getDeclaringType()).thenReturn(etMock);
+        when(etMock.getFieldSpecification(OWLClassJ.getOwlClassAField().getName())).thenReturn(setAMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassJ.class.getDeclaredField("uri"));
         when(idMock.getDeclaringType()).thenReturn(etMock);

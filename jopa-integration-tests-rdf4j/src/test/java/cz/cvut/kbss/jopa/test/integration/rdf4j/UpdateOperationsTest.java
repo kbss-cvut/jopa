@@ -20,7 +20,6 @@ package cz.cvut.kbss.jopa.test.integration.rdf4j;
 import cz.cvut.kbss.jopa.test.environment.Rdf4jDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Rdf4jPersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.UpdateOperationsRunner;
-import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,12 +29,5 @@ public class UpdateOperationsTest extends UpdateOperationsRunner {
 
     public UpdateOperationsTest() {
         super(LOG, new Rdf4jPersistenceFactory(), new Rdf4jDataAccessor());
-    }
-
-    // TODO Re-enable after new transactional mechanism is implemented
-    @Disabled
-    @Override
-    public void concurrentTransactionsLeaveDataInConsistentState() {
-        super.concurrentTransactionsLeaveDataInConsistentState();
     }
 }

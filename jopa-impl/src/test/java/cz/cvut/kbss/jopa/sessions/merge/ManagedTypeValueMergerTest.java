@@ -40,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -129,5 +130,18 @@ public class ManagedTypeValueMergerTest {
         sut.mergeValue(target, changeRecord, descriptor);
         assertEquals(loaded, target.getOwlClassA());
         assertEquals(loaded, changeRecord.getNewValue());
+    }
+
+    @Test
+    void mergeUsesValueWhenItIsAlreadyManagedByUoW() {
+        final OWLClassD target = new OWLClassD(Generators.createIndividualIdentifier());
+        final OWLClassA value = Generators.generateOwlClassAInstance();
+        when(uow.contains(value)).thenReturn(true);
+        target.setOwlClassA(value);
+        final ChangeRecord changeRecord = new ChangeRecord(refASpec, value);
+
+        sut.mergeValue(target, changeRecord, descriptor);
+        assertSame(value, target.getOwlClassA());
+        verify(uow, never()).readObject(OWLClassA.class, value.getUri(), descriptor);
     }
 }

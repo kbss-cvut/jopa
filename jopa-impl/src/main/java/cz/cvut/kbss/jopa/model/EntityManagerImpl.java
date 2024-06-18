@@ -36,6 +36,7 @@ import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.JOPALazyUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -227,7 +228,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     private void mergeX(Attribute<?, ?> at, Object merged, Object toMerge, Descriptor descriptor) {
         Object attVal = EntityPropertiesUtils.getAttributeValue(at, toMerge);
-        if (attVal == null) {
+        if (attVal == null || JOPALazyUtils.isLazyLoadingProxy(attVal)) {
             return;
         }
         if (at.isCollection()) {
@@ -261,7 +262,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
                     registerProcessedInstance(object);
                     // Intentional fall-through
                 case REMOVED:
-                    new SimpleOneLevelCascadeExplorer(this::remove).start(this, object, CascadeType.REMOVE);
+                    new OneLevelRemoveCascadeExplorer(this::remove).start(this, object, CascadeType.REMOVE);
                     break;
                 default:
                     throw new IllegalArgumentException("Entity " + object + " is not managed and cannot be removed.");

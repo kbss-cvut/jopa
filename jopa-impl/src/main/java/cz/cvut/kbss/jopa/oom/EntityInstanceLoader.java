@@ -19,7 +19,6 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.datatype.util.Pair;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
-import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -27,6 +26,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.oom.exception.EntityReconstructionException;
+import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
@@ -36,7 +36,6 @@ import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
 import java.util.Collection;
@@ -83,19 +82,6 @@ abstract class EntityInstanceLoader {
      */
     abstract <T> T loadEntity(LoadingParameters<T> loadingParameters);
 
-    /**
-     * Loads entity reference.
-     * <p>
-     * I.e., the object may contain only the identifier, other attributes could be loaded lazily. However, if a
-     * corresponding entity is already cached, it can be returned instead.
-     *
-     * @param loadingParameters Reference loading parameters. Note that cache bypassing and forced eager loading
-     *                          configuration is ignored
-     * @param <T>               Entity type
-     * @return Loaded entity reference, possibly {@code null}
-     */
-    abstract <T> T loadReference(LoadingParameters<T> loadingParameters);
-
     <U extends T, T> U loadInstance(LoadingParameters<T> loadingParameters, IdentifiableEntityType<U> et) {
         final URI identifier = loadingParameters.getIdentifier();
         final Descriptor descriptor = loadingParameters.getDescriptor();
@@ -137,7 +123,9 @@ abstract class EntityInstanceLoader {
         return LoadStateDescriptorFactory.createAllUnknown(instance, (EntityType<Object>) et);
     }
 
-    private void recursivelyProcessCachedEntityReferences(Object instance, EntityType<?> et, Map<Object, Object> visited, List<Consumer<Pair<Object, EntityType<?>>>> handlers) {
+    private void recursivelyProcessCachedEntityReferences(Object instance, EntityType<?> et,
+                                                          Map<Object, Object> visited,
+                                                          List<Consumer<Pair<Object, EntityType<?>>>> handlers) {
         if (visited.containsKey(instance)) {
             return;
         }
@@ -159,20 +147,6 @@ abstract class EntityInstanceLoader {
                 }
             }
         });
-    }
-
-    <T> T loadReferenceInstance(LoadingParameters<T> loadingParameters, IdentifiableEntityType<? extends T> et) {
-        final URI identifier = loadingParameters.getIdentifier();
-        final Axiom<NamedResource> typeAxiom = descriptorFactory.createForReferenceLoading(identifier, et);
-        try {
-            final boolean contains =
-                    storageConnection.contains(typeAxiom, loadingParameters.getDescriptor().getContexts());
-            return contains ? entityBuilder.createEntityInstance(identifier, et) : null;
-        } catch (OntoDriverException e) {
-            throw new StorageAccessException(e);
-        } catch (cz.cvut.kbss.jopa.exception.InstantiationException e) {
-            throw new EntityReconstructionException(e);
-        }
     }
 
     abstract static class EntityInstanceLoaderBuilder {

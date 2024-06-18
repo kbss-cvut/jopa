@@ -65,11 +65,19 @@ public class ReferencedListValueDescriptor<T> extends ReferencedListDescriptorIm
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {return true;}
-        if (obj == null || getClass() != obj.getClass()) {return false;}
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
         ReferencedListValueDescriptor<?> other = (ReferencedListValueDescriptor<?>) obj;
-        if (!descriptor.equals(other.descriptor)) {return false;}
-        if (!getNodeContent().equals(other.getNodeContent())) {return false;}
+        if (!descriptor.equals(other.descriptor)) {
+            return false;
+        }
+        if (!getNodeContent().equals(other.getNodeContent())) {
+            return false;
+        }
         return values.equals(other.values);
     }
 

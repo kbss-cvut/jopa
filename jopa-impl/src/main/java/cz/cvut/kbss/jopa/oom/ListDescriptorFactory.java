@@ -16,6 +16,10 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
  */
 class ListDescriptorFactory {
 
+    private ListDescriptorFactory() {
+        throw new AssertionError();
+    }
+
     static SimpleListDescriptor createSimpleListDescriptor(NamedResource owner, ListAttribute<?, ?> attribute) {
         final boolean inferred = attribute.isInferred();
         final Assertion listProperty = Assertion.createObjectPropertyAssertion(attribute.getIRI().toURI(), inferred);
