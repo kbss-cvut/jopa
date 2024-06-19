@@ -249,7 +249,6 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
     private void processTypesField(Field field, Class<?> fieldValueCls, InferenceInfo inference) {
-        Types tt = field.getAnnotation(Types.class);
         mappingValidator.validateTypesField(field);
         // Always use eager for Types, they are fetched eagerly anyway to ensure entity is of correct type
         final FetchType fetchType = FetchType.EAGER;
@@ -322,7 +321,7 @@ class ClassFieldMetamodelProcessor<X> {
                                                                                                   .inferred(inference.inferred)
                                                                                                   .includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
-            a = (AbstractAttribute<X, ?>) builder.build();
+            a = builder.build();
         } else if (property.getType().isAssignableFrom(List.class)) {
             a = createListAttribute(property, inference, propertyAttributes);
         } else if (property.getType().isAssignableFrom(Set.class)) {
@@ -332,7 +331,7 @@ class ClassFieldMetamodelProcessor<X> {
                                                                                            .inferred(inference.inferred)
                                                                                            .includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
-            a = (AbstractAttribute<X, ?>) builder.build();
+            a = builder.build();
         } else if (property.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
@@ -342,7 +341,7 @@ class ClassFieldMetamodelProcessor<X> {
                                                                                                 .inferred(inference.inferred)
                                                                                                 .includeExplicit(inference.includeExplicit);
             context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
-            a = (AbstractAttribute<X, ?>) builder.build();
+            a = builder.build();
         }
         et.addDeclaredAttribute(property.getName(), a);
         return a;

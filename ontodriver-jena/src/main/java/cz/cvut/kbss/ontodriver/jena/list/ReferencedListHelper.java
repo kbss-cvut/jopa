@@ -33,10 +33,9 @@ class ReferencedListHelper {
     }
 
     static Stream<RDFNode> toRdfNodes(Object value, Assertion nodeContentAssertion) {
-        if (value instanceof MultilingualString) {
-            final MultilingualString mls = (MultilingualString) value;
+        if (value instanceof MultilingualString mls) {
             return mls.getValue().entrySet().stream()
-                      .map((e) -> JenaUtils.valueToRdfNode(nodeContentAssertion, new Value<>(new LangString(e.getValue(), e.getKey()))));
+                      .map(e -> JenaUtils.valueToRdfNode(nodeContentAssertion, new Value<>(new LangString(e.getValue(), e.getKey()))));
         } else {
             return Stream.of(JenaUtils.valueToRdfNode(nodeContentAssertion, new Value<>(value)));
         }

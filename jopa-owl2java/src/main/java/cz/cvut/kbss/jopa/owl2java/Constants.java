@@ -104,7 +104,7 @@ public class Constants {
             assert properties.containsKey("cz.cvut.jopa.owl2java.version");
             return properties.getProperty("cz.cvut.jopa.owl2java.version");
         } catch (IOException e) {
-            throw new OWL2JavaException("Unable to load OWL2Java version from properties file.");
+            throw new OWL2JavaException("Unable to load OWL2Java version from properties file.", e);
         }
     }
 }

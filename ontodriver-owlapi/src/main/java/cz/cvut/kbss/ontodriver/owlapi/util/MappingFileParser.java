@@ -40,7 +40,7 @@ public class MappingFileParser {
                 OwlapiOntoDriverProperties.DEFAULT_IRI_MAPPING_DELIMITER);
     }
 
-    private File resolveMappingFile(String path) {
+    private static File resolveMappingFile(String path) {
         File mapping = new File(path);
         if (mapping.exists()) {
             return mapping;

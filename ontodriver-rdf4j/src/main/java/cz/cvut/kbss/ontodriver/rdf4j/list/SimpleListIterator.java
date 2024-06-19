@@ -98,7 +98,7 @@ class SimpleListIterator extends AbstractListIterator<NamedResource> {
         return createAxiom(current.getSubject(), assertion, (Resource) current.getObject());
     }
 
-    private Axiom<NamedResource> createAxiom(Resource subject, Assertion assertion, Resource value) {
+    private static Axiom<NamedResource> createAxiom(Resource subject, Assertion assertion, Resource value) {
         return new AxiomImpl<>(NamedResource.create(subject.stringValue()), assertion, new Value<>(NamedResource.create(value.stringValue())));
     }
 

@@ -88,7 +88,7 @@ public class StorageConnection implements RepoConnection {
 
     @Override
     public boolean executeBooleanQuery(QuerySpecification query) throws Rdf4jDriverException {
-        return withConnection((conn) -> new ConnectionStatementExecutor(conn).executeBooleanQuery(query));
+        return withConnection(conn -> new ConnectionStatementExecutor(conn).executeBooleanQuery(query));
     }
 
     private <R> R withConnection(ThrowingFunction<RepositoryConnection, R> call) throws Rdf4jDriverException {

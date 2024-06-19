@@ -85,7 +85,7 @@ public class PrefixMap {
         return result;
     }
 
-    private Map<String, String> resolveOntologyPrefixes(OWLOntology ontology, String prefixProperty,
+    private static Map<String, String> resolveOntologyPrefixes(OWLOntology ontology, String prefixProperty,
                                                         RemotePrefixResolver remotePrefixResolver) {
         final Map<String, String> result = new HashMap<>();
         final OWLDataFactory df = ontology.getOWLOntologyManager().getOWLDataFactory();
@@ -113,7 +113,7 @@ public class PrefixMap {
         return result;
     }
 
-    private Map<String, String> resolvePrefixesFromPrefixMappingFile(String mappingFilePath) {
+    private static Map<String, String> resolvePrefixesFromPrefixMappingFile(String mappingFilePath) {
         if (mappingFilePath == null) {
             return Collections.emptyMap();
         }

@@ -17,8 +17,6 @@
  */
 package cz.cvut.kbss.ontodriver.descriptor;
 
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-
 import java.util.List;
 
 /**

@@ -166,27 +166,6 @@ public class CloneBuilder {
     }
 
     /**
-     * Builds a clone of the specified entity reference.
-     * <p>
-     * It is expected that the specified original is an entity, only its identifier is cloned.
-     *
-     * @param original           Entity
-     * @param cloneConfiguration Clone configuration
-     * @return The clone
-     */
-    public Object buildReferenceClone(Object original, CloneConfiguration cloneConfiguration) {
-        Objects.requireNonNull(original);
-        Objects.requireNonNull(cloneConfiguration);
-        assert isTypeManaged(original.getClass());
-
-        final Class<?> originalClass = original.getClass();
-        final EntityType<?> et = getMetamodel().entity(originalClass);
-        final Object clone = getInstanceBuilder(original).buildClone(null, null, original, cloneConfiguration);
-        cloneIdentifier(original, clone, et);
-        return clone;
-    }
-
-    /**
      * Clone all the attributes of the original and set the clone values. This also means cloning any relationships and
      * their targets.
      */

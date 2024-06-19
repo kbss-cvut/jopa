@@ -136,7 +136,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         }
     }
 
-    private Object fromRdf4jValue(org.eclipse.rdf4j.model.Value value) {
+    private static Object fromRdf4jValue(org.eclipse.rdf4j.model.Value value) {
         return value.isLiteral() ? Rdf4jUtils.getLiteralValue((Literal) value) : NamedResource.create(value.stringValue());
     }
 

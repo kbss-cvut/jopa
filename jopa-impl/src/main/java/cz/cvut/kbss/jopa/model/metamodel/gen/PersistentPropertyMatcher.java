@@ -61,4 +61,23 @@ public abstract class PersistentPropertyMatcher<T extends MethodDescription> ext
         } while (type != null);
         return Optional.empty();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof PersistentPropertyMatcher<?> that)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        return Objects.equals(parentType, that.parentType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), parentType);
+    }
 }
