@@ -32,6 +32,7 @@ public class Vocabulary {
     public static final String c_OwlClassG = CLASS_BASE + "OWLClassG";
     public static final String c_OwlClassH = CLASS_BASE + "OWLClassH";
     public static final String c_OwlClassJ = CLASS_BASE + "OWLClassJ";
+    public static final String c_OwlClassL = CLASS_BASE + "OWLClassL";
     public static final String c_OwlClassM = CLASS_BASE + "OWLClassM";
     public static final String c_OwlClassN = CLASS_BASE + "OWLClassN";
     public static final String C_OWLClassR = CLASS_BASE + "OWLClassR";
@@ -48,6 +49,8 @@ public class Vocabulary {
     public static final String p_g_hasH = ATTRIBUTE_BASE + "hasH";
     public static final String p_h_hasA = ATTRIBUTE_BASE + "hasA";
     public static final String p_h_hasG = ATTRIBUTE_BASE + "hasG";
+
+    public static final String p_l_singleA = ATTRIBUTE_BASE + "hasAExtra";
 
     public static final String p_a_stringAttribute = ATTRIBUTE_BASE + "A-stringAttribute";
     public static final String p_e_stringAttribute = ATTRIBUTE_BASE + "E-stringAttribute";
