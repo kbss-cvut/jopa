@@ -302,9 +302,12 @@ class BugTest extends IntegrationTestBase {
         ownerDesc.addAssertion(Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_l_aSetAttribute), false));
         final List<Axiom<?>> ownerAxioms = List.of(
                 new AxiomImpl<>(subject, classAssertion, new Value<>(URI.create(Vocabulary.C_OWL_CLASS_L))),
-                new AxiomImpl<Object>(subject, hasAAssertion, new Value<>(NamedResource.create(ref.getUri())))
+                new AxiomImpl<>(subject, hasAAssertion, new Value<>(NamedResource.create(ref.getUri())))
         );
         when(connectionMock.find(ownerDesc)).thenReturn(ownerAxioms);
+        final AxiomDescriptor singleAAttDesc = new AxiomDescriptor(subject);
+        singleAAttDesc.addAssertion(hasAAssertion);
+        when(connectionMock.find(singleAAttDesc)).thenReturn(List.of(new AxiomImpl<>(subject, hasAAssertion, new Value<>(NamedResource.create(ref.getUri())))));
         initAxiomsForOWLClassA(NamedResource.create(ref.getUri()), ref.getStringAttribute(), false);
 
         em.getTransaction().begin();

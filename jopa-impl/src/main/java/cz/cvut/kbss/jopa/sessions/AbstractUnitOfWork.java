@@ -910,6 +910,10 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         ensureManaged(entity);
 
         final Descriptor descriptor = getDescriptor(entity);
+        assert loadStateRegistry.contains(entity);
+        if (loadStateRegistry.get(entity).isLoaded(attribute) == LoadState.NOT_LOADED) {
+            value = loadEntityField(entity, attribute);
+        }
         return storage.isInferred(entity, attribute, value, descriptor);
     }
 
