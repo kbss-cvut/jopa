@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -73,7 +73,7 @@ public class StaticMetamodelInitializer {
             initStaticMembers(mt, smClass.get());
         } catch (IllegalAccessException e) {
             throw new StaticMetamodelInitializationException("Unable to initialize static metamodel class " + smClass,
-                                                             e);
+                    e);
         }
     }
 
@@ -97,15 +97,12 @@ public class StaticMetamodelInitializer {
     }
 
     private static void verifyParents(Class<?> smClass, ManagedType<?> type) {
-        if (type instanceof IdentifiableType<?>) {
-            final IdentifiableType<?> idType = (IdentifiableType<?>) type;
-            if (idType.getSupertypes() != null && !idType.getSupertypes().isEmpty()) {
-                for (IdentifiableType<?> superType : idType.getSupertypes()) {
-                    final Optional<Class<?>> supertypeSm = tryFindingClass(superType);
-                    if (supertypeSm.isEmpty() || !Objects.equals(smClass.getSuperclass(), supertypeSm.get())) {
-                        throw new StaticMetamodelInitializationException("Managed type " + type +
-                                                                                 " has a managed supertype. A corresponding relationship must exist between static metamodel classes.");
-                    }
+        if (type instanceof IdentifiableType<?> idType && !idType.getSupertypes().isEmpty()) {
+            for (IdentifiableType<?> superType : idType.getSupertypes()) {
+                final Optional<Class<?>> supertypeSm = tryFindingClass(superType);
+                if (supertypeSm.isEmpty() || !Objects.equals(smClass.getSuperclass(), supertypeSm.get())) {
+                    throw new StaticMetamodelInitializationException("Managed type " + type +
+                            " has a managed supertype. A corresponding relationship must exist between static metamodel classes.");
                 }
             }
         }
@@ -144,10 +141,9 @@ public class StaticMetamodelInitializer {
     }
 
     private static <T> Optional<FieldSpecification<T, ?>> getDeclaredIdentifier(Field field, ManagedType<T> type) {
-        if (!(type instanceof IdentifiableType)) {
+        if (!(type instanceof IdentifiableType<T> mt)) {
             return Optional.empty();
         }
-        final IdentifiableType<T> mt = (IdentifiableType<T>) type;
         return Objects.equals(field.getName(), mt.getIdentifier().getJavaField().getName()) &&
                 isDeclaredInClass(mt.getIdentifier(), type.getJavaType()) ?
                 Optional.of((Identifier<T, ?>) mt.getIdentifier()) : Optional.empty();

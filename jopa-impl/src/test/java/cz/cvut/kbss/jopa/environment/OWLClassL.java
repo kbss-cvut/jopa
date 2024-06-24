@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassL")
+@OWLClass(iri = Vocabulary.c_OwlClassL)
 public class OWLClassL implements HasUri {
 
     @Id
@@ -52,7 +52,7 @@ public class OWLClassL implements HasUri {
     private Set<OWLClassA> set;
 
     @ParticipationConstraints(nonEmpty = true)
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasAExtra", fetch = FetchType.EAGER)
+    @OWLObjectProperty(iri = Vocabulary.p_l_singleA, fetch = FetchType.EAGER)
     private OWLClassA singleA;
 
     public OWLClassL() {

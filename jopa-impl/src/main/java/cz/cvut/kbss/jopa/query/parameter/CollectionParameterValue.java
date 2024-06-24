@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,9 @@
  */
 package cz.cvut.kbss.jopa.query.parameter;
 
+import cz.cvut.kbss.jopa.query.sparql.SparqlConstants;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,12 +32,30 @@ class CollectionParameterValue extends AbstractParameterValue {
     }
 
     @Override
-    public Object getValue() {
+    public List<Object> getValue() {
         return values.stream().map(ParameterValue::getValue).collect(Collectors.toList());
     }
 
     @Override
     public String getQueryString() {
         return values.stream().map(ParameterValue::getQueryString).collect(Collectors.joining(","));
+    }
+
+    @Override
+    public List<String> toQueryValues(int size) {
+        assert size >= values.size();
+        final List<String> result = new ArrayList<>(size);
+        values.stream().map(ParameterValue::getQueryString).forEach(result::add);
+        if (values.size() < size) {
+            for (int i = values.size(); i < size; i++) {
+                result.add(SparqlConstants.UNDEF);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public int valueCount() {
+        return values.size();
     }
 }

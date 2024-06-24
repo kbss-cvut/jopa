@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,8 +27,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * This class has responsibility for creating new instances of various kinds of objects. It handles security
@@ -68,41 +70,36 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
                     if (c == null) {
                         fieldClasses.add(f.getType());
                     } else {
-                        try {
-                            Object[] params = new Object[1];
-                            params[0] = original.getClass().getDeclaredField(f.getName());
-                            newInstance = c.newInstance(params);
-                            return newInstance;
-                        } catch (SecurityException e) {
-                            logConstructorAccessException(c, e);
-                            // Do nothing
-                        } catch (NoSuchFieldException e) {
-                            throw new OWLPersistenceException(e);
-                        }
+                        newInstance = tryCreatingUsingConstructorWithArguments(c).orElse(null);
                     }
                 }
                 Class<?>[] args = new Class<?>[fieldClasses.size()];
                 args = fieldClasses.toArray(args);
                 c = getDeclaredConstructorFor(javaClass, args);
                 if (c != null) {
-                    Object[] params = new Object[args.length];
-                    try {
-                        newInstance = c.newInstance(params);
-                    } catch (SecurityException e) {
-                        logConstructorAccessException(c, e);
-                        throw new OWLPersistenceException(e);
-                    }
+                    newInstance = tryCreatingUsingConstructorWithArguments(c).orElse(null);
                 }
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException |
+                     InvocationTargetException e) {
                 throw new OWLPersistenceException(e);
             }
         }
         if (newInstance == null) {
-            throw new OWLPersistenceException(
-                    "Unable to create a new object or to find a suitable constructor for class "
-                            + javaClass.getName());
+            throw new OWLPersistenceException("Unable to create a new object or to find a suitable constructor for " + javaClass.getName());
         }
         return newInstance;
+    }
+
+    private static Optional<Object> tryCreatingUsingConstructorWithArguments(
+            Constructor<?> ctor) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        try {
+            Object[] params = new Object[ctor.getParameterCount()];
+            Arrays.fill(params, null);
+            return Optional.of(ctor.newInstance(params));
+        } catch (SecurityException e) {
+            logConstructorAccessException(ctor, e);
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -143,20 +140,18 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
      */
     private static Object buildNewInstanceUsingDefaultConstructor(final Class<?> javaClass) {
         final Constructor<?> c = getDeclaredConstructorFor(javaClass, null);
-        Object newInstance = null;
         if (c != null) {
             try {
-                try {
-                    newInstance = c.newInstance((Object[]) null);
-                } catch (SecurityException e) {
-                    logConstructorAccessException(c, e);
-                    // Do nothing
-                }
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                return c.newInstance((Object[]) null);
+            } catch (SecurityException e) {
+                logConstructorAccessException(c, e);
+                // Do nothing
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException |
+                     InvocationTargetException e) {
                 LOG.trace("Class {} does not have a suitable no-arg constructor.", javaClass);
                 // Do nothing
             }
         }
-        return newInstance;
+        return null;
     }
 }

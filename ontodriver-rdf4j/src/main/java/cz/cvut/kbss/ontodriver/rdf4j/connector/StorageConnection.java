@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -88,7 +88,7 @@ public class StorageConnection implements RepoConnection {
 
     @Override
     public boolean executeBooleanQuery(QuerySpecification query) throws Rdf4jDriverException {
-        return withConnection((conn) -> new ConnectionStatementExecutor(conn).executeBooleanQuery(query));
+        return withConnection(conn -> new ConnectionStatementExecutor(conn).executeBooleanQuery(query));
     }
 
     private <R> R withConnection(ThrowingFunction<RepositoryConnection, R> call) throws Rdf4jDriverException {
@@ -199,8 +199,8 @@ public class StorageConnection implements RepoConnection {
         assert connection != null;
 
         try {
-            spc.forEach(spcItem -> connection.remove(spcItem.getSubject(), spcItem.getPredicate(), null, spcItem.getContexts()
-                                                                                                                .toArray(Resource[]::new)));
+            spc.forEach(spcItem -> connection.remove(spcItem.subject(), spcItem.predicate(), null, spcItem.contexts()
+                                                                                                          .toArray(Resource[]::new)));
         } catch (RepositoryException e) {
             throw new Rdf4jDriverException(e);
         }

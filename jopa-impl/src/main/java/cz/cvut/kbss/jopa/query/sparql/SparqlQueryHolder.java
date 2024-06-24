@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,15 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 public class SparqlQueryHolder implements QueryHolder {
 
@@ -193,15 +201,32 @@ public class SparqlQueryHolder implements QueryHolder {
             return Optional.empty();
         }
         final StringBuilder variables = new StringBuilder();
-        final StringBuilder data = new StringBuilder();
+        final int tableSize = maxValueCount(parameters);
+        final List<List<String>> valueTable = new ArrayList<>(parameters.size());
         for (QueryParameter<?> qp : parameters) {
             if (!variables.isEmpty()) {
                 variables.append(' ');
             }
             variables.append(qp.getIdentifierAsQueryString());
-            data.append('(').append(qp.getValue().getQueryString()).append(')');
+            valueTable.add(qp.getValue().toQueryValues(tableSize));
         }
-        return Optional.of(" VALUES (" + variables + ") {" + data + "}");
+        return Optional.of(" VALUES (" + variables + ") { " + valueTableToString(valueTable, tableSize) + "}");
+    }
+
+    private static int maxValueCount(Set<QueryParameter<?>> parameters) {
+        return parameters.stream().map(p -> p.getValue().valueCount()).max(Integer::compareTo).orElse(1);
+    }
+
+    private static String valueTableToString(List<List<String>> valueTable, int rowSize) {
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < rowSize; i++) {
+            sb.append("( ");
+            for (List<String> row : valueTable) {
+                sb.append(row.get(i)).append(" ");
+            }
+            sb.append(") ");
+        }
+        return sb.toString();
     }
 
     @Override

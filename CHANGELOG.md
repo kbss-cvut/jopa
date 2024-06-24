@@ -1,5 +1,12 @@
 # JOPA - Change Log
 
+## 2.0.2 - 2024-06-24
+- Fix a NPX when calling `EntityManager.isInferred` with lazy loading proxy (Bug #252).
+- Allow using multiple values for a query parameter that is written into SPARQL `VALUES` clause (Bug #246).
+- Dependency updates: RDF4J 5.0.0.
+  - Update note: Still compatible with server 4 and, with the [right configuration](https://github.com/kbss-cvut/jopa/releases/tag/v1.0.0),
+    also 3. However, if you are passing repository configuration file to JOPA, make sure it uses the [new configuration vocabulary](https://rdf4j.org/documentation/reference/configuration/).
+
 ## 2.0.1 - 2024-06-17
 - Proper implementation of `EntityManager.getReference` after 2.0.0 rewrite (Enhancement #233).
 - Log JOPA version and build date on persistence unit startup (Enhancement #243).

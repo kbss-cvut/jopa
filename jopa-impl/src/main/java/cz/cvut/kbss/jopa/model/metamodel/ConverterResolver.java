@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -98,14 +98,11 @@ public class ConverterResolver {
     }
 
     private static ConverterWrapper<?, ?> createEnumConverter(Class<?> valueType, PropertyAttributes pa) {
-        switch (pa.getEnumType()) {
-            case OBJECT_ONE_OF:
-                return new ObjectOneOfEnumConverter(valueType);
-            case ORDINAL:
-                return new OrdinalEnumConverter(valueType);
-            default:
-                return new StringEnumConverter(valueType);
-        }
+        return switch (pa.getEnumType()) {
+            case OBJECT_ONE_OF -> new ObjectOneOfEnumConverter(valueType);
+            case ORDINAL -> new OrdinalEnumConverter(valueType);
+            default -> new StringEnumConverter(valueType);
+        };
     }
 
     private static void verifyTypeIsString(PropertyInfo field, Class<?> attValueType) {
@@ -142,7 +139,7 @@ public class ConverterResolver {
         }
     }
 
-    private boolean isMultilingualReferencedList(Class<?> elemType, PropertyInfo field) {
+    private static boolean isMultilingualReferencedList(Class<?> elemType, PropertyInfo field) {
         return MultilingualString.class.isAssignableFrom(elemType)
                 && field.getAnnotation(Sequence.class) != null
                 && List.class.isAssignableFrom(field.field().getType());

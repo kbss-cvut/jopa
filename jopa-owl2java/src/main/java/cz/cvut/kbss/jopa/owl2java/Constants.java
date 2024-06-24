@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -104,7 +104,7 @@ public class Constants {
             assert properties.containsKey("cz.cvut.jopa.owl2java.version");
             return properties.getProperty("cz.cvut.jopa.owl2java.version");
         } catch (IOException e) {
-            throw new OWL2JavaException("Unable to load OWL2Java version from properties file.");
+            throw new OWL2JavaException("Unable to load OWL2Java version from properties file.", e);
         }
     }
 }

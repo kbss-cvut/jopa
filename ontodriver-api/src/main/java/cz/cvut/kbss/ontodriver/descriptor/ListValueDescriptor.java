@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,8 +16,6 @@
  * License along with this library.
  */
 package cz.cvut.kbss.ontodriver.descriptor;
-
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.util.List;
 

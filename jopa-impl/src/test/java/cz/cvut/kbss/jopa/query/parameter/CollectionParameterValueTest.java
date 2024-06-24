@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,12 +18,16 @@
 package cz.cvut.kbss.jopa.query.parameter;
 
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.query.sparql.SparqlConstants;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CollectionParameterValueTest {
@@ -34,17 +38,35 @@ class CollectionParameterValueTest {
 
     @Test
     void getValueReturnsValuesOfIndividualElements() {
-        final CollectionParameterValue sut = new CollectionParameterValue(Arrays.asList(V_ONE, V_TWO, V_THREE));
+        final CollectionParameterValue sut = new CollectionParameterValue(List.of(V_ONE, V_TWO, V_THREE));
 
-        assertEquals(Arrays.asList(V_ONE.getValue(), V_TWO.getValue(), V_THREE.getValue()), sut.getValue());
+        assertEquals(List.of(V_ONE.getValue(), V_TWO.getValue(), V_THREE.getValue()), sut.getValue());
     }
 
     @Test
     void getQueryStringReturnsQueryStringRepresentationsOfIndividualElementsJoinedByComma() {
-        final CollectionParameterValue sut = new CollectionParameterValue(Arrays.asList(V_ONE, V_TWO, V_THREE));
+        final CollectionParameterValue sut = new CollectionParameterValue(List.of(V_ONE, V_TWO, V_THREE));
 
         assertEquals(
                 Stream.of(V_ONE, V_TWO, V_THREE).map(ParameterValue::getQueryString).collect(Collectors.joining(",")),
                 sut.getQueryString());
+    }
+
+    @Test
+    void toQueryValuesReturnsListOfQueryStringifiedParameterValues() {
+        final CollectionParameterValue sut = new CollectionParameterValue(List.of(V_ONE, V_TWO, V_THREE));
+        final List<String> result = sut.toQueryValues(sut.valueCount());
+        assertEquals(Stream.of(V_ONE, V_TWO, V_THREE).map(ParameterValue::getQueryString).toList(), result);
+    }
+
+    @Test
+    void toQueryValuesReturnsListOfQueryStringifiedParameterValuesFilledWithSparqlUndefWhenSizeIsGreaterThanValueCount() {
+        final int size = 6;
+        final CollectionParameterValue sut = new CollectionParameterValue(List.of(V_ONE, V_TWO, V_THREE));
+        final List<String> result = sut.toQueryValues(size);
+        assertThat(result, hasItems(Stream.of(V_ONE, V_TWO, V_THREE).map(ParameterValue::getQueryString).toArray(String[]::new)));
+        final String[] remainder = new String[size - sut.valueCount()];
+        Arrays.fill(remainder, SparqlConstants.UNDEF);
+        assertThat(result, hasItems(remainder));
     }
 }

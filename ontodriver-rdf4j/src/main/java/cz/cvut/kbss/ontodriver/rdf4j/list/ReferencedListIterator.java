@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -136,7 +136,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         }
     }
 
-    private Object fromRdf4jValue(org.eclipse.rdf4j.model.Value value) {
+    private static Object fromRdf4jValue(org.eclipse.rdf4j.model.Value value) {
         return value.isLiteral() ? Rdf4jUtils.getLiteralValue((Literal) value) : NamedResource.create(value.stringValue());
     }
 

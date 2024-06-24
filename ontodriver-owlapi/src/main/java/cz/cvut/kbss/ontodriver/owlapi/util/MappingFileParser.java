@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ public class MappingFileParser {
                 OwlapiOntoDriverProperties.DEFAULT_IRI_MAPPING_DELIMITER);
     }
 
-    private File resolveMappingFile(String path) {
+    private static File resolveMappingFile(String path) {
         File mapping = new File(path);
         if (mapping.exists()) {
             return mapping;

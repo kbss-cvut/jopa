@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -65,6 +65,8 @@ import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.environment.utils.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -1059,5 +1061,25 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         final OWLClassC result = uow.getInstanceForMerge(entityC.getUri(), metamodelMocks.forOwlClassC()
                                                                                          .entityType(), descriptor);
         assertThat(result.getSimpleList(), containsSameEntities(simpleList));
+    }
+
+    @Test
+    void isInferredLoadsAttributeWhenItIsLazyAndNotLoaded() {
+        when(transactionMock.isActive()).thenReturn(true);
+        defaultLoadStateDescriptor(entityL);
+        uow.getLoadStateRegistry().get(entityL)
+           .setLoaded(metamodelMocks.forOwlClassL().owlClassAAtt(), LoadState.NOT_LOADED);
+        when(metamodelMock.getLazyLoadingProxy(OWLClassA.class)).thenReturn((Class) new LazyLoadingEntityProxyGenerator().generate(OWLClassA.class));
+        final OWLClassL clone = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
+        doAnswer(inv -> {
+            final OWLClassL owner = inv.getArgument(0);
+            owner.setSingleA(entityA);
+            return entityA;
+        }).when(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassL().owlClassAAtt(), descriptor);
+        assertInstanceOf(LazyLoadingProxy.class, clone.getSingleA());
+        assertFalse(uow.isInferred(clone, metamodelMocks.forOwlClassL().owlClassAAtt(), clone.getSingleA()));
+        assertThat(clone.getSingleA(), not(instanceOf(LazyLoadingProxy.class)));
+        verify(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassL().owlClassAAtt(), descriptor);
+        verify(storageMock).isInferred(clone, metamodelMocks.forOwlClassL().owlClassAAtt(), clone.getSingleA(), descriptor);
     }
 }

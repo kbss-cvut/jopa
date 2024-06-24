@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,30 +32,26 @@ public class OWLClassL implements HasUri {
     @Sequence(type = SequenceType.simple)
     @OWLObjectProperty(iri = Vocabulary.p_l_simpleListAttribute, fetch = FetchType.LAZY)
     @ParticipationConstraints({
-            @ParticipationConstraint(min = 1,
-                    owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
+            @ParticipationConstraint(min = 1, owlObjectIRI = Vocabulary.C_OWL_CLASS_A)
     })
     private List<OWLClassA> simpleList;
 
     @Sequence(type = SequenceType.referenced)
     @OWLObjectProperty(iri = Vocabulary.p_l_referencedListAttribute, fetch = FetchType.LAZY)
     @ParticipationConstraints({
-            @ParticipationConstraint(max = 2,
-                    owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
+            @ParticipationConstraint(max = 2, owlObjectIRI = Vocabulary.C_OWL_CLASS_A)
     })
     private List<OWLClassA> referencedList;
 
     @OWLObjectProperty(iri = Vocabulary.p_l_aSetAttribute, fetch = FetchType.LAZY)
     @ParticipationConstraints({
-            @ParticipationConstraint(min = 1, max = 5,
-                    owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
+            @ParticipationConstraint(min = 1, max = 5, owlObjectIRI = Vocabulary.C_OWL_CLASS_A)
     })
     private Set<OWLClassA> set;
 
     @OWLObjectProperty(iri = Vocabulary.p_l_singleOwlClassAAttribute, fetch = FetchType.LAZY)
     @ParticipationConstraints({
-            @ParticipationConstraint(min = 1,
-                    owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
+            @ParticipationConstraint(min = 1, owlObjectIRI = Vocabulary.C_OWL_CLASS_A)
     })
     private OWLClassA singleA;
 

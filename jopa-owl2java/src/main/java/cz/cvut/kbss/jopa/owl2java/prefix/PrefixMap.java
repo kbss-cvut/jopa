@@ -1,3 +1,20 @@
+/*
+ * JOPA
+ * Copyright (C) 2024 Czech Technical University in Prague
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
+ */
 package cz.cvut.kbss.jopa.owl2java.prefix;
 
 import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
@@ -68,7 +85,7 @@ public class PrefixMap {
         return result;
     }
 
-    private Map<String, String> resolveOntologyPrefixes(OWLOntology ontology, String prefixProperty,
+    private static Map<String, String> resolveOntologyPrefixes(OWLOntology ontology, String prefixProperty,
                                                         RemotePrefixResolver remotePrefixResolver) {
         final Map<String, String> result = new HashMap<>();
         final OWLDataFactory df = ontology.getOWLOntologyManager().getOWLDataFactory();
@@ -96,7 +113,7 @@ public class PrefixMap {
         return result;
     }
 
-    private Map<String, String> resolvePrefixesFromPrefixMappingFile(String mappingFilePath) {
+    private static Map<String, String> resolvePrefixesFromPrefixMappingFile(String mappingFilePath) {
         if (mappingFilePath == null) {
             return Collections.emptyMap();
         }

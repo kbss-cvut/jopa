@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,11 +24,13 @@ import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.PrePersist;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassF;
 import cz.cvut.kbss.jopa.test.OWLClassJ;
+import cz.cvut.kbss.jopa.test.OWLClassL;
 import cz.cvut.kbss.jopa.test.OWLClassO;
 import cz.cvut.kbss.jopa.test.OWLClassR;
 import cz.cvut.kbss.jopa.test.Vocabulary;
@@ -45,6 +47,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
@@ -64,6 +67,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -277,5 +282,43 @@ class BugTest extends IntegrationTestBase {
         final OWLClassO subject = em.find(OWLClassO.class, owner.getUri());
         em.merge(subject);
         verify(connectionMock, never()).update(any(AxiomValueDescriptor.class));
+    }
+
+    /**
+     * Bug #252
+     */
+    @Test
+    void isInferredTriggersLazyLoadingForLazyLoadingProxy() throws Exception {
+        final OWLClassL owner = new OWLClassL(Generators.generateUri());
+        final OWLClassA ref = Generators.generateOwlClassA();
+        final NamedResource subject = NamedResource.create(owner.getUri());
+        final Assertion classAssertion = Assertion.createClassAssertion(false);
+        final Assertion hasAAssertion = Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_l_singleOwlClassAAttribute), false);
+        final AxiomDescriptor ownerDesc = new AxiomDescriptor(subject);
+        ownerDesc.addAssertion(classAssertion);
+        ownerDesc.addAssertion(hasAAssertion);
+        ownerDesc.addAssertion(Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_l_simpleListAttribute), false));
+        ownerDesc.addAssertion(Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_l_referencedListAttribute), false));
+        ownerDesc.addAssertion(Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_l_aSetAttribute), false));
+        final List<Axiom<?>> ownerAxioms = List.of(
+                new AxiomImpl<>(subject, classAssertion, new Value<>(URI.create(Vocabulary.C_OWL_CLASS_L))),
+                new AxiomImpl<>(subject, hasAAssertion, new Value<>(NamedResource.create(ref.getUri())))
+        );
+        when(connectionMock.find(ownerDesc)).thenReturn(ownerAxioms);
+        final AxiomDescriptor singleAAttDesc = new AxiomDescriptor(subject);
+        singleAAttDesc.addAssertion(hasAAssertion);
+        when(connectionMock.find(singleAAttDesc)).thenReturn(List.of(new AxiomImpl<>(subject, hasAAssertion, new Value<>(NamedResource.create(ref.getUri())))));
+        initAxiomsForOWLClassA(NamedResource.create(ref.getUri()), ref.getStringAttribute(), false);
+
+        em.getTransaction().begin();
+        final OWLClassL instance = em.find(OWLClassL.class, owner.getUri());
+        assertInstanceOf(LazyLoadingProxy.class, instance.getSingleA());
+        assertFalse(em.isInferred(instance, em.getMetamodel().entity(OWLClassL.class).getAttribute("singleA"), instance.getSingleA()));
+        final ArgumentCaptor<Axiom<?>> axiomCaptor = ArgumentCaptor.forClass(Axiom.class);
+        verify(connectionMock).isInferred(axiomCaptor.capture(), eq(Collections.emptySet()));
+        assertEquals(new Value<>(NamedResource.create(ref.getUri())), axiomCaptor.getValue().getValue());
+        final ArgumentCaptor<AxiomDescriptor> captor = ArgumentCaptor.forClass(AxiomDescriptor.class);
+        verify(connectionMock, atLeastOnce()).find(captor.capture());
+        assertTrue(captor.getAllValues().stream().anyMatch(ad -> ad.getSubject().equals(NamedResource.create(ref.getUri()))));
     }
 }

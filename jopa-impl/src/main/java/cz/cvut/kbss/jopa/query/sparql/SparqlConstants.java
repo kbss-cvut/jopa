@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,11 @@ public class SparqlConstants {
      * The {@literal a} keyword representing the rdf:type IRI.
      */
     public static final String RDF_TYPE_SHORTCUT = "a";
+
+    /**
+     * The {@literal UNDEF} keyword.
+     */
+    public static final String UNDEF = "UNDEF";
 
     private SparqlConstants() {
         throw new AssertionError();

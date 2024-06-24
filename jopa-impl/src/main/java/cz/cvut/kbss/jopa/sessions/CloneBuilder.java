@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -163,27 +163,6 @@ public class CloneBuilder {
         }
         final LoadStateDescriptor<Object> origLoadState = uow.getLoadStateRegistry().get(original);
         return LoadStateDescriptorFactory.createCopy(clone, origLoadState);
-    }
-
-    /**
-     * Builds a clone of the specified entity reference.
-     * <p>
-     * It is expected that the specified original is an entity, only its identifier is cloned.
-     *
-     * @param original           Entity
-     * @param cloneConfiguration Clone configuration
-     * @return The clone
-     */
-    public Object buildReferenceClone(Object original, CloneConfiguration cloneConfiguration) {
-        Objects.requireNonNull(original);
-        Objects.requireNonNull(cloneConfiguration);
-        assert isTypeManaged(original.getClass());
-
-        final Class<?> originalClass = original.getClass();
-        final EntityType<?> et = getMetamodel().entity(originalClass);
-        final Object clone = getInstanceBuilder(original).buildClone(null, null, original, cloneConfiguration);
-        cloneIdentifier(original, clone, et);
-        return clone;
     }
 
     /**

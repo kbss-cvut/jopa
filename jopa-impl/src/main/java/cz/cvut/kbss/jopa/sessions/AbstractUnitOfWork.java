@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -910,6 +910,10 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         ensureManaged(entity);
 
         final Descriptor descriptor = getDescriptor(entity);
+        assert loadStateRegistry.contains(entity);
+        if (loadStateRegistry.get(entity).isLoaded(attribute) == LoadState.NOT_LOADED) {
+            value = loadEntityField(entity, attribute);
+        }
         return storage.isInferred(entity, attribute, value, descriptor);
     }
 

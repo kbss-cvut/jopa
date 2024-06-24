@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2023 Czech Technical University in Prague
+ * Copyright (C) 2024 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -236,13 +236,13 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     void queryWithMappingReturnsResultWithVariablesMappedAccordingly() {
         final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
-                                                                      "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
-                                                                      "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
-                                                                      "}", OWLClassA.VARIABLE_MAPPING).getResultList();
+                "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
+                "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
+                "}", OWLClassA.VARIABLE_MAPPING).getResultList();
         final Map<String, Object> expected = new HashMap<>();
         QueryTestEnvironment.getData(OWLClassA.class)
                             .forEach(a -> expected.put(a.getUri().toString(),
-                                                       new LangString(a.getStringAttribute(), "en")));
+                                    new LangString(a.getStringAttribute(), "en")));
         assertEquals(expected.size(), res.size());
         for (Object row : res) {
             assertInstanceOf(Object[].class, row);
@@ -256,9 +256,9 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     void queryWithConstructorMappingReturnsCorrectInstances() {
         final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
-                                                                      "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
-                                                                      "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
-                                                                      "}", OWLClassA.CONSTRUCTOR_MAPPING)
+                                                   "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
+                                                   "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?y ." +
+                                                   "}", OWLClassA.CONSTRUCTOR_MAPPING)
                                            .getResultList();
         final Map<URI, OWLClassA> expected = new HashMap<>();
         QueryTestEnvironment.getData(OWLClassA.class).forEach(a -> expected.put(a.getUri(), a));
@@ -278,9 +278,9 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     void queryWithEntityMappingReturnsCorrectManagedInstances() {
         final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
-                                                                      "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
-                                                                      "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?stringAttribute ." +
-                                                                      "}", OWLClassA.ENTITY_MAPPING).getResultList();
+                "?x a <" + Vocabulary.C_OWL_CLASS_A + "> ;" +
+                "<" + Vocabulary.P_A_STRING_ATTRIBUTE + "> ?stringAttribute ." +
+                "}", OWLClassA.ENTITY_MAPPING).getResultList();
         final Map<URI, OWLClassA> expected = new HashMap<>();
         QueryTestEnvironment.getData(OWLClassA.class).forEach(a -> expected.put(a.getUri(), a));
 
@@ -293,8 +293,8 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     void queryWithEntityMappingLoadsReferencedEntitiesAsWell() {
         final List res = getEntityManager().createNativeQuery("SELECT ?x ?y WHERE {" +
-                                                                      "?x a ?dType ;" +
-                                                                      "?hasA ?y . }", OWLClassD.MAPPING_NAME)
+                                                   "?x a ?dType ;" +
+                                                   "?hasA ?y . }", OWLClassD.MAPPING_NAME)
                                            .setParameter("dType", URI.create(Vocabulary.C_OWL_CLASS_D))
                                            .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
                                            .getResultList();
@@ -328,12 +328,12 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     public void queryWithEntityMappingLoadsReferencedEntityAndInheritedAttributes() {
         final List res = getEntityManager().createNativeQuery("SELECT * WHERE {" +
-                                                                      "?x a ?type ;" +
-                                                                      "?hasA ?y ;" +
-                                                                      "?rdfsLabel ?label ;" +
-                                                                      "?hasDescription ?description ;" +
-                                                                      "?hasInt ?intAttribute ." +
-                                                                      "}", OWLClassT.MAPPING_NAME)
+                                                   "?x a ?type ;" +
+                                                   "?hasA ?y ;" +
+                                                   "?rdfsLabel ?label ;" +
+                                                   "?hasDescription ?description ;" +
+                                                   "?hasInt ?intAttribute ." +
+                                                   "}", OWLClassT.MAPPING_NAME)
                                            .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_T))
                                            .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
                                            .setParameter("rdfsLabel", URI.create(RDFS.LABEL))
@@ -442,8 +442,8 @@ public abstract class QueryRunner extends BaseQueryRunner {
     public void selectTypesWithDisableInferenceQueryHintReturnsOnlyAssertedTypes() throws Exception {
         final String superType = Vocabulary.CLASS_IRI_BASE + "A-superclass";
         persistTestData(Collections.singleton(
-                                new Quad(URI.create(Vocabulary.C_OWL_CLASS_A), URI.create(RDFS.SUB_CLASS_OF), URI.create(superType))),
-                        getEntityManager());
+                        new Quad(URI.create(Vocabulary.C_OWL_CLASS_A), URI.create(RDFS.SUB_CLASS_OF), URI.create(superType))),
+                getEntityManager());
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final Set<String> types = new HashSet<>(a.getTypes());
         types.add(a.getClass().getAnnotation(OWLClass.class).iri());
@@ -462,7 +462,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
         final List<OWLClassA> aInstances = QueryTestEnvironment.getData(OWLClassA.class);
         final List<OWLClassA> matching = aInstances.subList(0, Generators.randomPositiveInt(3, aInstances.size()));
         final Set<LangString> params = matching.stream().map(a -> new LangString(a.getStringAttribute(),
-                                                                                 TestEnvironment.PERSISTENCE_LANGUAGE))
+                                                       TestEnvironment.PERSISTENCE_LANGUAGE))
                                                .collect(Collectors.toSet());
         final EntityManager em = getEntityManager();
         final String query = "SELECT ?x WHERE { ?x ?stringAtt ?value . FILTER (?value IN (?params)) }";
@@ -472,5 +472,18 @@ public abstract class QueryRunner extends BaseQueryRunner {
                   .getResultList();
         assertEquals(matching.size(), result.size());
         matching.forEach(a -> assertThat((List<URI>) result, hasItem(a.getUri())));
+    }
+
+    @Test
+    protected void querySupportsPluralValuesParameter() {
+        final OWLClassA entityA = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        final OWLClassB entityB = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassB.class));
+        final List result = getEntityManager().createNativeQuery("SELECT ?x ?type WHERE { ?x a ?type . }")
+                                              .setParameter("x", List.of(entityA.getUri(), entityB.getUri()))
+                                              .getResultList();
+        assertThat((List<URI[]>) result, hasItem(new URI[]{entityA.getUri(), URI.create(Vocabulary.C_OWL_CLASS_A)}));
+        entityA.getTypes()
+               .forEach(t -> assertThat((List<URI[]>) result, hasItem(new URI[]{entityA.getUri(), URI.create(t)})));
+        assertThat((List<URI[]>) result, hasItem(new URI[]{entityB.getUri(), URI.create(Vocabulary.C_OWL_CLASS_B)}));
     }
 }
