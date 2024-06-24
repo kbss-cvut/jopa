@@ -47,8 +47,8 @@ public final class Rdf4jUtils {
     /**
      * Gets value of the specified literal as the corresponding Java object.
      * <p>
-     * Primitives are returned boxed. If the type cannot be mapped to a corresponding Java type,
-     * it is returned as {@link cz.cvut.kbss.ontodriver.model.Literal}.
+     * Primitives are returned boxed. If the type cannot be mapped to a corresponding Java type, it is returned as
+     * {@link cz.cvut.kbss.ontodriver.model.Literal}.
      *
      * @param literal RDF literal value
      * @return Java value corresponding to datatype
@@ -71,8 +71,8 @@ public final class Rdf4jUtils {
     /**
      * Checks whether the language of the specified literal matches the specified assertion language.
      * <p>
-     * If the assertion does not specify a language, any literal will match. If the literal is not a string, it
-     * matches as well.
+     * If the assertion does not specify a language, any literal will match. If the literal is not a string, it matches
+     * as well.
      *
      * @param literal   Literal to check
      * @param assertion Assertion
@@ -110,10 +110,9 @@ public final class Rdf4jUtils {
             return vf.createLiteral((Integer) value);
         } else if (value instanceof String) {
             return language != null ? vf.createLiteral((String) value, language) : vf.createLiteral((String) value);
-        } else if (value instanceof LangString) {
-            final LangString ls = (LangString) value;
+        } else if (value instanceof LangString ls) {
             return ls.getLanguage().isPresent() ? vf.createLiteral(ls.getValue(), ls.getLanguage().get()) :
-                   vf.createLiteral(ls.getValue());
+                    vf.createLiteral(ls.getValue());
         } else if (value instanceof Byte) {
             return vf.createLiteral((Byte) value);
         } else if (value instanceof Short) {
@@ -141,8 +140,7 @@ public final class Rdf4jUtils {
             return createLiteral(vf, ontoLiteral);
         } else if (value.getClass().isEnum()) {
             return vf.createLiteral(value.toString());
-        } else if (value instanceof cz.cvut.kbss.ontodriver.model.Literal) {
-            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = (cz.cvut.kbss.ontodriver.model.Literal) value;
+        } else if (value instanceof cz.cvut.kbss.ontodriver.model.Literal ontoLiteral) {
             return createLiteral(vf, ontoLiteral);
         } else {
             throw new IllegalArgumentException("Unsupported literal type " + value.getClass());
@@ -166,7 +164,7 @@ public final class Rdf4jUtils {
 
     /**
      * Resolves whether the specified value is a resource identifier.
-     *
+     * <p>
      * Only values of supported identifier types are considered identifiers.
      *
      * @param value The value to check
@@ -189,8 +187,9 @@ public final class Rdf4jUtils {
 
     /**
      * Constructs a RDF4J IRI from identifier of the specified resource.
+     *
      * @param resource Resource whose identifier to transform
-     * @param factory RDF4J value factory used for the conversion
+     * @param factory  RDF4J value factory used for the conversion
      * @return RDF4J IRI
      * @see #toRdf4jIri(URI, ValueFactory)
      */
@@ -208,7 +207,7 @@ public final class Rdf4jUtils {
             return java.net.URI.create(resource.stringValue());
         } catch (IllegalArgumentException e) {
             // This shouldn't happen
-            LoggerFactory.getLogger(Rdf4jUtils.class).error("RDF4J resource is not a valid URI: " + e);
+            LoggerFactory.getLogger(Rdf4jUtils.class).error("RDF4J resource is not a valid URI.", e);
             return null;
         }
     }
