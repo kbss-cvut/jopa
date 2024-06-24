@@ -199,8 +199,8 @@ public class StorageConnection implements RepoConnection {
         assert connection != null;
 
         try {
-            spc.forEach(spcItem -> connection.remove(spcItem.getSubject(), spcItem.getPredicate(), null, spcItem.getContexts()
-                                                                                                                .toArray(Resource[]::new)));
+            spc.forEach(spcItem -> connection.remove(spcItem.subject(), spcItem.predicate(), null, spcItem.contexts()
+                                                                                                          .toArray(Resource[]::new)));
         } catch (RepositoryException e) {
             throw new Rdf4jDriverException(e);
         }

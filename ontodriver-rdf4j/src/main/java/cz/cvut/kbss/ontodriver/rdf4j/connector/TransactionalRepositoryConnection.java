@@ -18,12 +18,23 @@
 package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 
-import org.eclipse.rdf4j.common.iteration.Iteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.common.transaction.IsolationLevel;
-import org.eclipse.rdf4j.model.*;
-import org.eclipse.rdf4j.query.*;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.query.BooleanQuery;
+import org.eclipse.rdf4j.query.GraphQuery;
+import org.eclipse.rdf4j.query.Query;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.ParserConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -39,8 +50,6 @@ import java.net.URL;
  * Wraps a standard RFD4J {@link RepositoryConnection} and prevents its closing.
  * <p>
  * This is because the connector will handle closing when a transaction finishes or the connector is closed.
- *
- * @see PoolingStorageConnector
  */
 class TransactionalRepositoryConnection implements RepositoryConnection {
 
@@ -259,8 +268,9 @@ class TransactionalRepositoryConnection implements RepositoryConnection {
     }
 
     @Override
-    public <E extends Exception> void add(Iteration<? extends Statement, E> statements, Resource... contexts) throws E {
-        wrappedConnection.add(statements, contexts);
+    public void add(CloseableIteration<? extends Statement> closeableIteration,
+                    Resource... resources) throws RepositoryException {
+        wrappedConnection.add(closeableIteration, resources);
     }
 
     @Override
@@ -279,9 +289,9 @@ class TransactionalRepositoryConnection implements RepositoryConnection {
     }
 
     @Override
-    public <E extends Exception> void remove(Iteration<? extends Statement, E> statements, Resource... contexts)
-            throws E {
-        wrappedConnection.remove(statements, contexts);
+    public void remove(CloseableIteration<? extends Statement> closeableIteration,
+                       Resource... resources) throws RepositoryException {
+        wrappedConnection.remove(closeableIteration, resources);
     }
 
     @Override

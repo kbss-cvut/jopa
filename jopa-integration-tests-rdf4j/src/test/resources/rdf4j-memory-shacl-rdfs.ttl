@@ -1,27 +1,21 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
-@prefix rep: <http://www.openrdf.org/config/repository#>.
-@prefix sr: <http://www.openrdf.org/config/repository/sail#>.
-@prefix sail: <http://www.openrdf.org/config/sail#>.
-@prefix cgqi: <http://www.openrdf.org/config/sail/customGraphQueryInferencer#>.
-@prefix ms: <http://www.openrdf.org/config/sail/memory#>.
-@prefix sb: <http://www.openrdf.org/config/sail/base#>.
-@prefix ssc: <http://rdf4j.org/config/sail/shacl#> .
+@prefix config: <tag:rdf4j.org,2023:config/>.
 
 
-[] a rep:Repository ;
-   rep:repositoryID "RDF4JRetrieveSupportsLoadingInferredStatementsFromDefaultContextRDF4J1" ;
+[] a config:Repository ;
+   config:rep.id "RDF4JRetrieveSupportsLoadingInferredStatementsFromDefaultContextRDF4J1" ;
    rdfs:label "Memory store with RDFS and SHACL support" ;
-   rep:repositoryImpl [
-      rep:repositoryType "openrdf:SailRepository" ;
-      sr:sailImpl [
-         sail:sailType "rdf4j:ShaclSail" ;
-         ssc:parallelValidation true ;
-         ssc:rdfsSubClassReasoning true ;
-         sail:delegate [
-					sail:sailType "openrdf:MemoryStore" ;
-					sail:iterationCacheSyncThreshold "10000";
-					ms:persist false ;
-					sb:evaluationStrategyFactory "org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory"
-				 ]
+   config:rep.impl [
+      config:rep.type "openrdf:SailRepository" ;
+      config:sail.impl [
+         config:sail.type "rdf4j:ShaclSail" ;
+         config:shacl.parallelValidation true ;
+         config:shacl.rdfsSubClassReasoning true ;
+         config:delegate [
+			config:sail.type "openrdf:MemoryStore" ;
+            config:sail.iterationCacheSyncThreshold "10000";
+            config:mem.persist false;
+            config:sail.evaluationStrategyFactory "org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory"
+		];
    ]
 ].
