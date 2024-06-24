@@ -37,6 +37,11 @@ public class SparqlConstants {
      */
     public static final String RDF_TYPE_SHORTCUT = "a";
 
+    /**
+     * The {@literal UNDEF} keyword.
+     */
+    public static final String UNDEF = "UNDEF";
+
     private SparqlConstants() {
         throw new AssertionError();
     }

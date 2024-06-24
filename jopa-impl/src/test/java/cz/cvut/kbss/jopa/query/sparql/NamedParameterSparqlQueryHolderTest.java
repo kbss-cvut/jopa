@@ -36,14 +36,15 @@ import static org.mockito.Mockito.mock;
 
 public class NamedParameterSparqlQueryHolderTest {
 
-    private static final String QUERY = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-            "SELECT ?craft\n" +
-            "{\n" +
-            "?craft foaf:name \"Apollo 7\" .\n" +
-            "?craft foaf:homepage ?homepage .\n" +
-            "}";
+    private static final String QUERY = """
+            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            SELECT ?craft
+            {
+              ?craft foaf:name "Apollo 7" .
+              ?craft foaf:homepage ?homepage .
+            }""";
     private static final List<String> PARTS = Arrays.asList("PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-            "SELECT ", "\n{\n", " foaf:name \"Apollo 7\" .\n", " foaf:homepage ", " .\n}");
+            "SELECT ", "\n{\n  ", " foaf:name \"Apollo 7\" .\n  ", " foaf:homepage ", " .\n}");
     private static final List<String> PARAMS = Arrays.asList("craft", "craft", "craft", "homepage");
     private static final Set<String> PARAM_NAMES = new HashSet<>(Arrays.asList("craft", "homepage"));
 
@@ -103,7 +104,7 @@ public class NamedParameterSparqlQueryHolderTest {
 
     @Test
     public void testSetParameter() {
-        final String value = "http://kbss.felk.cvut.cz";
+        final String value = "https://kbss.felk.cvut.cz";
         holder.setParameter(new QueryParameter<>("homepage", paramValueFactory), value);
         assertEquals(value, holder.getParameterValue(holder.getParameter("homepage")));
     }
@@ -128,7 +129,7 @@ public class NamedParameterSparqlQueryHolderTest {
     @Test
     public void clearParameterRemovesParameterValue() {
         final QueryParameter<?> qp = new QueryParameter<>("homepage", paramValueFactory);
-        holder.setParameter(qp, URI.create("http://kbss.felk.cvut.cz"));
+        holder.setParameter(qp, URI.create("https://kbss.felk.cvut.cz"));
         assertNotNull(holder.getParameterValue(qp));
         holder.clearParameter(qp);
         assertNull(holder.getParameterValue(qp));
@@ -137,7 +138,7 @@ public class NamedParameterSparqlQueryHolderTest {
     @Test
     public void clearParametersRemovesAllParameterValues() {
         final QueryParameter<?> qp = new QueryParameter<>("homepage", paramValueFactory);
-        holder.setParameter(qp, URI.create("http://kbss.felk.cvut.cz"));
+        holder.setParameter(qp, URI.create("https://kbss.felk.cvut.cz"));
         final QueryParameter<?> qpTwo = new QueryParameter<>("craft", paramValueFactory);
         holder.setParameter(qpTwo, "Programming");
         holder.getParameters().forEach(param -> assertNotNull(holder.getParameterValue(param)));
@@ -148,26 +149,28 @@ public class NamedParameterSparqlQueryHolderTest {
     @Test
     public void assembleQueryWithUri() {
         final QueryParameter<?> qp = new QueryParameter<>("homepage", paramValueFactory);
-        holder.setParameter(qp, URI.create("http://kbss.felk.cvut.cz"));
-        final String expected = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-                "SELECT ?craft\n" +
-                "{\n" +
-                "?craft foaf:name \"Apollo 7\" .\n" +
-                "?craft foaf:homepage <http://kbss.felk.cvut.cz> .\n" +
-                "}";
+        holder.setParameter(qp, URI.create("https://kbss.felk.cvut.cz"));
+        final String expected = """
+                PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+                SELECT ?craft
+                {
+                  ?craft foaf:name "Apollo 7" .
+                  ?craft foaf:homepage <https://kbss.felk.cvut.cz> .
+                }""";
         assertEquals(expected, holder.assembleQuery());
     }
 
     @Test
     public void assembleQueryWithLiteral() {
         final QueryParameter<?> qp = new QueryParameter<>("homepage", paramValueFactory);
-        holder.setParameter(qp, "http://kbss.felk.cvut.cz", null);
-        final String expected = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-                "SELECT ?craft\n" +
-                "{\n" +
-                "?craft foaf:name \"Apollo 7\" .\n" +
-                "?craft foaf:homepage \"http://kbss.felk.cvut.cz\" .\n" +
-                "}";
+        holder.setParameter(qp, "https://kbss.felk.cvut.cz", null);
+        final String expected = """
+                PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+                SELECT ?craft
+                {
+                  ?craft foaf:name "Apollo 7" .
+                  ?craft foaf:homepage "https://kbss.felk.cvut.cz" .
+                }""";
         assertEquals(expected, holder.assembleQuery());
     }
 
@@ -192,10 +195,10 @@ public class NamedParameterSparqlQueryHolderTest {
     void setParameterAddsValuesClauseWhenSetParameterIsInProjection() {
         final QueryParameter<?> qp = new QueryParameter<>("craft", paramValueFactory);
         qp.setProjected(true);
-        holder.setParameter(qp, URI.create("http://kbss.felk.cvut.cz/apollo7"));
+        holder.setParameter(qp, URI.create("https://kbss.felk.cvut.cz/apollo7"));
         final String result = holder.assembleQuery();
-        assertThat(result, endsWith("VALUES (?craft) {(" + holder.getParameter("craft").getValue()
-                .getQueryString() + ")}"));
+        assertThat(result, endsWith("VALUES (?craft) { ( " + holder.getParameter("craft").getValue()
+                .getQueryString() + " ) }"));
         assertThat(result, containsString(QUERY));
     }
 }
