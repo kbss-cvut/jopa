@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.NonJPA;
+import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
@@ -136,8 +137,8 @@ public interface EntityManager extends AutoCloseable {
      * @return the found entity instance or {@code null} if the entity does not exist in the given ontology context
      * @throws IllegalArgumentException if the first argument does not denote an entity type or the second argument is
      *                                  not a valid type for that entity’s identifier
-     * @throws NullPointerException     If {@code entityClass}, {@code identifier} or {@code contextUri} is {@code
-     *                                  null}
+     * @throws NullPointerException     If {@code entityClass}, {@code identifier} or {@code contextUri} is
+     *                                  {@code null}
      * @see #getContexts()
      */
     <T> T find(final Class<T> entityClass, final Object identifier, final Descriptor descriptor);
@@ -145,7 +146,9 @@ public interface EntityManager extends AutoCloseable {
     /**
      * Get an instance, whose state may be lazily fetched.
      * <p>
-     * If the requested instance does not exist in the database, {@code null} is returned.
+     * If the requested instance does not exist in the database, the {@link EntityNotFoundException} is thrown when the
+     * instance state is first accessed. (The persistence provider runtime is permitted to throw the
+     * {@code EntityNotFoundException} when getReference is called.)
      * <p>
      * The application should not expect that the instance state will be available upon detachment, unless it was
      * accessed by the application while the entity manager was open.
@@ -161,7 +164,9 @@ public interface EntityManager extends AutoCloseable {
     /**
      * Get an instance, whose state may be lazily fetched.
      * <p>
-     * If the requested instance does not exist in the database, {@code null} is returned.
+     * If the requested instance does not exist in the database, the {@link EntityNotFoundException} is thrown when the
+     * instance state is first accessed. (The persistence provider runtime is permitted to throw the
+     * {@code EntityNotFoundException} when getReference is called.)
      * <p>
      * The application should not expect that the instance state will be available upon detachment, unless it was
      * accessed by the application while the entity manager was open.
