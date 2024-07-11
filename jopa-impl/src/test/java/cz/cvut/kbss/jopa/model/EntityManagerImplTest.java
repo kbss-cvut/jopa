@@ -189,7 +189,7 @@ class EntityManagerImplTest {
     @Test
     void findThrowsIllegalArgumentForNonEntity() {
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> em.find(UnknownEntity.class, "primaryKey", new EntityDescriptor()));
+                () -> em.find(UnknownEntity.class, "identifier", new EntityDescriptor()));
         assertEquals(NON_ENTITY_CLASS_EXCEPTION_MESSAGE, ex.getMessage());
     }
 

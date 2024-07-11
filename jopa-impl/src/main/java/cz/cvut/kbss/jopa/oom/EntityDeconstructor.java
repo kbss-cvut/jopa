@@ -71,9 +71,9 @@ class EntityDeconstructor {
         fs.buildAxiomValuesFromInstance(entity, valueBuilder);
     }
 
-    <T> AxiomValueGatherer mapFieldToAxioms(URI primaryKey, T entity, FieldSpecification<? super T, ?> fieldSpec,
+    <T> AxiomValueGatherer mapFieldToAxioms(URI identifier, T entity, FieldSpecification<? super T, ?> fieldSpec,
                                             EntityType<T> et, Descriptor descriptor) {
-        final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(primaryKey, descriptor);
+        final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(identifier, descriptor);
         addAssertions(entity, et, fieldSpec, descriptor, valueBuilder);
         return valueBuilder;
     }

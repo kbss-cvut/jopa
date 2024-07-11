@@ -174,7 +174,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         LOG.trace("Lazily loading value of field {} of entity {}.", fieldSpec, uow.stringify(entity));
 
         final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
-        final URI primaryKey = EntityPropertiesUtils.getIdentifier(entity, et);
+        final URI identifier = EntityPropertiesUtils.getIdentifier(entity, et);
 
         if (et.hasQueryAttribute(fieldSpec.getName())) {
             QueryAttribute<? super T, ?> queryAttribute = (QueryAttribute<? super T, ?>) fieldSpec;
@@ -183,7 +183,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         }
 
         final AxiomDescriptor axiomDescriptor =
-                descriptorFactory.createForFieldLoading(primaryKey, fieldSpec, descriptor, et);
+                descriptorFactory.createForFieldLoading(identifier, fieldSpec, descriptor, et);
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
             entityBuilder.setFieldValue(entity, fieldSpec, axioms, et, descriptor);
