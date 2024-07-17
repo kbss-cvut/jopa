@@ -93,6 +93,7 @@ public class Vocabulary {
     public static final String p_m_IntegerSet = ATTRIBUTE_IRI_BASE + "m-pluralIntAttribute";
     public static final String p_m_lexicalForm = ATTRIBUTE_IRI_BASE + "m-lexicalForm";
     public static final String p_m_simpleLiteral = ATTRIBUTE_IRI_BASE + "m-simpleLiteral";
+    public static final String p_m_simpleLiteralUri = ATTRIBUTE_IRI_BASE + "m-simpleLiteralUri";
     public static final String p_m_StringCollection = ATTRIBUTE_IRI_BASE + "m-collectionStringAttribute";
     public static final String p_m_explicitDatatype = ATTRIBUTE_IRI_BASE + "m-explicitDatatype";
     public static final String p_m_langString = ATTRIBUTE_IRI_BASE + "m-langString";
