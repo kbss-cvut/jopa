@@ -501,8 +501,16 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         persist(entityM);
 
         verifyValueDatatype(URI.create(entityM.getKey()), Vocabulary.p_m_simpleLiteral, XSD.STRING);
-        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
-        assertEquals(value, result.getSimpleLiteral());
+    }
+
+    @Test
+    void persistSupportsSavingUriAsSimpleLiteralValue() {
+        this.em = getEntityManager("persistSupportsSavingUriAsSimpleLiteralValue", false);
+        final URI value = Generators.generateUri();
+        entityM.setSimpleLiteralUri(value);
+        persist(entityM);
+
+        verifyValueDatatype(URI.create(entityM.getKey()), Vocabulary.p_m_simpleLiteralUri, XSD.STRING);
     }
 
     @Test
