@@ -460,7 +460,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final URI value = Generators.generateUri();
         persistTestData(Arrays.asList(
                         new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
-                        new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteralUri), value, (String) null)),
+                        new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteralUri), value.toString(), (String) null)),
                 em);
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
