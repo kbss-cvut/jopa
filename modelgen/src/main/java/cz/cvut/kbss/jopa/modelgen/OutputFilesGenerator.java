@@ -27,7 +27,6 @@ import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
@@ -75,8 +74,7 @@ public class OutputFilesGenerator {
         content.append(generateAttributes(cls));
         content.append(generateClassSuffix());
         try {
-            Files.write(targetFile.toPath(), content.toString()
-                                                    .getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
+            Files.writeString(targetFile.toPath(), content.toString(), StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new ModelGenException("Unable to output content to target file '" + targetFile + "'!", e);
         }
