@@ -34,7 +34,6 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.ontodriver.Statement;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -216,7 +215,6 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         assertFalse(res.get(0));
     }
 
-    @Disabled
     @Test
     public void askQueryAgainstTransactionalOntologyContainsUncommittedChangesAsWell() {
         final OWLClassE e = new OWLClassE();
