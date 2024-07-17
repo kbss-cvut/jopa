@@ -48,11 +48,7 @@ public class Field {
                                         .contains(annotationEnum.getAnnotation())))
                 .collect(Collectors.toList());
         if (type.getIsSimple()) {
-            if (!type.getTypeName().contains(" ")) {
-                imports.add(type.getTypeName());
-            } else {
-                imports.add(type.getTypeName().substring(type.getTypeName().lastIndexOf(" ") + 1));
-            }
+            imports.add(type.getTypeName());
         } else {
             for (Type type : type.getTypes()) {
                 imports.add(type.getTypeName());

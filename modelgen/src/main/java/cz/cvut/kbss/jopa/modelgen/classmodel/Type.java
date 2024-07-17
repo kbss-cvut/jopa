@@ -24,10 +24,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 public class Type {
     // Full-qualified name
@@ -45,11 +45,11 @@ public class Type {
 
     public Type(TypeMirror tMirror) {
         if (tMirror.getKind() != TypeKind.DECLARED && tMirror.getKind() != TypeKind.TYPEVAR) {
-            throw new ModelGenException("Only declared types and type variables are supported, got " + tMirror + " of type " + tMirror.getKind());
+            throw new ModelGenException(
+                    "Only declared types and type variables are supported, got " + tMirror + " of type " + tMirror.getKind());
         }
         if (isSimple(tMirror)) {
             this.isSimple = true;
-            this.types = null;
             final DeclaredType declaredType = (DeclaredType) getUpperBound(tMirror);
             this.typeName = declaredType.asElement().toString();
             this.simpleName = declaredType.asElement().getSimpleName().toString();
@@ -114,7 +114,7 @@ public class Type {
         }
         return !typeName.contains(Set.class.getName())
                 && !typeName.contains(List.class.getName())
-                && !typeName.contains(Stack.class.getName())
+                && !typeName.contains(Collection.class.getName())
                 && !typeName.contains(Map.class.getName());
     }
 }
