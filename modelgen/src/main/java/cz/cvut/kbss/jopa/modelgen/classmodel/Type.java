@@ -17,13 +17,23 @@
  */
 package cz.cvut.kbss.jopa.modelgen.classmodel;
 
+import cz.cvut.kbss.jopa.modelgen.exception.ModelGenException;
+
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 public class Type {
+    // Full-qualified name
     private String typeName;
+    // Simple name
+    private String simpleName;
     private Boolean isSimple;
     private List<Type> types;
 
@@ -34,23 +44,23 @@ public class Type {
     }
 
     public Type(TypeMirror tMirror) {
-        if (isSimple(tMirror.toString())) {
+        if (tMirror.getKind() != TypeKind.DECLARED && tMirror.getKind() != TypeKind.TYPEVAR) {
+            throw new ModelGenException("Only declared types and type variables are supported, got " + tMirror + " of type " + tMirror.getKind());
+        }
+        if (isSimple(tMirror)) {
             this.isSimple = true;
             this.types = null;
-            TypeMirror upperBound = getUpperBound(tMirror);
-            String fullName;
-            fullName = Objects.requireNonNullElse(upperBound, tMirror).toString();
-            if (fullName.contains("<")) {
-                this.typeName = fullName.substring(0, fullName.indexOf("<"));
-            } else {
-                this.typeName = fullName;
-            }
+            final DeclaredType declaredType = (DeclaredType) getUpperBound(tMirror);
+            this.typeName = declaredType.asElement().toString();
+            this.simpleName = declaredType.asElement().getSimpleName().toString();
         } else {
-            List<? extends TypeMirror> typeArgs = ((DeclaredType) tMirror).getTypeArguments();
-            this.typeName = ((DeclaredType) tMirror).asElement().toString();
+            assert tMirror instanceof DeclaredType;
+            final DeclaredType declaredType = ((DeclaredType) tMirror);
+            List<? extends TypeMirror> typeArgs = declaredType.getTypeArguments();
+            this.typeName = declaredType.asElement().toString();
+            this.simpleName = declaredType.asElement().getSimpleName().toString();
             this.isSimple = false;
-            this.types = new ArrayList<>();
-            typeArgs.forEach((typeMirror -> types.add(new Type(typeMirror))));
+            this.types = typeArgs.stream().map((Type::new)).toList();
         }
     }
 
@@ -58,7 +68,7 @@ public class Type {
         if (type instanceof TypeVariable) {
             return ((TypeVariable) type).getUpperBound();
         }
-        return null;
+        return type;
     }
 
     public String getTypeName() {
@@ -67,6 +77,14 @@ public class Type {
 
     public void setTypeName(String typeName) {
         this.typeName = typeName;
+    }
+
+    public String getSimpleName() {
+        return simpleName;
+    }
+
+    public void setSimpleName(String simpleName) {
+        this.simpleName = simpleName;
     }
 
     public Boolean getIsSimple() {
@@ -85,10 +103,18 @@ public class Type {
         this.types = types;
     }
 
-    private static boolean isSimple(String name) {
-        return !name.contains(Set.class.getName())
-                && !name.contains(List.class.getName())
-                && !name.contains(Stack.class.getName())
-                && !name.contains(Map.class.getName());
+    private static boolean isSimple(TypeMirror typeMirror) {
+        final String typeName;
+        if (typeMirror instanceof DeclaredType dt) {
+            typeName = dt.asElement().toString();
+        } else if (typeMirror instanceof TypeVariable tv) {
+            typeName = tv.asElement().toString();
+        } else {
+            typeName = typeMirror.toString();
+        }
+        return !typeName.contains(Set.class.getName())
+                && !typeName.contains(List.class.getName())
+                && !typeName.contains(Stack.class.getName())
+                && !typeName.contains(Map.class.getName());
     }
 }

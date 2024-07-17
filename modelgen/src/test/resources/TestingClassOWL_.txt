@@ -13,10 +13,10 @@ import java.util.List;
 @StaticMetamodel(TestingClassOWL.class)
 public abstract class TestingClassOWL_ {
 
-	 public static volatile Identifier<TestingClassOWL, URI> uri;
-	 public static volatile SingularAttribute<TestingClassOWL, TestingClassOWL> testingClassOWL;
-	 public static volatile PropertiesSpecification<TestingClassOWL, Map, String, String> properties;
-	 public static volatile PropertiesSpecification<TestingClassOWL, Map, URI, Object> propertie;
-	 public static volatile ListAttribute<TestingClassOWL, String> listAttribute;
-	 public static volatile SetAttribute<TestingClassOWL, String> setAttribute;
+    public static volatile Identifier<TestingClassOWL, URI> uri;
+    public static volatile SingularAttribute<TestingClassOWL, TestingClassOWL> testingClassOWL;
+    public static volatile PropertiesSpecification<TestingClassOWL, Map, String, String> properties;
+    public static volatile PropertiesSpecification<TestingClassOWL, Map, URI, Object> propertie;
+    public static volatile ListAttribute<TestingClassOWL, String> listAttribute;
+    public static volatile SetAttribute<TestingClassOWL, String> setAttribute;
 }

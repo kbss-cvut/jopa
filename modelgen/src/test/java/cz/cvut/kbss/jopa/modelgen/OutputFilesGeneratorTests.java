@@ -59,6 +59,7 @@ class OutputFilesGeneratorTests {
         field1.setParentName("cz.test.ex.TestingClassOWL");
         Type type1 = new Type();
         type1.setTypeName("Test");
+        type1.setSimpleName("Test");
         field1.setType(type1);
         cl.addField(field1);
 
@@ -82,6 +83,7 @@ class OutputFilesGeneratorTests {
         field5.setParentName("cz.test.ex.TestingClassOWL");
         Type type5 = new Type();
         type5.setTypeName(List.class.getName());
+        type5.setSimpleName(List.class.getSimpleName());
         type5.setIsSimple(false);
         field5.setType(type5);
         type5.setTypes(Collections.singletonList(type1));
@@ -94,6 +96,7 @@ class OutputFilesGeneratorTests {
         field6.setParentName("cz.test.ex.TestingClassOWL");
         Type type6 = new Type();
         type6.setTypeName(Set.class.getName());
+        type6.setSimpleName(Set.class.getSimpleName());
         type6.setIsSimple(false);
         field6.setType(type6);
         type6.setTypes(Collections.singletonList(type1));

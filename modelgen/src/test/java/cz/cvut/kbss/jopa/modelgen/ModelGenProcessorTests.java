@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
@@ -49,7 +48,6 @@ class ModelGenProcessorTests {
 
     @Test
     void metamodelGenerationProducesCompilableStaticMetamodelClasses() throws Exception {
-
         List<String> options = List.of("-AoutputDirectory=" + OUTPUT_DIRECTORY, "-AdebugOption=" + "true");
         Compilation compilation = javac()
                 .withProcessors(new ModelGenProcessor()).withOptions(options)
