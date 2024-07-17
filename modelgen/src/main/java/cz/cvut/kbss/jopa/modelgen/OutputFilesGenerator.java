@@ -155,75 +155,58 @@ public class OutputFilesGenerator {
         StringBuilder attributes = new StringBuilder();
         for (Field field : cls.getFields()) {
             final String declaringClass = field.getParentName().substring(field.getParentName().lastIndexOf('.') + 1);
-            attributes.append("\t public static volatile ");
+            attributes.append("    public static volatile ");
             //@Id
             if (isAnnotatedWith(field, MappingAnnotations.ID)) {
-                attributes
-                        .append("Identifier<")
-                        .append(declaringClass)
-                        .append(", ")
-                        .append(field.getType().getTypeName()
-                                     .substring(field.getType().getTypeName().lastIndexOf(".") + 1));
+                attributes.append("Identifier<")
+                          .append(declaringClass)
+                          .append(", ")
+                          .append(field.getType().getTypeName()
+                                       .substring(field.getType().getTypeName().lastIndexOf(".") + 1));
                 //@Types
             } else if (isAnnotatedWith(field, MappingAnnotations.TYPES)) {
-                attributes
-                        .append("TypesSpecification<")
-                        .append(declaringClass)
-                        .append(", ");
+                attributes.append("TypesSpecification<")
+                          .append(declaringClass)
+                          .append(", ");
                 if (field.getType().getIsSimple()) {
-                    attributes
-                            .append(field.getType().getTypeName()
-                                         .substring(field.getType().getTypeName().lastIndexOf(".") + 1));
+                    attributes.append(field.getType().getSimpleName());
                 } else {
-                    attributes
-                            .append(field.getType().getTypes().get(0).getTypeName()
-                                         .substring(field.getType().getTypes().get(0).getTypeName()
-                                                         .lastIndexOf(".") + 1));
+                    attributes.append(field.getType().getTypes().get(0).getSimpleName());
                 }
                 //@Properties
             } else if (isAnnotatedWith(field, MappingAnnotations.PROPERTIES)) {
-                attributes
-                        .append("PropertiesSpecification<")
-                        .append(declaringClass)
-                        .append(", ");
+                attributes.append("PropertiesSpecification<")
+                          .append(declaringClass)
+                          .append(", ");
                 Type type = field.getType();
                 if (!Objects.equals(type.getTypeName(), Map.class.getName())) {
                     attributes
                             .append(type.getTypes().get(0).getTypeName()
                                         .substring(type.getTypes().get(0).getTypeName().lastIndexOf(".") + 1));
                 } else {
-                    attributes
-                            .append("Map, ")
-                            .append(type.getTypes().get(0).getTypeName()
-                                        .substring(type.getTypes().get(0).getTypeName().lastIndexOf(".") + 1))
-                            .append(", ")
-                            .append(type.getTypes().get(1).getTypes().get(0).getTypeName()
-                                        .substring(type.getTypes().get(1).getTypes().get(0).getTypeName()
-                                                       .lastIndexOf(".") + 1));
+                    attributes.append("Map, ")
+                              .append(type.getTypes().get(0).getSimpleName())
+                              .append(", ")
+                              .append(type.getTypes().get(1).getTypes().get(0).getSimpleName());
                 }
             } else if (isAnnotatedWith(field, MappingAnnotations.DATA_PROPERTY)
                     || isAnnotatedWith(field, MappingAnnotations.OBJECT_PROPERTY)
                     || isAnnotatedWith(field, MappingAnnotations.ANNOTATION_PROPERTY)) {
                 Type type = field.getType();
                 if (type.getIsSimple()) {
-                    attributes
-                            .append("SingularAttribute<")
-                            .append(declaringClass)
-                            .append(", ")
-                            .append(type.getTypeName().substring(type.getTypeName().lastIndexOf(".") + 1));
+                    attributes.append("SingularAttribute<")
+                              .append(declaringClass)
+                              .append(", ")
+                              .append(type.getSimpleName());
                 } else {
                     if (type.getTypeName().equals(List.class.getName())) {
-                        attributes
-                                .append("ListAttribute<");
+                        attributes.append("ListAttribute<");
                     } else if (type.getTypeName().equals(Set.class.getName())) {
-                        attributes
-                                .append("SetAttribute<");
+                        attributes.append("SetAttribute<");
                     }
-                    attributes
-                            .append(declaringClass)
-                            .append(", ")
-                            .append(type.getTypes().get(0).getTypeName()
-                                        .substring(type.getTypes().get(0).getTypeName().lastIndexOf(".") + 1));
+                    attributes.append(declaringClass)
+                              .append(", ")
+                              .append(type.getTypes().get(0).getSimpleName());
                 }
             }
             attributes

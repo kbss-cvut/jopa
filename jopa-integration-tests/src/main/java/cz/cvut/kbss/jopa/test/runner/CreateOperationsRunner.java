@@ -219,14 +219,11 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         entityA.setUri(uri);
         entityB.setUri(uri);
         persist(entityA);
-        final EntityManager emTwo = em.getEntityManagerFactory().createEntityManager();
-        try {
+        try (EntityManager emTwo = em.getEntityManagerFactory().createEntityManager()) {
             persist(entityB);
 
             assertNotNull(emTwo.find(OWLClassA.class, entityA.getUri()));
             assertNotNull(em.find(OWLClassB.class, entityB.getUri()));
-        } finally {
-            emTwo.close();
         }
     }
 
