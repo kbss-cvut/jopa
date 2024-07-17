@@ -70,14 +70,12 @@ class JenaDriver implements Closeable, ConnectionListener {
             // proper reasoning support
             return new InferenceConnectorFactory(configuration, properties);
         }
-        switch (isolationStrategy) {
-            case JenaOntoDriverProperties.READ_COMMITTED:
-                return new ReadCommittedConnectorFactory(configuration);
-            case JenaOntoDriverProperties.SNAPSHOT:
-                return new SnapshotConnectorFactory(configuration);
-            default:
-                throw new IllegalArgumentException("Unsupported transaction isolation strategy " + isolationStrategy);
-        }
+        return switch (isolationStrategy) {
+            case JenaOntoDriverProperties.READ_COMMITTED -> new ReadCommittedConnectorFactory(configuration);
+            case JenaOntoDriverProperties.SNAPSHOT -> new SnapshotConnectorFactory(configuration);
+            default ->
+                    throw new IllegalArgumentException("Unsupported transaction isolation strategy " + isolationStrategy);
+        };
     }
 
     JenaConnection acquireConnection() {
