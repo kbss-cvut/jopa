@@ -17,7 +17,13 @@
  */
 package cz.test.ex;
 
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.Inferred;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.Properties;
 
 import java.net.URI;
 import java.util.List;
@@ -29,6 +35,7 @@ public class TestingClassOWL {
     @Id(generated = true)
     private URI uri;
 
+    @CustomAnnotation
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute")
     private TestingClassOWL testingClassOWL;
 

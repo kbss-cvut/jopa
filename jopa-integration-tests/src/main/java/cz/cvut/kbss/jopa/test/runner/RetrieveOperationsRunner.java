@@ -455,6 +455,19 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
+    void loadingEntityWithSimpleLiteralUriLoadsSimpleLiteralValue() throws Exception {
+        this.em = getEntityManager("loadingEntityWithSimpleLiteralUriLoadsSimpleLiteralValue", false);
+        final URI value = Generators.generateUri();
+        persistTestData(Arrays.asList(
+                        new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
+                        new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteralUri), value.toString(), (String) null)),
+                em);
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(value, result.getSimpleLiteralUri());
+    }
+
+    @Test
     void loadEntityWithSimpleLiteralLoadsAlsoLanguageTaggedValue() throws Exception {
         this.em = getEntityManager("loadEntityWithSimpleLiteralLoadsAlsoLanguageTaggedValue", false);
         final String value = "test";

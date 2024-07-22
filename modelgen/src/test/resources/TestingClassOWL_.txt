@@ -9,18 +9,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 
-@Generated(value = \cz.cvut.kbss.jopa.modelgen.ModelGenProcessor\)
-@StaticMetamodel(TestingClass.class)
-public abstract class TestingClass_ {
+@Generated(value = "cz.cvut.kbss.jopa.modelgen.ModelGenProcessor")
+@StaticMetamodel(TestingClassOWL.class)
+public abstract class TestingClassOWL_ {
 
-    public static volatile Identifier<TestingClass, URI> uri;
-
-    public static volatile SingularAttribute<TestingClass, TestingClass> testingClass;
-
-    public static volatile PropertiesSpecification<TestingClass, Map, URI, Object> propertie;
-
-    public static volatile ListAttribute<TestingClass, String> listAttribute;
-
-    public static volatile SetAttribute<TestingClass, String> setAttribute;
-
+    public static volatile Identifier<TestingClassOWL, URI> uri;
+    public static volatile SingularAttribute<TestingClassOWL, TestingClassOWL> testingClassOWL;
+    public static volatile PropertiesSpecification<TestingClassOWL, Map, String, String> properties;
+    public static volatile PropertiesSpecification<TestingClassOWL, Map, URI, Object> propertie;
+    public static volatile ListAttribute<TestingClassOWL, String> listAttribute;
+    public static volatile SetAttribute<TestingClassOWL, String> setAttribute;
 }

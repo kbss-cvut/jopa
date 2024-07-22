@@ -28,7 +28,7 @@ import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3OWL2Ontology;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
-public class LiveOntologyStatementExecutor implements StatementExecutor {
+class LiveOntologyStatementExecutor implements StatementExecutor {
 
     private final Connector connector;
 
@@ -55,6 +55,8 @@ public class LiveOntologyStatementExecutor implements StatementExecutor {
         }
         final OWLReasoner reasonerToUse =
                 query.isDisableInference() ? getNoInferenceReasoner(snapshot) : snapshot.getReasoner();
+        // Flush the reasoner to have the latest ontology state for query execution
+        reasonerToUse.flush();
         final OWLAPIv3OWL2Ontology ont = new OWLAPIv3OWL2Ontology(snapshot.getOntologyManager(),
                                                                   snapshot.getOntology(), reasonerToUse);
 

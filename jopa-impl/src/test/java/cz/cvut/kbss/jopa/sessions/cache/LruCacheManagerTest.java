@@ -92,7 +92,7 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
     }
 
     @Test
-    public void testEvictByContextClassAndPrimaryKey() throws Exception {
+    public void testEvictByContextClassAndIdentifier() throws Exception {
         final LruCache lruCache = getLruCache();
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);

@@ -1,5 +1,11 @@
 # JOPA - Change Log
 
+## 2.0.3 - 2024-07-22
+- Fix an issue with generating static metamodel under JDK 21 (Bug #257).
+- Support using URI/URL as data property values (as RDF simple literal) (Enhancement #256).
+- Support target ontology query hint (Enhancement #245).
+- Dependency updates: Jena 5.1.0, RDF4J 5.0.1.
+
 ## 2.0.2 - 2024-06-24
 - Fix a NPX when calling `EntityManager.isInferred` with lazy loading proxy (Bug #252).
 - Allow using multiple values for a query parameter that is written into SPARQL `VALUES` clause (Bug #246).
@@ -20,7 +26,7 @@
 - Modify name resolution in OWL2Java, support prefixes so that terms are better disambiguated without appending the useless `_A` suffix if possible (Enhancement #85).
 - Remove dependency on AspectJ by rewriting object change tracking and lazy loading (Enhancement #145, #231). See the [wiki](https://github.com/kbss-cvut/jopa/wiki/Change-Tracking-and-Lazy-Loading) for details.
 - Add support for RDF collections (Enhancement #51).
-- Update dependencies (Jena 5.0.0, RDF4J 4.3.11).
+- Dependency updates: Jena 5.0.0, RDF4J 4.3.11.
 - Require Java 17.
 
 ## 1.2.2 - 2024-01-30

@@ -18,16 +18,35 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
-import cz.cvut.kbss.jopa.oom.converter.*;
-import cz.cvut.kbss.jopa.oom.converter.datetime.*;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
+import cz.cvut.kbss.jopa.oom.converter.ObjectConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToDoubleConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToFloatConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToLangStringConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToLongConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToShortConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToStringConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToURIConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToURLConverter;
+import cz.cvut.kbss.jopa.oom.converter.datetime.DateConverter;
+import cz.cvut.kbss.jopa.oom.converter.datetime.InstantConverter;
+import cz.cvut.kbss.jopa.oom.converter.datetime.LocalDateTimeConverter;
+import cz.cvut.kbss.jopa.oom.converter.datetime.LocalTimeConverter;
+import cz.cvut.kbss.jopa.oom.converter.datetime.ZonedDateTimeConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
+import java.net.URI;
+import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Manages attribute converters.
@@ -70,7 +89,9 @@ public class Converters {
                 Map.entry(Float.class, new ToFloatConverter()),
                 Map.entry(Double.class, new ToDoubleConverter()),
                 Map.entry(String.class, new ToStringConverter()),
-                Map.entry(LangString.class, new ToLangStringConverter()));
+                Map.entry(LangString.class, new ToLangStringConverter()),
+                Map.entry(URI.class, new ToURIConverter()),
+                Map.entry(URL.class, new ToURLConverter()));
     }
 
     /**

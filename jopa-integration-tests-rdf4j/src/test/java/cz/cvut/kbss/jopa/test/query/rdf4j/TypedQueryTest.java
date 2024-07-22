@@ -69,6 +69,6 @@ public class TypedQueryTest extends TypedQueryRunner {
     @Test
     @Override
     public void askQueryAgainstTransactionalOntologyContainsUncommittedChangesAsWell() {
-        // This is not solved in RDF4J driver, yet
+        // RDF4J does not support queries against transactional snapshot because it does not use it
     }
 }

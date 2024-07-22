@@ -288,7 +288,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
     }
 
     @Test
-    public void testEvictByContextClassAndPrimaryKey() throws Exception {
+    public void testEvictByContextClassAndIdentifier() throws Exception {
         final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
         final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
         manager.add(testA.getUri(), testA, descriptors(descriptorTwo));

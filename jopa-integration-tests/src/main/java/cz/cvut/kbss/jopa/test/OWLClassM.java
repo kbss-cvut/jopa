@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -72,6 +73,9 @@ public class OWLClassM {
 
     @OWLDataProperty(iri = Vocabulary.p_m_simpleLiteral, simpleLiteral = true)
     private String simpleLiteral;
+
+    @OWLDataProperty(iri = Vocabulary.p_m_simpleLiteralUri, simpleLiteral = true)
+    private URI simpleLiteralUri;
 
     @OWLDataProperty(iri = Vocabulary.p_m_StringCollection)
     private Collection<String> stringCollection;
@@ -232,6 +236,14 @@ public class OWLClassM {
         this.enumSimpleLiteral = enumSimpleLiteral;
     }
 
+    public URI getSimpleLiteralUri() {
+        return simpleLiteralUri;
+    }
+
+    public void setSimpleLiteralUri(URI simpleLiteralUri) {
+        this.simpleLiteralUri = simpleLiteralUri;
+    }
+
     public ZoneOffset getWithConverter() {
         return withConverter;
     }
@@ -279,6 +291,7 @@ public class OWLClassM {
                 ", integerSet=" + integerSet +
                 ", lexicalForm=" + lexicalForm +
                 ", simpleLiteral=" + simpleLiteral +
+                ", simpleLiteralUri=" + simpleLiteralUri +
                 ", stringCollection=" + stringCollection +
                 ", explicitDatatype=" + explicitDatatype +
                 ", langString=" + langString +
@@ -305,6 +318,7 @@ public class OWLClassM {
         this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());
         this.stringCollection = new HashSet<>(Arrays.asList("test-one", "test-two", "test-three"));
         this.enumSimpleLiteral = Severity.HIGH;
+        this.simpleLiteralUri = Generators.generateUri();
         this.withConverter = ZoneOffset.UTC;
     }
 }

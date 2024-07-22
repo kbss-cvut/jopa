@@ -28,12 +28,15 @@ import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.parser.ParsedBooleanQuery;
 import org.eclipse.rdf4j.query.parser.QueryParserUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
 public class Rdf4jStatement implements Statement {
 
-    private StatementOntology targetOntology = StatementOntology.TRANSACTIONAL;
+    private static final Logger LOG = LoggerFactory.getLogger(Rdf4jStatement.class);
+
     private boolean inferenceDisabled = false;
     private final StatementExecutor queryExecutor;
     private ResultSet resultSet;
@@ -89,12 +92,12 @@ public class Rdf4jStatement implements Statement {
 
     @Override
     public void useOntology(StatementOntology ontology) {
-        this.targetOntology = ontology;
+        LOG.warn("RDF4J driver does not support changing the target ontology because it does not use transactional data snapshots.");
     }
 
     @Override
     public StatementOntology getStatementOntology() {
-        return targetOntology;
+        return StatementOntology.SHARED;
     }
 
     private static void validateQueryParams(String sparql) {
@@ -123,26 +126,6 @@ public class Rdf4jStatement implements Statement {
             resultSet.close();
             this.resultSet = null;
         }
-    }
-
-    public void setUseTransactionalOntology() {
-        ensureOpen();
-        this.targetOntology = StatementOntology.TRANSACTIONAL;
-    }
-
-    public boolean useTransactionalOntology() {
-        ensureOpen();
-        return targetOntology == StatementOntology.TRANSACTIONAL;
-    }
-
-    public void setUseBackupOntology() {
-        ensureOpen();
-        this.targetOntology = StatementOntology.SHARED;
-    }
-
-    public boolean useBackupOntology() {
-        ensureOpen();
-        return targetOntology == StatementOntology.SHARED;
     }
 
     @Override
