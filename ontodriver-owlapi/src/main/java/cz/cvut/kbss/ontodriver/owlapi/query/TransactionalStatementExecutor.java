@@ -29,7 +29,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
-public class TransactionalStatementExecutor implements StatementExecutor {
+class TransactionalStatementExecutor implements StatementExecutor {
 
     private final OWLOntology ontology;
     private final OWLOntologyManager ontologyManager;
@@ -52,6 +52,8 @@ public class TransactionalStatementExecutor implements StatementExecutor {
             throw new ReasonerNotAvailableException("Cannot execute query without a reasoner.");
         }
         final OWLReasoner reasonerToUse = query.isDisableInference() ? getNoInferenceReasoner() : reasoner;
+        // Flush the reasoner to have the latest ontology state for query execution
+        reasoner.flush();
         final OWLAPIv3OWL2Ontology ont = new OWLAPIv3OWL2Ontology(ontologyManager, ontology, reasonerToUse);
 
         final QueryResult<OWLObject> res = OWL2QueryEngine.exec(query.getQuery(), ont);
