@@ -150,18 +150,17 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <!-- explicitly define maven-deploy-plugin after other to force exec order -->
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>${maven.deploy.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>deploy</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy</goal>
-                                </goals>
-                            </execution>
-                        </executions>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.5.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <excludeArtifacts>
+                                jopa-integration-tests,jopa-integration-tests-jena,jopa-integration-tests-owlapi,jopa-integration-tests-rdf4j,jopa-distribution
+                            </excludeArtifacts>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
