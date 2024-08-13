@@ -173,7 +173,7 @@ public class EntityLifecycleCallbackResolverTest {
         final AbstractIdentifiableType<OWLClassS> et = typeFor(OWLClassS.class);
         final EntityLifecycleListenerManager result = resolve(et);
         assertEquals(1, result.getEntityListeners().size());
-        assertTrue(result.getEntityListeners().get(0) instanceof ParentListener);
+        assertInstanceOf(ParentListener.class, result.getEntityListeners().get(0));
     }
 
     @Test
