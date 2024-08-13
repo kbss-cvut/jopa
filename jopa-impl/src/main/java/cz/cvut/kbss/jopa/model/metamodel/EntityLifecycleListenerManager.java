@@ -42,7 +42,7 @@ public class EntityLifecycleListenerManager {
 
     private static final EntityLifecycleListenerManager EMPTY = new EntityLifecycleListenerManager();
 
-    private Set<EntityLifecycleListenerManager> parents = new HashSet<>();
+    private final Set<EntityLifecycleListenerManager> parents = new HashSet<>();
 
     private final Map<LifecycleEvent, Method> lifecycleCallbacks = new EnumMap<>(LifecycleEvent.class);
 
@@ -225,11 +225,6 @@ public class EntityLifecycleListenerManager {
         invokeCallbacks(instance, LifecycleEvent.POST_REMOVE);
     }
 
-    void setParents(Set<EntityLifecycleListenerManager> parents) {
-        assert parents != null;
-        this.parents = parents;
-    }
-
     void addParent(EntityLifecycleListenerManager parent) {
         assert parent != null;
         this.parents.add(parent);
@@ -264,11 +259,17 @@ public class EntityLifecycleListenerManager {
     }
 
     boolean hasEntityLifecycleCallback(LifecycleEvent event) {
-        return lifecycleCallbacks.containsKey(event);
+        return lifecycleCallbacks.containsKey(event) || parents.stream()
+                                                               .anyMatch(parent -> parent.hasEntityLifecycleCallback(event));
     }
 
     List<Object> getEntityListeners() {
-        return entityListeners != null ? Collections.unmodifiableList(entityListeners) : Collections.emptyList();
+        final List<Object> allListeners = new ArrayList<>(parents.stream().flatMap(parent -> parent.getEntityListeners()
+                                                                                                   .stream()).toList());
+        if (entityListeners != null) {
+            allListeners.addAll(entityListeners);
+        }
+        return allListeners;
     }
 
     Map<Object, Map<LifecycleEvent, Method>> getEntityListenerCallbacks() {

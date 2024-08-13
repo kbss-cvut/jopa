@@ -109,6 +109,10 @@ class EntityLifecycleListenerManagerTest {
         @PostLoad
         void postLoad() {
         }
+
+        @PreUpdate
+        void preUpdate() {
+        }
     }
 
     @EntityListeners({ChildListener.class, AnotherChildListener.class})
@@ -219,7 +223,6 @@ class EntityLifecycleListenerManagerTest {
     @Test
     void hasLifecycleCallbackReturnsTrueWhenEntityHasMatchingLifecycleCallback() throws Exception {
         manager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, Child.class.getDeclaredMethod("prePersistChild"));
-        final Child instance = spy(new Child());
         assertTrue(manager.hasLifecycleCallback(LifecycleEvent.PRE_PERSIST));
     }
 
@@ -229,7 +232,14 @@ class EntityLifecycleListenerManagerTest {
         manager.addEntityListener(listener);
         manager.addEntityListenerCallback(listener, LifecycleEvent.POST_LOAD,
                 ParentListener.class.getDeclaredMethod("postLoad", Parent.class));
-        final Parent instance = new Parent();
         assertTrue(manager.hasLifecycleCallback(LifecycleEvent.POST_LOAD));
+    }
+
+    @Test
+    void hasLifecycleCallbackReturnsTrueForInheritedPreUpdateCallback() throws Exception {
+        final EntityLifecycleListenerManager parentManager = new EntityLifecycleListenerManager();
+        parentManager.addLifecycleCallback(LifecycleEvent.PRE_UPDATE, Parent.class.getDeclaredMethod("preUpdate"));
+        manager.addParent(parentManager);
+        assertTrue(manager.hasLifecycleCallback(LifecycleEvent.PRE_UPDATE));
     }
 }
