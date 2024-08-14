@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.annotations.PrePersist;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassF;
@@ -39,6 +40,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.utils.JOPALazyUtils;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
+import cz.cvut.kbss.ontodriver.Properties;
 import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
@@ -60,6 +62,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -367,5 +370,27 @@ class BugTest extends IntegrationTestBase {
                                                      .contains(Assertion.createDataPropertyAssertion(URI.create(DC.Terms.MODIFIED), false))));
         assertTrue(value.stream().anyMatch(avd -> avd.getAssertions()
                                                      .contains(Assertion.createAnnotationPropertyAssertion(URI.create(RDFS.LABEL), false))));
+    }
+
+    /**
+     * Bug #264
+     */
+    @Test
+    void oomHandlesMapOfInstances() throws Exception {
+        final Properties properties = mock(Properties.class);
+        when(connectionMock.properties()).thenReturn(properties);
+        final OWLClassB entity = new OWLClassB();
+        entity.setUri(Generators.generateUri());
+        entity.setProperties(Map.of(Vocabulary.P_Q_STRING_ATTRIBUTE, Set.of("Test")));
+        em.getTransaction().begin();
+        em.persist(entity);
+        em.getTransaction().commit();
+
+        final ArgumentCaptor<AxiomValueDescriptor> captor = ArgumentCaptor.forClass(AxiomValueDescriptor.class);
+        verify(connectionMock).persist(captor.capture());
+        final AxiomValueDescriptor value = captor.getValue();
+        assertThat(value.getAssertions(), hasItem(Assertion.createClassAssertion(false)));
+        verify(properties).addProperties(NamedResource.create(entity.getUri()), null,
+                Map.of(Assertion.createPropertyAssertion(URI.create(Vocabulary.P_Q_STRING_ATTRIBUTE), false), Set.of(new Value<>("Test"))));
     }
 }
