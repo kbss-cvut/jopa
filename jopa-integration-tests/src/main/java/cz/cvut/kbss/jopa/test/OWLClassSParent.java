@@ -19,14 +19,21 @@ package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.PreUpdate;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 
 import java.net.URI;
+import java.time.Instant;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_S_PARENT)
 public abstract class OWLClassSParent implements HasUri {
 
     @Id(generated = true)
     private URI uri;
+
+    @OWLDataProperty(iri = DC.Terms.MODIFIED)
+    private Instant modified;
 
     @Override
     public URI getUri() {
@@ -35,5 +42,18 @@ public abstract class OWLClassSParent implements HasUri {
 
     public void setUri(URI uri) {
         this.uri = uri;
+    }
+
+    public Instant getModified() {
+        return modified;
+    }
+
+    public void setModified(Instant modified) {
+        this.modified = modified;
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        setModified(Instant.now());
     }
 }

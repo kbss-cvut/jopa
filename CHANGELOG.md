@@ -1,5 +1,10 @@
 # JOPA - Change Log
 
+## 2.0.4 - 2024-08-15
+- Fix an issue with cloning instances of `AbstractImmutableMap` (produced by `Map.of`) (Bug #264).
+- Ensure changes done by `@PreUpdate` callback inherited by entity are propagated to repository (Bug #265).
+- Dependency updates: RDF4J 5.0.2.
+
 ## 2.0.3 - 2024-07-22
 - Fix an issue with generating static metamodel under JDK 21 (Bug #257).
 - Support using URI/URL as data property values (as RDF simple literal) (Enhancement #256).

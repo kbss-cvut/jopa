@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.annotations.PrePersist;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassF;
@@ -33,10 +34,14 @@ import cz.cvut.kbss.jopa.test.OWLClassJ;
 import cz.cvut.kbss.jopa.test.OWLClassL;
 import cz.cvut.kbss.jopa.test.OWLClassO;
 import cz.cvut.kbss.jopa.test.OWLClassR;
+import cz.cvut.kbss.jopa.test.OWLClassS;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.utils.JOPALazyUtils;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
+import cz.cvut.kbss.ontodriver.Properties;
+import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -57,8 +62,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -70,7 +78,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -313,12 +323,74 @@ class BugTest extends IntegrationTestBase {
         em.getTransaction().begin();
         final OWLClassL instance = em.find(OWLClassL.class, owner.getUri());
         assertInstanceOf(LazyLoadingProxy.class, instance.getSingleA());
-        assertFalse(em.isInferred(instance, em.getMetamodel().entity(OWLClassL.class).getAttribute("singleA"), instance.getSingleA()));
+        assertFalse(em.isInferred(instance, em.getMetamodel().entity(OWLClassL.class)
+                                              .getAttribute("singleA"), instance.getSingleA()));
         final ArgumentCaptor<Axiom<?>> axiomCaptor = ArgumentCaptor.forClass(Axiom.class);
         verify(connectionMock).isInferred(axiomCaptor.capture(), eq(Collections.emptySet()));
         assertEquals(new Value<>(NamedResource.create(ref.getUri())), axiomCaptor.getValue().getValue());
         final ArgumentCaptor<AxiomDescriptor> captor = ArgumentCaptor.forClass(AxiomDescriptor.class);
         verify(connectionMock, atLeastOnce()).find(captor.capture());
-        assertTrue(captor.getAllValues().stream().anyMatch(ad -> ad.getSubject().equals(NamedResource.create(ref.getUri()))));
+        assertTrue(captor.getAllValues().stream()
+                         .anyMatch(ad -> ad.getSubject().equals(NamedResource.create(ref.getUri()))));
+    }
+
+    /**
+     * Bug #265
+     */
+    @Test
+    void updateRegistersChangesByInheritedPreUpdate() throws Exception {
+        final OWLClassS entity = new OWLClassS();
+        entity.setUri(Generators.generateUri());
+        final NamedResource subject = NamedResource.create(entity.getUri());
+        final List<Axiom<?>> axioms = new ArrayList<>();
+        final Axiom<?> classAssertion = new AxiomImpl<>(subject, Assertion.createClassAssertion(false),
+                new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_S)));
+        axioms.add(classAssertion);
+        final AxiomDescriptor desc = new AxiomDescriptor(subject);
+        desc.addAssertion(Assertion.createClassAssertion(false));
+        desc.addAssertion(Assertion.createAnnotationPropertyAssertion(URI.create(RDFS.LABEL), false));
+        desc.addAssertion(Assertion.createDataPropertyAssertion(URI.create(DC.Terms.DESCRIPTION), false));
+        desc.addAssertion(Assertion.createDataPropertyAssertion(URI.create(DC.Terms.MODIFIED), false));
+        doReturn(axioms).when(connectionMock).find(desc);
+        doReturn(true).when(connectionMock).contains(classAssertion, Collections.emptySet());
+        final Types types = mock(Types.class);
+        when(connectionMock.types()).thenReturn(types);
+        when(types.getTypes(subject, Set.of(), false)).thenReturn(Set.of(
+                new AxiomImpl<>(subject, Assertion.createClassAssertion(false), new Value<>(URI.create(Vocabulary.C_OWL_CLASS_S)))
+        ));
+
+        entity.setName("Updated name");
+        em.getTransaction().begin();
+        em.merge(entity);
+        em.getTransaction().commit();
+        final ArgumentCaptor<AxiomValueDescriptor> captor = ArgumentCaptor.forClass(AxiomValueDescriptor.class);
+        verify(connectionMock, times(2)).update(captor.capture());
+        final List<AxiomValueDescriptor> value = captor.getAllValues();
+        assertTrue(value.stream().anyMatch(avd -> avd.getAssertions()
+                                                     .contains(Assertion.createDataPropertyAssertion(URI.create(DC.Terms.MODIFIED), false))));
+        assertTrue(value.stream().anyMatch(avd -> avd.getAssertions()
+                                                     .contains(Assertion.createAnnotationPropertyAssertion(URI.create(RDFS.LABEL), false))));
+    }
+
+    /**
+     * Bug #264
+     */
+    @Test
+    void oomHandlesMapOfInstances() throws Exception {
+        final Properties properties = mock(Properties.class);
+        when(connectionMock.properties()).thenReturn(properties);
+        final OWLClassB entity = new OWLClassB();
+        entity.setUri(Generators.generateUri());
+        entity.setProperties(Map.of(Vocabulary.P_Q_STRING_ATTRIBUTE, Set.of("Test")));
+        em.getTransaction().begin();
+        em.persist(entity);
+        em.getTransaction().commit();
+
+        final ArgumentCaptor<AxiomValueDescriptor> captor = ArgumentCaptor.forClass(AxiomValueDescriptor.class);
+        verify(connectionMock).persist(captor.capture());
+        final AxiomValueDescriptor value = captor.getValue();
+        assertThat(value.getAssertions(), hasItem(Assertion.createClassAssertion(false)));
+        verify(properties).addProperties(NamedResource.create(entity.getUri()), null,
+                Map.of(Assertion.createPropertyAssertion(URI.create(Vocabulary.P_Q_STRING_ATTRIBUTE), false), Set.of(new Value<>("Test"))));
     }
 }

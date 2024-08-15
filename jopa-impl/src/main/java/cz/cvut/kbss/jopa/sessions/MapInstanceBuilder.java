@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
 import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMap;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Constructor;
@@ -37,6 +38,7 @@ import java.util.Optional;
 class MapInstanceBuilder extends AbstractInstanceBuilder {
 
     private static final Class<?> singletonMapClass = Collections.singletonMap(null, null).getClass();
+    private static final Class<?> map1Class = Map.of(new Object(), new Object()).getClass();
 
     MapInstanceBuilder(CloneBuilder builder, UnitOfWork uow) {
         super(builder, uow);
@@ -55,12 +57,13 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         Map<?, ?> clone;
         clone = cloneUsingDefaultConstructor(cloneOwner, field, origCls, orig, configuration);
         if (clone == null) {
-            if (singletonMapClass.isInstance(orig)) {
+            if (singletonMapClass.isInstance(orig) || map1Class.isInstance(orig)) {
                 clone = buildSingletonClone(cloneOwner, field, orig, configuration);
             } else if (Collections.emptyMap().equals(orig)) {
                 clone = orig;
             } else {
-                throw new IllegalArgumentException("Unsupported map type " + origCls);
+                clone = CollectionFactory.createDefaultMap();
+                cloneMapContent(cloneOwner, field, orig, clone, configuration);
             }
         }
         clone = new ChangeTrackingIndirectMap<>(cloneOwner, field, uow, clone);
