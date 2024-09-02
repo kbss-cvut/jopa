@@ -29,8 +29,15 @@ import org.mockito.MockitoAnnotations;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class JenaStatementTest {
 
@@ -51,7 +58,7 @@ public class JenaStatementTest {
         when(executor.executeSelectQuery(any(), any())).thenReturn(rsMock);
         final String query = "SELECT * WHERE { ?x ?y ?z .}";
         final ResultSet rs = statement.executeQuery(query);
-        verify(executor).executeSelectQuery(any(Query.class), eq(Statement.StatementOntology.SHARED));
+        verify(executor).executeSelectQuery(any(Query.class), eq(Statement.StatementOntology.TRANSACTIONAL));
         assertSame(rsMock, rs);
     }
 
@@ -61,7 +68,7 @@ public class JenaStatementTest {
         when(executor.executeAskQuery(any(), any())).thenReturn(rsMock);
         final String query = "ASK { ?x a <http://xmlns.com/foaf/0.1/Person> . }";
         final ResultSet rs = statement.executeQuery(query);
-        verify(executor).executeAskQuery(any(Query.class), eq(Statement.StatementOntology.SHARED));
+        verify(executor).executeAskQuery(any(Query.class), eq(Statement.StatementOntology.TRANSACTIONAL));
         assertSame(rsMock, rs);
     }
 
@@ -72,7 +79,7 @@ public class JenaStatementTest {
         final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
                 "ASK { ?x a foaf:Person . }";
         statement.executeQuery(query);
-        verify(executor).executeAskQuery(any(Query.class), eq(Statement.StatementOntology.SHARED));
+        verify(executor).executeAskQuery(any(Query.class), eq(Statement.StatementOntology.TRANSACTIONAL));
     }
 
     @Test
@@ -112,7 +119,7 @@ public class JenaStatementTest {
     public void executeUpdateExecutesUpdateQuery() throws JenaDriverException {
         final String query = "INSERT DATA { _:b1 a <http://xmlns.com/foaf/0.1/Person> . }";
         statement.executeUpdate(query);
-        verify(executor).executeUpdate(query, Statement.StatementOntology.SHARED);
+        verify(executor).executeUpdate(query, Statement.StatementOntology.TRANSACTIONAL);
     }
 
     @Test
@@ -149,10 +156,10 @@ public class JenaStatementTest {
         final SelectResultSet rsMock = mock(SelectResultSet.class);
         when(executor.executeSelectQuery(any(), any())).thenReturn(rsMock);
         final String query = "SELECT * WHERE { ?x ?y ?z .}";
-        statement.useOntology(Statement.StatementOntology.TRANSACTIONAL);
-        assertEquals(Statement.StatementOntology.TRANSACTIONAL, statement.getStatementOntology());
+        statement.useOntology(Statement.StatementOntology.SHARED);
+        assertEquals(Statement.StatementOntology.SHARED, statement.getStatementOntology());
         final ResultSet rs = statement.executeQuery(query);
-        verify(executor).executeSelectQuery(any(Query.class), eq(Statement.StatementOntology.TRANSACTIONAL));
+        verify(executor).executeSelectQuery(any(Query.class), eq(Statement.StatementOntology.SHARED));
         assertSame(rsMock, rs);
     }
 }

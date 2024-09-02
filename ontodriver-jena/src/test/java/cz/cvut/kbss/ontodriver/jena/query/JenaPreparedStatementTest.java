@@ -23,21 +23,24 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.util.StatementHolder;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.query.QueryFactory;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class JenaPreparedStatementTest {
 
     private static final String QUERY = "SELECT * WHERE { ?x ?y ?z . }";
@@ -49,13 +52,6 @@ public class JenaPreparedStatementTest {
     private AbstractResultSet resultSet;
 
     private JenaPreparedStatement statement;
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
-        when(executor.executeSelectQuery(any(), any())).thenReturn(resultSet);
-        when(executor.executeAskQuery(any(), any())).thenReturn(resultSet);
-    }
 
     @Test
     public void constructorAnalyzesQueryPassedAsParameter() throws Exception {
@@ -99,13 +95,14 @@ public class JenaPreparedStatementTest {
 
     @Test
     public void executeQueryExecutesStatementWithParameter() throws Exception {
+        when(executor.executeSelectQuery(any(), any())).thenReturn(resultSet);
         this.statement = new JenaPreparedStatement(executor, QUERY);
         final String value = "<" + Vocabulary.RDF_TYPE + ">";
         statement.setObject("y", value);
         final String expected = QUERY.replace("?y", value);
         statement.executeQuery();
         verify(executor)
-                .executeSelectQuery(eq(QueryFactory.create(expected)), eq(Statement.StatementOntology.SHARED));
+                .executeSelectQuery(eq(QueryFactory.create(expected)), eq(Statement.StatementOntology.TRANSACTIONAL));
     }
 
     @Test
@@ -124,7 +121,7 @@ public class JenaPreparedStatementTest {
         statement.setObject("type", value);
         final String expected = update.replace("?type", value);
         statement.executeUpdate();
-        verify(executor).executeUpdate(eq(expected), eq(Statement.StatementOntology.SHARED));
+        verify(executor).executeUpdate(eq(expected), eq(Statement.StatementOntology.TRANSACTIONAL));
     }
 
     @Test
@@ -138,13 +135,14 @@ public class JenaPreparedStatementTest {
 
     @Test
     public void clearParametersClearsAlreadySetParameters() throws Exception {
+        when(executor.executeSelectQuery(any(), any())).thenReturn(resultSet);
         this.statement = new JenaPreparedStatement(executor, QUERY);
         final String value = "<" + Vocabulary.RDF_TYPE + ">";
         statement.setObject("y", value);
         statement.clearParameters();
         statement.executeQuery();
         verify(executor)
-                .executeSelectQuery(eq(QueryFactory.create(QUERY)), eq(Statement.StatementOntology.SHARED));
+                .executeSelectQuery(eq(QueryFactory.create(QUERY)), eq(Statement.StatementOntology.TRANSACTIONAL));
     }
 
     @Test

@@ -126,7 +126,6 @@ abstract class AbstractQuery implements Query {
 
     private Statement initQueryStatement() {
         final Statement stmt = connection.createStatement();
-        stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
         applyQueryHints(stmt);
         logQuery();
         return stmt;
