@@ -93,9 +93,24 @@ public final class RDF {
     public static final String REST = NAMESPACE + "rest";
 
     /**
-     * The {@code rdf:nil} object representing an empty RDF list (used to mark the end of a RDF list).
+     * The {@code rdf:nil} object representing an empty RDF list (used to mark the end of an RDF list).
      */
     public static final String NIL = NAMESPACE + "nil";
+
+    /**
+     * The {@code rdf:Bag} class is the class of RDF 'Bag' containers.
+     */
+    public static final String BAG = NAMESPACE + "Bag";
+
+    /**
+     * The {@code rdf:Seq} class is the class of RDF 'Sequence' containers.
+     */
+    public static final String SEQ = NAMESPACE + "Seq";
+
+    /**
+     * The {@code rdf:Alt} class is the class of RDF 'Alternative' containers.
+     */
+    public static final String ALT = NAMESPACE + "Alt";
 
     private RDF() {
         throw new AssertionError();
