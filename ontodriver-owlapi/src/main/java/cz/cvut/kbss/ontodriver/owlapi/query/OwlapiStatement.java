@@ -26,7 +26,7 @@ import java.util.Objects;
 
 public class OwlapiStatement implements Statement {
 
-    private StatementOntology targetOntology;
+    private StatementOntology targetOntology = StatementOntology.TRANSACTIONAL;
     private boolean open;
     private boolean disableInference;
 
