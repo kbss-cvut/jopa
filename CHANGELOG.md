@@ -1,5 +1,8 @@
 # JOPA - Change Log
 
+## 2.0.5 - 2024-09-03
+- Modify target ontology selection in queries (use only query hints) to prevent RDF4J driver from spanning application log.
+
 ## 2.0.4 - 2024-08-15
 - Fix an issue with cloning instances of `AbstractImmutableMap` (produced by `Map.of`) (Bug #264).
 - Ensure changes done by `@PreUpdate` callback inherited by entity are propagated to repository (Bug #265).
