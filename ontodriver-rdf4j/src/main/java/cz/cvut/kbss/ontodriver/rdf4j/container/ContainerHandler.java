@@ -23,6 +23,8 @@ import java.util.Set;
  */
 public class ContainerHandler {
 
+    private static final int MEMBERSHIP_PROPERTY_NUMBER_PREFIX = "http://www.w3.org/1999/02/22-rdf-syntax-ns#_".length();
+
     private final RepoConnection connector;
     private final ValueFactory vf;
 
@@ -36,9 +38,6 @@ public class ContainerHandler {
      * <p>
      * The container values are returned as a list of axioms where the owner of the container points to the individual
      * values.
-     * <p>
-     * Note that this method does not in any way verify the order of the values in the container as they are returned by
-     * RDF4J.
      *
      * @param descriptor Container description
      * @return List of axioms representing the container's content
@@ -60,10 +59,24 @@ public class ContainerHandler {
         assert containerValue.isResource();
         final Resource container = (Resource) containerValue;
         final Collection<Statement> content = connector.findStatements(container, null, null, includeInferred, contexts);
-        return (List) content.stream().map(s -> ValueConverter.fromRdf4jValue(descriptor.getProperty(), s.getObject()))
+        return (List) content.stream()
+                             .sorted(ContainerHandler::statementComparator)
+                             .map(s -> ValueConverter.fromRdf4jValue(descriptor.getProperty(), s.getObject()))
                              .filter(Optional::isPresent)
                              .map(o -> new AxiomImpl<>(descriptor.getOwner(), descriptor.getProperty(), new cz.cvut.kbss.ontodriver.model.Value<>(o.get())))
                              .toList();
+    }
+
+    private static int statementComparator(Statement s1, Statement s2) {
+        final String p1 = s1.getPredicate().toString();
+        final String p2 = s2.getPredicate().toString();
+        try {
+            final int p1Number = Integer.parseInt(p1.substring(MEMBERSHIP_PROPERTY_NUMBER_PREFIX));
+            final int p2Number = Integer.parseInt(p2.substring(MEMBERSHIP_PROPERTY_NUMBER_PREFIX));
+            return p1Number - p2Number;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Unable to determine container membership property number.", e);
+        }
     }
 
     private Set<IRI> contexts(ContainerDescriptor descriptor) {

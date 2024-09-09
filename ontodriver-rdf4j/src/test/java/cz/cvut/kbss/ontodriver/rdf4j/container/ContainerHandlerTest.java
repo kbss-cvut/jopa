@@ -143,4 +143,30 @@ class ContainerHandlerTest {
 
         assertThrows(IntegrityConstraintViolatedException.class, () -> sut.loadContainer(ContainerDescriptor.seqDescriptor(owner, property)));
     }
+
+    @Test
+    void loadContainerPreservesOrderBasedOnContainerMembershipPropertiesNumbering() throws Exception {
+        final NamedResource owner = NamedResource.create(Generator.generateUri());
+        final Assertion property = Assertion.createDataPropertyAssertion(URI.create("https://example.com/hasIsolationLevels"), false);
+        final String ttl = """
+                @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+                <%s> <%s> <https://example.com/hasIsolationLevels/container> .
+                <https://example.com/hasIsolationLevels/container> rdf:_1 "1"^^xsd:int .
+                <https://example.com/hasIsolationLevels/container> rdf:_3 "3"^^xsd:int .
+                <https://example.com/hasIsolationLevels/container> rdf:_2 "2"^^xsd:int .
+                """.formatted(owner.toString(), property.getIdentifier());
+        try (final RepositoryConnection conn = repository.getConnection()) {
+            conn.add(new ByteArrayInputStream(ttl.getBytes()), null, RDFFormat.TURTLE);
+        }
+
+        final List<Axiom<?>> result = sut.loadContainer(ContainerDescriptor.seqDescriptor(owner, property));
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        for (int i = 0; i < result.size(); i++) {
+            assertEquals(owner, result.get(i).getSubject());
+            assertEquals(property, result.get(i).getAssertion());
+            assertEquals(new Value<>(i + 1), result.get(i).getValue());
+        }
+    }
 }
