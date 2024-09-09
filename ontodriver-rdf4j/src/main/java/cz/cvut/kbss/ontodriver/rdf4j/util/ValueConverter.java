@@ -42,27 +42,27 @@ public class ValueConverter {
 
     public static Optional<Object> fromRdf4jValue(Assertion assertion, Value value) {
         final Assertion.AssertionType assertionType = assertion.getType();
-        switch (assertionType) {
-            case DATA_PROPERTY:
+        return switch (assertionType) {
+            case DATA_PROPERTY -> {
                 if (!(value instanceof Literal) || !Rdf4jUtils.doesLanguageMatch((Literal) value, assertion)) {
-                    return Optional.empty();
+                    yield Optional.empty();
                 }
-                return Optional.of(Rdf4jUtils.getLiteralValue((Literal) value));
-            case CLASS:
+                yield Optional.of(Rdf4jUtils.getLiteralValue((Literal) value));
+            }
+            case CLASS -> {
                 if (!(value instanceof Resource)) {
-                    return Optional.empty();
+                    yield Optional.empty();
                 }
-                return Optional.ofNullable(Rdf4jUtils.toJavaUri((Resource) value));
-            case OBJECT_PROPERTY:
+                yield Optional.ofNullable(Rdf4jUtils.toJavaUri((Resource) value));
+            }
+            case OBJECT_PROPERTY -> {
                 if (!(value instanceof Resource)) {
-                    return Optional.empty();
+                    yield Optional.empty();
                 }
-                return Optional.of(NamedResource.create(value.stringValue()));
-            case ANNOTATION_PROPERTY:   // Intentional fall-through
-            case PROPERTY:
-                return resolveUnknownPropertyTypeValue(assertion, value);
-        }
-        return Optional.empty();
+                yield Optional.of(NamedResource.create(value.stringValue()));
+            }   // Intentional fall-through
+            case ANNOTATION_PROPERTY, PROPERTY -> resolveUnknownPropertyTypeValue(assertion, value);
+        };
     }
 
     private static Optional<Object> resolveUnknownPropertyTypeValue(Assertion assertion, Value value) {

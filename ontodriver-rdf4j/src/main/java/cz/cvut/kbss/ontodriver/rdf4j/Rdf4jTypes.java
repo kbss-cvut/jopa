@@ -37,7 +37,7 @@ public class Rdf4jTypes implements Types {
     private final Procedure beforeCallback;
     private final Procedure afterChangeCallback;
 
-    public Rdf4jTypes(Rdf4jAdapter adapter, Procedure beforeCallback, Procedure afterChangeCallback) {
+    Rdf4jTypes(Rdf4jAdapter adapter, Procedure beforeCallback, Procedure afterChangeCallback) {
         this.adapter = adapter;
         this.beforeCallback = beforeCallback;
         this.afterChangeCallback = afterChangeCallback;
