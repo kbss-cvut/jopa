@@ -4,6 +4,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
+import java.util.Objects;
 
 /**
  * Descriptor for reading an RDF container.
@@ -111,6 +112,24 @@ public class ContainerDescriptor {
      */
     public static ContainerDescriptor seqDescriptor(NamedResource owner, Assertion property, URI context) {
         return new ContainerDescriptor(Type.SEQ, owner, property, context);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ContainerDescriptor that)) {
+            return false;
+        }
+        return getType() == that.getType() && Objects.equals(getOwner(),
+                that.getOwner()) && Objects.equals(
+                getProperty(), that.getProperty()) && Objects.equals(getContext(), that.getContext());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getType(), getOwner(), getProperty(), getContext());
     }
 
     protected enum Type {

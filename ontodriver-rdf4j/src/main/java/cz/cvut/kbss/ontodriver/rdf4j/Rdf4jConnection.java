@@ -45,6 +45,7 @@ class Rdf4jConnection implements Connection {
     private Lists lists;
     private Types types;
     private Properties properties;
+    private Containers containers;
 
     private ConnectionListener<Rdf4jConnection> listener;
 
@@ -64,6 +65,10 @@ class Rdf4jConnection implements Connection {
 
     public void setProperties(Properties properties) {
         this.properties = properties;
+    }
+
+    void setContainers(Rdf4jContainers containers) {
+        this.containers = containers;
     }
 
     void setListener(ConnectionListener<Rdf4jConnection> listener) {
@@ -247,6 +252,13 @@ class Rdf4jConnection implements Connection {
         ensureOpen();
         assert properties != null;
         return properties;
+    }
+
+    @Override
+    public Containers containers() {
+        ensureOpen();
+        assert containers != null;
+        return containers;
     }
 
     void ensureOpen() {
