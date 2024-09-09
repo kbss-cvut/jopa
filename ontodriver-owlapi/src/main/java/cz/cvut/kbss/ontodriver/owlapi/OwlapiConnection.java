@@ -224,6 +224,12 @@ public class OwlapiConnection implements Connection {
     }
 
     @Override
+    public Containers containers() {
+        // TODO
+        return null;
+    }
+
+    @Override
     public void close() {
         if (!open) {
             return;
