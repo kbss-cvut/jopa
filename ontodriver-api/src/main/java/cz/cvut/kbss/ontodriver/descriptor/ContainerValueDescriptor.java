@@ -113,4 +113,23 @@ public class ContainerValueDescriptor<T> extends ContainerDescriptor {
                                                                      URI context) {
         return new ContainerValueDescriptor<>(Type.SEQ, owner, property, context);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ContainerValueDescriptor<?> that)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        return Objects.equals(getValues(), that.getValues());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getValues());
+    }
 }
