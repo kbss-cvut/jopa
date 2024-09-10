@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.test;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_C)
@@ -39,6 +40,10 @@ public class OWLClassC implements HasUri {
     @RDFCollection
     @OWLObjectProperty(iri = Vocabulary.P_HAS_RDF_COLLECTION)
     private List<OWLClassA> rdfCollection;
+
+    @RDFContainer(type = RDFContainerType.BAG)
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_RDF_BAG)
+    private Collection<OWLClassA> rdfBag;
 
     public OWLClassC() {
     }
@@ -80,6 +85,14 @@ public class OWLClassC implements HasUri {
         this.rdfCollection = rdfCollection;
     }
 
+    public Collection<OWLClassA> getRdfBag() {
+        return rdfBag;
+    }
+
+    public void setRdfBag(Collection<OWLClassA> rdfBag) {
+        this.rdfBag = rdfBag;
+    }
+
     @Override
     public String toString() {
         String out = "OWLClassC: uri = " + uri;
@@ -91,6 +104,9 @@ public class OWLClassC implements HasUri {
         }
         if (rdfCollection != null) {
             out += ", rdfCollection = {" + rdfCollection + "}";
+        }
+        if (rdfBag != null) {
+            out += ", rdfBag = {" + rdfBag + "}";
         }
         return out;
     }
