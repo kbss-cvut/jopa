@@ -122,14 +122,14 @@ public class ContainerDescriptor {
         if (!(o instanceof ContainerDescriptor that)) {
             return false;
         }
-        return getType() == that.getType() && Objects.equals(getOwner(),
+        return type == that.type && Objects.equals(getOwner(),
                 that.getOwner()) && Objects.equals(
                 getProperty(), that.getProperty()) && Objects.equals(getContext(), that.getContext());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getType(), getOwner(), getProperty(), getContext());
+        return Objects.hash(type, getOwner(), getProperty(), getContext());
     }
 
     protected enum Type {
