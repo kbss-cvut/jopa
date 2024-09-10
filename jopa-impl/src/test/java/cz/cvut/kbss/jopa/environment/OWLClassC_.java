@@ -19,9 +19,11 @@ package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.RDFContainerAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.StaticMetamodel;
 
 import java.net.URI;
+import java.util.List;
 
 @StaticMetamodel(OWLClassC.class)
 public class OWLClassC_ {
@@ -31,4 +33,6 @@ public class OWLClassC_ {
     public static volatile ListAttribute<OWLClassC, OWLClassA> referencedList;
 
     public static volatile ListAttribute<OWLClassC, OWLClassA> simpleList;
+
+    public static volatile RDFContainerAttribute<OWLClassC, List<OWLClassA>, OWLClassA> rdfSeq;
 }

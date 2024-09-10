@@ -19,7 +19,6 @@ package cz.cvut.kbss.jopa.proxy.lazy;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxy;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
@@ -52,7 +51,7 @@ public class LazyLoadingProxyFactory {
     public <T> Object createProxy(T entity, FieldSpecification<? super T, ?> fieldSpec) {
         final Class<?> type = fieldSpec.getJavaType();
         if (List.class.isAssignableFrom(type)) {
-            return new LazyLoadingListProxy<>(entity, (ListAttribute<T, ?>) fieldSpec, uow);
+            return new LazyLoadingListProxy<>(entity, (FieldSpecification) fieldSpec, uow);
         } else if (Set.class.isAssignableFrom(type)) {
             return new LazyLoadingSetProxy<>(entity, (FieldSpecification) fieldSpec, uow);
         } else if (Map.class.isAssignableFrom(type)) {
