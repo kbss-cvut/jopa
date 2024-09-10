@@ -18,7 +18,14 @@
 package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.environment.utils.HasUri;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.RDFContainer;
+import cz.cvut.kbss.jopa.model.annotations.RDFContainerType;
+import cz.cvut.kbss.jopa.model.annotations.Sequence;
+import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -40,6 +47,10 @@ public class OWLClassC implements HasUri {
     @Sequence(type = SequenceType.simple)
     @OWLObjectProperty(iri = Vocabulary.P_HAS_SIMPLE_LIST)
     private List<OWLClassA> simpleList;
+
+    @RDFContainer(type = RDFContainerType.SEQ)
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_RDF_SEQ, fetch = FetchType.EAGER)
+    private List<OWLClassA> rdfSeq;
 
     public OWLClassC() {
     }
@@ -72,18 +83,28 @@ public class OWLClassC implements HasUri {
         return simpleList;
     }
 
+    public List<OWLClassA> getRdfSeq() {
+        return rdfSeq;
+    }
+
+    public void setRdfSeq(List<OWLClassA> rdfSeq) {
+        this.rdfSeq = rdfSeq;
+    }
+
     public static String getClassIri() {
         return OWLClassC.class.getAnnotation(OWLClass.class).iri();
     }
 
-    public static Field getRefListField() throws NoSuchFieldException,
-                                                 SecurityException {
+    public static Field getRefListField() throws NoSuchFieldException, SecurityException {
         return OWLClassC.class.getDeclaredField(REF_LIST_FIELD);
     }
 
-    public static Field getSimpleListField() throws NoSuchFieldException,
-                                                    SecurityException {
+    public static Field getSimpleListField() throws NoSuchFieldException, SecurityException {
         return OWLClassC.class.getDeclaredField(SIMPLE_LIST_FIELD);
+    }
+
+    public static Field getRdfSeqField() throws NoSuchFieldException, SecurityException {
+        return OWLClassC.class.getDeclaredField("rdfSeq");
     }
 
     @Override
@@ -94,6 +115,9 @@ public class OWLClassC implements HasUri {
         }
         if (simpleList != null) {
             out += ", simpleList = {" + simpleList + "}";
+        }
+        if (rdfSeq != null) {
+            out += ", rdfSeq = {" + rdfSeq + "}";
         }
         return out;
     }
