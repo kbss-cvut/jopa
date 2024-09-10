@@ -62,6 +62,15 @@ public class IdentifierUtils {
     }
 
     /**
+     * Generates a (pseudo) random integer.
+     *
+     * @return Generated integer
+     */
+    public static int randomInt() {
+        return RANDOM.nextInt();
+    }
+
+    /**
      * Checks if the specified class represents a resource identifier.
      *
      * @param cls Class to check

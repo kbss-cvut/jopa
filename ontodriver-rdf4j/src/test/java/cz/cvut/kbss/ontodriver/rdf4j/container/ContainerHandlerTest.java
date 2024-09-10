@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.rdf4j.container;
 
 import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ContainerValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -9,6 +10,10 @@ import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StorageConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -32,6 +37,8 @@ class ContainerHandlerTest {
 
     private Repository repository;
 
+    private StorageConnection storageConnection;
+
     private ContainerHandler sut;
 
     @BeforeEach
@@ -40,7 +47,8 @@ class ContainerHandlerTest {
         repository.init();
         final StorageConnector connectorMock = mock(StorageConnector.class);
         when(connectorMock.acquireConnection()).thenAnswer(inv -> repository.getConnection());
-        this.sut = new ContainerHandler(new StorageConnection(connectorMock, null), repository.getValueFactory());
+        this.storageConnection = new StorageConnection(connectorMock, null);
+        this.sut = new ContainerHandler(storageConnection, repository.getValueFactory());
     }
 
     @Test
@@ -126,6 +134,26 @@ class ContainerHandlerTest {
     }
 
     @Test
+    void loadContainerSupportsContainerRepresentedByBlankNode() throws Exception {
+        final NamedResource owner = NamedResource.create(Generator.generateUri());
+        final Assertion property = Assertion.createDataPropertyAssertion(URI.create("https://example.com/hasIsolationLevels"), false);
+        final String ttl = """
+                @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+                <%s> <%s> _:xxx .
+                _:xxx rdf:_1 "1"^^xsd:int .
+                _:xxx rdf:_2 "2"^^xsd:int .
+                """.formatted(owner.toString(), property.getIdentifier());
+        try (final RepositoryConnection conn = repository.getConnection()) {
+            conn.add(new ByteArrayInputStream(ttl.getBytes()), null, RDFFormat.TURTLE);
+        }
+
+        final List<Axiom<?>> result = sut.loadContainer(ContainerDescriptor.seqDescriptor(owner, property));
+        assertNotNull(result);
+        assertEquals(2, result.size());
+    }
+
+    @Test
     void loadContainerThrowsIntegrityConstraintViolatedExceptionWhenContainerValueIsNotUnique() throws Exception {
         final NamedResource owner = NamedResource.create(Generator.generateUri());
         final Assertion property = Assertion.createDataPropertyAssertion(URI.create("https://example.com/hasIsolationLevels"), false);
@@ -167,6 +195,46 @@ class ContainerHandlerTest {
             assertEquals(owner, result.get(i).getSubject());
             assertEquals(property, result.get(i).getAssertion());
             assertEquals(new Value<>(i + 1), result.get(i).getValue());
+        }
+    }
+
+    @Test
+    void persistContainerCreatesContainerAndAddsSpecifiedValuesToIt() throws Exception {
+        final NamedResource owner = NamedResource.create(Generator.generateUri());
+        final Assertion property = Assertion.createObjectPropertyAssertion(URI.create("https://example.com/hasCandidates"), false);
+        final List<NamedResource> values = List.of(NamedResource.create(Generator.generateUri()), NamedResource.create(Generator.generateUri()));
+        final ContainerValueDescriptor<NamedResource> descriptor = ContainerValueDescriptor.bagValueDescriptor(owner, property);
+        values.forEach(descriptor::addValue);
+
+        storageConnection.begin();
+        sut.persistContainer(descriptor);
+        storageConnection.commit();
+        final ValueFactory vf = repository.getValueFactory();
+        final IRI subject = vf.createIRI(owner.getIdentifier().toString());
+        final IRI containerProperty = vf.createIRI(property.getIdentifier().toString());
+        try (RepositoryConnection conn = repository.getConnection()) {
+            final List<Statement> containerStatement = conn.getStatements(subject, containerProperty, null).stream()
+                                                           .toList();
+            assertEquals(1, containerStatement.size());
+            final Resource container = (Resource) containerStatement.get(0).getObject();
+            for (int i = 0; i < values.size(); i++) {
+                assertTrue(conn.hasStatement(container, vf.createIRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#_" + (i + 1)), vf.createIRI(values.get(i)
+                                                                                                                                                   .toString()), false));
+            }
+        }
+    }
+
+    @Test
+    void persistContainerDoesNothingWhenValuesAreEmpty() throws Exception {
+        final NamedResource owner = NamedResource.create(Generator.generateUri());
+        final Assertion property = Assertion.createObjectPropertyAssertion(URI.create("https://example.com/hasCandidates"), false);
+        final ContainerValueDescriptor<NamedResource> descriptor = ContainerValueDescriptor.bagValueDescriptor(owner, property);
+
+        storageConnection.begin();
+        sut.persistContainer(descriptor);
+        storageConnection.commit();
+        try (final RepositoryConnection conn = repository.getConnection()) {
+            assertTrue(conn.isEmpty());
         }
     }
 }
