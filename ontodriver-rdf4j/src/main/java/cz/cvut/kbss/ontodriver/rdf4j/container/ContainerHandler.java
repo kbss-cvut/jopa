@@ -3,8 +3,10 @@ package cz.cvut.kbss.ontodriver.rdf4j.container;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
+import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
@@ -55,21 +57,13 @@ public class ContainerHandler {
      * @throws Rdf4jDriverException If an error accessing the container occurs
      */
     public List<Axiom<?>> loadContainer(ContainerDescriptor descriptor) throws Rdf4jDriverException {
-        final IRI owner = vf.createIRI(descriptor.getOwner().getIdentifier().toString());
-        final IRI property = vf.createIRI(descriptor.getProperty().getIdentifier().toString());
         final boolean includeInferred = descriptor.getProperty().isInferred();
         final Set<IRI> contexts = contexts(descriptor);
-        final Collection<Statement> statements = connector.findStatements(owner, property, null, includeInferred, contexts);
-        if (statements.isEmpty()) {
+        final Optional<Resource> container = findContainer(descriptor, includeInferred, contexts);
+        if (container.isEmpty()) {
             return List.of();
         }
-        if (statements.size() > 1) {
-            throw new IntegrityConstraintViolatedException("Expected a single value of property <" + property + ">, but got multiple.");
-        }
-        final Value containerValue = statements.iterator().next().getObject();
-        assert containerValue.isResource();
-        final Resource container = (Resource) containerValue;
-        final Collection<Statement> content = connector.findStatements(container, null, null, includeInferred, contexts);
+        final Collection<Statement> content = connector.findStatements(container.get(), null, null, includeInferred, contexts);
         return (List) content.stream()
                              .filter(s -> s.getPredicate().stringValue().startsWith(MEMBERSHIP_PROPERTY_URI_BASE))
                              .sorted(ContainerHandler::statementComparator)
@@ -77,6 +71,22 @@ public class ContainerHandler {
                              .filter(Optional::isPresent)
                              .map(o -> new AxiomImpl<>(descriptor.getOwner(), descriptor.getProperty(), new cz.cvut.kbss.ontodriver.model.Value<>(o.get())))
                              .toList();
+    }
+
+    private Optional<Resource> findContainer(ContainerDescriptor descriptor, boolean includeInferred,
+                                             Set<IRI> contexts) throws Rdf4jDriverException {
+        final IRI owner = vf.createIRI(descriptor.getOwner().getIdentifier().toString());
+        final IRI property = vf.createIRI(descriptor.getProperty().getIdentifier().toString());
+        final Collection<Statement> statements = connector.findStatements(owner, property, null, includeInferred, contexts);
+        if (statements.isEmpty()) {
+            return Optional.empty();
+        }
+        if (statements.size() > 1) {
+            throw new IntegrityConstraintViolatedException("Expected a single value of property <" + property + ">, but got multiple.");
+        }
+        final Value containerValue = statements.iterator().next().getObject();
+        assert containerValue.isResource();
+        return Optional.of((Resource) containerValue);
     }
 
     private static int statementComparator(Statement s1, Statement s2) {
@@ -100,6 +110,7 @@ public class ContainerHandler {
      *
      * @param descriptor Container value descriptor
      * @param <T>        Type of container values
+     * @throws Rdf4jDriverException If an error accessing the container occurs
      */
     public <T> void persistContainer(ContainerValueDescriptor<T> descriptor) throws Rdf4jDriverException {
         Objects.requireNonNull(descriptor);
@@ -108,16 +119,14 @@ public class ContainerHandler {
             return;
         }
         final IRI containerIri = generateContainerIri(descriptor);
+        final IRI contextIri = descriptor.getContext() != null ? vf.createIRI(descriptor.getContext()
+                                                                                        .toString()) : null;
         final List<Statement> toPersist = new ArrayList<>();
         toPersist.add(vf.createStatement(toRdf4jIri(descriptor.getOwner()
                                                               .getIdentifier()), toRdf4jIri(descriptor.getProperty()
-                                                                                                      .getIdentifier()), containerIri));
+                                                                                                      .getIdentifier()), containerIri, contextIri));
         toPersist.add(vf.createStatement(containerIri, RDF.TYPE, toRdf4jIri(descriptor.getType())));
-        final ValueConverter valueConverter = new ValueConverter(vf);
-        for (int i = 0; i < descriptor.getValues().size(); i++) {
-            final T value = descriptor.getValues().get(i);
-            toPersist.add(vf.createStatement(containerIri, vf.createIRI(MEMBERSHIP_PROPERTY_URI_BASE + (i + 1)), valueConverter.toRdf4jValue(descriptor.getProperty(), value)));
-        }
+        toPersist.addAll(generateContainerContent(descriptor, containerIri, contextIri));
         connector.addStatements(toPersist);
     }
 
@@ -133,5 +142,57 @@ public class ContainerHandler {
             LOG.trace("Generated container IRI: <{}>", iri);
         } while (connector.containsStatement(iri, null, null, false, Set.of()));
         return iri;
+    }
+
+    private <T> List<Statement> generateContainerContent(ContainerValueDescriptor<T> descriptor, Resource container,
+                                                         IRI contextIri) throws Rdf4jDriverException {
+        final List<Statement> result = new ArrayList<>(descriptor.getValues().size());
+        final ValueConverter valueConverter = new ValueConverter(vf);
+        for (int i = 0; i < descriptor.getValues().size(); i++) {
+            final T value = descriptor.getValues().get(i);
+            result.add(vf.createStatement(container, vf.createIRI(MEMBERSHIP_PROPERTY_URI_BASE + (i + 1)), valueConverter.toRdf4jValue(descriptor.getProperty(), value), contextIri));
+        }
+        return result;
+    }
+
+    /**
+     * Updates the content of an existing container corresponding to the specified descriptor.
+     * <p>
+     * If the descriptor has no value, the container is removed completely.
+     *
+     * @param descriptor Descriptor with new container values
+     * @param <T>        Value type
+     * @throws Rdf4jDriverException If an error accessing the container occurs
+     */
+    public <T> void updateContainer(ContainerValueDescriptor<T> descriptor) throws Rdf4jDriverException {
+        Objects.requireNonNull(descriptor);
+        final IRI context = descriptor.getContext() != null ? vf.createIRI(descriptor.getContext().toString()) : null;
+        final Set<IRI> contexts = context != null ? Set.of(context) : Set.of();
+        final Optional<Resource> container = findContainer(descriptor, false, contexts);
+        if (container.isEmpty()) {
+            persistContainer(descriptor);
+            return;
+        }
+        if (descriptor.getValues().isEmpty()) {
+            deleteContainer(descriptor.getOwner(), descriptor.getProperty(), container.get(), contexts);
+            return;
+        }
+        // The current implementation is simple - just clear the container and add its new content
+        // If performance becomes a concern, we can try merging the existing content with the updated one
+        // (paying attention to the type of the container, as it has effect on whether the order matters or not)
+        clearContainer(container.get(), contexts);
+        connector.addStatements(generateContainerContent(descriptor, container.get(), context));
+    }
+
+    private void clearContainer(Resource container, Set<IRI> contexts) throws Rdf4jDriverException {
+        final Collection<Statement> content = connector.findStatements(container, null, null, false, contexts);
+        connector.removeStatements(content.stream().filter(s -> RDF.TYPE.equals(s.getPredicate())).toList());
+    }
+
+    private void deleteContainer(NamedResource owner, Assertion property, Resource container,
+                                 Set<IRI> contexts) throws Rdf4jDriverException {
+        final List<Statement> toRemove = new ArrayList<>(connector.findStatements(container, null, null, false, contexts));
+        toRemove.addAll(connector.findStatements(toRdf4jIri(owner.getIdentifier()), toRdf4jIri(property.getIdentifier()), container, false, contexts));
+        connector.removeStatements(toRemove);
     }
 }
