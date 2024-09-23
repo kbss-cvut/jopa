@@ -32,6 +32,7 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.RDFCollection;
+import cz.cvut.kbss.jopa.model.annotations.RDFContainer;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.Sparql;
 import cz.cvut.kbss.jopa.model.annotations.Types;
@@ -314,37 +315,52 @@ class ClassFieldMetamodelProcessor<X> {
     private AbstractAttribute<X, ?> createAttribute(PropertyInfo property, InferenceInfo
             inference, PropertyAttributes propertyAttributes) {
         final AbstractAttribute<X, ?> a;
-        if (property.getType().isAssignableFrom(Collection.class)) {
-            final AbstractPluralAttribute.PluralAttributeBuilder builder = CollectionAttributeImpl.builder(propertyAttributes)
-                                                                                                  .declaringType(et)
-                                                                                                  .propertyInfo(property)
-                                                                                                  .inferred(inference.inferred)
-                                                                                                  .includeExplicit(inference.includeExplicit);
+        if (property.getAnnotation(RDFContainer.class) != null) {
+            a = createRdfContainerAttribute(property, inference, propertyAttributes);
+        } else if (property.getType().isAssignableFrom(Collection.class)) {
+            final AbstractPluralAttribute.PluralAttributeBuilder builder = setCommonBuildParameters(CollectionAttributeImpl.builder(propertyAttributes),
+                    property, inference);
             context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = builder.build();
         } else if (property.getType().isAssignableFrom(List.class)) {
             a = createListAttribute(property, inference, propertyAttributes);
         } else if (property.getType().isAssignableFrom(Set.class)) {
-            final AbstractPluralAttribute.PluralAttributeBuilder builder = SetAttributeImpl.builder(propertyAttributes)
-                                                                                           .declaringType(et)
-                                                                                           .propertyInfo(property)
-                                                                                           .inferred(inference.inferred)
-                                                                                           .includeExplicit(inference.includeExplicit);
+            final AbstractPluralAttribute.PluralAttributeBuilder builder = setCommonBuildParameters(SetAttributeImpl.builder(propertyAttributes),
+                    property, inference);
             context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = builder.build();
         } else if (property.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
-            final SingularAttributeImpl.SingularAttributeBuilder builder = SingularAttributeImpl.builder(propertyAttributes)
-                                                                                                .declaringType(et)
-                                                                                                .propertyInfo(property)
-                                                                                                .inferred(inference.inferred)
-                                                                                                .includeExplicit(inference.includeExplicit);
+            final SingularAttributeImpl.SingularAttributeBuilder builder = setCommonBuildParameters(SingularAttributeImpl.builder(propertyAttributes),
+                    property, inference);
             context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = builder.build();
         }
         et.addDeclaredAttribute(property.getName(), a);
         return a;
+    }
+
+    private <B extends AbstractAttribute.AbstractAttributeBuilder<X, ?>> B setCommonBuildParameters(B builder,
+                                                                                                    PropertyInfo propertyInfo,
+                                                                                                    InferenceInfo inference) {
+        builder.declaringType(et)
+               .propertyInfo(propertyInfo)
+               .inferred(inference.inferred)
+               .includeExplicit(inference.includeExplicit);
+        return builder;
+    }
+
+    private AbstractAttribute<X, ?> createRdfContainerAttribute(PropertyInfo property, InferenceInfo inference,
+                                                                PropertyAttributes propertyAttributes) {
+        final RDFContainer rdfContainer = property.getAnnotation(RDFContainer.class);
+        assert rdfContainer != null;
+        final RdfContainerAttributeImpl.RDFContainerAttributeBuilder builder = setCommonBuildParameters(RdfContainerAttributeImpl.builder(propertyAttributes),
+                property, inference)
+                .containerType(rdfContainer.type())
+                .collectionType(property.getType());
+        context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
+        return builder.build();
     }
 
     private AbstractAttribute<X, ?> createListAttribute(PropertyInfo property, InferenceInfo
@@ -356,26 +372,20 @@ class ClassFieldMetamodelProcessor<X> {
         if (os == null) {
             throw new MetamodelInitializationException("Expected Sequence annotation.");
         }
-        final ListAttributeImpl.ListAttributeBuilder builder = ListAttributeImpl.builder(propertyAttributes)
-                                                                                .declaringType(et)
-                                                                                .propertyInfo(property)
-                                                                                .inferred(inference.inferred)
-                                                                                .includeExplicit(inference.includeExplicit)
-                                                                                .owlListClass(IRI.create(resolvePrefix(os.listClassIRI())))
-                                                                                .hasNextProperty(IRI.create(resolvePrefix(os.hasNextPropertyIRI())))
-                                                                                .hasContentsProperty(IRI.create(resolvePrefix(os.hasContentsPropertyIRI())))
-                                                                                .sequenceType(os.type());
+        final ListAttributeImpl.ListAttributeBuilder builder = setCommonBuildParameters(ListAttributeImpl.builder(propertyAttributes),
+                property, inference)
+                .owlListClass(IRI.create(resolvePrefix(os.listClassIRI())))
+                .hasNextProperty(IRI.create(resolvePrefix(os.hasNextPropertyIRI())))
+                .hasContentsProperty(IRI.create(resolvePrefix(os.hasContentsPropertyIRI())))
+                .sequenceType(os.type());
         context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
         return builder.build();
     }
 
     private AbstractAttribute<X, ?> createRdfCollectionAttribute(PropertyInfo property, InferenceInfo inference,
                                                                  PropertyAttributes propertyAttributes) {
-        final RDFCollectionAttribute.RDFCollectionAttributeBuilder builder = RDFCollectionAttribute.builder(propertyAttributes)
-                                                                                                   .declaringType(et)
-                                                                                                   .propertyInfo(property)
-                                                                                                   .inferred(inference.inferred)
-                                                                                                   .includeExplicit(inference.includeExplicit);
+        final RDFCollectionAttribute.RDFCollectionAttributeBuilder builder = setCommonBuildParameters(RDFCollectionAttribute.builder(propertyAttributes),
+                property, inference);
         context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
         return builder.build();
     }

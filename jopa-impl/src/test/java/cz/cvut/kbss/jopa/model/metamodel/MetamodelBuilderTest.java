@@ -41,6 +41,8 @@ import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.PrePersist;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.RDFCollection;
+import cz.cvut.kbss.jopa.model.annotations.RDFContainer;
+import cz.cvut.kbss.jopa.model.annotations.RDFContainerType;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
@@ -543,5 +545,28 @@ class MetamodelBuilderTest {
         @RDFCollection
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "rdf-collection")
         private List<Integer> rdfCollection;
+    }
+
+    @Test
+    void buildMetamodelSupportsRdfContainerAttributes() {
+        when(finderMock.getEntities()).thenReturn(Set.of(ClassWithRdfSeqAttribute.class));
+        builder.buildMetamodel(finderMock);
+        final AbstractIdentifiableType<ClassWithRdfSeqAttribute> et = builder.entity(ClassWithRdfSeqAttribute.class);
+        final PluralAttribute<? super ClassWithRdfSeqAttribute, List<Integer>, Integer> result = (PluralAttribute<? super ClassWithRdfSeqAttribute, List<Integer>, Integer>) et.getAttribute("rdfSeq");
+        assertInstanceOf(RDFContainerAttribute.class, result);
+        final RDFContainerAttribute<? super ClassWithRdfSeqAttribute, List<Integer>, Integer> containerAtt = (RDFContainerAttribute<? super ClassWithRdfSeqAttribute, List<Integer>, Integer>) result;
+        assertEquals(CollectionType.LIST, containerAtt.getCollectionType());
+        assertEquals(RDFContainerType.SEQ, containerAtt.getContainerType());
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithRdfSeqAttribute")
+    public static class ClassWithRdfSeqAttribute {
+        @Id
+        private URI uri;
+
+        @RDFContainer(type = RDFContainerType.SEQ)
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "rdf-seq")
+        private List<Integer> rdfSeq;
     }
 }
