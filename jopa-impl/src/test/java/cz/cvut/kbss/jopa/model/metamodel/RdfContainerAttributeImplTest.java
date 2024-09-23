@@ -41,7 +41,7 @@ class RdfContainerAttributeImplTest {
         final RdfContainerAttributeImpl<?, ?, ?> sut = (RdfContainerAttributeImpl<?, ?, ?>) RdfContainerAttributeImpl.builder(pa)
                                                                                                                      .containerType(RDFContainerType.ALT)
                                                                                                                      .elementType(BasicTypeImpl.get(Integer.class))
-                                                                                                                     .collectionType(List.class)
+                                                                                                                     .collectionType(Set.class)
                                                                                                                      .build();
         assertEquals(CollectionType.SET, sut.getCollectionType());
     }

@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ContainerValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -36,8 +37,9 @@ import java.util.*;
 class AxiomValueGatherer {
 
     private final AxiomValueDescriptor axiomDescriptor;
-    private final Collection<SimpleListValueDescriptor> simpleListDescriptors = new ArrayList<>();
-    private final Collection<ReferencedListValueDescriptor> referencedListDescriptors = new ArrayList<>();
+    private final List<SimpleListValueDescriptor> simpleListDescriptors = new ArrayList<>();
+    private final List<ReferencedListValueDescriptor<?>> referencedListDescriptors = new ArrayList<>();
+    private final List<ContainerValueDescriptor<?>> containerDescriptors = new ArrayList<>();
     private final Set<URI> typesToAdd = new HashSet<>();
     private final Set<URI> typesToRemove = new HashSet<>();
     private URI typesContext;
@@ -72,8 +74,12 @@ class AxiomValueGatherer {
         simpleListDescriptors.add(listDescriptor);
     }
 
-    void addReferencedListValues(ReferencedListValueDescriptor listDescriptor) {
+    void addReferencedListValues(ReferencedListValueDescriptor<?> listDescriptor) {
         referencedListDescriptors.add(listDescriptor);
+    }
+
+    void addContainerValues(ContainerValueDescriptor<?> containerDescriptor) {
+        containerDescriptors.add(containerDescriptor);
     }
 
     void addTypes(Set<URI> types, URI context) {
@@ -127,8 +133,11 @@ class AxiomValueGatherer {
             for (SimpleListValueDescriptor d : simpleListDescriptors) {
                 connection.lists().persistSimpleList(d);
             }
-            for (ReferencedListValueDescriptor d : referencedListDescriptors) {
+            for (ReferencedListValueDescriptor<?> d : referencedListDescriptors) {
                 connection.lists().persistReferencedList(d);
+            }
+            for(ContainerValueDescriptor<?> d : containerDescriptors) {
+                connection.containers().persistContainer(d);
             }
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
@@ -154,8 +163,11 @@ class AxiomValueGatherer {
             for (SimpleListValueDescriptor d : simpleListDescriptors) {
                 connection.lists().updateSimpleList(d);
             }
-            for (ReferencedListValueDescriptor d : referencedListDescriptors) {
+            for (ReferencedListValueDescriptor<?> d : referencedListDescriptors) {
                 connection.lists().updateReferencedList(d);
+            }
+            for (ContainerValueDescriptor<?> d : containerDescriptors) {
+                connection.containers().updateContainer(d);
             }
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
