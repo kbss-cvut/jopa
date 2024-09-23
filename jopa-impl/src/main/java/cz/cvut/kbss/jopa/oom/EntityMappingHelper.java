@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.sessions.ConfigurationHolder;
+import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -43,6 +44,8 @@ interface EntityMappingHelper extends ConfigurationHolder {
     Collection<Axiom<NamedResource>> loadSimpleList(SimpleListDescriptor listDescriptor);
 
     Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor listDescriptor);
+
+    Collection<Axiom<?>> loadRdfContainer(ContainerDescriptor containerDescriptor);
 
     boolean isInferred(Axiom<?> axiom, URI context);
 }
