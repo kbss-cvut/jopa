@@ -1,6 +1,8 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.annotations.RDFContainerType;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 
 public class RdfContainerAttributeImpl<X, C, E> extends AbstractPluralAttribute<X, C, E> implements RDFContainerAttribute<X, C, E> {
 
@@ -12,6 +14,7 @@ public class RdfContainerAttributeImpl<X, C, E> extends AbstractPluralAttribute<
         super(builder);
         this.containerType = builder.containerType;
         this.collectionType = resolveCollectionType(containerType);
+        validateCollectionType();
     }
 
     private static CollectionType resolveCollectionType(RDFContainerType containerType) {
@@ -20,6 +23,15 @@ public class RdfContainerAttributeImpl<X, C, E> extends AbstractPluralAttribute<
             case ALT -> CollectionType.SET;
             case BAG -> CollectionType.COLLECTION;
         };
+    }
+
+    private void validateCollectionType() {
+        if (containerType == RDFContainerType.SEQ && CollectionType.SET.getCollectionClass()
+                                                                       .isAssignableFrom(getJavaType())
+                || containerType == RDFContainerType.ALT && CollectionType.LIST.getCollectionClass()
+                                                                               .isAssignableFrom(getJavaType())) {
+            throw new InvalidFieldMappingException("RDF " + containerType.name() + " cannot be mapped to a field of type " + getJavaType());
+        }
     }
 
     @Override
@@ -47,6 +59,48 @@ public class RdfContainerAttributeImpl<X, C, E> extends AbstractPluralAttribute<
 
         public RDFContainerAttributeBuilder<X, C, E> containerType(RDFContainerType containerType) {
             this.containerType = containerType;
+            return this;
+        }
+
+        @Override
+        public RDFContainerAttributeBuilder<X, C, E> elementType(Type<E> elementType) {
+            super.elementType(elementType);
+            return this;
+        }
+
+        @Override
+        public RDFContainerAttributeBuilder<X, C, E> collectionType(Class<C> collectionType) {
+            super.collectionType(collectionType);
+            return this;
+        }
+
+        @Override
+        public RDFContainerAttributeBuilder<X, C, E> propertyInfo(PropertyInfo propertyInfo) {
+            super.propertyInfo(propertyInfo);
+            return this;
+        }
+
+        @Override
+        public RDFContainerAttributeBuilder<X, C, E> declaringType(ManagedType<X> declaringType) {
+            super.declaringType(declaringType);
+            return this;
+        }
+
+        @Override
+        public RDFContainerAttributeBuilder<X, C, E> inferred(boolean inferred) {
+            super.inferred(inferred);
+            return this;
+        }
+
+        @Override
+        public RDFContainerAttributeBuilder<X, C, E> includeExplicit(boolean includeExplicit) {
+            super.includeExplicit(includeExplicit);
+            return this;
+        }
+
+        @Override
+        public RDFContainerAttributeBuilder<X, C, E> converter(ConverterWrapper converter) {
+            super.converter(converter);
             return this;
         }
 
