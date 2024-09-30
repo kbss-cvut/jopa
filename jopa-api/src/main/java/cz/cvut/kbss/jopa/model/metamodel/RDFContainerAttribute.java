@@ -26,4 +26,9 @@ public interface RDFContainerAttribute<X, C, E> extends PluralAttribute<X, C, E>
      */
     @NonJPA
     RDFContainerType getContainerType();
+
+    @Override
+    default boolean isRdfContainer() {
+        return true;
+    }
 }

@@ -31,11 +31,17 @@ class Rdf4jContainers implements Containers {
 
     @Override
     public <T> void persistContainer(ContainerValueDescriptor<T> descriptor) throws OntoDriverException {
-
+        Objects.requireNonNull(descriptor);
+        beforeCallback.execute();
+        adapter.getContainerHandler().persistContainer(descriptor);
+        afterChangeCallback.execute();
     }
 
     @Override
     public <T> void updateContainer(ContainerValueDescriptor<T> descriptor) throws OntoDriverException {
-
+        Objects.requireNonNull(descriptor);
+        beforeCallback.execute();
+        adapter.getContainerHandler().updateContainer(descriptor);
+        afterChangeCallback.execute();
     }
 }
