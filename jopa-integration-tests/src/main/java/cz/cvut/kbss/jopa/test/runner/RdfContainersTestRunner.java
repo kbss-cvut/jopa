@@ -86,7 +86,7 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
         assertFalse(em.createNativeQuery("ASK {" +
                              "  ?owner ?hasContainer ?container . " +
                              "  ?container ?hasMember ?elem ." +
-                             "  FILTER (STRSTARTS(STR(?hasMember), \"" + RDF.NAMESPACE + ":_\")) }", Boolean.class)
+                             "  FILTER (STRSTARTS(STR(?hasMember), \"" + RDF.NAMESPACE + "_\")) }", Boolean.class)
                      .setParameter("owner", instance)
                      .setParameter("hasContainer", URI.create(Vocabulary.P_HAS_RDF_BAG)).getSingleResult());
     }
@@ -107,7 +107,7 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
         aBag.forEach(a -> assertTrue(em.createNativeQuery("ASK {" +
                                                "  ?c ?hasContainer ?container . " +
                                                "  ?container ?hasMember ?a ." +
-                                               "  FILTER (STRSTARTS(STR(?hasMember), \"" + RDF.NAMESPACE + ":_\")) }", Boolean.class)
+                                               "  FILTER (STRSTARTS(STR(?hasMember), \"" + RDF.NAMESPACE + "_\")) }", Boolean.class)
                                        .setParameter("c", entityC)
                                        .setParameter("hasContainer", URI.create(Vocabulary.P_HAS_RDF_BAG))
                                        .setParameter("a", a).getSingleResult()));

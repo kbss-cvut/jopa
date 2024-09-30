@@ -143,6 +143,9 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralObjectPropertyStrategy(
             EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute, Descriptor descriptor,
             EntityMappingHelper mapper) {
+        if (attribute.isRdfContainer()) {
+            return new RdfContainerObjectPropertyStrategy<>(et, (RdfContainerAttributeImpl<? super Y, ?, ?>) attribute, descriptor, mapper);
+        }
         return switch (attribute.getCollectionType()) {
             case LIST -> createListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor,
                     mapper);
