@@ -14,6 +14,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -219,6 +221,8 @@ class ContainerHandlerTest {
                                                            .toList();
             assertEquals(1, containerStatement.size());
             final Resource container = (Resource) containerStatement.get(0).getObject();
+            assertEquals(values.size(), conn.getStatements(container, null, null).stream()
+                                            .filter(Predicate.not(s -> s.getPredicate().equals(RDF.TYPE))).toList().size());
             for (int i = 0; i < values.size(); i++) {
                 final org.eclipse.rdf4j.model.Value v = values.get(i) instanceof NamedResource u ? vf.createIRI(u.toString()) : vf.createLiteral((int) values.get(i));
                 if (contextIri != null) {
@@ -330,7 +334,7 @@ class ContainerHandlerTest {
         final IRI containerIri = vf.createIRI("https://example.com/hasIsolationLevels/container");
         try (final RepositoryConnection conn = repository.getConnection()) {
             assertFalse(conn.hasStatement(vf.createIRI(owner.toString()), vf.createIRI(property.getIdentifier()
-                                                                                              .toString()), containerIri, false));
+                                                                                               .toString()), containerIri, false));
             assertFalse(conn.hasStatement(containerIri, null, null, false));
         }
     }

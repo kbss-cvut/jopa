@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Handles RDF container access operations.
@@ -186,7 +187,7 @@ public class ContainerHandler {
 
     private void clearContainer(Resource container, Set<IRI> contexts) throws Rdf4jDriverException {
         final Collection<Statement> content = connector.findStatements(container, null, null, false, contexts);
-        connector.removeStatements(content.stream().filter(s -> RDF.TYPE.equals(s.getPredicate())).toList());
+        connector.removeStatements(content.stream().filter(Predicate.not(s -> RDF.TYPE.equals(s.getPredicate()))).toList());
     }
 
     private void deleteContainer(NamedResource owner, Assertion property, Resource container,

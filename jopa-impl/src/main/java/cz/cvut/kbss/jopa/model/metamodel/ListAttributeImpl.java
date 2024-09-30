@@ -68,11 +68,6 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
     }
 
     @Override
-    public boolean isRDFCollection() {
-        return false;
-    }
-
-    @Override
     public String toString() {
         return "ListAttribute[" + getName() + "]";
     }

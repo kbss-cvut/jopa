@@ -73,5 +73,5 @@ public interface ListAttribute<X, E> extends PluralAttribute<X, java.util.List<E
      * @see cz.cvut.kbss.jopa.model.annotations.RDFCollection
      */
     @NonJPA
-    boolean isRDFCollection();
+    default boolean isRDFCollection() { return false; }
 }

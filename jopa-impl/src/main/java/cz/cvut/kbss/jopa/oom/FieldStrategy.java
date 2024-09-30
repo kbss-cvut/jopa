@@ -29,6 +29,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.RdfContainerAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -124,6 +125,9 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralDataPropertyStrategy(
             EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute, Descriptor descriptor,
             EntityMappingHelper mapper) {
+        if (attribute.isRdfContainer()) {
+            return new RdfContainerDataPropertyStrategy<>(et, (RdfContainerAttributeImpl<? super Y, ?, ?>) attribute, descriptor, mapper);
+        }
         if (attribute.getCollectionType() == CollectionType.LIST) {
             return createListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor, mapper);
         }
