@@ -4,12 +4,11 @@ import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.RDFContainer;
 import cz.cvut.kbss.jopa.model.annotations.RDFContainerType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.BasicTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
@@ -42,7 +41,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class RdfContainerDataPropertyStrategyTest {
+class RdfContainerObjectPropertyStrategyTest {
+
 
     private static final URI ID = Generators.createIndividualIdentifier();
 
@@ -52,30 +52,30 @@ class RdfContainerDataPropertyStrategyTest {
     private final Descriptor descriptor = new EntityDescriptor();
 
     @Test
-    void addAxiomValueLoadsContainerValuesViaMappingHelper() throws Exception {
+    void addAxiomValueLoadsContainerContentAndAddsValuesFromIt() throws Exception {
         final EntityType<EntityWithContainer> et = mock(EntityType.class);
-        final RdfContainerAttributeImpl<EntityWithContainer, List<Integer>, Integer> att = mock(RdfContainerAttributeImpl.class);
+        final RdfContainerAttributeImpl<EntityWithContainer, List<URI>, URI> att = mock(RdfContainerAttributeImpl.class);
         final Collection<Axiom<?>> axioms = List.of(
-                new AxiomImpl<>(NamedResource.create(ID), Assertion.createDataPropertyAssertion(URI.create(Vocabulary.ATTRIBUTE_BASE + "numbers"), false), new Value<>(1)),
-                new AxiomImpl<>(NamedResource.create(ID), Assertion.createDataPropertyAssertion(URI.create(Vocabulary.ATTRIBUTE_BASE + "numbers"), false), new Value<>(45))
+                new AxiomImpl<>(NamedResource.create(ID), Assertion.createDataPropertyAssertion(URI.create(Vocabulary.ATTRIBUTE_BASE + "levels"), false), new Value<>(NamedResource.create("http://example.com/1"))),
+                new AxiomImpl<>(NamedResource.create(ID), Assertion.createDataPropertyAssertion(URI.create(Vocabulary.ATTRIBUTE_BASE + "levels"), false), new Value<>(NamedResource.create("http://example.com/2")))
         );
         when(mappingHelper.loadRdfContainer(any(ContainerDescriptor.class))).thenReturn(axioms);
-        when(att.getContainerType()).thenReturn(RDFContainerType.SEQ);
-        when(att.getJavaField()).thenReturn(EntityWithContainer.class.getDeclaredField("numbers"));
-        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "numbers"));
+        when(att.getContainerType()).thenReturn(RDFContainerType.ALT);
+        when(att.getJavaField()).thenReturn(EntityWithContainer.class.getDeclaredField("levels"));
+        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "levels"));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(att.getElementType()).thenReturn(BasicTypeImpl.get(Integer.class));
-        final RdfContainerDataPropertyStrategy<EntityWithContainer> sut = new RdfContainerDataPropertyStrategy<>(et, att, descriptor, mappingHelper);
+        when(att.getBindableJavaType()).thenReturn(URI.class);
+        final RdfContainerObjectPropertyStrategy<EntityWithContainer> sut = new RdfContainerObjectPropertyStrategy<>(et, att, descriptor, mappingHelper);
 
-        sut.addAxiomValue(new AxiomImpl<>(NamedResource.create(ID), Assertion.createDataPropertyAssertion(URI.create(Vocabulary.ATTRIBUTE_BASE + "numbers"), false), new Value<>(NamedResource.create(Generators.createIndividualIdentifier()))));
+        sut.addAxiomValue(new AxiomImpl<>(NamedResource.create(ID), Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.ATTRIBUTE_BASE + "levels"), false), new Value<>(NamedResource.create(Generators.createIndividualIdentifier()))));
         final EntityWithContainer entity = new EntityWithContainer();
         sut.buildInstanceFieldValue(entity);
-        assertEquals(List.of(1, 45), entity.numbers);
+        assertEquals(List.of(URI.create("http://example.com/1"), URI.create("http://example.com/2")), entity.levels);
         final ArgumentCaptor<ContainerDescriptor> captor = ArgumentCaptor.forClass(ContainerDescriptor.class);
         verify(mappingHelper).loadRdfContainer(captor.capture());
-        assertEquals(RDF.SEQ, captor.getValue().getType().toString());
+        assertEquals(RDF.ALT, captor.getValue().getType().toString());
         assertEquals(ID, captor.getValue().getOwner().getIdentifier());
-        assertEquals(Vocabulary.ATTRIBUTE_BASE + "numbers", captor.getValue().getProperty().getIdentifier().toString());
+        assertEquals(Vocabulary.ATTRIBUTE_BASE + "levels", captor.getValue().getProperty().getIdentifier().toString());
         assertNull(captor.getValue().getContext());
     }
 
@@ -84,27 +84,27 @@ class RdfContainerDataPropertyStrategyTest {
         @Id
         private URI uri;
 
-        @RDFContainer(type = RDFContainerType.SEQ)
-        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "numbers")
-        private List<Integer> numbers;
+        @RDFContainer(type = RDFContainerType.ALT)
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "levels")
+        private List<URI> levels;
     }
 
     @Test
     void buildAxiomValuesFromInstanceAddsContainerDescriptorWithListValuesToValueGatherer() throws Exception {
         final EntityType<EntityWithContainer> et = mock(EntityType.class);
-        final RdfContainerAttributeImpl<EntityWithContainer, List<Integer>, Integer> att = mock(RdfContainerAttributeImpl.class);
+        final RdfContainerAttributeImpl<EntityWithContainer, List<URI>, URI> att = mock(RdfContainerAttributeImpl.class);
         when(att.getContainerType()).thenReturn(RDFContainerType.SEQ);
-        when(att.getJavaField()).thenReturn(EntityWithContainer.class.getDeclaredField("numbers"));
-        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "numbers"));
+        when(att.getJavaField()).thenReturn(EntityWithContainer.class.getDeclaredField("levels"));
+        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "levels"));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(att.getElementType()).thenReturn(BasicTypeImpl.get(Integer.class));
+        when(att.getBindableJavaType()).thenReturn(URI.class);
         final Identifier idAtt = mock(Identifier.class);
         when(et.getIdentifier()).thenReturn(idAtt);
         when(idAtt.getJavaField()).thenReturn(EntityWithContainer.class.getDeclaredField("uri"));
-        final RdfContainerDataPropertyStrategy<EntityWithContainer> sut = new RdfContainerDataPropertyStrategy<>(et, att, descriptor, mappingHelper);
+        final RdfContainerObjectPropertyStrategy<EntityWithContainer> sut = new RdfContainerObjectPropertyStrategy<>(et, att, descriptor, mappingHelper);
         final EntityWithContainer entity = new EntityWithContainer();
         entity.uri = ID;
-        entity.numbers = List.of(Generators.randomInt(), Generators.randomInt());
+        entity.levels = List.of(Generators.createIndividualIdentifier(), Generators.createIndividualIdentifier());
 
         final AxiomValueGatherer valueGatherer = new AxiomValueGatherer(NamedResource.create(ID), null);
         sut.buildAxiomValuesFromInstance(entity, valueGatherer);
@@ -112,11 +112,12 @@ class RdfContainerDataPropertyStrategyTest {
         final Containers containersMock = mock(Containers.class);
         when(connectionMock.containers()).thenReturn(containersMock);
         valueGatherer.update(connectionMock);
-        final ArgumentCaptor<ContainerValueDescriptor<?>> captor = ArgumentCaptor.forClass(ContainerValueDescriptor.class);
+        final ArgumentCaptor<ContainerValueDescriptor<NamedResource>> captor = ArgumentCaptor.forClass(ContainerValueDescriptor.class);
         verify(containersMock).updateContainer(captor.capture());
-        final ContainerValueDescriptor valueDescriptor = captor.getValue();
+        final ContainerValueDescriptor<NamedResource> valueDescriptor = captor.getValue();
         assertEquals(NamedResource.create(ID), valueDescriptor.getOwner());
-        assertEquals(Assertion.createDataPropertyAssertion(att.getIRI().toURI(), false), valueDescriptor.getProperty());
-        assertEquals(entity.numbers, valueDescriptor.getValues());
+        assertEquals(Assertion.createObjectPropertyAssertion(att.getIRI()
+                                                                .toURI(), false), valueDescriptor.getProperty());
+        assertEquals(entity.levels.stream().map(NamedResource::create).toList(), valueDescriptor.getValues());
     }
 }
