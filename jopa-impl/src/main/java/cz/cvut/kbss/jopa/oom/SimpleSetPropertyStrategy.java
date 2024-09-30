@@ -62,23 +62,20 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<Abstract
                     item -> assertionValues.add(new Value<>(attribute.getConverter().convertToAxiomValue(item))));
         } else {
             final EntityType<T> et = (EntityType<T>) mapper.getEntityType(elemType);
-            for (T val : valueCollection) {
-                if (val == null) {
-                    continue;
-                }
-                if (referenceSavingResolver.shouldSaveReferenceToItem(val, getAttributeValueContexts())) {
-                    final URI valId = EntityPropertiesUtils.getIdentifier(val, et);
+            valueCollection.stream().filter(Objects::nonNull).forEach(item -> {
+                if (referenceSavingResolver.shouldSaveReferenceToItem(item, getAttributeValueContexts())) {
+                    final URI valId = EntityPropertiesUtils.getIdentifier(item, et);
                     assert valId != null;
                     assertionValues.add(new Value<>(NamedResource.create(valId)));
                 } else {
                     referenceSavingResolver
-                            .registerPendingReference(valueBuilder.getSubjectIdentifier(), createAssertion(), val,
-                                                      getAttributeWriteContext());
+                            .registerPendingReference(valueBuilder.getSubjectIdentifier(), createAssertion(), item,
+                                    getAttributeWriteContext());
                 }
-            }
+            });
         }
         valueBuilder.addValues(createAssertion(),
-                               filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
-                               getAttributeWriteContext());
+                filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
+                getAttributeWriteContext());
     }
 }

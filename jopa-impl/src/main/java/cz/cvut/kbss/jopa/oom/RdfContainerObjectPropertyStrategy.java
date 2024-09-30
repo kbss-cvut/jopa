@@ -11,11 +11,11 @@ import cz.cvut.kbss.ontodriver.descriptor.ContainerValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
 
 class RdfContainerObjectPropertyStrategy<X> extends PluralObjectPropertyStrategy<RdfContainerAttributeImpl<? super X, ?, ?>, X> {
 
@@ -72,21 +72,24 @@ class RdfContainerObjectPropertyStrategy<X> extends PluralObjectPropertyStrategy
         } else if (elemType.isEnum()) {
             assert attribute.getConverter() != null;
             valueCollection.stream().filter(Objects::nonNull).forEach(
-                    item -> valueDescriptor.addValue((NamedResource) attribute.getConverter().convertToAxiomValue(item)));
+                    item -> valueDescriptor.addValue((NamedResource) attribute.getConverter()
+                                                                              .convertToAxiomValue(item)));
         } else {
             final EntityType<T> et = (EntityType<T>) mapper.getEntityType(elemType);
-            for (T val : valueCollection) {
-                if (val == null) {
-                    continue;
-                }
-                if (referenceSavingResolver.shouldSaveReferenceToItem(val, getAttributeValueContexts())) {
-                    final URI valId = EntityPropertiesUtils.getIdentifier(val, et);
+            valueCollection.stream().filter(Objects::nonNull).forEach(item -> {
+                if (referenceSavingResolver.shouldSaveReferenceToItem(item, getAttributeValueContexts())) {
+                    final URI valId = EntityPropertiesUtils.getIdentifier(item, et);
                     assert valId != null;
                     valueDescriptor.addValue(NamedResource.create(valId));
                 } else {
-                    referenceSavingResolver.registerPendingReference(valueDescriptor.getOwner(), createAssertion(), val, getAttributeWriteContext());
+                    referenceSavingResolver.registerPendingReference(valueDescriptor.getOwner(), createAssertion(), item, getAttributeWriteContext());
                 }
-            }
+            });
         }
+    }
+
+    @Override
+    Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
+        throw new UnsupportedOperationException("Method not supported for RDF containers.");
     }
 }
