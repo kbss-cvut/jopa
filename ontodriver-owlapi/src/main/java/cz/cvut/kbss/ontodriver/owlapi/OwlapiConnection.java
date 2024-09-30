@@ -17,7 +17,13 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.*;
+import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.Containers;
+import cz.cvut.kbss.ontodriver.Lists;
+import cz.cvut.kbss.ontodriver.PreparedStatement;
+import cz.cvut.kbss.ontodriver.Properties;
+import cz.cvut.kbss.ontodriver.Statement;
+import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -46,6 +52,7 @@ public class OwlapiConnection implements Connection {
     private OwlapiTypes types;
     private OwlapiProperties properties;
     private OwlapiLists lists;
+    private OwlapiContainers containers;
 
     private ConnectionListener listener;
 
@@ -75,6 +82,10 @@ public class OwlapiConnection implements Connection {
 
     void setLists(OwlapiLists lists) {
         this.lists = lists;
+    }
+
+    void setContainers(OwlapiContainers containers) {
+        this.containers = containers;
     }
 
     @Override
@@ -225,8 +236,9 @@ public class OwlapiConnection implements Connection {
 
     @Override
     public Containers containers() {
-        // TODO
-        return null;
+        ensureOpen();
+        assert containers != null;
+        return containers;
     }
 
     @Override

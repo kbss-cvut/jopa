@@ -211,8 +211,8 @@ public class JenaConnection implements Connection {
 
     @Override
     public Containers containers() {
-        // TODO
-        return null;
+        ensureOpen();
+        return new JenaContainers(adapter, this::ensureOpen, this::commitIfAuto);
     }
 
     @Override
