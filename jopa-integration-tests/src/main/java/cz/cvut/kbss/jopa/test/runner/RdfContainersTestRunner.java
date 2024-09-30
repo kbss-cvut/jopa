@@ -12,10 +12,13 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -29,7 +32,7 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
     }
 
     @Test
-    void persistPersistsEntityWithRdfContainerOfLiterals() {
+    public void persistPersistsEntityWithRdfContainerOfLiterals() {
         this.em = getEntityManager("persistPersistsEntityWithRdfContainerOfLiterals", false);
         final Set<Integer> levels = IntStream.range(0, 10).boxed().collect(Collectors.toSet());
         final OWLClassR instance = new OWLClassR(Generators.generateUri());
@@ -49,7 +52,7 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
     }
 
     @Test
-    void updateUpdateEntityWithRdfContainerOfLiterals() {
+    public void updateUpdateEntityWithRdfContainerOfLiterals() {
         this.em = getEntityManager("updateUpdateEntityWithRdfContainerOfLiterals", false);
         final Set<Integer> levels = IntStream.range(0, 10).boxed().collect(Collectors.toSet());
         final OWLClassR instance = new OWLClassR(Generators.generateUri());
@@ -73,7 +76,7 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
     }
 
     @Test
-    void removeRemovesEntityWithRdfContainerOfLiterals() {
+    public void removeRemovesEntityWithRdfContainerOfLiterals() {
         this.em = getEntityManager("removeRemovesEntityWithRdfContainerOfLiterals", false);
         final Set<Integer> levels = IntStream.range(0, 10).boxed().collect(Collectors.toSet());
         final OWLClassR instance = new OWLClassR(Generators.generateUri());
@@ -84,16 +87,16 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
 
         assertNull(em.find(OWLClassR.class, instance.getUri()));
         assertFalse(em.createNativeQuery("ASK {" +
-                             "  ?owner ?hasContainer ?container . " +
-                             "  ?container ?hasMember ?elem ." +
-                             "  FILTER (STRSTARTS(STR(?hasMember), \"" + RDF.NAMESPACE + "_\")) }", Boolean.class)
-                     .setParameter("owner", instance)
-                     .setParameter("hasContainer", URI.create(Vocabulary.P_HAS_RDF_BAG)).getSingleResult());
+                              "  ?owner ?hasContainer ?container . " +
+                              "  ?container ?hasMember ?elem ." +
+                              "  FILTER (STRSTARTS(STR(?hasMember), \"" + RDF.NAMESPACE + "_\")) }", Boolean.class)
+                      .setParameter("owner", instance)
+                      .setParameter("hasContainer", URI.create(Vocabulary.P_HAS_RDF_BAG)).getSingleResult());
     }
 
     @Test
-    public void persistPersistsEntityWithRdfContainer() {
-        this.em = getEntityManager("persistPersistsEntityWithRdfContainer", false);
+    public void persistPersistsEntityWithRdfContainerOfEntities() {
+        this.em = getEntityManager("persistPersistsEntityWithRdfContainerOfEntities", false);
         final Set<OWLClassA> aBag = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassA())
                                              .collect(Collectors.toSet());
         entityC.setRdfBag(aBag);
@@ -112,5 +115,55 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
                                        .setParameter("hasContainer", URI.create(Vocabulary.P_HAS_RDF_BAG))
                                        .setParameter("a", a).getSingleResult()));
 
+    }
+
+    @Test
+    void updateUpdatesEntityWithRdfContainerOfEntities() {
+        this.em = getEntityManager("updateUpdatesEntityWithRdfContainerOfEntities", true);
+        final Set<OWLClassA> originalBag = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassA())
+                                                    .collect(Collectors.toSet());
+        entityC.setRdfBag(originalBag);
+        transactional(() -> {
+            originalBag.forEach(em::persist);
+            em.persist(entityC);
+        });
+
+        entityC.setRdfBag(List.of(entityA));
+        transactional(() -> {
+            em.merge(entityC);
+            em.persist(entityA);
+        });
+
+        final OWLClassC result = findRequired(OWLClassC.class, entityC.getUri());
+        assertThat(result.getRdfBag(), containsSameEntities(List.of(entityA)));
+        assertEquals(1, em.createNativeQuery("SELECT (COUNT(?level) as ?cnt) WHERE {" +
+                                  "  ?owner ?hasContainer ?container . " +
+                                  "  ?container ?hasMember ?level ." +
+                                  "  FILTER (STRSTARTS(STR(?hasMember), \"" + RDF.NAMESPACE + "_\")) }", Integer.class)
+                          .setParameter("owner", entityC)
+                          .setParameter("hasContainer", URI.create(Vocabulary.P_HAS_RDF_BAG))
+                          .getSingleResult());
+    }
+
+    @Test
+    void updateClearsRdfContainerOfEntitiesWhenUpdatedValueIsEmpty() {
+        this.em = getEntityManager("updateClearsRdfContainerOfEntitiesWhenUpdatedValueIsEmpty", true);
+        entityC.setRdfBag(List.of(entityA));
+        transactional(() -> {
+            em.persist(entityA);
+            em.persist(entityC);
+        });
+
+        transactional(() -> {
+            final OWLClassC update = findRequired(OWLClassC.class, entityC.getUri());
+            update.getRdfBag().clear();
+        });
+        assertFalse(em.createNativeQuery("ASK {" +
+                                  "  ?owner ?hasContainer ?container . " +
+                                  "  ?container ?hasMember ?level ." +
+                                  "  FILTER (STRSTARTS(STR(?hasMember), \"" + RDF.NAMESPACE + "_\")) }", Boolean.class)
+                          .setParameter("owner", entityC)
+                          .setParameter("hasContainer", URI.create(Vocabulary.P_HAS_RDF_BAG))
+                          .getSingleResult());
     }
 }
