@@ -87,7 +87,7 @@ public class ContainerHandler {
             final List<Axiom<?>> result = new ArrayList<>();
             final List<PropertyValuePair<OWLLiteral>> lit = new ArrayList<>();
             EntitySearcher.getDataPropertyValues(container.get(), ontology)
-                          .forEach((lp, value) -> lit.add(new PropertyValuePair<>(lp.asOWLObjectProperty()
+                          .forEach((lp, value) -> lit.add(new PropertyValuePair<>(lp.asOWLDataProperty()
                                                                                     .getIRI(), value)));
             lit.sort((p1, p2) -> containerElementIriComparator(p1.property, p2.property));
             lit.forEach(pv -> result.add(axiomAdapter.createAxiom(descriptor.getOwner(), descriptor.getProperty(), OwlapiUtils.owlLiteralToValue(pv.value))));
@@ -190,7 +190,7 @@ public class ContainerHandler {
         final List<TransactionalChange> changes = new ArrayList<>(descriptor.getValues().size() + 1);
         final OWLNamedIndividual container = createContainer(owner, descriptor.getProperty(), descriptor.getType(), changes);
         changes.addAll(createContainerContent(container, descriptor.getProperty(), descriptor.getValues()));
-        snapshot.applyChanges(changes);
+        owlapiAdapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
 
     private OWLNamedIndividual createContainer(OWLNamedIndividual owner, Assertion property, URI containerType,
@@ -241,7 +241,7 @@ public class ContainerHandler {
             if (descriptor.getValues().isEmpty()) {
                 containerUpdate.addAll(removeContainer(descriptor.getOwner(), descriptor.getProperty(), container.get()));
             }
-            snapshot.applyChanges(containerUpdate);
+            owlapiAdapter.addTransactionalChanges(snapshot.applyChanges(containerUpdate));
         }
     }
 
