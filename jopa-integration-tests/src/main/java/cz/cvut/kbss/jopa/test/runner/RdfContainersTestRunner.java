@@ -118,7 +118,7 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
     }
 
     @Test
-    void updateUpdatesEntityWithRdfContainerOfEntities() {
+    public void updateUpdatesEntityWithRdfContainerOfEntities() {
         this.em = getEntityManager("updateUpdatesEntityWithRdfContainerOfEntities", true);
         final Set<OWLClassA> originalBag = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassA())
                                                     .collect(Collectors.toSet());
@@ -146,7 +146,7 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
     }
 
     @Test
-    void updateClearsRdfContainerOfEntitiesWhenUpdatedValueIsEmpty() {
+    public void updateClearsRdfContainerOfEntitiesWhenUpdatedValueIsEmpty() {
         this.em = getEntityManager("updateClearsRdfContainerOfEntitiesWhenUpdatedValueIsEmpty", true);
         entityC.setRdfBag(List.of(entityA));
         transactional(() -> {

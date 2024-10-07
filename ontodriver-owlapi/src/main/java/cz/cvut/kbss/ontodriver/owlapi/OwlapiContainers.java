@@ -8,7 +8,6 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.Procedure;
 
 import java.util.Collection;
-import java.util.Objects;
 
 public class OwlapiContainers implements Containers {
 
@@ -37,6 +36,8 @@ public class OwlapiContainers implements Containers {
 
     @Override
     public <T> void updateContainer(ContainerValueDescriptor<T> descriptor) throws OntoDriverException {
-        // TODO
+        beforeCallback.execute();
+        adapter.getContainerHandler().updateContainer(descriptor);
+        afterChangeCallback.execute();
     }
 }
