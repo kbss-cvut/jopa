@@ -24,14 +24,15 @@ public class OwlapiContainers implements Containers {
 
     @Override
     public Collection<Axiom<?>> readContainer(ContainerDescriptor descriptor) throws OntoDriverException {
-        Objects.requireNonNull(descriptor);
         beforeCallback.execute();
         return adapter.getContainerHandler().readContainer(descriptor);
     }
 
     @Override
     public <T> void persistContainer(ContainerValueDescriptor<T> descriptor) throws OntoDriverException {
-        // TODO
+        beforeCallback.execute();
+        adapter.getContainerHandler().persistContainer(descriptor);
+        afterChangeCallback.execute();
     }
 
     @Override

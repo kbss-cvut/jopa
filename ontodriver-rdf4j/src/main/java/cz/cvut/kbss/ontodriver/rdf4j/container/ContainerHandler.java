@@ -58,6 +58,7 @@ public class ContainerHandler {
      * @throws Rdf4jDriverException If an error accessing the container occurs
      */
     public List<Axiom<?>> loadContainer(ContainerDescriptor descriptor) throws Rdf4jDriverException {
+        Objects.requireNonNull(descriptor);
         final boolean includeInferred = descriptor.getProperty().isInferred();
         final Set<IRI> contexts = contexts(descriptor);
         final Optional<Resource> container = findContainer(descriptor, includeInferred, contexts);

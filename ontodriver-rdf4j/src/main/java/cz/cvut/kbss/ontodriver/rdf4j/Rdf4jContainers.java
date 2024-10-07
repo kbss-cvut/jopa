@@ -24,14 +24,12 @@ class Rdf4jContainers implements Containers {
 
     @Override
     public Collection<Axiom<?>> readContainer(ContainerDescriptor descriptor) throws OntoDriverException {
-        Objects.requireNonNull(descriptor);
         beforeCallback.execute();
         return adapter.getContainerHandler().loadContainer(descriptor);
     }
 
     @Override
     public <T> void persistContainer(ContainerValueDescriptor<T> descriptor) throws OntoDriverException {
-        Objects.requireNonNull(descriptor);
         beforeCallback.execute();
         adapter.getContainerHandler().persistContainer(descriptor);
         afterChangeCallback.execute();
@@ -39,7 +37,6 @@ class Rdf4jContainers implements Containers {
 
     @Override
     public <T> void updateContainer(ContainerValueDescriptor<T> descriptor) throws OntoDriverException {
-        Objects.requireNonNull(descriptor);
         beforeCallback.execute();
         adapter.getContainerHandler().updateContainer(descriptor);
         afterChangeCallback.execute();

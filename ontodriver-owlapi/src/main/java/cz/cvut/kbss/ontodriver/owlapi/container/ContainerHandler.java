@@ -1,18 +1,23 @@
 package cz.cvut.kbss.ontodriver.owlapi.container;
 
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ContainerValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationValue;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLLiteral;
@@ -21,6 +26,7 @@ import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -59,6 +65,7 @@ public class ContainerHandler {
      *                                                                        occurs
      */
     public List<Axiom<?>> readContainer(ContainerDescriptor descriptor) throws OwlapiDriverException {
+        Objects.requireNonNull(descriptor);
         final boolean includeInferred = descriptor.getProperty().isInferred();
         final Optional<? extends OWLIndividual> container = findContainer(descriptor, includeInferred);
         if (container.isEmpty()) {
@@ -164,5 +171,47 @@ public class ContainerHandler {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Unable to determine container membership property number.", e);
         }
+    }
+
+    /**
+     * Creates a new container and fills it with the specified values.
+     *
+     * @param descriptor Container value descriptor
+     * @param <T>        Type of container values
+     * @throws OwlapiDriverException If an error accessing the container occurs
+     */
+    public <T> void persistContainer(ContainerValueDescriptor<T> descriptor) throws OwlapiDriverException {
+        Objects.requireNonNull(descriptor);
+        if (descriptor.getValues().isEmpty()) {
+            return;
+        }
+        final OWLNamedIndividual owner = dataFactory.getOWLNamedIndividual(IRI.create(descriptor.getOwner()
+                                                                                                .getIdentifier()));
+        final List<TransactionalChange> axioms = new ArrayList<>(descriptor.getValues().size() + 1);
+        final OWLNamedIndividual container = dataFactory.getOWLNamedIndividual(IRI.create(owlapiAdapter.generateIdentifier(URI.create(RDFS.CONTAINER))));
+        final OWLObjectProperty containerOwnerProperty = dataFactory.getOWLObjectProperty(IRI.create(descriptor.getProperty()
+                                                                                                               .getIdentifier()));
+        axioms.add(new MutableAddAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(containerOwnerProperty, owner, container)));
+        axioms.addAll(createContainerContent(container, descriptor.getProperty(), descriptor.getValues()));
+        snapshot.applyChanges(axioms);
+    }
+
+    private <T> List<MutableAddAxiom> createContainerContent(OWLNamedIndividual container,
+                                                             Assertion property,
+                                                             List<T> values) {
+        final List<MutableAddAxiom> result = new ArrayList<>();
+        for (int i = 0; i < values.size(); i++) {
+            final T value = values.get(i);
+            final IRI propertyIri = IRI.create(MEMBERSHIP_PROPERTY_URI_BASE + (i + 1));
+            final OWLAxiom assertionAxiom = switch (property.getType()) {
+                case OBJECT_PROPERTY ->
+                        dataFactory.getOWLObjectPropertyAssertionAxiom(dataFactory.getOWLObjectProperty(propertyIri), container, dataFactory.getOWLNamedIndividual(IRI.create(value.toString())));
+                case DATA_PROPERTY ->
+                        dataFactory.getOWLDataPropertyAssertionAxiom(dataFactory.getOWLDataProperty(propertyIri), container, OwlapiUtils.createOWLLiteralFromValue(value, property.getLanguage()));
+                default -> throw new IllegalArgumentException("Unsupported property type " + property.getType());
+            };
+            result.add(new MutableAddAxiom(ontology, assertionAxiom));
+        }
+        return result;
     }
 }
