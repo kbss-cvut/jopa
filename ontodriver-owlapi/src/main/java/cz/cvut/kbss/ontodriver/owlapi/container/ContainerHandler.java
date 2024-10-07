@@ -10,6 +10,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableRemoveAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
@@ -178,25 +179,30 @@ public class ContainerHandler {
      *
      * @param descriptor Container value descriptor
      * @param <T>        Type of container values
-     * @throws OwlapiDriverException If an error accessing the container occurs
      */
-    public <T> void persistContainer(ContainerValueDescriptor<T> descriptor) throws OwlapiDriverException {
+    public <T> void persistContainer(ContainerValueDescriptor<T> descriptor) {
         Objects.requireNonNull(descriptor);
         if (descriptor.getValues().isEmpty()) {
             return;
         }
         final OWLNamedIndividual owner = dataFactory.getOWLNamedIndividual(IRI.create(descriptor.getOwner()
                                                                                                 .getIdentifier()));
-        final List<TransactionalChange> axioms = new ArrayList<>(descriptor.getValues().size() + 1);
-        final OWLNamedIndividual container = dataFactory.getOWLNamedIndividual(IRI.create(owlapiAdapter.generateIdentifier(URI.create(RDFS.CONTAINER))));
-        final OWLObjectProperty containerOwnerProperty = dataFactory.getOWLObjectProperty(IRI.create(descriptor.getProperty()
-                                                                                                               .getIdentifier()));
-        axioms.add(new MutableAddAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(containerOwnerProperty, owner, container)));
-        axioms.addAll(createContainerContent(container, descriptor.getProperty(), descriptor.getValues()));
-        snapshot.applyChanges(axioms);
+        final List<TransactionalChange> changes = new ArrayList<>(descriptor.getValues().size() + 1);
+        final OWLNamedIndividual container = createContainer(owner, descriptor.getProperty(), descriptor.getType(), changes);
+        changes.addAll(createContainerContent(container, descriptor.getProperty(), descriptor.getValues()));
+        snapshot.applyChanges(changes);
     }
 
-    private <T> List<MutableAddAxiom> createContainerContent(OWLNamedIndividual container,
+    private OWLNamedIndividual createContainer(OWLNamedIndividual owner, Assertion property, URI containerType,
+                                               List<TransactionalChange> changes) {
+        final OWLNamedIndividual container = dataFactory.getOWLNamedIndividual(IRI.create(owlapiAdapter.generateIdentifier(URI.create(RDFS.CONTAINER))));
+        final OWLObjectProperty containerOwnerProperty = dataFactory.getOWLObjectProperty(IRI.create(property.getIdentifier()));
+        changes.add(new MutableAddAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(containerOwnerProperty, owner, container)));
+        changes.add(new MutableAddAxiom(ontology, dataFactory.getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(containerType)), container)));
+        return container;
+    }
+
+    private <T> List<MutableAddAxiom> createContainerContent(OWLIndividual container,
                                                              Assertion property,
                                                              List<T> values) {
         final List<MutableAddAxiom> result = new ArrayList<>();
@@ -213,5 +219,64 @@ public class ContainerHandler {
             result.add(new MutableAddAxiom(ontology, assertionAxiom));
         }
         return result;
+    }
+
+    /**
+     * Updates the content of an existing container corresponding to the specified descriptor.
+     * <p>
+     * If the descriptor has no value, the container is removed completely.
+     *
+     * @param descriptor Descriptor with new container values
+     * @param <T>        Value type
+     * @throws OwlapiDriverException If an error accessing the container occurs
+     */
+    public <T> void updateContainer(ContainerValueDescriptor<T> descriptor) throws OwlapiDriverException {
+        Objects.requireNonNull(descriptor);
+        final Optional<? extends OWLIndividual> container = findContainer(descriptor, false);
+        if (container.isEmpty()) {
+            persistContainer(descriptor);
+        } else {
+            final List<TransactionalChange> containerUpdate = new ArrayList<>(clearContainer(container.get(), descriptor.getProperty()));
+            containerUpdate.addAll(createContainerContent(container.get(), descriptor.getProperty(), descriptor.getValues()));
+            if (descriptor.getValues().isEmpty()) {
+                containerUpdate.addAll(removeContainer(descriptor.getOwner(), descriptor.getProperty(), container.get()));
+            }
+            snapshot.applyChanges(containerUpdate);
+        }
+    }
+
+    private List<MutableRemoveAxiom> clearContainer(OWLIndividual container, Assertion property) {
+        final List<MutableRemoveAxiom> removeAxioms = new ArrayList<>(switch (property.getType()) {
+            case OBJECT_PROPERTY -> EntitySearcher.getObjectPropertyValues(container, ontology).entries().stream()
+                                                  .filter(e -> e.getKey().getNamedProperty().getIRI().getIRIString()
+                                                                .startsWith(MEMBERSHIP_PROPERTY_URI_BASE))
+                                                  .map(e -> new MutableRemoveAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(e.getKey(), container, e.getValue())))
+                                                  .toList();
+            case DATA_PROPERTY -> EntitySearcher.getDataPropertyValues(container, ontology).entries().stream()
+                                                .filter(e -> e.getKey().asOWLDataProperty().getIRI().getIRIString()
+                                                              .startsWith(MEMBERSHIP_PROPERTY_URI_BASE))
+                                                .map(e -> new MutableRemoveAxiom(ontology, dataFactory.getOWLDataPropertyAssertionAxiom(e.getKey(), container, e.getValue())))
+                                                .toList();
+            default -> throw new IllegalArgumentException("Unsupported property type " + property.getType());
+        });
+        if (container.isAnonymous()) {
+            EntitySearcher.getAnnotationAssertionAxioms(container.asOWLAnonymousIndividual(), ontology)
+                          .filter(a -> a.getProperty().getIRI().getIRIString().startsWith(MEMBERSHIP_PROPERTY_URI_BASE))
+                          .map(aaa -> new MutableRemoveAxiom(ontology, aaa)).forEach(removeAxioms::add);
+        } else {
+            EntitySearcher.getAnnotationAssertionAxioms(container.asOWLNamedIndividual(), ontology)
+                          .filter(a -> a.getProperty().getIRI().getIRIString().startsWith(MEMBERSHIP_PROPERTY_URI_BASE))
+                          .map(aaa -> new MutableRemoveAxiom(ontology, aaa)).forEach(removeAxioms::add);
+        }
+        return removeAxioms;
+    }
+
+    private List<MutableRemoveAxiom> removeContainer(NamedResource owner, Assertion property, OWLIndividual container) {
+        final OWLNamedIndividual ownerIndividual = dataFactory.getOWLNamedIndividual(IRI.create(owner.getIdentifier()));
+        final List<MutableRemoveAxiom> toRemove = new ArrayList<>(List.of(
+                new MutableRemoveAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(dataFactory.getOWLObjectProperty(IRI.create(property.getIdentifier())), ownerIndividual, container))
+        ));
+        ontology.classAssertionAxioms(container).forEach(caa -> toRemove.add(new MutableRemoveAxiom(ontology, caa)));
+        return toRemove;
     }
 }
