@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.container;
 
 import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ContainerValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -10,14 +11,22 @@ import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
+import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.semanticweb.owlapi.io.StringDocumentSource;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLIndividual;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.parameters.Imports;
+import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.net.URI;
 import java.util.List;
@@ -25,6 +34,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ContainerHandlerTest {
@@ -161,5 +173,48 @@ class ContainerHandlerTest {
             assertEquals(property, result.get(i).getAssertion());
             assertEquals(new Value<>(i + 1), result.get(i).getValue());
         }
+    }
+
+    @Test
+    void persistContainerCreatesContainerAndAddsSpecifiedValuesToIt() throws Exception {
+        final Assertion property = Assertion.createObjectPropertyAssertion(URI.create("https://example.com/hasCandidates"), false);
+        final List<NamedResource> values = List.of(NamedResource.create(Generator.generateUri()), NamedResource.create(Generator.generateUri()));
+        final ContainerValueDescriptor<NamedResource> descriptor = ContainerValueDescriptor.bagValueDescriptor(owner, property);
+        values.forEach(descriptor::addValue);
+        when(owlapiAdapter.generateIdentifier(any())).thenReturn(Generator.generateUri());
+
+        sut.persistContainer(descriptor);
+        verifyContainerContent(property, values);
+    }
+
+    private void verifyContainerContent(Assertion property, List<?> values) {
+        final OWLNamedIndividual ownerIndividual = dataFactory.getOWLNamedIndividual(IRI.create(owner.getIdentifier()));
+        final OWLObjectProperty containerProperty = dataFactory.getOWLObjectProperty(IRI.create(property.getIdentifier()));
+        final List<OWLIndividual> container = EntitySearcher.getObjectPropertyValues(ownerIndividual, containerProperty, ontology)
+                                                            .toList();
+        assertEquals(1, container.size());
+        assertTrue(container.get(0).isNamed());
+        final OWLNamedIndividual containerIndividual = (OWLNamedIndividual) container.get(0);
+        for (int i = 0; i < values.size(); i++) {
+            final OWLAxiom axiom = switch (property.getType()) {
+                case OBJECT_PROPERTY ->
+                        dataFactory.getOWLObjectPropertyAssertionAxiom(dataFactory.getOWLObjectProperty(IRI.create("http://www.w3.org/1999/02/22-rdf-syntax-ns#_" + (i + 1))), containerIndividual, dataFactory.getOWLNamedIndividual(IRI.create(values.get(i)
+                                                                                                                                                                                                                                                       .toString())));
+                case DATA_PROPERTY ->
+                        dataFactory.getOWLDataPropertyAssertionAxiom(dataFactory.getOWLDataProperty(IRI.create("http://www.w3.org/1999/02/22-rdf-syntax-ns#_" + (i + 1))), containerIndividual, OwlapiUtils.createOWLLiteralFromValue(values.get(i), property.getLanguage()));
+                case ANNOTATION_PROPERTY, CLASS, PROPERTY ->
+                        throw new UnsupportedOperationException("RDF containers of property type " + property.getType() + " are not supported.");
+            };
+            assertTrue(EntitySearcher.containsAxiom(axiom, ontology, Imports.INCLUDED));
+        }
+    }
+
+    @Test
+    void persistContainerDoesNothingWhenValuesAreEmpty() throws Exception {
+        final Assertion property = Assertion.createObjectPropertyAssertion(URI.create("https://example.com/hasCandidates"), false);
+        final ContainerValueDescriptor<NamedResource> descriptor = ContainerValueDescriptor.bagValueDescriptor(owner, property);
+
+        sut.persistContainer(descriptor);
+        assertTrue(ontology.isEmpty());
     }
 }
