@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi.container;
 
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
@@ -30,6 +31,7 @@ import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -184,10 +186,10 @@ class ContainerHandlerTest {
         when(owlapiAdapter.generateIdentifier(any())).thenReturn(Generator.generateUri());
 
         sut.persistContainer(descriptor);
-        verifyContainerContent(property, values);
+        verifyContainerContent(property, RDF.BAG, values);
     }
 
-    private void verifyContainerContent(Assertion property, List<?> values) {
+    private void verifyContainerContent(Assertion property, String containerType, List<?> values) {
         final OWLNamedIndividual ownerIndividual = dataFactory.getOWLNamedIndividual(IRI.create(owner.getIdentifier()));
         final OWLObjectProperty containerProperty = dataFactory.getOWLObjectProperty(IRI.create(property.getIdentifier()));
         final List<OWLIndividual> container = EntitySearcher.getObjectPropertyValues(ownerIndividual, containerProperty, ontology)
@@ -195,6 +197,7 @@ class ContainerHandlerTest {
         assertEquals(1, container.size());
         assertTrue(container.get(0).isNamed());
         final OWLNamedIndividual containerIndividual = (OWLNamedIndividual) container.get(0);
+        assertTrue(EntitySearcher.containsAxiom(dataFactory.getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(containerType)), containerIndividual), ontology, Imports.INCLUDED));
         for (int i = 0; i < values.size(); i++) {
             final OWLAxiom axiom = switch (property.getType()) {
                 case OBJECT_PROPERTY ->
@@ -216,5 +219,74 @@ class ContainerHandlerTest {
 
         sut.persistContainer(descriptor);
         assertTrue(ontology.isEmpty());
+    }
+
+    @Test
+    void updateContainerAppendsItemsToExistingContent() throws Exception {
+        final Assertion property = Assertion.createDataPropertyAssertion(URI.create("https://example.com/hasIsolationLevels"), false);
+        final String ttl = """
+                @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+                @prefix owl: <http://www.w3.org/2002/07/owl#> .
+                <%s> <%s> <https://example.com/hasIsolationLevels/container> .
+                <https://example.com/hasIsolationLevels/container> rdf:_1 "1"^^xsd:int .
+                <https://example.com/hasIsolationLevels/container> a rdf:Seq .
+                <%s> a owl:ObjectProperty .
+                """.formatted(owner.toString(), property.getIdentifier(), property.getIdentifier());
+        StringDocumentSource source = new StringDocumentSource(ttl);
+        OWLOntology loaded = ontologySnapshot.getOntologyManager().loadOntologyFromOntologyDocument(source);
+        ontologySnapshot.getOntologyManager().addAxioms(ontology, loaded.axioms());
+
+        final ContainerValueDescriptor<Integer> update = ContainerValueDescriptor.seqValueDescriptor(owner, property);
+        IntStream.range(1, 5).forEach(update::addValue);
+
+        sut.updateContainer(update);
+        verifyContainerContent(property, RDF.SEQ, update.getValues());
+    }
+
+    @Test
+    void updateContainerRemovesAndAddsElementsToExistingContainer() throws Exception {
+        final Assertion property = Assertion.createDataPropertyAssertion(URI.create("https://example.com/hasIsolationLevels"), false);
+        final String ttl = """
+                @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+                @prefix owl: <http://www.w3.org/2002/07/owl#> .
+                <%s> <%s> <https://example.com/hasIsolationLevels/container> .
+                <https://example.com/hasIsolationLevels/container> rdf:_1 "1"^^xsd:int .
+                <https://example.com/hasIsolationLevels/container> rdf:_2 "2"^^xsd:int .
+                <https://example.com/hasIsolationLevels/container> rdf:_3 "3"^^xsd:int .
+                <https://example.com/hasIsolationLevels/container> a rdf:Seq .
+                <%s> a owl:ObjectProperty .
+                """.formatted(owner.toString(), property.getIdentifier(), property.getIdentifier());
+        StringDocumentSource source = new StringDocumentSource(ttl);
+        OWLOntology loaded = ontologySnapshot.getOntologyManager().loadOntologyFromOntologyDocument(source);
+        ontologySnapshot.getOntologyManager().addAxioms(ontology, loaded.axioms());
+
+        final ContainerValueDescriptor<Integer> descriptor = ContainerValueDescriptor.seqValueDescriptor(owner, property);
+        IntStream.range(1, 10).filter(i -> i % 2 == 0).forEach(descriptor::addValue);
+        sut.updateContainer(descriptor);
+        verifyContainerContent(property, RDF.SEQ, descriptor.getValues());
+    }
+
+    @Test
+    void updateContainerRemovesContainerAndItsContentWhenValuesAreEmpty() throws Exception {
+        final Assertion property = Assertion.createDataPropertyAssertion(URI.create("https://example.com/hasIsolationLevels"), false);
+        final String ttl = """
+                @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+                @prefix owl: <http://www.w3.org/2002/07/owl#> .
+                <%s> <%s> <https://example.com/hasIsolationLevels/container> .
+                <https://example.com/hasIsolationLevels/container> rdf:_1 "1"^^xsd:int .
+                <https://example.com/hasIsolationLevels/container> rdf:_2 "2"^^xsd:int .
+                <https://example.com/hasIsolationLevels/container> rdf:_3 "3"^^xsd:int .
+                <https://example.com/hasIsolationLevels/container> a rdf:Seq .
+                <%s> a owl:ObjectProperty .
+                """.formatted(owner.toString(), property.getIdentifier(), property.getIdentifier());
+        StringDocumentSource source = new StringDocumentSource(ttl);
+        OWLOntology loaded = ontologySnapshot.getOntologyManager().loadOntologyFromOntologyDocument(source);
+        ontologySnapshot.getOntologyManager().addAxioms(ontology, loaded.axioms());
+
+        sut.updateContainer(ContainerValueDescriptor.seqValueDescriptor(owner, property));
+        assertTrue(ontology.getABoxAxioms(Imports.INCLUDED).isEmpty());
     }
 }
