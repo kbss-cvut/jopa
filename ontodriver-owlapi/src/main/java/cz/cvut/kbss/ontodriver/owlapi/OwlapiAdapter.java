@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.container.ContainerHandler;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.list.ReferencedListHandler;
 import cz.cvut.kbss.ontodriver.owlapi.list.SimpleListHandler;
@@ -220,6 +221,11 @@ public class OwlapiAdapter {
     public ReferencedListHandler getReferencedListHandler() {
         startTransactionIfNotActive();
         return new ReferencedListHandler(this, ontologySnapshot);
+    }
+
+    public ContainerHandler getContainerHandler() {
+        startTransactionIfNotActive();
+        return new ContainerHandler(this, ontologySnapshot);
     }
 
     public OwlapiStatement createStatement(OwlapiConnection connection) {
