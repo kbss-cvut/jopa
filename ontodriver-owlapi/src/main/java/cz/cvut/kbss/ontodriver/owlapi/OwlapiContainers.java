@@ -8,7 +8,7 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.Procedure;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Objects;
 
 public class OwlapiContainers implements Containers {
 
@@ -24,8 +24,9 @@ public class OwlapiContainers implements Containers {
 
     @Override
     public Collection<Axiom<?>> readContainer(ContainerDescriptor descriptor) throws OntoDriverException {
-        // TODO
-        return List.of();
+        Objects.requireNonNull(descriptor);
+        beforeCallback.execute();
+        return adapter.getContainerHandler().readContainer(descriptor);
     }
 
     @Override
