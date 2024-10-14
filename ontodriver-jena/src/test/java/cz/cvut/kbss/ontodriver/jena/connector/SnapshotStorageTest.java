@@ -27,9 +27,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 
-import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.SUBJECT;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.createConfiguration;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.generateTestData;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -38,7 +41,7 @@ public class SnapshotStorageTest {
     private File storageDir;
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws IOException {
         if (storageDir != null) {
             StorageTestUtil.deleteStorageDir(storageDir);
         }

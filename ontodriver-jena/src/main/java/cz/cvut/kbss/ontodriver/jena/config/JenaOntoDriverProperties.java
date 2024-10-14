@@ -83,6 +83,13 @@ public class JenaOntoDriverProperties {
     public static final String TDB = "tdb";
 
     /**
+     * Jena TDB2 storage.
+     *
+     * @see #JENA_STORAGE_TYPE
+     */
+    public static final String TDB2 = "tdb2";
+
+    /**
      * Jena Fuseki server.
      *
      * @see #JENA_STORAGE_TYPE
