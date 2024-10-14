@@ -7,6 +7,7 @@ import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
+import cz.cvut.kbss.jopa.utils.JOPALazyUtils;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -130,8 +131,8 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
 
         entityC.setRdfBag(List.of(entityA));
         transactional(() -> {
-            em.merge(entityC);
             em.persist(entityA);
+            em.merge(entityC);
         });
 
         final OWLClassC result = findRequired(OWLClassC.class, entityC.getUri());
