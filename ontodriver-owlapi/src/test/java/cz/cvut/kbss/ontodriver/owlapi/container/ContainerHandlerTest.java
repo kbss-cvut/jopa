@@ -178,7 +178,7 @@ class ContainerHandlerTest {
     }
 
     @Test
-    void persistContainerCreatesContainerAndAddsSpecifiedValuesToIt() throws Exception {
+    void persistContainerCreatesContainerAndAddsSpecifiedValuesToIt() {
         final Assertion property = Assertion.createObjectPropertyAssertion(URI.create("https://example.com/hasCandidates"), false);
         final List<NamedResource> values = List.of(NamedResource.create(Generator.generateUri()), NamedResource.create(Generator.generateUri()));
         final ContainerValueDescriptor<NamedResource> descriptor = ContainerValueDescriptor.bagValueDescriptor(owner, property);
@@ -213,7 +213,7 @@ class ContainerHandlerTest {
     }
 
     @Test
-    void persistContainerDoesNothingWhenValuesAreEmpty() throws Exception {
+    void persistContainerDoesNothingWhenValuesAreEmpty() {
         final Assertion property = Assertion.createObjectPropertyAssertion(URI.create("https://example.com/hasCandidates"), false);
         final ContainerValueDescriptor<NamedResource> descriptor = ContainerValueDescriptor.bagValueDescriptor(owner, property);
 

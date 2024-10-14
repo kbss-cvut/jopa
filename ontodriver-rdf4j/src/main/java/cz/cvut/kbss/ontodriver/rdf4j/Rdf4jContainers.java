@@ -7,7 +7,6 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.util.Collection;
-import java.util.Objects;
 
 class Rdf4jContainers implements Containers {
 
