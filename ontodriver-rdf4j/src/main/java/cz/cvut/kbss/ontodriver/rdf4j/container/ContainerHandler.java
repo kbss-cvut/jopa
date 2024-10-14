@@ -59,13 +59,12 @@ public class ContainerHandler {
      */
     public List<Axiom<?>> loadContainer(ContainerDescriptor descriptor) throws Rdf4jDriverException {
         Objects.requireNonNull(descriptor);
-        final boolean includeInferred = descriptor.getProperty().isInferred();
         final Set<IRI> contexts = contexts(descriptor);
-        final Optional<Resource> container = findContainer(descriptor, includeInferred, contexts);
+        final Optional<Resource> container = findContainer(descriptor, contexts);
         if (container.isEmpty()) {
             return List.of();
         }
-        final Collection<Statement> content = connector.findStatements(container.get(), null, null, includeInferred, contexts);
+        final Collection<Statement> content = connector.findStatements(container.get(), null, null, false, contexts);
         return (List) content.stream()
                              .filter(s -> s.getPredicate().stringValue().startsWith(MEMBERSHIP_PROPERTY_URI_BASE))
                              .sorted(ContainerHandler::statementComparator)
@@ -75,11 +74,11 @@ public class ContainerHandler {
                              .toList();
     }
 
-    private Optional<Resource> findContainer(ContainerDescriptor descriptor, boolean includeInferred,
+    private Optional<Resource> findContainer(ContainerDescriptor descriptor,
                                              Set<IRI> contexts) throws Rdf4jDriverException {
         final IRI owner = vf.createIRI(descriptor.getOwner().getIdentifier().toString());
         final IRI property = vf.createIRI(descriptor.getProperty().getIdentifier().toString());
-        final Collection<Statement> statements = connector.findStatements(owner, property, null, includeInferred, contexts);
+        final Collection<Statement> statements = connector.findStatements(owner, property, null, false, contexts);
         if (statements.isEmpty()) {
             return Optional.empty();
         }
@@ -170,7 +169,7 @@ public class ContainerHandler {
         Objects.requireNonNull(descriptor);
         final IRI context = descriptor.getContext() != null ? vf.createIRI(descriptor.getContext().toString()) : null;
         final Set<IRI> contexts = context != null ? Set.of(context) : Set.of();
-        final Optional<Resource> container = findContainer(descriptor, false, contexts);
+        final Optional<Resource> container = findContainer(descriptor, contexts);
         if (container.isEmpty()) {
             persistContainer(descriptor);
             return;
@@ -188,7 +187,8 @@ public class ContainerHandler {
 
     private void clearContainer(Resource container, Set<IRI> contexts) throws Rdf4jDriverException {
         final Collection<Statement> content = connector.findStatements(container, null, null, false, contexts);
-        connector.removeStatements(content.stream().filter(Predicate.not(s -> RDF.TYPE.equals(s.getPredicate()))).toList());
+        connector.removeStatements(content.stream().filter(Predicate.not(s -> RDF.TYPE.equals(s.getPredicate())))
+                                          .toList());
     }
 
     private void deleteContainer(NamedResource owner, Assertion property, Resource container,

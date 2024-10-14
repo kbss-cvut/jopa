@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.IRI;
@@ -353,6 +354,9 @@ class ClassFieldMetamodelProcessor<X> {
 
     private AbstractAttribute<X, ?> createRdfContainerAttribute(PropertyInfo property, InferenceInfo inference,
                                                                 PropertyAttributes propertyAttributes) {
+        if (inference.inferred) {
+            throw new InvalidFieldMappingException("RDF container attributes cannot be inferred. Attribute: " + property.getName());
+        }
         final RDFContainer rdfContainer = property.getAnnotation(RDFContainer.class);
         assert rdfContainer != null;
         final RdfContainerAttributeImpl.RDFContainerAttributeBuilder builder = setCommonBuildParameters(RdfContainerAttributeImpl.builder(propertyAttributes),

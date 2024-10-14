@@ -76,6 +76,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -568,5 +569,25 @@ class MetamodelBuilderTest {
         @RDFContainer(type = RDFContainerType.SEQ)
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "rdf-seq")
         private List<Integer> rdfSeq;
+    }
+
+    @Test
+    void buildMetamodelThrowsInvalidFieldMappingExceptionWhenAttemptingToUseRDFCollectionWithInference() {
+        when(finderMock.getEntities()).thenReturn(Set.of(ClassWithInferredRdfContainerAttribute.class));
+        final InvalidFieldMappingException ex = assertThrows(InvalidFieldMappingException.class, () -> builder.buildMetamodel(finderMock));
+        assertThat(ex.getMessage(), containsString("RDF container"));
+        assertThat(ex.getMessage(), containsString("inferred"));
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithRdfSeqAttribute")
+    public static class ClassWithInferredRdfContainerAttribute {
+        @Id
+        private URI uri;
+
+        @Inferred
+        @RDFContainer(type = RDFContainerType.ALT)
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "rdf-alt")
+        private Set<Integer> rdfAlt;
     }
 }
