@@ -24,8 +24,8 @@ public class JenaContainers implements Containers {
 
     @Override
     public Collection<Axiom<?>> readContainer(ContainerDescriptor descriptor) throws OntoDriverException {
-        // TODO
-        return List.of();
+        beforeCallback.execute();
+        return adapter.containerHandler().readContainer(descriptor);
     }
 
     @Override
