@@ -8,7 +8,6 @@ import cz.cvut.kbss.ontodriver.jena.util.Procedure;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.util.Collection;
-import java.util.List;
 
 public class JenaContainers implements Containers {
 
@@ -30,11 +29,15 @@ public class JenaContainers implements Containers {
 
     @Override
     public <T> void persistContainer(ContainerValueDescriptor<T> descriptor) throws OntoDriverException {
-        // TODO
+        beforeCallback.execute();
+        adapter.containerHandler().persistContainer(descriptor);
+        afterCallback.execute();
     }
 
     @Override
     public <T> void updateContainer(ContainerValueDescriptor<T> descriptor) throws OntoDriverException {
-        // TODO
+        beforeCallback.execute();
+        adapter.containerHandler().updateContainer(descriptor);
+        afterCallback.execute();
     }
 }
