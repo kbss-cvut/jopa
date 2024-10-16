@@ -46,7 +46,7 @@ public class JenaUtils {
     }
 
     /**
-     * Transforms the specified value to an {@link RDFNode}, be it a resource or a literal.
+     * Transforms the specified {@link Value} to an {@link RDFNode}, be it a resource or a literal.
      *
      * @param assertion Assertion representing the asserted property
      * @param value     Value to transform
@@ -54,31 +54,40 @@ public class JenaUtils {
      */
     public static <T> RDFNode valueToRdfNode(Assertion assertion, Value<T> value) {
         final T val = value.getValue();
-        Objects.requireNonNull(val);
-        if (IdentifierUtils.isResourceIdentifierType(val.getClass())) {
-            return ResourceFactory.createResource(value.stringValue());
-        } else if (val instanceof LangString) {
-            final LangString langString = (LangString) val;
+        return toRdfNode(assertion, val);
+    }
+
+    /**
+     * Transforms the specified value to an {@link RDFNode}, be it a resource or a literal.
+     *
+     * @param assertion Assertion representing the asserted property
+     * @param value     Value to transform
+     * @return Jena RDFNode
+     */
+    public static RDFNode toRdfNode(Assertion assertion, Object value) {
+        Objects.requireNonNull(value);
+        if (IdentifierUtils.isResourceIdentifierType(value.getClass())) {
+            return ResourceFactory.createResource(value.toString());
+        } else if (value instanceof LangString langString) {
             return langString.getLanguage().map(lang -> ResourceFactory.createLangLiteral(langString.getValue(), lang))
                              .orElseGet(() -> ResourceFactory.createTypedLiteral(langString.getValue()));
-        } else if (val instanceof String) {
-            return assertion.hasLanguage() ? ResourceFactory.createLangLiteral((String) val,
-                                                                               assertion.getLanguage()) :
-                   ResourceFactory.createTypedLiteral(val);
-        } else if (val instanceof cz.cvut.kbss.ontodriver.model.Literal) {
-            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = (cz.cvut.kbss.ontodriver.model.Literal) val;
+        } else if (value instanceof String) {
+            return assertion.hasLanguage() ? ResourceFactory.createLangLiteral((String) value,
+                    assertion.getLanguage()) :
+                    ResourceFactory.createTypedLiteral(value);
+        } else if (value instanceof cz.cvut.kbss.ontodriver.model.Literal ontoLiteral) {
             return createLiteral(ontoLiteral);
-        } else if (val instanceof Date) {
-            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map(((Date) val).toInstant());
+        } else if (value instanceof Date) {
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map(((Date) value).toInstant());
             return createLiteral(ontoLiteral);
-        } else if (val instanceof TemporalAccessor) {
-            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map(((TemporalAccessor) val));
+        } else if (value instanceof TemporalAccessor) {
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map(((TemporalAccessor) value));
             return createLiteral(ontoLiteral);
-        } else if (val instanceof TemporalAmount) {
-            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map(((TemporalAmount) val));
+        } else if (value instanceof TemporalAmount) {
+            final cz.cvut.kbss.ontodriver.model.Literal ontoLiteral = XsdTemporalMapper.map(((TemporalAmount) value));
             return createLiteral(ontoLiteral);
         } else {
-            return ResourceFactory.createTypedLiteral(val);
+            return ResourceFactory.createTypedLiteral(value);
         }
     }
 

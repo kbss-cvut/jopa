@@ -57,6 +57,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
+import cz.cvut.kbss.jopa.model.annotations.RDFContainerType;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.model.annotations.Sparql;
@@ -77,6 +78,8 @@ import cz.cvut.kbss.jopa.model.metamodel.MappedSuperclassTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.RDFContainerAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.RdfContainerAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
@@ -264,6 +267,7 @@ public class MetamodelFactory {
 
     public static void initOWLClassCMocks(IdentifiableEntityType<OWLClassC> etMock,
                                           ListAttributeImpl simpleListMock, ListAttributeImpl refListMock,
+                                          RdfContainerAttributeImpl rdfSeqMock,
                                           Identifier idMock)
             throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassC.class);
@@ -273,13 +277,14 @@ public class MetamodelFactory {
         when(etMock.getAttribute(OWLClassC.getSimpleListField().getName())).thenReturn(
                 simpleListMock);
         when(etMock.getAttribute(OWLClassC.getRefListField().getName())).thenReturn(refListMock);
+        when(etMock.getAttribute(OWLClassC.getRdfSeqField().getName())).thenReturn(rdfSeqMock);
         when(etMock.getAttributes())
-                .thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassC, ?>>asList(simpleListMock, refListMock)));
+                .thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassC, ?>>asList(simpleListMock, refListMock, rdfSeqMock)));
         when(etMock.getFieldSpecifications()).thenReturn(
-                new HashSet<>(
-                        Arrays.<FieldSpecification<? super OWLClassC, ?>>asList(simpleListMock, refListMock, idMock)));
+                new HashSet<>(Arrays.<FieldSpecification<? super OWLClassC, ?>>asList(simpleListMock, refListMock, rdfSeqMock, idMock)));
         when(simpleListMock.getJavaField()).thenReturn(OWLClassC.getSimpleListField());
         when(refListMock.getJavaField()).thenReturn(OWLClassC.getRefListField());
+        when(rdfSeqMock.getJavaField()).thenReturn(OWLClassC.getRdfSeqField());
         String attIri = OWLClassC.getSimpleListField().getAnnotation(OWLObjectProperty.class).iri();
         when(simpleListMock.getIRI()).thenReturn(IRI.create(attIri));
         when(simpleListMock.getName()).thenReturn(OWLClassC.getSimpleListField().getName());
@@ -329,6 +334,24 @@ public class MetamodelFactory {
         when(refListMock.getCascadeTypes())
                 .thenReturn(OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).cascade());
 
+        when(rdfSeqMock.getFetchType()).thenReturn(FetchType.EAGER);
+        when(rdfSeqMock.getCollectionType()).thenReturn(CollectionType.LIST);
+        when(rdfSeqMock.getContainerType()).thenReturn(RDFContainerType.SEQ);
+        when(rdfSeqMock.getName()).thenReturn(OWLClassC.getRdfSeqField().getName());
+        when(etMock.getFieldSpecification(rdfSeqMock.getName())).thenReturn(rdfSeqMock);
+        when(rdfSeqMock.getIRI()).thenReturn(IRI.create(OWLClassC.getRdfSeqField()
+                                                                 .getAnnotation(OWLObjectProperty.class).iri()));
+        when(rdfSeqMock.getBindableJavaType()).thenReturn(OWLClassA.class);
+        when(rdfSeqMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(rdfSeqMock.isCollection()).thenReturn(Boolean.TRUE);
+        when(rdfSeqMock.isAssociation()).thenReturn(true);
+        when(rdfSeqMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(rdfSeqMock.getDeclaringType()).thenReturn(etMock);
+        when(rdfSeqMock.getJavaType()).thenReturn(List.class);
+        when(rdfSeqMock.getCascadeTypes())
+                .thenReturn(OWLClassC.getRdfSeqField().getAnnotation(OWLObjectProperty.class).cascade());
+
+
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassC.class.getDeclaredField("uri"));
         when(idMock.getDeclaringType()).thenReturn(etMock);
@@ -340,6 +363,8 @@ public class MetamodelFactory {
                 return refListMock;
             } else if (Objects.equals(name, simpleListMock.getName())) {
                 return simpleListMock;
+            } else if (Objects.equals(name, rdfSeqMock.getName())) {
+                return rdfSeqMock;
             }
             throw new IllegalArgumentException("Unknown attribute " + name);
         });

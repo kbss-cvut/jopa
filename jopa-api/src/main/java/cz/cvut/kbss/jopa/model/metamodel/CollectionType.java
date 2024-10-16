@@ -39,4 +39,13 @@ public enum CollectionType {
         }
         throw new IllegalArgumentException("Unsupported collection type " + cls);
     }
+
+    /**
+     * Gets the Java class that represents this collection type.
+     *
+     * @return the Java class
+     */
+    public Class<?> getCollectionClass() {
+        return collectionClass;
+    }
 }

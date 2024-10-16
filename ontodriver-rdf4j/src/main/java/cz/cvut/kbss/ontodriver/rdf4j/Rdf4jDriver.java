@@ -32,7 +32,11 @@ import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.loader.StatementLoaderFactory;
 import org.eclipse.rdf4j.repository.Repository;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 class Rdf4jDriver implements Closeable, ConnectionListener<Rdf4jConnection> {
 
@@ -98,6 +102,7 @@ class Rdf4jDriver implements Closeable, ConnectionListener<Rdf4jConnection> {
         c.setLists(new Rdf4jLists(adapter, c::ensureOpen, c::commitIfAuto));
         c.setTypes(new Rdf4jTypes(adapter, c::ensureOpen, c::commitIfAuto));
         c.setProperties(new Rdf4jProperties(adapter, c::ensureOpen, c::commitIfAuto));
+        c.setContainers(new Rdf4jContainers(adapter, c::ensureOpen, c::commitIfAuto));
         openedConnections.add(c);
         c.setListener(this);
         return c;

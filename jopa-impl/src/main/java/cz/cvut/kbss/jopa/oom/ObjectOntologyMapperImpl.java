@@ -38,6 +38,7 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
@@ -346,6 +347,14 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor listDescriptor) {
         try {
             return storageConnection.lists().loadReferencedList(listDescriptor);
+        } catch (OntoDriverException e) {
+            throw new StorageAccessException(e);
+        }
+    }
+
+    public Collection<Axiom<?>> loadRdfContainer(ContainerDescriptor containerDescriptor) {
+        try {
+            return storageConnection.containers().readContainer(containerDescriptor);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         }

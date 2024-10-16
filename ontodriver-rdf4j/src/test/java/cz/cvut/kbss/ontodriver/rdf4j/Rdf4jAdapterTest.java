@@ -752,17 +752,6 @@ class Rdf4jAdapterTest {
         verify(connectorMock).addStatements(inserted);
     }
 
-    private Collection<Statement> initOldTypes() {
-        final Collection<Statement> stmts = new HashSet<>();
-        stmts.add(VF.createStatement(subjectIri, RDF.TYPE,
-                VF.createIRI("http://krizik.felk.cvut.cz/ontologies/types#tOne")));
-        stmts.add(VF.createStatement(subjectIri, RDF.TYPE,
-                VF.createIRI("http://krizik.felk.cvut.cz/ontologies/types#tTwo")));
-        stmts.add(VF.createStatement(subjectIri, RDF.TYPE,
-                VF.createIRI("http://krizik.felk.cvut.cz/ontologies/types#tThree")));
-        return stmts;
-    }
-
     private Collection<Statement> initNewTypes(String[] newTypes, IRI context) {
         final Collection<Statement> statements = new ArrayList<>();
         for (String t : newTypes) {

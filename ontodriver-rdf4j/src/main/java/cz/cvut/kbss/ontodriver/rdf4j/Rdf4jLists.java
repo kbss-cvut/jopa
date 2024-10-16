@@ -18,7 +18,11 @@
 package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.Lists;
-import cz.cvut.kbss.ontodriver.descriptor.*;
+import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -26,8 +30,6 @@ import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 
 import java.util.List;
 import java.util.Objects;
-
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
 class Rdf4jLists implements Lists {
 
@@ -51,7 +53,7 @@ class Rdf4jLists implements Lists {
 
     private void verifyArgs(ListDescriptor descriptor) throws Rdf4jDriverException {
         beforeCallback.execute();
-        Objects.requireNonNull(descriptor, getNPXMessageSupplier("descriptor"));
+        Objects.requireNonNull(descriptor);
     }
 
     @Override

@@ -28,6 +28,7 @@ import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
 import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StatementExecutor;
+import cz.cvut.kbss.ontodriver.rdf4j.container.ContainerHandler;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.list.ReferencedListHandler;
 import cz.cvut.kbss.ontodriver.rdf4j.list.SimpleListHandler;
@@ -231,6 +232,11 @@ class Rdf4jAdapter implements Closeable, Wrapper {
     TypesHandler getTypesHandler() throws Rdf4jDriverException {
         startTransactionIfNotActive();
         return new TypesHandler(connector, valueFactory);
+    }
+
+    ContainerHandler getContainerHandler() throws Rdf4jDriverException {
+        startTransactionIfNotActive();
+        return new ContainerHandler(connector, valueFactory);
     }
 
     @Override

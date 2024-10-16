@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.container.ContainerHandler;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.list.ReferencedListHandler;
 import cz.cvut.kbss.ontodriver.owlapi.list.SimpleListHandler;
@@ -121,7 +122,7 @@ public class OwlapiAdapter {
         return Collections.singletonList(connector.getOntologyUri());
     }
 
-    boolean containsAxiom(Axiom<?> axiom, Set<URI> contexts) {
+    public boolean containsAxiom(Axiom<?> axiom, Set<URI> contexts) {
         startTransactionIfNotActive();
         final Collection<OWLAxiom> owlAxiom = asOwlAxioms(axiom);
         boolean contains;
@@ -171,28 +172,28 @@ public class OwlapiAdapter {
         return owlAxioms;
     }
 
-    Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
+    public Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
         startTransactionIfNotActive();
         return new MainAxiomLoader(this, ontologySnapshot).findAxioms(descriptor);
     }
 
-    void persist(AxiomValueDescriptor descriptor) {
+    public void persist(AxiomValueDescriptor descriptor) {
         startTransactionIfNotActive();
         new AxiomSaver(this, ontologySnapshot).persist(descriptor);
     }
 
-    URI generateIdentifier(URI classUri) {
+    public URI generateIdentifier(URI classUri) {
         startTransactionIfNotActive();
         return new IdentifierGenerator(ontology()).generateIdentifier(classUri);
     }
 
-    void update(AxiomValueDescriptor descriptor) {
+    public void update(AxiomValueDescriptor descriptor) {
         startTransactionIfNotActive();
         new EpistemicAxiomRemover(this, ontologySnapshot).remove(descriptor);
         new AxiomSaver(this, ontologySnapshot).persist(descriptor);
     }
 
-    void remove(AxiomDescriptor descriptor) {
+    public void remove(AxiomDescriptor descriptor) {
         startTransactionIfNotActive();
         new EpistemicAxiomRemover(this, ontologySnapshot).remove(descriptor);
     }
@@ -220,6 +221,11 @@ public class OwlapiAdapter {
     public ReferencedListHandler getReferencedListHandler() {
         startTransactionIfNotActive();
         return new ReferencedListHandler(this, ontologySnapshot);
+    }
+
+    public ContainerHandler getContainerHandler() {
+        startTransactionIfNotActive();
+        return new ContainerHandler(this, ontologySnapshot);
     }
 
     public OwlapiStatement createStatement(OwlapiConnection connection) {

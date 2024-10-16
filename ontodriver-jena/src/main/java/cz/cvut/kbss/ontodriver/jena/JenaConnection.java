@@ -18,6 +18,7 @@
 package cz.cvut.kbss.ontodriver.jena;
 
 import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.Containers;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
@@ -206,6 +207,12 @@ public class JenaConnection implements Connection {
     public JenaProperties properties() {
         ensureOpen();
         return new JenaProperties(adapter, this::ensureOpen, this::commitIfAuto);
+    }
+
+    @Override
+    public Containers containers() {
+        ensureOpen();
+        return new JenaContainers(adapter, this::ensureOpen, this::commitIfAuto);
     }
 
     @Override

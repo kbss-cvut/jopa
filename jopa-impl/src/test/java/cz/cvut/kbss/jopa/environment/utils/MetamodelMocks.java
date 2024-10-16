@@ -57,6 +57,7 @@ import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.MappedSuperclassTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.RdfContainerAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SetAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttributeImpl;
@@ -73,6 +74,7 @@ import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -111,6 +113,8 @@ public class MetamodelMocks {
     private ListAttributeImpl<OWLClassC, OWLClassA> cReferencedList;
     @Mock
     private ListAttributeImpl<OWLClassC, OWLClassA> cSimpleList;
+    @Mock
+    private RdfContainerAttributeImpl<OWLClassC, List<OWLClassA>, OWLClassA> cRdfSeq;
 
     @Mock
     private IdentifiableEntityType<OWLClassD> etD;
@@ -355,8 +359,8 @@ public class MetamodelMocks {
         MetamodelClassInitializer.initMetamodelClassOWLClassA(aStringAtt, aTypes, idA);
         MetamodelFactory.initOWLClassBMocks(etB, bStringAtt, bProperties, idB);
         MetamodelClassInitializer.initMetamodelClassOWLClassB(bStringAtt, bProperties, idB);
-        MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, idC);
-        MetamodelClassInitializer.initMetamodelClassOWLClassC(cSimpleList, cReferencedList, idC);
+        MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, cRdfSeq, idC);
+        MetamodelClassInitializer.initMetamodelClassOWLClassC(cSimpleList, cReferencedList, cRdfSeq, idC);
         MetamodelFactory.initOWLClassDMocks(etD, dOwlClassAAtt, etA, idD);
         MetamodelClassInitializer.initMetamodelClassOWLClassD(dOwlClassAAtt, idD);
         MetamodelFactory.initOWLClassEMocks(etE, eStringAtt, idE);
@@ -577,6 +581,10 @@ public class MetamodelMocks {
 
         public ListAttributeImpl<OWLClassC, OWLClassA> simpleListAtt() {
             return MetamodelMocks.this.cSimpleList;
+        }
+
+        public RdfContainerAttributeImpl<OWLClassC, List<OWLClassA>, OWLClassA> rdfSeqAtt() {
+            return MetamodelMocks.this.cRdfSeq;
         }
     }
 

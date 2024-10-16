@@ -18,15 +18,11 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 /**
- * Instances of the type PluralAttribute represent persistent collection-valued
- * attributes.
+ * Instances of the type PluralAttribute represent persistent collection-valued attributes.
  *
- * @param <X>
- *            The type the represented collection belongs to
- * @param <C>
- *            The type of the represented collection
- * @param <E>
- *            The element type of the represented collection
+ * @param <X> The type the represented collection belongs to
+ * @param <C> The type of the represented collection
+ * @param <E> The element type of the represented collection
  */
 public interface PluralAttribute<X, C, E> extends Attribute<X, C>, Bindable<E> {
 
@@ -43,4 +39,12 @@ public interface PluralAttribute<X, C, E> extends Attribute<X, C>, Bindable<E> {
      * @return element type
      */
     Type<E> getElementType();
+
+    /**
+     * Checks whether this attribute represents an <a href="https://www.w3.org/TR/rdf-schema/#ch_containervocab">RDF
+     * container</a>.
+     *
+     * @return {@code true} if this plural attribute is an RDF container, {@code false} otherwise
+     */
+    default boolean isRdfContainer() {return false;}
 }

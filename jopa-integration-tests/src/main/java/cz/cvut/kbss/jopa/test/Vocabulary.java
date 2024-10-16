@@ -127,6 +127,8 @@ public class Vocabulary {
     public static final String P_Q_PARENT_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "QParent-stringAttribute";
     public static final String P_Q_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "Q-stringAttribute";
 
+    public static final String P_R_HAS_RDF_ALT = ATTRIBUTE_IRI_BASE + "R-hasRdfAlt";
+
     public static final String P_HAS_OWL_CLASS_S = ATTRIBUTE_IRI_BASE + "hasOwlClassS";
 
     public static final String V_HAS_THING = ATTRIBUTE_IRI_BASE + "hasThing";
@@ -135,6 +137,7 @@ public class Vocabulary {
     public static final String P_HAS_REFERENCED_LIST = ATTRIBUTE_IRI_BASE + "hasReferencedSequence";
 
     public static final String P_HAS_RDF_COLLECTION = ATTRIBUTE_IRI_BASE + "hasRdfCollection";
+    public static final String P_HAS_RDF_BAG = ATTRIBUTE_IRI_BASE + "hasRdfBag";
 
     public static final String P_X_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDate";
     public static final String P_X_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDateTime";

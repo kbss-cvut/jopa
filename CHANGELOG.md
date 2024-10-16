@@ -1,5 +1,11 @@
 # JOPA - Change Log
 
+## 2.1.0 - 2024-10-16
+- Add support for RDF containers (Task #52). 
+  [Wiki](https://github.com/kbss-cvut/jopa/wiki/Object-ontological-Mapping#collection-mapping) contains info on collection mapping in general.
+- Add support for Jena TDB2 storage.
+- Dependency updates: Jena 5.2.0, OWL API 5.5.1, SLF4J 2.0.16.
+
 ## 2.0.5 - 2024-09-03
 - Modify target ontology selection in queries (use only query hints) to prevent RDF4J driver from spanning application log.
 

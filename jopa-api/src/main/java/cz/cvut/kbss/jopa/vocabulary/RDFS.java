@@ -65,7 +65,7 @@ public final class RDFS {
     public static final String RESOURCE = NAMESPACE + "Resource";
 
     /**
-     * The class {@code rdfs:Literal} represents the self-denoting nodes called the 'literals' in the RDF graph
+     * The {@code rdfs:Literal} class represents the self-denoting nodes called the 'literals' in the RDF graph
      * structure.
      * <p>
      * Property values such as textual strings are examples of RDF literals.
@@ -78,10 +78,26 @@ public final class RDFS {
     public static final String SUB_CLASS_OF = NAMESPACE + "subClassOf";
 
     /**
-     * The property {@code rdfs:subPropertyOf} is an instance of {@code rdf:Property} that is used to specify that one
+     * The {@code rdfs:subPropertyOf} property is an instance of {@code rdf:Property} that is used to specify that one
      * property is a specialization of another.
      */
     public static final String SUB_PROPERTY_OF = NAMESPACE + "subPropertyOf";
+
+    /**
+     * The  {@code rdfs:Container} class represents a collection.
+     */
+    public static final String CONTAINER = NAMESPACE + "Container";
+
+    /**
+     * The {@code rdfs:member} property is an instance of {@code rdf:Property} that is a super-property of all container
+     * membership properties.
+     */
+    public static final String MEMBER = NAMESPACE + "member";
+
+    /**
+     * The {@code rdfs:ContainerMembershipProperty} class has as instances the properties {@code rdf:_1}, {@code rdf:_2}, etc.
+     */
+    public static final String CONTAINER_MEMBERSHIP_PROPERTY = NAMESPACE + "ContainerMembershipProperty";
 
     private RDFS() {
         throw new AssertionError();

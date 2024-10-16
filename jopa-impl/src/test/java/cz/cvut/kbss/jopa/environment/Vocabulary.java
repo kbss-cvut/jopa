@@ -73,6 +73,7 @@ public class Vocabulary {
 
     public static final String P_HAS_SIMPLE_LIST = ATTRIBUTE_BASE + "C-hasSimpleSequence";
     public static final String P_HAS_REFERENCED_LIST = ATTRIBUTE_BASE + "C-hasReferencedSequence";
+    public static final String P_HAS_RDF_SEQ = ATTRIBUTE_BASE + "C-hasRDFSeq";
 
     public static final String P_T_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDate";
     public static final String P_T_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDateTime";

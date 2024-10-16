@@ -32,8 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
-
 public class OwlapiProperties implements Properties {
 
     private final OwlapiAdapter adapter;
@@ -50,7 +48,7 @@ public class OwlapiProperties implements Properties {
     @Override
     public Collection<Axiom<?>> getProperties(NamedResource individual, URI context, boolean includeInferred)
             throws OntoDriverException {
-        Objects.requireNonNull(individual, getNPXMessageSupplier("individual"));
+        Objects.requireNonNull(individual);
         beforeCallback.execute();
         return adapter.getPropertiesHandler().getProperties(individual, includeInferred);
     }
@@ -67,8 +65,8 @@ public class OwlapiProperties implements Properties {
 
     private void ensureValidity(NamedResource individual, Map<Assertion, Set<Value<?>>> properties)
             throws OwlapiDriverException {
-        Objects.requireNonNull(individual, getNPXMessageSupplier("individual"));
-        Objects.requireNonNull(properties, getNPXMessageSupplier("properties"));
+        Objects.requireNonNull(individual);
+        Objects.requireNonNull(properties);
         beforeCallback.execute();
     }
 

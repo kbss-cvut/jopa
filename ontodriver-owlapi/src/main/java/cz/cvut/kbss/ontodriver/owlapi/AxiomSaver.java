@@ -116,14 +116,12 @@ class AxiomSaver {
     }
 
     private void persistObjectPropertyValues(NamedResource subject, Assertion assertion, Collection<Value<?>> values) {
+        // Simplistic version using value.stringValue
+        // We expect the value to  be a NamedResource, but in case the property was unspecified, and it was only assumed
+        // it is an object property (see #persistPropertyValues), the value would be a simple string
         final List<OWLAxiom> axioms = values.stream().filter(value -> value != Value.nullValue())
-                                            .map(value -> {
-                                                // Simplistic version using value.stringValue
-                                                // We expect the value to  be a NamedResource, but in case the property was unspecified and it was only assumed
-                                                // it is an object property (see #persistPropertyValues), the value would be a simple string
-                                                return axiomAdapter.toOwlObjectPropertyAssertionAxiom(
-                                                        new AxiomImpl<>(subject, assertion, value));
-                                            }).collect(Collectors.toList());
+                                            .map(value -> axiomAdapter.toOwlObjectPropertyAssertionAxiom(new AxiomImpl<>(subject, assertion, value)))
+                                            .collect(Collectors.toList());
         addAxioms(axioms);
     }
 

@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.vocabulary.RDFS;
 
 import java.net.URI;
 import java.util.Objects;
+import java.util.Set;
 
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_R)
 public class OWLClassR implements HasUri {
@@ -35,6 +36,10 @@ public class OWLClassR implements HasUri {
     @Enumerated(EnumType.OBJECT_ONE_OF)
     @OWLObjectProperty(iri = Vocabulary.P_HAS_OBJECT_ONE_OF)
     private ObjectOneOfEnum objectOneOf;
+
+    @RDFContainer(type = RDFContainerType.ALT)
+    @OWLDataProperty(iri = Vocabulary.P_R_HAS_RDF_ALT)
+    private Set<Integer> levels;
 
     public OWLClassR() {
     }
@@ -66,6 +71,14 @@ public class OWLClassR implements HasUri {
 
     public void setObjectOneOf(ObjectOneOfEnum objectOneOf) {
         this.objectOneOf = objectOneOf;
+    }
+
+    public Set<Integer> getLevels() {
+        return levels;
+    }
+
+    public void setLevels(Set<Integer> levels) {
+        this.levels = levels;
     }
 
     @Override

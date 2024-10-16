@@ -84,15 +84,13 @@ class ReferencedListIterator<T> extends OwlapiListIterator<T> {
     }
 
     private OWLProperty assertionToOwlProperty(Assertion a) {
-        switch (a.getType()) {
-            case OBJECT_PROPERTY:
-                return dataFactory
-                        .getOWLObjectProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
-            case DATA_PROPERTY:
-                return dataFactory.getOWLDataProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
-            default:
-                throw new IllegalArgumentException("Node content property cannot be type " + a.getType());
-        }
+        return switch (a.getType()) {
+            case OBJECT_PROPERTY -> dataFactory
+                    .getOWLObjectProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
+            case DATA_PROPERTY ->
+                    dataFactory.getOWLDataProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
+            default -> throw new IllegalArgumentException("Node content property cannot be type " + a.getType());
+        };
     }
 
     @Override

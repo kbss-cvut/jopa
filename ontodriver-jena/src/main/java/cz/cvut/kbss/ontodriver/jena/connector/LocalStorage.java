@@ -39,6 +39,8 @@ abstract class LocalStorage implements Storage {
 
     static final Logger LOG = LoggerFactory.getLogger(LocalStorage.class);
 
+    static final String FILE_PREFIX = "file:";
+
     private final boolean defaultAsUnion;
 
     Dataset dataset;

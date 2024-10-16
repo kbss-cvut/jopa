@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.connector.InferredStorageConnector;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
+import cz.cvut.kbss.ontodriver.jena.container.ContainerHandler;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.list.ReferencedListHandler;
 import cz.cvut.kbss.ontodriver.jena.list.SimpleListHandler;
@@ -146,6 +147,11 @@ public class JenaAdapter implements Wrapper {
     public ReferencedListHandler referencedListHandler() {
         beginTransactionIfNotActive();
         return new ReferencedListHandler(connector);
+    }
+
+    public ContainerHandler containerHandler() {
+        beginTransactionIfNotActive();
+        return new ContainerHandler(connector);
     }
 
     JenaStatement createStatement() {

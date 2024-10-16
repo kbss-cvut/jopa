@@ -37,10 +37,6 @@ public interface PersistenceProvider {
      */
     EntityManagerFactory createEntityManagerFactory(String emName, Map<String, String> map);
 
-    // TODO JPA 2.0
-    // public EntityManagerFactory
-    // createContainerEntityManagerFactory(PersistenceUnitInfo info, Map map);
-
     /**
      * Return the utility interface implemented by the persistence provider.
      *

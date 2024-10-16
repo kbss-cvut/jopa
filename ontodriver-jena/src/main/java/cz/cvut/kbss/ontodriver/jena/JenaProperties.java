@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-class JenaProperties implements Properties {
+public class JenaProperties implements Properties {
 
     private final JenaAdapter adapter;
 

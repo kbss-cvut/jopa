@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.Persistence;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProvider;
@@ -109,7 +110,7 @@ public class TestEnvironment {
                 assert file.delete();
             } else {
                 if (!file.delete()) {
-                    throw new RuntimeException("Unable to delete file " + file);
+                    throw new IllegalStateException("Unable to delete file " + file);
                 }
             }
         }

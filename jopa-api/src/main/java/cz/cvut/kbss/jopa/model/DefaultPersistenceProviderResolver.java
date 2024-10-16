@@ -23,8 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -61,7 +59,7 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
         // information from the cache.
         processQueue();
 
-        final ClassLoader loader = getContextClassLoader();
+        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         final CacheKey cacheKey = new CacheKey(loader);
         PersistenceProviderReference providersReferent = providers.get(cacheKey);
 
@@ -104,18 +102,6 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
         CacheKeyReference ref;
         while ((ref = (CacheKeyReference) referenceQueue.poll()) != null) {
             providers.remove(ref.getCacheKey());
-        }
-    }
-
-    /**
-     * Wraps <code>Thread.currentThread().getContextClassLoader()</code> into a doPrivileged block if security manager is present
-     */
-    private static ClassLoader getContextClassLoader() {
-        if (System.getSecurityManager() == null) {
-            return Thread.currentThread().getContextClassLoader();
-        } else {
-            return AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> Thread.currentThread()
-                                                                                             .getContextClassLoader());
         }
     }
 
