@@ -29,8 +29,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
-
 public class OwlapiTypes implements Types {
 
     private final OwlapiAdapter adapter;
@@ -47,7 +45,7 @@ public class OwlapiTypes implements Types {
     @Override
     public Set<Axiom<URI>> getTypes(NamedResource individual, Collection<URI> contexts, boolean includeInferred)
             throws OntoDriverException {
-        Objects.requireNonNull(individual, getNPXMessageSupplier("individual"));
+        Objects.requireNonNull(individual);
         beforeCallback.execute();
         return adapter.getTypesHandler().getTypes(individual, contexts, includeInferred);
     }
@@ -62,8 +60,8 @@ public class OwlapiTypes implements Types {
     }
 
     private void ensureValidity(NamedResource individual, Set<URI> types) throws OwlapiDriverException {
-        Objects.requireNonNull(individual, getNPXMessageSupplier("individual"));
-        Objects.requireNonNull(types, getNPXMessageSupplier("types"));
+        Objects.requireNonNull(individual);
+        Objects.requireNonNull(types);
         beforeCallback.execute();
     }
 

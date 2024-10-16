@@ -19,7 +19,6 @@ package cz.cvut.kbss.ontodriver.descriptor;
 
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.util.ErrorUtils;
 
 import java.net.URI;
 import java.util.Objects;
@@ -33,9 +32,9 @@ final class BaseListDescriptorImpl implements ListDescriptor {
     private URI context;
 
     public BaseListDescriptorImpl(NamedResource listOwner, Assertion listProperty, Assertion nextNode) {
-        this.listOwner = Objects.requireNonNull(listOwner, ErrorUtils.getNPXMessageSupplier("listOwner"));
-        this.listProperty = Objects.requireNonNull(listProperty, ErrorUtils.getNPXMessageSupplier("listProperty"));
-        this.nextNode = Objects.requireNonNull(nextNode, ErrorUtils.getNPXMessageSupplier("nextNode"));
+        this.listOwner = Objects.requireNonNull(listOwner);
+        this.listProperty = Objects.requireNonNull(listProperty);
+        this.nextNode = Objects.requireNonNull(nextNode);
     }
 
     @Override

@@ -25,8 +25,6 @@ import cz.cvut.kbss.ontodriver.util.StatementHolder;
 
 import java.util.Objects;
 
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
-
 public class Rdf4jPreparedStatement extends Rdf4jStatement implements PreparedStatement {
 
     private final StatementHolder statementHolder;
@@ -43,7 +41,7 @@ public class Rdf4jPreparedStatement extends Rdf4jStatement implements PreparedSt
     @Override
     public void setObject(String binding, Object value) {
         ensureOpen();
-        Objects.requireNonNull(value, getNPXMessageSupplier("value"));
+        Objects.requireNonNull(value);
         statementHolder.setParameter(binding, value.toString());
     }
 

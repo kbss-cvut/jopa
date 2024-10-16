@@ -25,8 +25,6 @@ import cz.cvut.kbss.ontodriver.util.StatementHolder;
 
 import java.util.Objects;
 
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
-
 public class OwlapiPreparedStatement extends OwlapiStatement implements PreparedStatement {
 
     private final StatementHolder statementHolder;
@@ -59,8 +57,8 @@ public class OwlapiPreparedStatement extends OwlapiStatement implements Prepared
     @Override
     public void setObject(String binding, Object value) {
         ensureOpen();
-        Objects.requireNonNull(binding, getNPXMessageSupplier("binding"));
-        Objects.requireNonNull(value, getNPXMessageSupplier("value"));
+        Objects.requireNonNull(binding);
+        Objects.requireNonNull(value);
         statementHolder.setParameter(binding, value.toString());
     }
 

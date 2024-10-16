@@ -33,10 +33,13 @@ import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLObject;
 
 import java.net.URI;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
 class SelectResultSet extends AbstractResultSet {
 
@@ -302,7 +305,7 @@ class SelectResultSet extends AbstractResultSet {
 
     @Override
     public <T> T getObject(String columnLabel, Class<T> cls) throws OntoDriverException {
-        Objects.requireNonNull(cls, getNPXMessageSupplier("cls"));
+        Objects.requireNonNull(cls);
         return owlObjectToType(getCurrentValue(columnLabel), cls);
     }
 
