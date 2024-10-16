@@ -37,7 +37,16 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+/**
+ * Factory for {@link HttpClient} instances.
+ * <p>
+ * It allows configuring the clients in terms of timeout, connection pool size, etc.
+ */
 class HttpClientFactory {
+
+    private HttpClientFactory() {
+        throw new AssertionError();
+    }
 
     /**
      * Creates a customized {@link HttpClient} instance.
