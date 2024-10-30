@@ -147,4 +147,14 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
         // Do not create any special kind of collection, just return the argument
         return collection;
     }
+
+    @Override
+    public void setReadOnly(boolean readOnly) throws Exception {
+        throw new Exception("Read only mode for this unit of work is not supported.");
+    }
+
+    @Override
+    public boolean isReadOnly() throws Exception {
+        throw new Exception("Read only mode for this unit of work is not supported.");
+    }
 }

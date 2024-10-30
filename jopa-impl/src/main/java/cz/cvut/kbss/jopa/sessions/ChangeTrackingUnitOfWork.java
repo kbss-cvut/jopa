@@ -281,4 +281,14 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
         storage.remove(identifier, et.getJavaType(), descriptor);
         et.getLifecycleListenerManager().invokePostRemoveCallbacks(entity);
     }
+
+    @Override
+    public void setReadOnly(boolean readOnly) throws Exception {
+        throw(new Exception("Read only mode for this unit of work is not supported."));
+    }
+
+    @Override
+    public boolean isReadOnly() throws Exception {
+        throw new Exception("Read only mode for this unit of work is not supported.");
+    }
 }
