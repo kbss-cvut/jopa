@@ -61,4 +61,8 @@ abstract class AbstractSession implements MetamodelProvider, ConfigurationHolder
      * @return Criteria query builder
      */
     public abstract CriteriaBuilder getCriteriaBuilder();
+
+    public abstract void setReadOnly(boolean readOnly) throws Exception;
+
+    public abstract boolean isReadOnly() throws Exception;
 }
