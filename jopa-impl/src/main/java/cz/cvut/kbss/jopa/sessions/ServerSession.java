@@ -97,6 +97,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
      */
     public UnitOfWork acquireUnitOfWork(Configuration configuration) {
         if (this.readOnly) {
+            LOG.trace("Acquiring read-only UnitOfWork.");
             return new ReadOnlyUnitOfWork(this, configuration);
         }
         final ChangeTrackingMode mode = ChangeTrackingMode.resolve(configuration);
@@ -181,7 +182,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
 
     @Override
     public void setReadOnly(boolean readOnly) {
-        this.readOnly = true;
+        this.readOnly = readOnly;
     }
 
     @Override
