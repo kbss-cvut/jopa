@@ -30,6 +30,7 @@ import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
@@ -47,146 +48,158 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
     @Override
     protected ConnectionWrapper acquireConnection() {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void release() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void clear() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
      * Detaches all managed entities from this persistence context.
      */
     public void detachAllManagedInstances() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public CacheManager getLiveObjectCache() {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public boolean isActive() {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void begin() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void commit() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
      * Commit this Unit of Work.
      */
     private void commitUnitOfWork() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     void removeLazyLoadingProxies(Object entity) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
      * If there are any changes, commit them to the ontology.
      */
     public void commitToStorage() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
      * Merge the changes from this Unit of Work's change set into the server session.
      */
     private void mergeChangesIntoParent() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private void evictPossiblyUpdatedReferencesFromCache() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
      * Cleans up after the commit.
      */
     private void postCommit() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void rollback() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public boolean contains(Object entity) {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public <T> T readObject(Class<T> cls, Object identifier, Descriptor descriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     protected <T> T readObjectInternal(Class<T> cls, Object identifier, Descriptor descriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     <T> T readManagedObject(Class<T> cls, Object identifier, Descriptor descriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private boolean isInRepository(Descriptor descriptor, Object entity) {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private <T> T getManagedClone(Class<T> cls, Object identifier, Descriptor descriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public <T> T readObjectWithoutRegistration(Class<T> cls, Object identifier, Descriptor descriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public EntityState getState(Object entity) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public EntityState getState(Object entity, Descriptor descriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public boolean isObjectNew(Object entity) {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public boolean isObjectManaged(Object entity) {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private boolean isManagedReference(Object entity) {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public <T> T mergeDetached(T entity, Descriptor descriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     Object getIdentifier(Object entity) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private boolean isSameType(Object id, Object entity) {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
@@ -198,24 +211,25 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
      * @return Managed instance
      */
     public <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public Object registerExistingObject(Object entity, Descriptor descriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public Object registerExistingObject(Object entity, CloneRegistrationDescriptor registrationDescriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     void registerClone(Object clone, Object original, Descriptor descriptor) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     protected <T> IdentifiableEntityType<T> entityType(Class<T> cls) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
@@ -223,21 +237,26 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
      * change set for future commit to the ontology.
      */
     void calculateChanges() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
      * Create object change sets for the new objects and adds them into our UnitOfWorkChangeSet.
      */
     private void calculateNewObjects(UnitOfWorkChangeSet changeSet) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private void calculateDeletedObjects(final UnitOfWorkChangeSet changeSet) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     void persistNewObjects() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     void validateIntegrityConstraints() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
@@ -248,7 +267,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
      * @return The original object for the given clone
      */
     public Object getOriginal(Object clone) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
@@ -261,6 +280,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
      * @param original Original to register
      */
     public void registerOriginalForNewClone(Object clone, Object original) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
@@ -274,7 +294,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
      * @return Original object managed by this UoW or {@code null} if this UoW doesn't contain a matching instance
      */
     public <T> T getManagedOriginal(Class<T> cls, Object identifier, Descriptor descriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
@@ -285,7 +305,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
      * @return True if the original is managed in this UnitOfWork.
      */
     boolean containsOriginal(Object entity) {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
@@ -295,104 +315,112 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
      * @return The clone or null, if there is none
      */
     public Object getCloneForOriginal(Object original) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     public boolean hasChanges() {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     void setHasChanges() {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     void preventCachingIfReferenceIsNotLoaded(ChangeRecord changeRecord) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     protected ObjectChangeSet processInferredValueChanges(ObjectChangeSet changeSet) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     protected <T> T getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     protected void evictAfterMerge(EntityType<?> et, URI identifier, Descriptor descriptor) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     protected static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
                                                    Descriptor descriptor) {
-        return null;
+
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public <T> void refreshObject(T object) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private <T> void revertTransactionalChanges(T object, Descriptor descriptor, ObjectChangeSet chSet) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void registerNewObject(Object entity, Descriptor descriptor) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void removeObject(Object object) {
-
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private Object initEntityIdentifier(Object entity, EntityType<Object> et) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private void verifyCanPersist(Object id, Object instance, EntityType<?> et, Descriptor descriptor) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private boolean isIndividualManaged(Object identifier, Object entity) {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
 
     <T> void ensureManaged(T object) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void restoreRemovedObject(Object entity) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void unregisterObject(Object object) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private void unregisterEntityFromOntologyContext(Object entity) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void writeUncommittedChanges() {
-    }
-
-    @Override
-    public MetamodelImpl getMetamodel() {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public boolean isEntityType(Class<?> cls) {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public boolean isInTransaction() {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public boolean isFlushingChanges() {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public <T> Object loadEntityField(T entity, FieldSpecification<? super T, ?> fieldSpec) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
@@ -405,100 +433,101 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
      * @return String info about the specified object
      */
     public String stringify(Object object) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     private <T> Object cloneLoadedFieldValue(T entity, Field field, final Descriptor fieldDescriptor,
                                              final Object fieldValueOrig) {
-        return null;
+
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void putObjectIntoCache(Object identifier, Object entity, Descriptor descriptor) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void removeObjectFromCache(Object toRemove, URI context) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public boolean isConsistent(URI context) {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public List<URI> getContexts() {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value) {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void attributeChanged(Object entity, Field f) {
-
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void attributeChanged(Object entity, FieldSpecification<?, ?> fieldSpec) {
-
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public Object createIndirectCollection(Object collection, Object owner, Field field) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public LoadState isLoaded(Object entity, String attributeName) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public LoadState isLoaded(Object entity) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     public SparqlQueryFactory sparqlQueryFactory() {
-        return null;
-    }
-
-    public CriteriaBuilder getCriteriaBuilder() {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public void setReadOnly(boolean readOnly) throws Exception {
-
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public boolean isReadOnly() throws Exception {
-        return false;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     void registerEntityWithOntologyContext(Object entity, Descriptor descriptor) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     Descriptor getDescriptor(Object entity) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     public LoadStateDescriptorRegistry getLoadStateRegistry() {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     @Override
     public <T> T unwrap(Class<T> cls) {
-        return null;
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     protected void markCloneForDeletion(Object entity, Object identifier) {
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 }
