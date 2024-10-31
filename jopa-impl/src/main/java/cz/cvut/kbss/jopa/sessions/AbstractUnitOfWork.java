@@ -73,7 +73,7 @@ import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
 public abstract class AbstractUnitOfWork extends AbstractSession implements UnitOfWork {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractUnitOfWork.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractUnitOfWork.class);
     final IndirectWrapperHelper indirectWrapperHelper;
 
     // Read-only!!! It is just the keyset of cloneToOriginals
