@@ -56,8 +56,6 @@ public class ServerSession extends AbstractSession implements Wrapper {
 
     private Map<EntityTransaction, AbstractEntityManager> runningTransactions;
 
-    private boolean readOnly = false;
-
     ServerSession(MetamodelImpl metamodel) {
         super(new Configuration());
         this.metamodel = metamodel;
@@ -96,10 +94,6 @@ public class ServerSession extends AbstractSession implements Wrapper {
      * @return UnitOfWork instance
      */
     public UnitOfWork acquireUnitOfWork(Configuration configuration) {
-        if (this.readOnly) {
-            LOG.trace("Acquiring read-only UnitOfWork.");
-            return new ReadOnlyUnitOfWork(this, configuration);
-        }
         final ChangeTrackingMode mode = ChangeTrackingMode.resolve(configuration);
         return switch (mode) {
             case IMMEDIATE -> {
@@ -109,6 +103,10 @@ public class ServerSession extends AbstractSession implements Wrapper {
             case ON_COMMIT -> {
                 LOG.trace("Acquiring on commit change calculating UnitOfWork.");
                 yield new OnCommitChangePropagatingUnitOfWork(this, configuration);
+            }
+            case READ_ONLY -> {
+                LOG.trace("Acquiring read-only UnitOfWork.");
+                yield new ReadOnlyUnitOfWork(this, configuration);
             }
         };
     }
@@ -178,15 +176,5 @@ public class ServerSession extends AbstractSession implements Wrapper {
             return cls.cast(liveObjectCache);
         }
         return storageAccessor.unwrap(cls);
-    }
-
-    @Override
-    public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
-    }
-
-    @Override
-    public boolean isReadOnly() {
-        return this.readOnly;
     }
 }

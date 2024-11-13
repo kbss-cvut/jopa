@@ -36,7 +36,12 @@ public enum ChangeTrackingMode {
     /**
      * Calculates changes on commit, propagating them immediately to the underlying repository.
      */
-    ON_COMMIT;
+    ON_COMMIT,
+
+    /**
+     * Changes are not tracked.
+     */
+    READ_ONLY;
 
     /**
      * Resolves change tracking mode from the specified configuration.
