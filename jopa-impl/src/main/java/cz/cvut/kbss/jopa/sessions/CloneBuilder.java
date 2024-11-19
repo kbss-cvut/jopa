@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -178,22 +177,18 @@ public class CloneBuilder {
                             CloneConfiguration.withDescriptor(fieldDescriptor)
                                               .forPersistenceContext(configuration.isForPersistenceContext())
                                               .addPostRegisterHandlers(configuration.getPostRegister()));
-                } else if(isTypeManaged(origValueClass) || instanceHasBuilder(origVal)) {
+                } else if(isTypeManaged(origValueClass)) {
                     // Otherwise, we have a relationship, and we need to clone its target as well
                     if (isOriginalInUoW(origVal)) {
                         // If the reference is already managed
                         clonedValue = uow.getCloneForOriginal(origVal);
                     } else {
-                        if (isTypeManaged(origValueClass)) {
                             final Descriptor fieldDescriptor =
                                     getFieldDescriptor(f, originalClass, configuration.getDescriptor());
                             clonedValue = getVisitedEntity(configuration.getDescriptor(), origVal);
                             if (clonedValue == null) {
                                 clonedValue = uow.registerExistingObject(origVal, new CloneRegistrationDescriptor(fieldDescriptor).postCloneHandlers(configuration.getPostRegister()));
                             }
-                        } else {
-                            clonedValue = buildClone(origVal, configuration);
-                        }
                     }
                 } else {
                     // We assume that the value is immutable
@@ -302,7 +297,6 @@ public class CloneBuilder {
     private final class Builders {
         private final AbstractInstanceBuilder defaultBuilder;
         private final AbstractInstanceBuilder managedInstanceBuilder;
-        private final AbstractInstanceBuilder dateBuilder;
         private final AbstractInstanceBuilder multilingualStringBuilder;
         // Lists and Sets
         private final AbstractInstanceBuilder collectionBuilder;
@@ -311,16 +305,13 @@ public class CloneBuilder {
         private Builders() {
             this.defaultBuilder = new DefaultInstanceBuilder(CloneBuilder.this, uow);
             this.managedInstanceBuilder = new ManagedInstanceBuilder(CloneBuilder.this, uow);
-            this.dateBuilder = new DateInstanceBuilder(CloneBuilder.this, uow);
             this.multilingualStringBuilder = new MultilingualStringInstanceBuilder(CloneBuilder.this, uow);
             this.mapBuilder = new MapInstanceBuilder(CloneBuilder.this, uow);
             this.collectionBuilder = new CollectionInstanceBuilder(CloneBuilder.this, uow);
         }
 
         private Optional<AbstractInstanceBuilder> getAbstractInstanceBuilder(Object toClone) {
-            if(toClone instanceof Date) {
-                return Optional.of(dateBuilder);
-            } else if(toClone instanceof MultilingualString) {
+            if(toClone instanceof MultilingualString) {
                 return Optional.of(multilingualStringBuilder);
             } else if(toClone instanceof Map) {
                 return Optional.of(mapBuilder);
