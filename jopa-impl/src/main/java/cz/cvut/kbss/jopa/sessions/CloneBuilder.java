@@ -54,9 +54,11 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -250,18 +252,6 @@ public class CloneBuilder {
     }
 
     /**
-     * Checks if the specified object is immutable.
-     * <p>
-     * {@code null} is considered immutable, otherwise, this method just calls {@link #isImmutable(Class)}.
-     *
-     * @param object The instance to check
-     * @return immutability status
-     */
-    static boolean isImmutable(Object object) {
-        return object == null || isImmutable(object.getClass());
-    }
-
-    /**
      * Merges the changes on clone into the original object.
      *
      * @param changeSet Contains changes to merge
@@ -304,6 +294,8 @@ public class CloneBuilder {
     AbstractInstanceBuilder getInstanceBuilder(Object toClone) {
         return builders.getBuilder(toClone);
     }
+
+    boolean instanceHasBuilder(Object toClone) { return builders.hasBuilder(toClone); }
 
     boolean isTypeManaged(Class<?> cls) {
         return uow.isEntityType(cls);
@@ -370,8 +362,9 @@ public class CloneBuilder {
     }
 
     private final class Builders {
+        private final Map<Class<?>, Supplier<AbstractInstanceBuilder>> builders = new HashMap<>();
         private final AbstractInstanceBuilder defaultBuilder;
-        private final ManagedInstanceBuilder managedInstanceBuilder;
+        private final AbstractInstanceBuilder managedInstanceBuilder;
         private final AbstractInstanceBuilder dateBuilder;
         private final AbstractInstanceBuilder multilingualStringBuilder;
         // Lists and Sets
@@ -383,30 +376,48 @@ public class CloneBuilder {
             this.managedInstanceBuilder = new ManagedInstanceBuilder(CloneBuilder.this, uow);
             this.dateBuilder = new DateInstanceBuilder(CloneBuilder.this, uow);
             this.multilingualStringBuilder = new MultilingualStringInstanceBuilder(CloneBuilder.this, uow);
-        }
 
-        private AbstractInstanceBuilder getBuilder(Object toClone) {
-            if (toClone instanceof Date) {
-                return dateBuilder;
-            }
-            if (toClone instanceof MultilingualString) {
-                return multilingualStringBuilder;
-            }
-            if (toClone instanceof Map) {
+            builders.put(Date.class, () -> dateBuilder);
+            builders.put(MultilingualString.class, () -> multilingualStringBuilder);
+            builders.put(Map.class, () -> {
                 if (mapBuilder == null) {
                     this.mapBuilder = new MapInstanceBuilder(CloneBuilder.this, uow);
                 }
                 return mapBuilder;
-            } else if (toClone instanceof Collection) {
+            });
+            builders.put(Collection.class, () -> {
                 if (collectionBuilder == null) {
                     this.collectionBuilder = new CollectionInstanceBuilder(CloneBuilder.this, uow);
                 }
                 return collectionBuilder;
-            } else if (isTypeManaged(toClone.getClass())) {
-                return managedInstanceBuilder;
-            } else {
-                return defaultBuilder;
+            });
+        }
+
+        private Supplier<AbstractInstanceBuilder> getBuilderSupplier(Object toClone) {
+            for (Map.Entry<Class<?>, Supplier<AbstractInstanceBuilder>> entry : builders.entrySet()) {
+                if (entry.getKey().isAssignableFrom(toClone.getClass())) {
+                    return entry.getValue();
+                }
             }
+
+            return null;
+        }
+
+        private boolean hasBuilder(Object toClone) {
+            return getBuilderSupplier(toClone) != null;
+        }
+
+        private AbstractInstanceBuilder getBuilder(Object toClone) {
+            Supplier<AbstractInstanceBuilder> builderFunction = getBuilderSupplier(toClone);
+            if (builderFunction != null) {
+                return builderFunction.get();
+            }
+
+            if (isTypeManaged(toClone.getClass())) {
+                return managedInstanceBuilder;
+            }
+
+            return defaultBuilder;
         }
     }
 }
