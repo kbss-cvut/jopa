@@ -39,10 +39,9 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Supplier;
+import java.util.Optional;
 
 /**
  * Builds clones used in transactions for tracking changes.
@@ -118,7 +117,7 @@ public class CloneBuilder {
         }
         final Class<?> cls = original.getClass();
         final boolean managed = isTypeManaged(cls);
-        final boolean  hasBuilder = instanceHasBuilder(original);
+        final boolean hasBuilder = instanceHasBuilder(original);
         final Descriptor descriptor = cloneConfiguration.getDescriptor();
         if (managed) {
             final Object visitedClone = getVisitedEntity(descriptor, original);
@@ -197,7 +196,7 @@ public class CloneBuilder {
                         }
                     }
                 } else {
-                    // The field is an immutable type
+                    // We assume that the value is immutable
                     clonedValue = origVal;
                 }
             }
@@ -302,67 +301,52 @@ public class CloneBuilder {
         visitedEntities.remove(descriptor, instance);
     }
 
+
     private final class Builders {
-        private final Map<Class<?>, Supplier<AbstractInstanceBuilder>> builders = new HashMap<>();
         private final AbstractInstanceBuilder defaultBuilder;
         private final AbstractInstanceBuilder managedInstanceBuilder;
         private final AbstractInstanceBuilder dateBuilder;
         private final AbstractInstanceBuilder multilingualStringBuilder;
         // Lists and Sets
-        private AbstractInstanceBuilder collectionBuilder;
-        private AbstractInstanceBuilder mapBuilder;
+        private final AbstractInstanceBuilder collectionBuilder;
+        private final AbstractInstanceBuilder mapBuilder;
 
         private Builders() {
             this.defaultBuilder = new DefaultInstanceBuilder(CloneBuilder.this, uow);
             this.managedInstanceBuilder = new ManagedInstanceBuilder(CloneBuilder.this, uow);
             this.dateBuilder = new DateInstanceBuilder(CloneBuilder.this, uow);
             this.multilingualStringBuilder = new MultilingualStringInstanceBuilder(CloneBuilder.this, uow);
-
-            builders.put(Date.class, () -> dateBuilder);
-            builders.put(MultilingualString.class, () -> multilingualStringBuilder);
-            builders.put(Map.class, () -> {
-                if (mapBuilder == null) {
-                    this.mapBuilder = new MapInstanceBuilder(CloneBuilder.this, uow);
-                }
-                return mapBuilder;
-            });
-            builders.put(Collection.class, () -> {
-                if (collectionBuilder == null) {
-                    this.collectionBuilder = new CollectionInstanceBuilder(CloneBuilder.this, uow);
-                }
-                return collectionBuilder;
-            });
+            this.mapBuilder = new MapInstanceBuilder(CloneBuilder.this, uow);
+            this.collectionBuilder = new CollectionInstanceBuilder(CloneBuilder.this, uow);
         }
 
-        private Supplier<AbstractInstanceBuilder> getBuilderSupplier(Object toClone) {
-            if(toClone == null) {
-                return null;
+        private Optional<AbstractInstanceBuilder> getAbstractInstanceBuilder(Object toClone) {
+            if(toClone instanceof Date) {
+                return Optional.of(dateBuilder);
+            } else if(toClone instanceof MultilingualString) {
+                return Optional.of(multilingualStringBuilder);
+            } else if(toClone instanceof Map) {
+                return Optional.of(mapBuilder);
+            } else if(toClone instanceof Collection<?>) {
+                return Optional.of(collectionBuilder);
             }
 
-            for (Map.Entry<Class<?>, Supplier<AbstractInstanceBuilder>> entry : builders.entrySet()) {
-                if (entry.getKey().isAssignableFrom(toClone.getClass())) {
-                    return entry.getValue();
-                }
-            }
-
-            return null;
+            return Optional.empty();
         }
 
         private boolean hasBuilder(Object toClone) {
-            return getBuilderSupplier(toClone) != null;
+            return getAbstractInstanceBuilder(toClone).isPresent();
         }
 
         private AbstractInstanceBuilder getBuilder(Object toClone) {
-            Supplier<AbstractInstanceBuilder> builderFunction = getBuilderSupplier(toClone);
-            if (builderFunction != null) {
-                return builderFunction.get();
-            }
+            return getAbstractInstanceBuilder(toClone)
+                    .orElseGet(() -> {
+                        if (isTypeManaged(toClone.getClass())) {
+                            return managedInstanceBuilder;
+                        }
 
-            if (isTypeManaged(toClone.getClass())) {
-                return managedInstanceBuilder;
-            }
-
-            return defaultBuilder;
+                        return defaultBuilder;
+                    });
         }
     }
 }
