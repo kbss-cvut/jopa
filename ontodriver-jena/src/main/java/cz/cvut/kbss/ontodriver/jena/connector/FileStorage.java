@@ -22,6 +22,8 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverInitializationException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.RiotNotFoundException;
@@ -31,6 +33,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * File storage accessor.
@@ -97,5 +100,13 @@ class FileStorage extends LocalStorage {
         }
         dataset.close();
         initialize();
+    }
+
+    @Override
+    public void remove(StmtIterator iterator, String context) {
+        // For FileStorage we can't iterate through the statement and call remove on them because
+        // it causes a ConcurrentModificationException
+        final List<Statement> toRemove = iterator.toList();
+        remove(toRemove, context);
     }
 }
