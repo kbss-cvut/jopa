@@ -54,6 +54,8 @@ public class SparqlQueryParser implements QueryParser {
     private ParamType currentParamType;
     private StringBuilder currentWord;
     private boolean inProjection;
+    private boolean inComment;
+    private boolean inUri;
 
     public SparqlQueryParser(ParameterValueFactory parameterValueFactory) {
         this.parameterValueFactory = parameterValueFactory;
@@ -67,45 +69,57 @@ public class SparqlQueryParser implements QueryParser {
     @Override
     public SparqlQueryHolder parseQuery(String query) {
         this.query = query;
-        this.queryParts = new ArrayList<>();
-        this.uniqueParams = new HashMap<>();
-        this.positionalCounter = 1;
-        this.parameters = new ArrayList<>();
-        this.inSQString = false;
-        // In double-quoted string
-        this.inDQString = false;
-        this.inParam = false;
-        this.lastParamEndIndex = 0;
-        this.paramStartIndex = 0;
-        this.currentParamType = null;
-        this.currentWord = new StringBuilder();
+        resetParser();
         int i;
         for (i = 0; i < query.length(); i++) {
             final char c = query.charAt(i);
             switch (c) {
+                case '#':
+                    startComment(i, c);
+                    break;
                 case '\'':
-                    inSQString = !inSQString;
+                    // inComment ? inSQString : !inSQString
+                    inSQString = inComment == inSQString;
                     break;
                 case '"':
-                    inDQString = !inDQString;
+                    // inComment ? inDQString : !inDQString
+                    inDQString = inComment == inDQString;
                     break;
                 case '$':
-                    parameterStart(i, ParamType.POSITIONAL);
-                    break;
-                case '?':
-                    if (inParam) {
-                        parameterEnd(i);    // Property path zero or one
-                    } else {
-                        parameterStart(i, ParamType.NAMED);
+                    if (!inComment) {
+                        parameterStart(i, ParamType.POSITIONAL);
                     }
                     break;
-                case '{':
-                    this.inProjection = false;  // Intentional fall-through
+                case '?':
+                    if (!inComment) {
+                        if (inParam) {
+                            parameterEnd(i);    // Property path zero or one
+                        } else {
+                            parameterStart(i, ParamType.NAMED);
+                        }
+                    }
+                    break;
                 case '<':
+                    this.inUri = true;
+                    if (inParam) {
+                        parameterEnd(i);
+                    }
+                    wordEnd();
+                    break;
                 case '>':
-                case ',':
+                    this.inUri = false;
+                    if (inParam) {
+                        parameterEnd(i);
+                    }
+                    wordEnd();
+                    break;
                 case '\n':
+                    this.inComment = false; // Intentional fall-through
+                case '{':
+                    // inComment ? inProjection : !inProjection
+                    this.inProjection = inComment && inProjection;  // Intentional fall-through
                 case '\r':
+                case ',':
                 case ')':
                 case ' ':
                 case '.':
@@ -133,6 +147,34 @@ public class SparqlQueryParser implements QueryParser {
             queryParts.add(query.substring(lastParamEndIndex));
         }
         return new SparqlQueryHolder(query, queryParts, parameters);
+    }
+
+    private void resetParser() {
+        this.queryParts = new ArrayList<>();
+        this.uniqueParams = new HashMap<>();
+        this.positionalCounter = 1;
+        this.parameters = new ArrayList<>();
+        this.inSQString = false;
+        // In double-quoted string
+        this.inDQString = false;
+        this.inParam = false;
+        this.inUri = false;
+        this.inComment = false;
+        this.lastParamEndIndex = 0;
+        this.paramStartIndex = 0;
+        this.currentParamType = null;
+        this.currentWord = new StringBuilder();
+    }
+
+    private void startComment(int index, char c) {
+        if (!inUri) {
+            if (inParam && !inComment) {
+                parameterEnd(index);
+            }
+            inComment = true;
+        } else {
+            currentWord.append(c);
+        }
     }
 
     private void parameterStart(int index, ParamType paramType) {
