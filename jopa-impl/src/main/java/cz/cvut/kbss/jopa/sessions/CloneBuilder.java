@@ -33,34 +33,16 @@ import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.ontodriver.model.LangString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.net.URL;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.Period;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Builds clones used in transactions for tracking changes.
@@ -68,8 +50,6 @@ import java.util.stream.Stream;
 public class CloneBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(CloneBuilder.class);
-
-    private static final Set<Class<?>> IMMUTABLE_TYPES = getImmutableTypes();
 
     // Contains entities that are already cloned, so that we don't clone them again
     private final RepositoryMap visitedEntities;
@@ -238,21 +218,6 @@ public class CloneBuilder {
     }
 
     /**
-     * Check if the given class is an immutable type.
-     * <p>
-     * Objects of immutable types do not have to be cloned, because they cannot be modified.
-     * <p>
-     * Note that this method does not do any sophisticated verification, it just checks if the specified class
-     * corresponds to a small set of predefined conditions, e.g. primitive class, enum, String.
-     *
-     * @param cls the class to check
-     * @return Whether the class represents immutable objects
-     */
-    static boolean isImmutable(Class<?> cls) {
-        return cls.isPrimitive() || cls.isEnum() || IMMUTABLE_TYPES.contains(cls);
-    }
-
-    /**
      * Merges the changes on clone into the original object.
      *
      * @param changeSet Contains changes to merge
@@ -335,34 +300,6 @@ public class CloneBuilder {
      */
     public void removeVisited(Object instance, Descriptor descriptor) {
         visitedEntities.remove(descriptor, instance);
-    }
-
-    private static Set<Class<?>> getImmutableTypes() {
-        return Stream.of(Boolean.class,
-                Character.class,
-                Byte.class,
-                Short.class,
-                Integer.class,
-                Long.class,
-                Float.class,
-                Double.class,
-                BigInteger.class,
-                BigDecimal.class,
-                Void.class,
-                String.class,
-                URI.class,
-                URL.class,
-                LocalDate.class,
-                LocalTime.class,
-                LocalDateTime.class,
-                ZonedDateTime.class,
-                OffsetDateTime.class,
-                OffsetTime.class,
-                ZoneOffset.class,
-                Instant.class,
-                Duration.class,
-                Period.class,
-                LangString.class).collect(Collectors.toSet());
     }
 
     private final class Builders {
