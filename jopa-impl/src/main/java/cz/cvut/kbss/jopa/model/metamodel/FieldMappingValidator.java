@@ -122,11 +122,16 @@ class FieldMappingValidator {
 
     private static void validateSimpleLiteralField(AbstractAttribute<?, ?> attribute) {
         final Class<?> fieldType = getBindableType(attribute);
-        if (attribute.isSimpleLiteral() && (!String.class.isAssignableFrom(fieldType) && !Enum.class.isAssignableFrom(
-                fieldType) && !attribute.getConverter().supportsAxiomValueType(String.class))) {
-            throw new InvalidFieldMappingException(
-                    attribute.getJavaField(),"simpleLiteral mapping can only be used on fields of type String or Enum or using a suitable converter.");
+
+        if (!attribute.isSimpleLiteral() || String.class.isAssignableFrom(fieldType) || Enum.class.isAssignableFrom(fieldType)) {
+            return;
         }
+
+        if(attribute.getConverter() != null && attribute.getConverter().supportsAxiomValueType(String.class)) {
+            return;
+        }
+
+        throw new InvalidFieldMappingException(attribute.getJavaField(),"simpleLiteral mapping can only be used on fields of type String or Enum or using a suitable converter.");
     }
 
     private static Class<?> getBindableType(AbstractAttribute<?, ?> attribute) {

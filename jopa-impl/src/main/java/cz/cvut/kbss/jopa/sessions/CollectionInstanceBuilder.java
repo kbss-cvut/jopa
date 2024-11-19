@@ -145,10 +145,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                 tg.add(null);
                 continue;
             }
-            if (CloneBuilder.isImmutable(elem)) {
-                tg.addAll(source);
-                break;
-            }
+
             tg.add(cloneCollectionElement(cloneOwner, field, elem, configuration));
         }
     }
@@ -158,12 +155,13 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         Object clone;
         if (builder.isTypeManaged(element.getClass())) {
             clone = uow.registerExistingObject(element, new CloneRegistrationDescriptor(configuration.getDescriptor()).postCloneHandlers(configuration.getPostRegister()));
-        } else {
+        } else if (builder.instanceHasBuilder(element)) {
             clone = builder.buildClone(cloneOwner, field, element, configuration.getDescriptor());
+        } else {
+            clone = element; // Assume it is immutable
         }
         return clone;
     }
-
 
     private Collection<?> buildInstanceOfSpecialCollection(Object cloneOwner, Field field, Collection<?> container,
                                                            CloneConfiguration configuration) {
@@ -173,8 +171,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             return arrayList;
         } else if (singletonListClass.isInstance(container) || singletonSetClass.isInstance(container)) {
             final Object element = container.iterator().next();
-            final Object elementClone = CloneBuilder.isImmutable(element) ? element :
-                    cloneCollectionElement(cloneOwner, field, element, configuration);
+            final Object elementClone = cloneCollectionElement(cloneOwner, field, element, configuration);
             final Collection<Object> result = CollectionFactory.createDefaultCollection(singletonListClass.isInstance(container) ? CollectionType.LIST : CollectionType.SET);
             result.add(elementClone);
             return result;

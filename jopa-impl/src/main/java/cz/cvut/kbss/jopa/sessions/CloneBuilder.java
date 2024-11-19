@@ -33,32 +33,14 @@ import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.ontodriver.model.LangString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.net.URL;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.Period;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 /**
  * Builds clones used in transactions for tracking changes.
@@ -66,8 +48,6 @@ import java.util.stream.Stream;
 public class CloneBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(CloneBuilder.class);
-
-    private static final Set<Class<?>> IMMUTABLE_TYPES = getImmutableTypes();
 
     // Contains entities that are already cloned, so that we don't clone them again
     private final RepositoryMap visitedEntities;
@@ -136,6 +116,7 @@ public class CloneBuilder {
         }
         final Class<?> cls = original.getClass();
         final boolean managed = isTypeManaged(cls);
+        final boolean hasBuilder = instanceHasBuilder(original);
         final Descriptor descriptor = cloneConfiguration.getDescriptor();
         if (managed) {
             final Object visitedClone = getVisitedEntity(descriptor, original);
@@ -151,7 +132,7 @@ public class CloneBuilder {
             final LoadStateDescriptor<Object> loadState = cloneLoadStateDescriptor(original, clone);
             uow.getLoadStateRegistry().put(clone, loadState);
         }
-        if (!builder.populatesAttributes() && !isImmutable(cls)) {
+        if (!builder.populatesAttributes() && (managed || hasBuilder)) {
             populateAttributes(original, clone, cloneConfiguration);
         }
         return clone;
@@ -189,33 +170,29 @@ public class CloneBuilder {
                  continue;
             } else {
                 final Class<?> origValueClass = origVal.getClass();
-                if (isImmutable(origValueClass)) {
-                    // The field is an immutable type
-                    clonedValue = origVal;
-                } else if (IndirectWrapperHelper.requiresIndirectWrapper(origVal)) {
+                if (IndirectWrapperHelper.requiresIndirectWrapper(origVal)) {
                     final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, configuration.getDescriptor());
                     // Collection or Map
                     clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal,
                             CloneConfiguration.withDescriptor(fieldDescriptor)
                                               .forPersistenceContext(configuration.isForPersistenceContext())
                                               .addPostRegisterHandlers(configuration.getPostRegister()));
-                } else {
+                } else if(isTypeManaged(origValueClass)) {
                     // Otherwise, we have a relationship, and we need to clone its target as well
                     if (isOriginalInUoW(origVal)) {
                         // If the reference is already managed
                         clonedValue = uow.getCloneForOriginal(origVal);
                     } else {
-                        if (isTypeManaged(origValueClass)) {
                             final Descriptor fieldDescriptor =
                                     getFieldDescriptor(f, originalClass, configuration.getDescriptor());
                             clonedValue = getVisitedEntity(configuration.getDescriptor(), origVal);
                             if (clonedValue == null) {
                                 clonedValue = uow.registerExistingObject(origVal, new CloneRegistrationDescriptor(fieldDescriptor).postCloneHandlers(configuration.getPostRegister()));
                             }
-                        } else {
-                            clonedValue = buildClone(origVal, configuration);
-                        }
                     }
+                } else {
+                    // We assume that the value is immutable
+                    clonedValue = origVal;
                 }
             }
             EntityPropertiesUtils.setFieldValue(f, clone, clonedValue);
@@ -235,33 +212,6 @@ public class CloneBuilder {
     }
 
     /**
-     * Check if the given class is an immutable type.
-     * <p>
-     * Objects of immutable types do not have to be cloned, because they cannot be modified.
-     * <p>
-     * Note that this method does not do any sophisticated verification, it just checks if the specified class
-     * corresponds to a small set of predefined conditions, e.g. primitive class, enum, String.
-     *
-     * @param cls the class to check
-     * @return Whether the class represents immutable objects
-     */
-    static boolean isImmutable(Class<?> cls) {
-        return cls.isPrimitive() || cls.isEnum() || IMMUTABLE_TYPES.contains(cls);
-    }
-
-    /**
-     * Checks if the specified object is immutable.
-     * <p>
-     * {@code null} is considered immutable, otherwise, this method just calls {@link #isImmutable(Class)}.
-     *
-     * @param object The instance to check
-     * @return immutability status
-     */
-    static boolean isImmutable(Object object) {
-        return object == null || isImmutable(object.getClass());
-    }
-
-    /**
      * Merges the changes on clone into the original object.
      *
      * @param changeSet Contains changes to merge
@@ -272,16 +222,16 @@ public class CloneBuilder {
         try {
             for (ChangeRecord change : changeSet.getChanges()) {
                 Field f = change.getAttribute().getJavaField();
-                if (isImmutable(f.getType())) {
-                    EntityPropertiesUtils.setFieldValue(f, original, change.getNewValue());
-                    continue;
-                }
+
                 Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
                 Object newVal = change.getNewValue();
-                if (newVal == null) {
+
+                if(newVal == null) {
                     EntityPropertiesUtils.setFieldValue(f, original, null);
-                } else {
+                } else if(isTypeManaged(f.getType()) || instanceHasBuilder(newVal)) {
                     getInstanceBuilder(newVal).mergeChanges(f, original, origVal, newVal);
+                } else {
+                    EntityPropertiesUtils.setFieldValue(f, original, newVal);
                 }
                 loadStateDescriptor.setLoaded((FieldSpecification<? super Object, ?>) change.getAttribute(), LoadState.LOADED);
             }
@@ -304,6 +254,8 @@ public class CloneBuilder {
     AbstractInstanceBuilder getInstanceBuilder(Object toClone) {
         return builders.getBuilder(toClone);
     }
+
+    boolean instanceHasBuilder(Object toClone) { return builders.hasBuilder(toClone); }
 
     boolean isTypeManaged(Class<?> cls) {
         return uow.isEntityType(cls);
@@ -341,72 +293,48 @@ public class CloneBuilder {
         visitedEntities.remove(descriptor, instance);
     }
 
-    private static Set<Class<?>> getImmutableTypes() {
-        return Stream.of(Boolean.class,
-                Character.class,
-                Byte.class,
-                Short.class,
-                Integer.class,
-                Long.class,
-                Float.class,
-                Double.class,
-                BigInteger.class,
-                BigDecimal.class,
-                Void.class,
-                String.class,
-                URI.class,
-                URL.class,
-                LocalDate.class,
-                LocalTime.class,
-                LocalDateTime.class,
-                ZonedDateTime.class,
-                OffsetDateTime.class,
-                OffsetTime.class,
-                ZoneOffset.class,
-                Instant.class,
-                Duration.class,
-                Period.class,
-                LangString.class).collect(Collectors.toSet());
-    }
 
     private final class Builders {
         private final AbstractInstanceBuilder defaultBuilder;
-        private final ManagedInstanceBuilder managedInstanceBuilder;
-        private final AbstractInstanceBuilder dateBuilder;
+        private final AbstractInstanceBuilder managedInstanceBuilder;
         private final AbstractInstanceBuilder multilingualStringBuilder;
         // Lists and Sets
-        private AbstractInstanceBuilder collectionBuilder;
-        private AbstractInstanceBuilder mapBuilder;
+        private final AbstractInstanceBuilder collectionBuilder;
+        private final AbstractInstanceBuilder mapBuilder;
 
         private Builders() {
             this.defaultBuilder = new DefaultInstanceBuilder(CloneBuilder.this, uow);
             this.managedInstanceBuilder = new ManagedInstanceBuilder(CloneBuilder.this, uow);
-            this.dateBuilder = new DateInstanceBuilder(CloneBuilder.this, uow);
             this.multilingualStringBuilder = new MultilingualStringInstanceBuilder(CloneBuilder.this, uow);
+            this.mapBuilder = new MapInstanceBuilder(CloneBuilder.this, uow);
+            this.collectionBuilder = new CollectionInstanceBuilder(CloneBuilder.this, uow);
+        }
+
+        private Optional<AbstractInstanceBuilder> getAbstractInstanceBuilder(Object toClone) {
+            if(toClone instanceof MultilingualString) {
+                return Optional.of(multilingualStringBuilder);
+            } else if(toClone instanceof Map) {
+                return Optional.of(mapBuilder);
+            } else if(toClone instanceof Collection<?>) {
+                return Optional.of(collectionBuilder);
+            }
+
+            return Optional.empty();
+        }
+
+        private boolean hasBuilder(Object toClone) {
+            return getAbstractInstanceBuilder(toClone).isPresent();
         }
 
         private AbstractInstanceBuilder getBuilder(Object toClone) {
-            if (toClone instanceof Date) {
-                return dateBuilder;
-            }
-            if (toClone instanceof MultilingualString) {
-                return multilingualStringBuilder;
-            }
-            if (toClone instanceof Map) {
-                if (mapBuilder == null) {
-                    this.mapBuilder = new MapInstanceBuilder(CloneBuilder.this, uow);
-                }
-                return mapBuilder;
-            } else if (toClone instanceof Collection) {
-                if (collectionBuilder == null) {
-                    this.collectionBuilder = new CollectionInstanceBuilder(CloneBuilder.this, uow);
-                }
-                return collectionBuilder;
-            } else if (isTypeManaged(toClone.getClass())) {
-                return managedInstanceBuilder;
-            } else {
-                return defaultBuilder;
-            }
+            return getAbstractInstanceBuilder(toClone)
+                    .orElseGet(() -> {
+                        if (toClone != null && isTypeManaged(toClone.getClass())) {
+                            return managedInstanceBuilder;
+                        }
+
+                        return defaultBuilder;
+                    });
         }
     }
 }
