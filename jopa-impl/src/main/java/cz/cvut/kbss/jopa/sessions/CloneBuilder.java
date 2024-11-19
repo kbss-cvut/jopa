@@ -138,6 +138,7 @@ public class CloneBuilder {
         }
         final Class<?> cls = original.getClass();
         final boolean managed = isTypeManaged(cls);
+        final boolean  hasBuilder = instanceHasBuilder(original);
         final Descriptor descriptor = cloneConfiguration.getDescriptor();
         if (managed) {
             final Object visitedClone = getVisitedEntity(descriptor, original);
@@ -153,7 +154,7 @@ public class CloneBuilder {
             final LoadStateDescriptor<Object> loadState = cloneLoadStateDescriptor(original, clone);
             uow.getLoadStateRegistry().put(clone, loadState);
         }
-        if (!builder.populatesAttributes() && !isImmutable(cls)) {
+        if (!builder.populatesAttributes() && (managed || hasBuilder)) {
             populateAttributes(original, clone, cloneConfiguration);
         }
         return clone;
@@ -191,17 +192,14 @@ public class CloneBuilder {
                  continue;
             } else {
                 final Class<?> origValueClass = origVal.getClass();
-                if (isImmutable(origValueClass)) {
-                    // The field is an immutable type
-                    clonedValue = origVal;
-                } else if (IndirectWrapperHelper.requiresIndirectWrapper(origVal)) {
+                if (IndirectWrapperHelper.requiresIndirectWrapper(origVal)) {
                     final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, configuration.getDescriptor());
                     // Collection or Map
                     clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal,
                             CloneConfiguration.withDescriptor(fieldDescriptor)
                                               .forPersistenceContext(configuration.isForPersistenceContext())
                                               .addPostRegisterHandlers(configuration.getPostRegister()));
-                } else {
+                } else if(isTypeManaged(origValueClass) || instanceHasBuilder(origVal)) {
                     // Otherwise, we have a relationship, and we need to clone its target as well
                     if (isOriginalInUoW(origVal)) {
                         // If the reference is already managed
@@ -218,6 +216,9 @@ public class CloneBuilder {
                             clonedValue = buildClone(origVal, configuration);
                         }
                     }
+                } else {
+                    // The field is an immutable type
+                    clonedValue = origVal;
                 }
             }
             EntityPropertiesUtils.setFieldValue(f, clone, clonedValue);
@@ -262,16 +263,19 @@ public class CloneBuilder {
         try {
             for (ChangeRecord change : changeSet.getChanges()) {
                 Field f = change.getAttribute().getJavaField();
-                if (isImmutable(f.getType())) {
-                    EntityPropertiesUtils.setFieldValue(f, original, change.getNewValue());
-                    continue;
-                }
+
                 Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
                 Object newVal = change.getNewValue();
-                if (newVal == null) {
+
+                if(newVal == null) {
                     EntityPropertiesUtils.setFieldValue(f, original, null);
-                } else {
+                }
+
+                if(isTypeManaged(f.getType()) || instanceHasBuilder(newVal)) {
                     getInstanceBuilder(newVal).mergeChanges(f, original, origVal, newVal);
+                    continue;
+                } else {
+                    EntityPropertiesUtils.setFieldValue(f, original, newVal);
                 }
                 loadStateDescriptor.setLoaded((FieldSpecification<? super Object, ?>) change.getAttribute(), LoadState.LOADED);
             }
@@ -394,6 +398,10 @@ public class CloneBuilder {
         }
 
         private Supplier<AbstractInstanceBuilder> getBuilderSupplier(Object toClone) {
+            if(toClone == null) {
+                return null;
+            }
+
             for (Map.Entry<Class<?>, Supplier<AbstractInstanceBuilder>> entry : builders.entrySet()) {
                 if (entry.getKey().isAssignableFrom(toClone.getClass())) {
                     return entry.getValue();
