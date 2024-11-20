@@ -18,8 +18,10 @@
 package cz.cvut.kbss.jopa.proxy.lazy;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.PluralQueryAttribute;
 import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxy;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
@@ -59,8 +61,18 @@ public class LazyLoadingProxyFactory {
         } else if (Map.class.isAssignableFrom(type)) {
             return new LazyLoadingMapProxy<>(entity, (FieldSpecification) fieldSpec, uow);
         } else if (Collection.class.isAssignableFrom(type)) {
-            final PluralAttribute<? super T, ?, ?> pa = (PluralAttribute<? super T, ?, ?>) fieldSpec;
-            return switch (pa.getCollectionType()) {
+            CollectionType collectionType;
+            assert fieldSpec instanceof PluralAttribute<?,?,?> || fieldSpec instanceof PluralQueryAttribute<?,?,?>;
+
+            if(fieldSpec instanceof PluralAttribute) {
+                final PluralAttribute<? super T, ?, ?> pa = (PluralAttribute<? super T, ?, ?>) fieldSpec;
+                collectionType = pa.getCollectionType();
+            } else {
+                final PluralQueryAttribute<? super T, ?, ?> pa = (PluralQueryAttribute<? super T, ?, ?>) fieldSpec;
+                collectionType = pa.getCollectionType();
+            }
+
+            return switch (collectionType) {
                 case LIST -> new LazyLoadingListProxy<>(entity, (FieldSpecification) fieldSpec, uow);
                 case SET, COLLECTION -> new LazyLoadingSetProxy<>(entity, (FieldSpecification) fieldSpec, uow);
                 default -> throw new IllegalArgumentException("Unsupported collection type for lazy proxying.");
