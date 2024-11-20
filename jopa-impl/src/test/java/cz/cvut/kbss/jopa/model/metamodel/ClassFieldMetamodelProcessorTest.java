@@ -19,9 +19,16 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
+import cz.cvut.kbss.jopa.environment.OWLClassV;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
+import cz.cvut.kbss.jopa.model.annotations.Sequence;
+import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -36,8 +43,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ClassFieldMetamodelProcessorTest {
 
@@ -64,6 +79,40 @@ class ClassFieldMetamodelProcessorTest {
         public void setInvalidAttribute(String invalidAttribute) {
             this.invalidAttribute = invalidAttribute;
         }
+    }
+
+    @Test
+    void processDynamicObjectFieldIsResolvedAsSingularAttributeImpl() throws Exception {
+        final IdentifiableEntityType<OWLClassV> etMock = mock(IdentifiableEntityType.class);
+        when(etMock.getJavaType()).thenReturn(OWLClassV.class);
+        final ClassFieldMetamodelProcessor<OWLClassV> processor = prepareProcessorForClass(etMock);
+        final Field field = OWLClassV.getSingularDynamicAttField();
+        when(metamodelBuilder.hasManagedType(OWLClassV.class)).thenReturn(true);
+
+        processor.processField(field);
+
+        final ArgumentCaptor<AbstractAttribute> captor = ArgumentCaptor.forClass(AbstractAttribute.class);
+        verify(etMock).addDeclaredAttribute(eq(field.getName()), captor.capture());
+
+        assertInstanceOf(SingularAttributeImpl.class, captor.getValue());
+        assertEquals(Vocabulary.ATTRIBUTE_BASE + "singularDynamicAttribute", captor.getValue().getIRI().toString());
+    }
+
+    @Test
+    void processDynamicObjectFieldIsResolvedAsPluralAttributeImpl() throws Exception {
+        final IdentifiableEntityType<OWLClassV> etMock = mock(IdentifiableEntityType.class);
+        when(etMock.getJavaType()).thenReturn(OWLClassV.class);
+        final ClassFieldMetamodelProcessor<OWLClassV> processor = prepareProcessorForClass(etMock);
+        final Field field = OWLClassV.getPluralDynamicAttField();
+        when(metamodelBuilder.hasManagedType(OWLClassV.class)).thenReturn(true);
+
+        processor.processField(field);
+
+        final ArgumentCaptor<AbstractAttribute> captor = ArgumentCaptor.forClass(AbstractAttribute.class);
+        verify(etMock).addDeclaredAttribute(eq(field.getName()), captor.capture());
+
+        assertInstanceOf(SingularAttributeImpl.class, captor.getValue());
+        assertEquals(Vocabulary.ATTRIBUTE_BASE + "pluralDynamicAttribute", captor.getValue().getIRI().toString());
     }
 
     @Test
