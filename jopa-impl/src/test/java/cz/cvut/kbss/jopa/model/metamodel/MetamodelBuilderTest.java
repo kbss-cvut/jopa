@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
+import cz.cvut.kbss.jopa.environment.OWLClassV;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
@@ -48,6 +49,7 @@ import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
+import cz.cvut.kbss.jopa.oom.converter.ObjectConverter;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.LocalDateTimeConverter;
@@ -204,6 +206,16 @@ class MetamodelBuilderTest {
         final AbstractAttribute<OWLClassT, LocalDateTime> result = (AbstractAttribute<OWLClassT, LocalDateTime>) et
                 .getDeclaredAttribute(OWLClassT.getLocalDateTimeField().getName());
         assertThat(result.getConverter(), instanceOf(LocalDateTimeConverter.class));
+    }
+
+    @Test
+    void buildMetamodelBuildsEntityWithObjectConverterForDynamicAttributes() throws Exception {
+        when(finderMock.getEntities()).thenReturn(Collections.singleton(OWLClassV.class));
+        builder.buildMetamodel(finderMock);
+        final IdentifiableEntityType<OWLClassV> et = (IdentifiableEntityType<OWLClassV>) builder.getEntityClass(OWLClassV.class);
+        final AbstractAttribute<OWLClassV, LocalDateTime> result = (AbstractAttribute<OWLClassV, LocalDateTime>) et
+                .getDeclaredAttribute(OWLClassV.getSingularDynamicAttField().getName());
+        assertThat(result.getConverter(), instanceOf(ObjectConverter.class));
     }
 
     @Test

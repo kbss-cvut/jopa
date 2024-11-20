@@ -82,6 +82,9 @@ public class Vocabulary {
     public static final String P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_BASE + "singularMultilingualAttribute";
     public static final String P_U_PLURAL_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_BASE + "pluralMultilingualAttribute";
 
+    public static final String P_V_SINGULAR_DYNAMIC_ATTRIBUTE = ATTRIBUTE_BASE + "singularDynamicAttribute";
+    public static final String P_V_PLURAL_DYNAMIC_ATTRIBUTE = ATTRIBUTE_BASE + "pluralDynamicAttribute";
+
     public static final String p_p_username = ATTRIBUTE_BASE + "username";
     public static final String p_p_age = ATTRIBUTE_BASE + "age";
     public static final String p_p_hasPhone = ATTRIBUTE_BASE + "hasPhone";
