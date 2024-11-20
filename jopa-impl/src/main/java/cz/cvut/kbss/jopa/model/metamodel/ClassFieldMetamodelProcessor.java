@@ -318,6 +318,11 @@ class ClassFieldMetamodelProcessor<X> {
         final AbstractAttribute<X, ?> a;
         if (property.getAnnotation(RDFContainer.class) != null) {
             a = createRdfContainerAttribute(property, inference, propertyAttributes);
+        } else if (property.getType().isAssignableFrom(Object.class)) {
+            final SingularAttributeImpl.SingularAttributeBuilder builder = setCommonBuildParameters(SingularAttributeImpl.builder(propertyAttributes),
+                    property, inference);
+            context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
+            a = builder.build();
         } else if (property.getType().isAssignableFrom(Collection.class)) {
             final AbstractPluralAttribute.PluralAttributeBuilder builder = setCommonBuildParameters(CollectionAttributeImpl.builder(propertyAttributes),
                     property, inference);
