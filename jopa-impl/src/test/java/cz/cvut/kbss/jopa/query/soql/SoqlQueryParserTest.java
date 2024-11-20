@@ -749,6 +749,50 @@ public class SoqlQueryParserTest {
         parseAndAssertEquality(soql, expectedSparql);
     }
 
+    @Test
+    void parseQuerySupportsCountWithProjectedAttribute() {
+        final String soqlIdFirst = "SELECT COUNT(d.owlClassA) FROM OWLClassD d WHERE d.uri = :uri";
+        final String expectedSparql = "SELECT (COUNT(?owlClassA) AS ?count) WHERE { ?uri a " + strUri(Vocabulary.c_OwlClassD) + " . " +
+                "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . }";
+        parseAndAssertEquality(soqlIdFirst, expectedSparql);
+    }
+
+    @Test
+    void parseQuerySupportsDistinctCountWithProjectedAttribute() {
+        final String soqlIdFirst = "SELECT DISTINCT COUNT(d.owlClassA) FROM OWLClassD d WHERE d.uri = :uri";
+        final String expectedSparql = "SELECT (COUNT(DISTINCT ?owlClassA) AS ?count) WHERE { ?uri a " + strUri(Vocabulary.c_OwlClassD) + " . " +
+                "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . }";
+        parseAndAssertEquality(soqlIdFirst, expectedSparql);
+    }
+
+    @Test
+    void parseQueryWithProjectedAttribute() {
+        final String soqlIdFirst = "SELECT d.owlClassA FROM OWLClassD d WHERE d.uri = :uri";
+        final String expectedSparql = "SELECT ?owlClassA WHERE { ?uri a " + strUri(Vocabulary.c_OwlClassD) + " . " +
+                "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . }";
+        parseAndAssertEquality(soqlIdFirst, expectedSparql);
+    }
+
+    @Test
+    void parseQueryWithProjectedAttributeAndRelatedAttribute() {
+        final String soqlIdFirst = "SELECT d.owlClassA FROM OWLClassD d WHERE d.uri = :uri AND d.owlClassA.stringAttribute = :stringAtt";
+        final String expectedSparql = "SELECT ?owlClassA WHERE { ?uri a " + strUri(Vocabulary.c_OwlClassD) + " . " +
+                "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . " + // FIXME: Duplicated SPARQL #281
+                "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . " +
+                "?owlClassA " + strUri(Vocabulary.p_a_stringAttribute) + " ?stringAtt . }";
+        parseAndAssertEquality(soqlIdFirst, expectedSparql);
+    }
+
+    @Test
+    void parseQueryWithDistinctProjectedAttributeAndRelatedAttribute() {
+        final String soqlIdFirst = "SELECT DISTINCT d.owlClassA FROM OWLClassD d WHERE d.uri = :uri AND d.owlClassA.stringAttribute = :stringAtt";
+        final String expectedSparql = "SELECT DISTINCT ?owlClassA WHERE { ?uri a " + strUri(Vocabulary.c_OwlClassD) + " . " +
+                "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . " + // FIXME: Duplicated SPARQL #281
+                "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . " +
+                "?owlClassA " + strUri(Vocabulary.p_a_stringAttribute) + " ?stringAtt . }";
+        parseAndAssertEquality(soqlIdFirst, expectedSparql);
+    }
+
     /**
      * Bug #178
      */

@@ -784,19 +784,33 @@ public class SoqlQueryListener implements SoqlListener {
         return sparql;
     }
 
+    private String getSelectParameter(SoqlAttribute attribute) {
+        SoqlNode firstNode = attribute.getFirstNode();
+        if(!firstNode.hasChild()) {
+            return rootVariable;
+        }
+
+        setIris(firstNode); // we have to reassign the iris, because the table was not initialized when the first attribute was set
+        return attribute.getAsValue(rootVariable);
+    }
+
     //Methods to build new Query
     private void buildSparqlQueryString() {
         if (attributes.isEmpty()) {
             return;
         }
+
+        // the first attribute is either a projected parameter or a type attribute
+        String selectParameter = getSelectParameter(attributes.get(0));
+
         StringBuilder newQueryBuilder = new StringBuilder(typeDef);
         if (isSelectedParamCount) {
-            newQueryBuilder.append(getCountPart());
+            newQueryBuilder.append(getCountPart(selectParameter));
         } else {
             if (isSelectedParamDistinct) {
                 newQueryBuilder.append(' ').append(SoqlConstants.DISTINCT);
             }
-            newQueryBuilder.append(' ').append(rootVariable).append(' ');
+            newQueryBuilder.append(' ').append(selectParameter).append(' ');
         }
         newQueryBuilder.append("WHERE { ");
         newQueryBuilder.append(processSupremeAttributes());
@@ -818,12 +832,12 @@ public class SoqlQueryListener implements SoqlListener {
         LOG.trace("Translated SOQL query '{}' to SPARQL '{}'.", soql, sparql);
     }
 
-    private StringBuilder getCountPart() {
+    private StringBuilder getCountPart(String selectParameter) {
         StringBuilder countPart = new StringBuilder(" (COUNT(");
         if (isSelectedParamDistinct) {
             countPart.append(SoqlConstants.DISTINCT).append(' ');
         }
-        countPart.append(rootVariable).append(") AS ?count) ");
+        countPart.append(selectParameter).append(") AS ?count) ");
         return countPart;
     }
 
