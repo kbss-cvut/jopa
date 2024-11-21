@@ -62,10 +62,9 @@ public class LazyLoadingProxyFactory {
             return new LazyLoadingMapProxy<>(entity, (FieldSpecification) fieldSpec, uow);
         } else if (Collection.class.isAssignableFrom(type)) {
             CollectionType collectionType;
-            assert fieldSpec instanceof PluralAttribute<?,?,?> || fieldSpec instanceof PluralQueryAttribute<?,?,?>;
+            assert fieldSpec instanceof PluralAttribute<?, ?, ?> || fieldSpec instanceof PluralQueryAttribute<?, ?, ?>;
 
-            if(fieldSpec instanceof PluralAttribute) {
-                final PluralAttribute<? super T, ?, ?> pa = (PluralAttribute<? super T, ?, ?>) fieldSpec;
+            if (fieldSpec instanceof PluralAttribute<? super T, ?, ?> pa) {
                 collectionType = pa.getCollectionType();
             } else {
                 final PluralQueryAttribute<? super T, ?, ?> pa = (PluralQueryAttribute<? super T, ?, ?>) fieldSpec;
@@ -77,10 +76,11 @@ public class LazyLoadingProxyFactory {
                 case SET, COLLECTION -> new LazyLoadingSetProxy<>(entity, (FieldSpecification) fieldSpec, uow);
                 default -> throw new IllegalArgumentException("Unsupported collection type for lazy proxying.");
             };
-        }else if (uow.getMetamodel().isEntityType(type)) {
+        } else if (uow.getMetamodel().isEntityType(type)) {
             try {
                 final Class<?> proxyType = uow.getMetamodel().getLazyLoadingProxy(type);
-                final LazyLoadingEntityProxy<?> proxy = (LazyLoadingEntityProxy<?>) proxyType.getDeclaredConstructor().newInstance();
+                final LazyLoadingEntityProxy<?> proxy = (LazyLoadingEntityProxy<?>) proxyType.getDeclaredConstructor()
+                                                                                             .newInstance();
                 proxy.setOwner(entity);
                 proxy.setPersistenceContext(uow);
                 proxy.setFieldSpec(fieldSpec);
