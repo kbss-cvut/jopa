@@ -424,4 +424,22 @@ public class SparqlQueryParserTest {
         assertNotNull(holder.getParameter("hasMember"));
         assertNotNull(holder.getParameter("a"));
     }
+
+    @Test
+    void parseQueryHandlesMultilineProjection() {
+        final String query = """
+                SELECT ?x
+                  # ?y is a property that was previously called ?p
+                  ?y
+                  ?z
+                WHERE {
+                  ?x ?y ?z .
+                
+                """;
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(3, holder.getParameters().size());
+        assertNotNull(holder.getParameter("x"));
+        assertNotNull(holder.getParameter("y"));
+        assertNotNull(holder.getParameter("z"));
+    }
 }
