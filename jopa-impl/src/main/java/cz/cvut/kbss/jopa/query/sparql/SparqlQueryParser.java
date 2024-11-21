@@ -78,12 +78,10 @@ public class SparqlQueryParser implements QueryParser {
                     startComment(i, c);
                     break;
                 case '\'':
-                    // inComment ? inSQString : !inSQString
-                    inSQString = inComment == inSQString;
+                    this.inSQString = inComment == inSQString; // ~ inComment ? inSQString : !inSQString
                     break;
                 case '"':
-                    // inComment ? inDQString : !inDQString
-                    inDQString = inComment == inDQString;
+                    this.inDQString = inComment == inDQString; // ~ inComment ? inDQString : !inDQString
                     break;
                 case '$':
                     if (!inComment) {
@@ -91,13 +89,7 @@ public class SparqlQueryParser implements QueryParser {
                     }
                     break;
                 case '?':
-                    if (!inComment) {
-                        if (inParam) {
-                            parameterEnd(i);    // Property path zero or one
-                        } else {
-                            parameterStart(i, ParamType.NAMED);
-                        }
-                    }
+                    queryVariableStart(i);
                     break;
                 case '<':
                     this.inUri = true;
@@ -108,15 +100,12 @@ public class SparqlQueryParser implements QueryParser {
                     break;
                 case '>':
                     this.inUri = false;
-                    if (inParam) {
-                        parameterEnd(i);
-                    }
                     wordEnd();
                     break;
                 case '\n':
                     this.inComment = false; // Intentional fall-through
                 case '{':
-                    // inComment ? inProjection : !inProjection
+                    // ~ inComment ? inProjection : !inProjection
                     this.inProjection = inComment && inProjection;  // Intentional fall-through
                 case '\r':
                 case ',':
@@ -171,17 +160,27 @@ public class SparqlQueryParser implements QueryParser {
             if (inParam && !inComment) {
                 parameterEnd(index);
             }
-            inComment = true;
+            this.inComment = true;
         } else {
             currentWord.append(c);
+        }
+    }
+
+    private void queryVariableStart(int i) {
+        if (!inComment) {
+            if (inParam) {
+                parameterEnd(i);    // Property path zero or one
+            } else {
+                parameterStart(i, ParamType.NAMED);
+            }
         }
     }
 
     private void parameterStart(int index, ParamType paramType) {
         if (!inSQString && !inDQString) {
             queryParts.add(query.substring(lastParamEndIndex, index));
-            paramStartIndex = index + 1;
-            inParam = true;
+            this.paramStartIndex = index + 1;
+            this.inParam = true;
             this.currentParamType = paramType;
         }
     }
@@ -242,6 +241,6 @@ public class SparqlQueryParser implements QueryParser {
         } else if (inProjection && SparqlConstants.WHERE.equalsIgnoreCase(currentWord.toString())) {
             this.inProjection = false;
         }
-        currentWord = new StringBuilder();
+        this.currentWord = new StringBuilder();
     }
 }
