@@ -37,6 +37,7 @@ import cz.cvut.kbss.jopa.test.OWLClassV;
 import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr;
 import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr2;
 import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr6;
+import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr7;
 import cz.cvut.kbss.jopa.test.OWLClassWithUrn;
 import cz.cvut.kbss.jopa.test.Thing;
 import cz.cvut.kbss.jopa.test.Vocabulary;
@@ -62,6 +63,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -542,6 +544,45 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertNotNull(value);
         assertEquals(entityD.getUri(), res.getLazyQueryAttribute().getUri());
     }
+
+
+    @Test
+    public void testRetrieveWithCollectionQueryAttribute() {
+        this.em = getEntityManager("RetrieveWithPluralQueryAttribute", false);
+
+        persist(entityWithQueryAttr7);
+        final OWLClassWithQueryAttr7 res = findRequired(OWLClassWithQueryAttr7.class, entityWithQueryAttr7.getUri());
+        Collection<Integer> result = res.getCollectionQueryAttribute();
+        assertInstanceOf(List.class, result);
+        assertEquals(3, result.size());
+        assertEquals(2, result.stream().filter(i -> i.equals(99)).count());
+    }
+
+    @Test
+    public void testRetrieveWithSetQueryAttribute() {
+        this.em = getEntityManager("RetrieveWithPluralQueryAttribute", false);
+
+        persist(entityWithQueryAttr7);
+        final OWLClassWithQueryAttr7 res = findRequired(OWLClassWithQueryAttr7.class, entityWithQueryAttr7.getUri());
+        Set<Integer> result = res.getSetQueryAttribute();
+        assertInstanceOf(Set.class, result);
+        assertEquals(2, result.size());
+        assertTrue(result.containsAll(List.of(99, 2)));
+    }
+
+    @Test
+    public void testRetrieveWithListQueryAttribute() {
+        this.em = getEntityManager("RetrieveWithPluralQueryAttribute", false);
+
+        persist(entityWithQueryAttr7);
+        final OWLClassWithQueryAttr7 res = findRequired(OWLClassWithQueryAttr7.class, entityWithQueryAttr7.getUri());
+        Collection<Integer> result = res.getCollectionQueryAttribute();
+        assertInstanceOf(List.class, result);
+        assertEquals(3, result.size());
+        assertEquals(2, result.stream().filter(i -> i.equals(99)).count());
+    }
+
+
 
     @Test
     void testSupportForUrnIrisInClassAndProperty() {
