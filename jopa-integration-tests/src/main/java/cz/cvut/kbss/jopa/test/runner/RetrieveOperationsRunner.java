@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassAA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
@@ -609,5 +610,35 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
         final OWLClassI result = findRequired(OWLClassI.class, entityI.getUri());
         assertNull(result.getOwlClassA());
+    }
+
+    @Test
+    public void retrieveDynamicStringAttribute() {
+        this.em = getEntityManager("retrieveDynamicAttribute", false);
+        entityAA.setDynamicProperty("Hello, world!");
+        transactional(() -> em.persist(entityAA));
+
+        final OWLClassAA result = findRequired(OWLClassAA.class, entityAA.getUri());
+        assertEquals("Hello, world!", result.getDynamicProperty());
+    }
+
+    @Test
+    public void retrieveDynamicIntAttribute() {
+        this.em = getEntityManager("retrieveDynamicAttribute", false);
+        entityAA.setDynamicProperty(1234);
+        transactional(() -> em.persist(entityAA));
+
+        final OWLClassAA result = findRequired(OWLClassAA.class, entityAA.getUri());
+        assertEquals(1234, result.getDynamicProperty());
+    }
+
+    @Test
+    public void retrieveDynamicDoubleAttribute() {
+        this.em = getEntityManager("retrieveDynamicAttribute", false);
+        entityAA.setDynamicProperty(Double.parseDouble("1234.6970"));
+        transactional(() -> em.persist(entityAA));
+
+        final OWLClassAA result = findRequired(OWLClassAA.class, entityAA.getUri());
+        assertEquals(1234.697D, result.getDynamicProperty());
     }
 }
