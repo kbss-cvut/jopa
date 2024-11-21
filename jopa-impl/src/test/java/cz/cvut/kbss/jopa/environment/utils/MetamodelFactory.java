@@ -38,6 +38,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
+import cz.cvut.kbss.jopa.environment.OWLClassW;
 import cz.cvut.kbss.jopa.environment.OWLClassWithQueryAttr;
 import cz.cvut.kbss.jopa.environment.OneOfEnum;
 import cz.cvut.kbss.jopa.environment.Person;
@@ -78,7 +79,6 @@ import cz.cvut.kbss.jopa.model.metamodel.MappedSuperclassTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.RDFContainerAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.RdfContainerAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttributeImpl;
@@ -1544,6 +1544,91 @@ public class MetamodelFactory {
         final EntityLifecycleListenerManager listenerManager = new EntityLifecycleListenerManager();
         addLifecycleCallback(listenerManager, PRE_UPDATE, OWLClassU.class.getDeclaredMethod("preUpdate"));
         when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
+    }
+
+    static void initOwlClassWMocks(IdentifiableEntityType<OWLClassW> et, AbstractPluralAttribute setStringAtt, AbstractPluralAttribute listStringAtt, AbstractPluralAttribute collectionStringAtt, AbstractQueryAttribute setQueryStringAtt, AbstractQueryAttribute listQueryStringAtt, Identifier id) throws Exception {
+        when(et.getIdentifier()).thenReturn(id);
+        when(id.isGenerated()).thenReturn(true);
+        when(et.getJavaType()).thenReturn(OWLClassW.class);
+        when(et.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassW.class));
+        when(id.getJavaField()).thenReturn(OWLClassW.getIdField());
+        when(id.getDeclaringType()).thenReturn(et);
+        when(id.getName()).thenReturn(OWLClassW.getIdField().getName());
+        when(et.getIRI()).thenReturn(IRI.create(OWLClassW.getClassIri()));
+        when(et.getName()).thenReturn(OWLClassW.class.getSimpleName());
+        when(et.getFieldSpecifications())
+                .thenReturn(new HashSet(Arrays.asList(setStringAtt, listStringAtt, collectionStringAtt, setQueryStringAtt, listQueryStringAtt, id)));
+        when(et.getAttributes()).thenReturn(new HashSet(Arrays.asList(setStringAtt, listStringAtt, collectionStringAtt, setQueryStringAtt, listQueryStringAtt)));
+        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
+
+        when(setStringAtt.getJavaField()).thenReturn(OWLClassW.getSetStringAttField());
+        when(setStringAtt.getJavaType()).thenReturn(OWLClassW.getSetStringAttField().getType());
+        when(setStringAtt.getName()).thenReturn(OWLClassW.getSetStringAttField().getName());
+        when(et.getAttribute(OWLClassW.getSetStringAttField().getName())).thenReturn(setStringAtt);
+        when(et.getFieldSpecification(OWLClassW.getSetStringAttField().getName())).thenReturn(setStringAtt);
+        when(setStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(setStringAtt.isCollection()).thenReturn(true);
+        when(setStringAtt.getCollectionType()).thenReturn(CollectionType.SET);
+        when(setStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
+        when(setStringAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassW.getSetStringAttField().getAnnotation(OWLDataProperty.class).iri()));
+        when(setStringAtt.getDeclaringType()).thenReturn(et);
+        when(setStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(setStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+        when(setStringAtt.hasLanguage()).thenReturn(false);
+        when(setStringAtt.getLanguage()).thenReturn(null);
+
+        when(listStringAtt.getJavaField()).thenReturn(OWLClassW.getListStringAttField());
+        when(listStringAtt.getJavaType()).thenReturn(OWLClassW.getListStringAttField().getType());
+        when(listStringAtt.getName()).thenReturn(OWLClassW.getListStringAttField().getName());
+        when(et.getAttribute(OWLClassW.getListStringAttField().getName())).thenReturn(listStringAtt);
+        when(et.getFieldSpecification(OWLClassW.getListStringAttField().getName())).thenReturn(listStringAtt);
+        when(listStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(listStringAtt.isCollection()).thenReturn(true);
+        when(listStringAtt.getCollectionType()).thenReturn(CollectionType.LIST);
+        when(listStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
+        when(listStringAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassW.getListStringAttField().getAnnotation(OWLDataProperty.class).iri()));
+        when(listStringAtt.getDeclaringType()).thenReturn(et);
+        when(listStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(listStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+        when(listStringAtt.hasLanguage()).thenReturn(false);
+        when(listStringAtt.getLanguage()).thenReturn(null);
+
+        when(collectionStringAtt.getJavaField()).thenReturn(OWLClassW.getCollectionStringAttField());
+        when(collectionStringAtt.getJavaType()).thenReturn(OWLClassW.getCollectionStringAttField().getType());
+        when(collectionStringAtt.getName()).thenReturn(OWLClassW.getCollectionStringAttField().getName());
+        when(et.getAttribute(OWLClassW.getCollectionStringAttField().getName())).thenReturn(collectionStringAtt);
+        when(et.getFieldSpecification(OWLClassW.getCollectionStringAttField().getName())).thenReturn(collectionStringAtt);
+        when(collectionStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(collectionStringAtt.isCollection()).thenReturn(true);
+        when(collectionStringAtt.getCollectionType()).thenReturn(CollectionType.COLLECTION);
+        when(collectionStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
+        when(collectionStringAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassW.getCollectionStringAttField().getAnnotation(OWLDataProperty.class).iri()));
+        when(collectionStringAtt.getDeclaringType()).thenReturn(et);
+        when(collectionStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(collectionStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+        when(collectionStringAtt.hasLanguage()).thenReturn(false);
+        when(collectionStringAtt.getLanguage()).thenReturn(null);
+
+        when(setQueryStringAtt.getJavaField()).thenReturn(OWLClassW.getSetQueryStringAttField());
+        when(setQueryStringAtt.getJavaType()).thenReturn(OWLClassW.getSetQueryStringAttField().getType());
+        when(setQueryStringAtt.getName()).thenReturn(OWLClassW.getSetQueryStringAttField().getName());
+        when(setQueryStringAtt.getDeclaringType()).thenReturn(et);
+        when(setQueryStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(setQueryStringAtt.getQuery()).thenReturn(OWLClassW.getSetQueryStringAttField().getAnnotation(Sparql.class).query());
+        when(setQueryStringAtt.enableReferencingAttributes()).thenReturn(true);
+        when(et.getFieldSpecification(OWLClassW.getSetQueryStringAttField().getName())).thenReturn(setQueryStringAtt);
+
+        when(listQueryStringAtt.getJavaField()).thenReturn(OWLClassW.getListQueryStringAttField());
+        when(listQueryStringAtt.getJavaType()).thenReturn(OWLClassW.getListQueryStringAttField().getType());
+        when(listQueryStringAtt.getName()).thenReturn(OWLClassW.getListQueryStringAttField().getName());
+        when(listQueryStringAtt.getDeclaringType()).thenReturn(et);
+        when(listQueryStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(listQueryStringAtt.getQuery()).thenReturn(OWLClassW.getListQueryStringAttField().getAnnotation(Sparql.class).query());
+        when(listQueryStringAtt.enableReferencingAttributes()).thenReturn(true);
+        when(et.getFieldSpecification(OWLClassW.getListQueryStringAttField().getName())).thenReturn(listQueryStringAtt);
     }
 
     static void initOWLClassWithQueryAttrMocks(IdentifiableEntityType<OWLClassWithQueryAttr> etMock,
