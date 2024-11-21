@@ -42,9 +42,23 @@ class CollectionFactoryTest {
 
     static Stream<Arguments> collectionTypeMapping() {
         return Stream.of(
+                Arguments.of(CollectionType.COLLECTION, Set.class),
                 Arguments.of(CollectionType.LIST, List.class),
-                Arguments.of(CollectionType.SET, Set.class),
-                Arguments.of(CollectionType.COLLECTION, Set.class)
+                Arguments.of(CollectionType.SET, Set.class)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("queryCollectionTypeMapping")
+    void createDefaultQueryCollectionReturnsCorrectTypeInstance(CollectionType collectionType, Class<?> expected) {
+        assertInstanceOf(expected, CollectionFactory.createDefaultQueryCollection(collectionType));
+    }
+
+    static Stream<Arguments> queryCollectionTypeMapping() {
+        return Stream.of(
+                Arguments.of(CollectionType.COLLECTION, List.class),
+                Arguments.of(CollectionType.LIST, List.class),
+                Arguments.of(CollectionType.SET, Set.class)
         );
     }
 
