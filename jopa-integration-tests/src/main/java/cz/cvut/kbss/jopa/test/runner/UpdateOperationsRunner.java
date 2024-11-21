@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassAA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
@@ -1170,5 +1171,23 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
         assertEquals(a2String, result.getStringAttribute());
+    }
+
+    @Test
+    public void updateDynamicAttribute() {
+        this.em = getEntityManager("updateDynamicAttribute", false);
+        entityAA.setDynamicProperty("Hello, world!");
+        persist(entityAA);
+
+        Object propertyBeforeUpdate = findRequired(OWLClassAA.class, entityAA.getUri()).getDynamicProperty();
+        assertEquals(propertyBeforeUpdate, "Hello, world!");
+
+        em.getTransaction().begin();
+        entityAA.setDynamicProperty(1234L);
+        em.merge(entityAA);
+        em.getTransaction().commit();
+
+        Object propertyAfterUpdate = findRequired(OWLClassAA.class, entityAA.getUri()).getDynamicProperty();
+        assertEquals(1234L, propertyAfterUpdate);
     }
 }
