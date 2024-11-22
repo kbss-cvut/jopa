@@ -26,13 +26,13 @@ import static org.mockito.Mockito.when;
 class LazyLoadingProxyFactoryTest {
     private static OWLClassA entityA;
     private static OWLClassB entityB;
-    private static OWLClassW entityV;
+    private static OWLClassW entityW;
 
     @BeforeAll
     static void setUpBeforeClass() throws Exception {
         entityA = new OWLClassA();
         entityB = new OWLClassB();
-        entityV = new OWLClassW();
+        entityW = new OWLClassW();
     }
 
     @Mock
@@ -71,7 +71,7 @@ class LazyLoadingProxyFactoryTest {
     void createLazyLoadingSettProxyForSetField() throws NoSuchFieldException {
         EntityType<OWLClassW> entityType = uow.getMetamodel().entity(OWLClassW.class);
         FieldSpecification<? super OWLClassW, ?> fieldSpec = entityType.getFieldSpecification(OWLClassW.getSetStringAttField().getName());
-        Object proxy = lazyLoadingProxyFactory.createProxy(entityV, fieldSpec);
+        Object proxy = lazyLoadingProxyFactory.createProxy(entityW, fieldSpec);
 
         assertInstanceOf(LazyLoadingSetProxy.class, proxy);
     }
@@ -80,7 +80,7 @@ class LazyLoadingProxyFactoryTest {
     void createLazyLoadingListProxyForListField() throws NoSuchFieldException {
         EntityType<OWLClassW> entityType = uow.getMetamodel().entity(OWLClassW.class);
         FieldSpecification<? super OWLClassW, ?> fieldSpec = entityType.getFieldSpecification(OWLClassW.getListStringAttField().getName());
-        Object proxy = lazyLoadingProxyFactory.createProxy(entityV, fieldSpec);
+        Object proxy = lazyLoadingProxyFactory.createProxy(entityW, fieldSpec);
 
         assertInstanceOf(LazyLoadingListProxy.class, proxy);
     }
@@ -89,7 +89,7 @@ class LazyLoadingProxyFactoryTest {
     void createLazyLoadingListProxyForCollectionField() throws NoSuchFieldException {
         EntityType<OWLClassW> entityType = uow.getMetamodel().entity(OWLClassW.class);
         FieldSpecification<? super OWLClassW, ?> fieldSpec = entityType.getFieldSpecification(OWLClassW.getCollectionStringAttField().getName());
-        Object proxy = lazyLoadingProxyFactory.createProxy(entityV, fieldSpec);
+        Object proxy = lazyLoadingProxyFactory.createProxy(entityW, fieldSpec);
 
         assertInstanceOf(LazyLoadingSetProxy.class, proxy);
     }
@@ -98,7 +98,7 @@ class LazyLoadingProxyFactoryTest {
     void createLazyLoadingSettProxyForSetQueryField() throws NoSuchFieldException {
         EntityType<OWLClassW> entityType = uow.getMetamodel().entity(OWLClassW.class);
         FieldSpecification<? super OWLClassW, ?> fieldSpec = entityType.getFieldSpecification(OWLClassW.getSetQueryStringAttField().getName());
-        Object proxy = lazyLoadingProxyFactory.createProxy(entityV, fieldSpec);
+        Object proxy = lazyLoadingProxyFactory.createProxy(entityW, fieldSpec);
 
         assertInstanceOf(LazyLoadingSetProxy.class, proxy);
     }
@@ -107,7 +107,7 @@ class LazyLoadingProxyFactoryTest {
     void createLazyLoadingListProxyForListQueryField() throws NoSuchFieldException {
         EntityType<OWLClassW> entityType = uow.getMetamodel().entity(OWLClassW.class);
         FieldSpecification<? super OWLClassW, ?> fieldSpec = entityType.getFieldSpecification(OWLClassW.getListQueryStringAttField().getName());
-        Object proxy = lazyLoadingProxyFactory.createProxy(entityV, fieldSpec);
+        Object proxy = lazyLoadingProxyFactory.createProxy(entityW, fieldSpec);
 
         assertInstanceOf(LazyLoadingListProxy.class, proxy);
     }
