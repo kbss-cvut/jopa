@@ -70,12 +70,12 @@ public class SparqlQueryParserTest {
 
     @Test
     public void testParseQueryWithMultiplePatternsAndParameters() {
-        final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-                "SELECT ?craft\n" +
-                "{\n" +
-                "?craft foaf:name \"Apollo 7\" .\n" +
-                "?craft foaf:homepage ?homepage\n" +
-                "}";
+        final String query = """
+                PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+                SELECT ?craft {
+                  ?craft foaf:name "Apollo 7" .
+                  ?craft foaf:homepage ?homepage
+                }""";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(2, holder.getParameters().size());
         assertTrue(holder.getParameters().contains(new QueryParameter<>("craft", valueFactory)));
@@ -84,11 +84,12 @@ public class SparqlQueryParserTest {
 
     @Test
     public void testParseQueryWithFilterAndRegex() {
-        final String query = "PREFIX  dc:  <http://purl.org/dc/elements/1.1/>\n" +
-                "SELECT  ?title\n" +
-                "WHERE   { ?x dc:title ?title\n" +
-                "          FILTER regex(?title, \"^SPARQL\") \n" +
-                "        }";
+        final String query = """
+                PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+                SELECT  ?title
+                WHERE   { ?x dc:title ?title
+                          FILTER regex(?title, "^SPARQL")\s
+                        }""";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(2, holder.getParameters().size());
         assertTrue(holder.getParameters().contains(new QueryParameter<>("title", valueFactory)));
@@ -97,12 +98,13 @@ public class SparqlQueryParserTest {
 
     @Test
     public void testParseQueryWithFilterAndMultipleParameters() {
-        final String query = "PREFIX  dc:  <http://purl.org/dc/elements/1.1/>\n" +
-                "PREFIX  ns:  <http://example.org/ns#>\n" +
-                "SELECT  ?title ?price\n" +
-                "WHERE   { ?x ns:price ?price .\n" +
-                "          FILTER (?price < 30.5)\n" +
-                "          ?x dc:title ?title . }";
+        final String query = """
+                PREFIX  dc:  <http://purl.org/dc/elements/1.1/>
+                PREFIX  ns:  <http://example.org/ns#>
+                SELECT  ?title ?price
+                WHERE   { ?x ns:price ?price .
+                          FILTER (?price < 30.5)
+                          ?x dc:title ?title . }""";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(3, holder.getParameters().size());
         assertTrue(holder.getParameters().contains(new QueryParameter<>("title", valueFactory)));
@@ -112,11 +114,12 @@ public class SparqlQueryParserTest {
 
     @Test
     public void testParseConstructQuery() {
-        final String query = "PREFIX foaf:   <http://xmlns.com/foaf/0.1/>\n" +
-                "PREFIX org:    <http://example.com/ns#>\n" +
-                "\n" +
-                "CONSTRUCT { ?x foaf:name ?name }\n" +
-                "WHERE  { ?x org:employeeName ?name }";
+        final String query = """
+                PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+                PREFIX org:    <http://example.com/ns#>
+
+                CONSTRUCT { ?x foaf:name ?name }
+                WHERE  { ?x org:employeeName ?name }""";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(2, holder.getParameters().size());
         assertTrue(holder.getParameters().contains(new QueryParameter<>("x", valueFactory)));
@@ -131,12 +134,13 @@ public class SparqlQueryParserTest {
 
     @Test
     public void testParseQueryWithNumberedPositionalParams() {
-        final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-                "SELECT ?craft\n" +
-                "{\n" +
-                "?craft foaf:name $1 .\n" +
-                "?craft foaf:homepage $2\n" +
-                "}";
+        final String query = """
+                PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+                SELECT ?craft
+                {
+                  ?craft foaf:name $1 .
+                  ?craft foaf:homepage $2
+                }""";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(3, holder.getParameters().size());
         assertTrue(holder.getParameters().contains(new QueryParameter<>("craft", valueFactory)));
@@ -146,12 +150,12 @@ public class SparqlQueryParserTest {
 
     @Test
     public void testParseQueryWithUnnumberedPositionalParams() {
-        final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-                "SELECT ?craft\n" +
-                "{\n" +
-                "?craft foaf:name $ .\n" +
-                "?craft foaf:homepage $\n" +
-                "}";
+        final String query = """
+                PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+                SELECT ?craft {
+                  ?craft foaf:name $ .
+                  ?craft foaf:homepage $
+                }""";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(3, holder.getParameters().size());
         assertTrue(holder.getParameters().contains(new QueryParameter<>("craft", valueFactory)));
@@ -161,12 +165,12 @@ public class SparqlQueryParserTest {
 
     @Test
     public void testParseQueryWithMixedNumberedAndUnnumberedPositionalParams() {
-        final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-                "SELECT ?craft\n" +
-                "{\n" +
-                "?craft foaf:name $1 .\n" +
-                "?craft foaf:homepage $\n" +
-                "}";
+        final String query = """
+                PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+                SELECT ?craft {
+                  ?craft foaf:name $1 .
+                  ?craft foaf:homepage $
+                }""";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(3, holder.getParameters().size());
         assertTrue(holder.getParameters().contains(new QueryParameter<>("craft", valueFactory)));
@@ -176,12 +180,12 @@ public class SparqlQueryParserTest {
 
     @Test
     public void parsingQueryWithUsedParameterPositionThrowsException() {
-        final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-                "SELECT ?craft\n" +
-                "{\n" +
-                "?craft foaf:name $1 .\n" +
-                "?craft foaf:homepage $1\n" +
-                "}";
+        final String query = """
+                PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+                SELECT ?craft {
+                  ?craft foaf:name $1 .
+                  ?craft foaf:homepage $1
+                }""";
         assertThrows(QueryParserException.class, () -> queryParser.parseQuery(query));
     }
 
@@ -200,12 +204,13 @@ public class SparqlQueryParserTest {
 
     @Test
     public void parsingQueryWithPositionalParameterNotNumberThrowsException() {
-        final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-                "SELECT ?craft\n" +
-                "{\n" +
-                "?craft foaf:name $1 .\n" +
-                "?craft foaf:homepage $notanumber\n" +
-                "}";
+        final String query = """
+                PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+                SELECT ?craft
+                {
+                  ?craft foaf:name $1 .
+                  ?craft foaf:homepage $notanumber
+                }""";
         assertThrows(QueryParserException.class, () -> queryParser.parseQuery(query));
     }
 
@@ -304,10 +309,11 @@ public class SparqlQueryParserTest {
 
     @Test
     void parseQuerySupportsWindowsLikeLineEnds() {
-        final String query = "SELECT * WHERE {\r\n" +
-                "   GRAPH ?contextUri\r\n" +
-                "        {  ?s ?p ?o . }\r" +
-                "}";
+        final String query = """
+                SELECT * WHERE {\r
+                   GRAPH ?contextUri\r
+                        {  ?s ?p ?o . }\r\
+                }""";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertNotNull(holder.getParameter("contextUri"));
         assertNotNull(holder.getParameter("s"));
@@ -351,5 +357,89 @@ public class SparqlQueryParserTest {
         assertFalse(xVar.isProjected());
         final QueryParameter<?> labelVar = (QueryParameter<?>) holder.getParameter("label");
         assertFalse(labelVar.isProjected());
+    }
+
+    @Test
+    void parseQueryIgnoresQueryCommentsAtStringStart() {
+        final String query = """
+                # Selects ?y that have label "Test" - variables name is different to test ignoring variables in comments
+                SELECT ?x WHERE {
+                  ?x <http://www.w3.org/2000/01/rdf-schema#label> "Test" .
+                }""";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(1, holder.getParameters().size());
+        assertNotNull(holder.getParameter("x"));
+    }
+
+    @Test
+    void parseQueryIgnoresQueryCommentsBetweenQueryLines() {
+        final String query = """
+                SELECT ?x WHERE {
+                # Selects ?y that have label "Test" - variables name is different to test ignoring variables in comments
+                  ?x <http://www.w3.org/2000/01/rdf-schema#label> "Test" .
+                }""";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(1, holder.getParameters().size());
+        assertNotNull(holder.getParameter("x"));
+    }
+
+    @Test
+    void parseQueryIgnoresQueryCommentsStartingInQueryLine() {
+        final String query = """
+                SELECT ?x WHERE {
+                  ?x a ?t#ype . is still a comment so ?y is ignored
+                }""";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(2, holder.getParameters().size());
+        assertNotNull(holder.getParameter("x"));
+        assertNotNull(holder.getParameter("t"));
+    }
+
+    @Test
+    void parseQueryIgnoresQueryCommentsStartingInFunction() {
+        final String query = """
+                SELECT ?x WHERE {
+                  ?x a ?t#ype . is still a comment so ?y is ignored
+                  BIND (STR(?t) as ?typeStr)# as ?y)
+                }""";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(3, holder.getParameters().size());
+        assertNotNull(holder.getParameter("x"));
+        assertNotNull(holder.getParameter("t"));
+        assertNotNull(holder.getParameter("typeStr"));
+    }
+
+    @Test
+    void parseQueryHandlesAsk() {
+        final String query = """
+                ASK {
+                  ?c ?hasContainer ?container .
+                  ?container ?hasMember ?a .
+                  FILTER (STRSTARTS(STR(?hasMember), "rdf:_")) }
+                """;
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertNotNull(holder.getParameter("c"));
+        assertNotNull(holder.getParameter("hasContainer"));
+        assertNotNull(holder.getParameter("container"));
+        assertNotNull(holder.getParameter("hasMember"));
+        assertNotNull(holder.getParameter("a"));
+    }
+
+    @Test
+    void parseQueryHandlesMultilineProjection() {
+        final String query = """
+                SELECT ?x
+                  # ?y is a property that was previously called ?p
+                  ?y
+                  ?z
+                WHERE {
+                  ?x ?y ?z .
+                
+                """;
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(3, holder.getParameters().size());
+        assertNotNull(holder.getParameter("x"));
+        assertNotNull(holder.getParameter("y"));
+        assertNotNull(holder.getParameter("z"));
     }
 }

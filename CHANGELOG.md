@@ -1,5 +1,15 @@
 # JOPA - Change Log
 
+## 2.2.0 - 2024-11-22
+- Treat any non-entity type as immutable w.r.t. to change tracking so that we do not have to explicitly list them in code (GH #278).
+- Allow projecting entity attributes from SOQL/Criteria API queries (Enhancement #277).
+- Allow using `Object` as data property field type, resolve actual type from data (GH #283).
+- Use lists for plural query attributes when field type is `Collection` (Enhancement #276).
+- Fix lazy loading of plural query attributes (Bug #285).
+- Ignore SPARQL comments when parsing native SPARQL queries (Bug #275).
+- Fix Jena file storage statement removal issue (Bug #274).
+- Dependency updates: RDF4J 5.0.3.
+
 ## 2.1.0 - 2024-10-16
 - Add support for RDF containers (Task #52). 
   [Wiki](https://github.com/kbss-cvut/jopa/wiki/Object-ontological-Mapping#collection-mapping) contains info on collection mapping in general.

@@ -20,7 +20,26 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassAA;
+import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassC;
+import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.OWLClassG;
+import cz.cvut.kbss.jopa.test.OWLClassH;
+import cz.cvut.kbss.jopa.test.OWLClassI;
+import cz.cvut.kbss.jopa.test.OWLClassM;
+import cz.cvut.kbss.jopa.test.OWLClassN;
+import cz.cvut.kbss.jopa.test.OWLClassP;
+import cz.cvut.kbss.jopa.test.OWLClassQ;
+import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr;
+import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr2;
+import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr3;
+import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr4;
+import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr5;
+import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr6;
+import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr7;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
@@ -29,9 +48,15 @@ import org.junit.jupiter.api.function.Executable;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public abstract class BaseRunner {
@@ -67,6 +92,9 @@ public abstract class BaseRunner {
     protected OWLClassWithQueryAttr4 entityWithQueryAttr4;
     protected OWLClassWithQueryAttr5 entityWithQueryAttr5;
     protected OWLClassWithQueryAttr6 entityWithQueryAttr6;
+    protected OWLClassWithQueryAttr7 entityWithQueryAttr7;
+    // Dynamic attributes
+    protected OWLClassAA entityAA;
 
     protected final DataAccessor dataAccessor;
     protected final PersistenceFactory persistenceFactory;
@@ -147,6 +175,10 @@ public abstract class BaseRunner {
         entityWithQueryAttr5.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityWithQueryAttr5"));
         this.entityWithQueryAttr6 = new OWLClassWithQueryAttr6();
         entityWithQueryAttr6.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityWithQueryAttr6"));
+        this.entityWithQueryAttr7 = new OWLClassWithQueryAttr7();
+        entityWithQueryAttr7.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityWithQueryAttr7"));
+        this.entityAA = new OWLClassAA();
+        this.entityAA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAA"));
     }
 
     @AfterEach

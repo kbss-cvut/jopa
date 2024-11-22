@@ -58,6 +58,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -682,5 +683,38 @@ public abstract class CreateOperationsRunner extends BaseRunner {
                         entityM.getAnnotationSimpleLiteral(), (String) null),
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral),
                         entityM.getSimpleLiteral(), (String) null)), em);
+    }
+
+    @Test
+    void persistSupportsDynamicPropertyIntegerValueMappedToSimpleLiteral() throws Exception {
+        this.em = getEntityManager("persistSupportsDynamicPropertyValueMappedToSimpleLiteral", false);
+        entityAA.setDynamicProperty(1234);
+        persist(entityAA);
+
+        verifyStatementsPresent(List.of(
+                new Quad(entityAA.getUri(), URI.create(Vocabulary.P_AA_DYNAMIC_ATTRIBUTE),
+                        entityAA.getDynamicProperty(), (String) null)), em);
+    }
+
+    @Test
+    void persistSupportsDynamicPropertyStringValueMappedToSimpleLiteral() throws Exception {
+        this.em = getEntityManager("persistSupportsDynamicPropertyValueMappedToSimpleLiteral", false);
+        entityAA.setDynamicProperty("Hello, world!");
+        persist(entityAA);
+
+        verifyStatementsPresent(List.of(
+                new Quad(entityAA.getUri(), URI.create(Vocabulary.P_AA_DYNAMIC_ATTRIBUTE),
+                        entityAA.getDynamicProperty(), (String) null)), em);
+    }
+
+    @Test
+    void persistSupportsDynamicPropertyDateValueMappedToSimpleLiteral() throws Exception {
+        this.em = getEntityManager("persistSupportsDynamicPropertyValueMappedToSimpleLiteral", false);
+        entityAA.setDynamicProperty(new Date());
+        persist(entityAA);
+
+        verifyStatementsPresent(List.of(
+                new Quad(entityAA.getUri(), URI.create(Vocabulary.P_AA_DYNAMIC_ATTRIBUTE),
+                        entityAA.getDynamicProperty(), (String) null)), em);
     }
 }

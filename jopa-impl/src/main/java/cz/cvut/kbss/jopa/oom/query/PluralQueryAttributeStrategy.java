@@ -30,7 +30,7 @@ public class PluralQueryAttributeStrategy<X> extends QueryFieldStrategy<PluralQu
 
     public PluralQueryAttributeStrategy(EntityType<X> et, PluralQueryAttributeImpl<? super X, ?, ?> attribute) {
         super(et, attribute);
-        this.values = CollectionFactory.createDefaultCollection(attribute.getCollectionType());
+        this.values = CollectionFactory.createDefaultQueryCollection(attribute.getCollectionType());
     }
 
     @Override

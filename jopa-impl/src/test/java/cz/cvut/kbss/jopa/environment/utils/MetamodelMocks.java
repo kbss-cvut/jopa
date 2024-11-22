@@ -38,6 +38,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
+import cz.cvut.kbss.jopa.environment.OWLClassW;
 import cz.cvut.kbss.jopa.environment.OWLClassWithQueryAttr;
 import cz.cvut.kbss.jopa.environment.OneOfEnum;
 import cz.cvut.kbss.jopa.environment.Person;
@@ -71,6 +72,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -319,6 +321,21 @@ public class MetamodelMocks {
     private SingularAttributeImpl<OWLClassU, LocalDateTime> uModified;
 
     @Mock
+    private IdentifiableEntityType<OWLClassW> etW;
+    @Mock
+    private Identifier<OWLClassW, URI> idW;
+    @Mock
+    private AbstractPluralAttribute<OWLClassW, Set<String>, String> wSetStringAtt;
+    @Mock
+    private AbstractPluralAttribute<OWLClassW, List<String>, String> wListStringAtt;
+    @Mock
+    private AbstractPluralAttribute<OWLClassW, Collection<String>, String> wCollectionStringAtt;
+    @Mock
+    private AbstractQueryAttribute<OWLClassW, Set<String>> wSetQueryStringAtt;
+    @Mock
+    private AbstractQueryAttribute<OWLClassW, List<String>> wListQueryStringAtt;
+
+    @Mock
     private IdentifiableEntityType<OWLClassWithQueryAttr> etQA;
     @Mock
     private Identifier<OWLClassWithQueryAttr, URI> idQA;
@@ -389,6 +406,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
         MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, idT);
         MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, uModified, idU);
+        MetamodelFactory.initOwlClassWMocks(etW, wSetStringAtt, wListStringAtt, wCollectionStringAtt, wSetQueryStringAtt, wListQueryStringAtt, idW);
         MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, qaEntityQueryAtt,
                                                         qaEntityAtt, idQA);
         MetamodelFactory.initPhoneMocks(etPhone, phoneNumberAtt, idPhone);
@@ -420,6 +438,7 @@ public class MetamodelMocks {
         etMap.put(OWLClassS.class, etS);
         etMap.put(OWLClassT.class, etT);
         etMap.put(OWLClassU.class, etU);
+        etMap.put(OWLClassW.class, etW);
         etMap.put(OWLClassWithQueryAttr.class, etQA);
         etMap.put(Person.class, etPerson);
         etMap.put(Phone.class, etPhone);
@@ -524,6 +543,10 @@ public class MetamodelMocks {
 
     public OWLClassUMetamodel forOwlClassU() {
         return new OWLClassUMetamodel();
+    }
+
+    public OWLClassWMetamodel forOWLClassW() {
+        return new OWLClassWMetamodel();
     }
 
     public OWLClassWithQueryAttrMetamodel forOwlClassWithQueryAttr() {
@@ -986,6 +1009,36 @@ public class MetamodelMocks {
 
         public AbstractAttribute<OWLClassU, LocalDateTime> uModified() {
             return MetamodelMocks.this.uModified;
+        }
+    }
+
+    public class OWLClassWMetamodel {
+        public IdentifiableEntityType<OWLClassW> entityType() {
+            return MetamodelMocks.this.etW;
+        }
+
+        public Identifier<OWLClassW, URI> identifier() {
+            return MetamodelMocks.this.idW;
+        }
+
+        public AbstractPluralAttribute<OWLClassW, Set<String>, String> vSetStringAtt() {
+            return MetamodelMocks.this.wSetStringAtt;
+        }
+
+        public AbstractPluralAttribute<OWLClassW, List<String>, String> vListStringAtt() {
+            return MetamodelMocks.this.wListStringAtt;
+        }
+
+        public AbstractPluralAttribute<OWLClassW, Collection<String>, String> vCollectionStringAtt() {
+            return MetamodelMocks.this.wCollectionStringAtt;
+        }
+
+        public AbstractQueryAttribute<OWLClassW, Set<String>> vSetQueryStringAtt() {
+            return MetamodelMocks.this.wSetQueryStringAtt;
+        }
+
+        public AbstractQueryAttribute<OWLClassW, List<String>> vListQueryStringAtt() {
+            return MetamodelMocks.this.wListQueryStringAtt;
         }
     }
 

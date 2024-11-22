@@ -148,6 +148,8 @@ public class Vocabulary {
     public static final String P_Y_SINGULAR_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "ySingularMultilingual";
     public static final String P_Y_PLURAL_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "yPluralMultilingual";
 
+    public static final String P_AA_DYNAMIC_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "aaDynamicAttribute";
+
     public static final String P_HAS_H = ATTRIBUTE_IRI_BASE + "hasH";
 
     private Vocabulary() {

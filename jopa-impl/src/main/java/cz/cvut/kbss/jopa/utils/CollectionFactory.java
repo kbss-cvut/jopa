@@ -61,6 +61,21 @@ public final class CollectionFactory {
     }
 
     /**
+     * Creates a default collection for the specified collection type in the context of Queries.
+     * This differs from {@link CollectionFactory#createDefaultCollection}, because SPARQL results are treated as lists,
+     * so Collections should be handled as Lists, not as Sets
+     *
+     * @param collectionType Type of the collection to create
+     * @return Collection implementation instance
+     */
+    public static <T> Collection<T> createDefaultQueryCollection(CollectionType collectionType) {
+        if(collectionType.equals(CollectionType.COLLECTION)) {
+            collectionType = CollectionType.LIST;
+        }
+        return createDefaultCollection(collectionType);
+    }
+
+    /**
      * Creates default instance of {@link Map}.
      *
      * @return Default Map implementation instance
