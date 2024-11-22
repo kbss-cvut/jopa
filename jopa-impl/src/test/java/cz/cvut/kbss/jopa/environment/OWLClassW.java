@@ -110,7 +110,7 @@ public class OWLClassW implements Serializable {
 
     @Override
     public String toString() {
-        return "OWLClassV{" +
+        return "OWLClassW{" +
                 "id=" + id +
                 ", setStringAtt=" + setStringAtt +
                 ", listStringAtt=" + listStringAtt +

@@ -323,17 +323,17 @@ public class MetamodelMocks {
     @Mock
     private IdentifiableEntityType<OWLClassW> etW;
     @Mock
-    private Identifier<OWLClassW, URI> idV;
+    private Identifier<OWLClassW, URI> idW;
     @Mock
-    private AbstractPluralAttribute<OWLClassW, Set<String>, String> vSetStringAtt;
+    private AbstractPluralAttribute<OWLClassW, Set<String>, String> wSetStringAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassW, List<String>, String> vListStringAtt;
+    private AbstractPluralAttribute<OWLClassW, List<String>, String> wListStringAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassW, Collection<String>, String> vCollectionStringAtt;
+    private AbstractPluralAttribute<OWLClassW, Collection<String>, String> wCollectionStringAtt;
     @Mock
-    private AbstractQueryAttribute<OWLClassW, Set<String>> vSetQueryStringAtt;
+    private AbstractQueryAttribute<OWLClassW, Set<String>> wSetQueryStringAtt;
     @Mock
-    private AbstractQueryAttribute<OWLClassW, List<String>> vListQueryStringAtt;
+    private AbstractQueryAttribute<OWLClassW, List<String>> wListQueryStringAtt;
 
     @Mock
     private IdentifiableEntityType<OWLClassWithQueryAttr> etQA;
@@ -406,7 +406,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
         MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, idT);
         MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, uModified, idU);
-        MetamodelFactory.initOwlClassWMocks(etW, vSetStringAtt,vListStringAtt, vCollectionStringAtt, vSetQueryStringAtt, vListQueryStringAtt, idV);
+        MetamodelFactory.initOwlClassWMocks(etW, wSetStringAtt, wListStringAtt, wCollectionStringAtt, wSetQueryStringAtt, wListQueryStringAtt, idW);
         MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, qaEntityQueryAtt,
                                                         qaEntityAtt, idQA);
         MetamodelFactory.initPhoneMocks(etPhone, phoneNumberAtt, idPhone);
@@ -1018,27 +1018,27 @@ public class MetamodelMocks {
         }
 
         public Identifier<OWLClassW, URI> identifier() {
-            return MetamodelMocks.this.idV;
+            return MetamodelMocks.this.idW;
         }
 
         public AbstractPluralAttribute<OWLClassW, Set<String>, String> vSetStringAtt() {
-            return MetamodelMocks.this.vSetStringAtt;
+            return MetamodelMocks.this.wSetStringAtt;
         }
 
         public AbstractPluralAttribute<OWLClassW, List<String>, String> vListStringAtt() {
-            return MetamodelMocks.this.vListStringAtt;
+            return MetamodelMocks.this.wListStringAtt;
         }
 
         public AbstractPluralAttribute<OWLClassW, Collection<String>, String> vCollectionStringAtt() {
-            return MetamodelMocks.this.vCollectionStringAtt;
+            return MetamodelMocks.this.wCollectionStringAtt;
         }
 
         public AbstractQueryAttribute<OWLClassW, Set<String>> vSetQueryStringAtt() {
-            return MetamodelMocks.this.vSetQueryStringAtt;
+            return MetamodelMocks.this.wSetQueryStringAtt;
         }
 
         public AbstractQueryAttribute<OWLClassW, List<String>> vListQueryStringAtt() {
-            return MetamodelMocks.this.vListQueryStringAtt;
+            return MetamodelMocks.this.wListQueryStringAtt;
         }
     }
 
