@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.net.URI;
 
-@OWLClass(iri = Vocabulary.c_OwlClassU)
+@OWLClass(iri = Vocabulary.c_OwlClassV)
 public class OWLClassV implements Serializable {
 
     @Id

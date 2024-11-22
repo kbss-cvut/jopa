@@ -39,6 +39,7 @@ public class Vocabulary {
     public static final String c_OwlClassS = CLASS_BASE + "OWLClassS";
     public static final String c_OwlClassT = CLASS_BASE + "OWLClassT";
     public static final String c_OwlClassU = CLASS_BASE + "OWLClassU";
+    public static final String c_OwlClassV = CLASS_BASE + "OWLClassV";
     public static final String c_OwlClassW = CLASS_BASE + "OWLClassW";
     public static final String c_OwlClassWithQueryAttr = CLASS_BASE + "OWLClassWithQueryAttr";
     public static final String c_Person = CLASS_BASE + "Person";
