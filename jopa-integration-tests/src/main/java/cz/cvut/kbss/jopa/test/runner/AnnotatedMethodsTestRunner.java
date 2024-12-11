@@ -35,8 +35,8 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class AnnotatedMethodsTestRunner extends BaseRunner {
-    protected OWLClassWithAnnotatedMethodsInInterfaceParent classWithAnnotatedMethodsInInterfaceParent;
-    protected OWLClassWithUnProperties classWithUnProperties;
+    protected final OWLClassWithAnnotatedMethodsInInterfaceParent classWithAnnotatedMethodsInInterfaceParent;
+    protected final OWLClassWithUnProperties classWithUnProperties;
 
     public AnnotatedMethodsTestRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);

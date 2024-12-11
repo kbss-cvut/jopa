@@ -136,8 +136,7 @@ public class EntityDescriptor extends AbstractDescriptor {
 
     private AbstractDescriptor createDescriptor(FieldSpecification<?, ?> att, Set<URI> contexts) {
         final AbstractDescriptor result;
-        if (att instanceof Attribute) {
-            final Attribute<?, ?> attSpec = (Attribute<?, ?>) att;
+        if (att instanceof Attribute<?, ?> attSpec) {
             if (attSpec.getPersistentAttributeType() == PersistentAttributeType.OBJECT) {
                 if (attSpec.isCollection()) {
                     result = new ObjectPropertyCollectionDescriptor(contexts, att);
@@ -161,14 +160,12 @@ public class EntityDescriptor extends AbstractDescriptor {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof EntityDescriptor)) {
+        if (!(o instanceof EntityDescriptor that)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-
-        EntityDescriptor that = (EntityDescriptor) o;
 
         if (fieldDescriptors.size() != that.fieldDescriptors.size()) {
             return false;

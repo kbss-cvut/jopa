@@ -270,7 +270,7 @@ class EntityConstructorTest {
         return axioms;
     }
 
-    private Axiom<NamedResource> createObjectPropertyAxiomForD() throws NoSuchFieldException {
+    private Axiom<NamedResource> createObjectPropertyAxiomForD() {
         return new AxiomImpl<>(NamedResource.create(ID), getClassDObjectPropertyAssertion(),
                 new Value<>(NamedResource.create(ID_TWO)));
     }

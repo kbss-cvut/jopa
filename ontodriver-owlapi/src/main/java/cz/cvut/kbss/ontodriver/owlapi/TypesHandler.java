@@ -71,8 +71,8 @@ class TypesHandler {
     private static Set<Axiom<URI>> owlClassesToAxioms(NamedResource subject, boolean inferred,
                                                       Collection<? extends OWLClassExpression> owlClasses) {
         return owlClasses.stream().map(expr -> new AxiomImpl<>(subject,
-                        Assertion.createClassAssertion(inferred), new Value<>(expr.asOWLClass().getIRI().toURI())))
-                .collect(Collectors.toSet());
+                                 Assertion.createClassAssertion(inferred), new Value<>(expr.asOWLClass().getIRI().toURI())))
+                         .collect(Collectors.toSet());
     }
 
     private Collection<? extends OWLClassExpression> inferClasses(NamedResource subject) {
@@ -94,8 +94,8 @@ class TypesHandler {
         final List<OWLAxiom> axioms = new ArrayList<>(types.size());
         final OWLNamedIndividual individual = getIndividual(subject);
         axioms.addAll(types.stream().map(type -> dataFactory
-                        .getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(type)), individual))
-                .collect(Collectors.toList()));
+                                   .getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(type)), individual))
+                           .toList());
         return axioms;
     }
 

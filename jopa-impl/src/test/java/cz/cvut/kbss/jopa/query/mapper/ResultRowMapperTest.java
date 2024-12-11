@@ -50,7 +50,7 @@ class ResultRowMapperTest {
     @Test
     void mapInvokesAllSubMappers() {
         final List<SparqlResultMapper> mappers = IntStream.range(0, 5).mapToObj(i -> mock(SparqlResultMapper.class))
-                                                          .collect(Collectors.toList());
+                                                          .toList();
         mappers.forEach(rowMapper::addMapper);
         rowMapper.map(resultRow, uowMock);
         final InOrder inOrder = Mockito.inOrder(mappers.toArray());

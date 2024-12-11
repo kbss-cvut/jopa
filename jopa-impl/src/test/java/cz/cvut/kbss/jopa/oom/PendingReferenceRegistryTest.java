@@ -279,8 +279,7 @@ public class PendingReferenceRegistryTest {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof ObjectWithEquals)) return false;
-            ObjectWithEquals that = (ObjectWithEquals) o;
+            if (!(o instanceof ObjectWithEquals that)) return false;
             return Objects.equals(uri, that.uri);
         }
 

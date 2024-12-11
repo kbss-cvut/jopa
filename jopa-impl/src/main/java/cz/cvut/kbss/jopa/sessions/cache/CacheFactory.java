@@ -56,15 +56,16 @@ public abstract class CacheFactory {
 
     private static CacheManager createEnabledCache(Map<String, String> properties) {
         final String cacheType = properties.getOrDefault(JOPAPersistenceProperties.CACHE_TYPE, LRU_CACHE).toLowerCase();
-        switch (cacheType) {
-            case LRU_CACHE:
+        return switch (cacheType) {
+            case LRU_CACHE -> {
                 LOG.debug("Using LRU cache.");
-                return new LruCacheManager(properties);
-            case TTL_CACHE:
+                yield new LruCacheManager(properties);
+            }
+            case TTL_CACHE -> {
                 LOG.debug("Using TTL cache.");
-                return new TtlCacheManager(properties);
-            default:
-                throw new IllegalArgumentException("Invalid second level cache type " + cacheType);
-        }
+                yield new TtlCacheManager(properties);
+            }
+            default -> throw new IllegalArgumentException("Invalid second level cache type " + cacheType);
+        };
     }
 }

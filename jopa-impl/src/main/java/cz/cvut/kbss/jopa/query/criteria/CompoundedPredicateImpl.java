@@ -26,7 +26,7 @@ import java.util.List;
 
 public class CompoundedPredicateImpl extends AbstractPredicate {
 
-    protected List<Expression<Boolean>> expressions;
+    protected final List<Expression<Boolean>> expressions;
 
     public CompoundedPredicateImpl(BooleanOperator booleanOperator, List<Expression<Boolean>> expressions,
                                    CriteriaBuilder cb) {
@@ -37,11 +37,6 @@ public class CompoundedPredicateImpl extends AbstractPredicate {
     @Override
     public List<Expression<Boolean>> getExpressions() {
         return expressions;
-    }
-
-    @Override
-    public BooleanOperator getOperator() {
-        return this.booleanOperator;
     }
 
     @Override

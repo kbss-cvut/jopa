@@ -78,7 +78,7 @@ public final class MappingFileParser {
             lines.forEach(line -> {
             final StringTokenizer t = new StringTokenizer(line, delimiter);
             if (t.countTokens() != 2) {
-                LOG.warn("Ignoring line '" + line + "' - invalid number of tokens = " + t.countTokens());
+                LOG.warn("Ignoring line '{}' - invalid number of tokens = {}", line, t.countTokens());
                 return;
             }
             final String uriName = t.nextToken().trim();
@@ -89,7 +89,7 @@ public final class MappingFileParser {
             map.put(URI.create(uriName), fileUri);
         });
         } catch (IOException e) {
-            LOG.error("Unable to parse mapping file." + e);
+            LOG.error("Unable to parse mapping file.", e);
             throw new MappingFileParserException(e);
         }
         return map;

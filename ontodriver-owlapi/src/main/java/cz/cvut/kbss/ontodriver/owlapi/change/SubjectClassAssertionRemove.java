@@ -45,8 +45,7 @@ public class SubjectClassAssertionRemove implements TransactionalChange {
 
     @Override
     public boolean overrides(TransactionalChange existing) {
-        if (existing instanceof MutableAddAxiom) {
-            final MutableAddAxiom ax = (MutableAddAxiom) existing;
+        if (existing instanceof MutableAddAxiom ax) {
             return ax.getAxiom()
                      .isOfType(AxiomType.CLASS_ASSERTION) && subject.equals(((OWLClassAssertionAxiom) ax.getAxiom()).getIndividual());
         }

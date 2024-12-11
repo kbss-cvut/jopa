@@ -130,8 +130,7 @@ public class DatatypeTransformer {
             return DATA_FACTORY.getOWLLiteral((Float) value);
         } else if (value instanceof BigDecimal) {
             return DATA_FACTORY.getOWLLiteral(((BigDecimal) value).toPlainString(), OWL2Datatype.XSD_DECIMAL);
-        } else if (value instanceof LangString) {
-            final LangString ls = (LangString) value;
+        } else if (value instanceof LangString ls) {
             return DATA_FACTORY.getOWLLiteral(ls.getValue(), ls.getLanguage().orElse(null));
         } else if (value instanceof String) {
             return lang != null ? DATA_FACTORY.getOWLLiteral(value.toString(), lang) :

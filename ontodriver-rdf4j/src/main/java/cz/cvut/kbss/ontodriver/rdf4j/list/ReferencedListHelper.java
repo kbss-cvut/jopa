@@ -36,8 +36,7 @@ class ReferencedListHelper {
     ReferencedListHelper(ValueConverter valueConverter) {this.valueConverter = valueConverter;}
 
     Collection<Value> toRdf4jValue(Assertion a, Object value) throws Rdf4jDriverException {
-        if (value instanceof Translations) {
-            final Translations mls = (Translations) value;
+        if (value instanceof Translations mls) {
             final List<Value> values = new ArrayList<>(mls.getValue().size());
             for (Map.Entry<String, String> e : mls.getValue().entrySet()) {
                 values.add(valueConverter.toRdf4jValue(a, new cz.cvut.kbss.ontodriver.model.Value<>(new LangString(e.getValue(), e.getKey()))));

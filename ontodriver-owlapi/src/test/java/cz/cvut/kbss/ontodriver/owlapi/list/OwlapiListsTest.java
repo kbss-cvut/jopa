@@ -17,18 +17,25 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
-import cz.cvut.kbss.ontodriver.descriptor.*;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptorImpl;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.util.Procedure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class OwlapiListsTest {
 
 
@@ -45,15 +52,13 @@ public class OwlapiListsTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        when(adapterMock.getSimpleListHandler()).thenReturn(simpleListHandlerMock);
-        when(adapterMock.getReferencedListHandler()).thenReturn(refListHandlerMock);
         this.lists = new OwlapiLists(adapterMock, () -> {
         }, afterMock);
     }
 
     @Test
     public void testLoadSimpleList() throws Exception {
+        when(adapterMock.getSimpleListHandler()).thenReturn(simpleListHandlerMock);
         final SimpleListDescriptor descriptor = new SimpleListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT);
         lists.loadSimpleList(descriptor);
         verify(adapterMock).getSimpleListHandler();
@@ -62,6 +67,7 @@ public class OwlapiListsTest {
 
     @Test
     public void testPersistSimpleList() throws Exception {
+        when(adapterMock.getSimpleListHandler()).thenReturn(simpleListHandlerMock);
         final SimpleListValueDescriptor descriptor = new SimpleListValueDescriptor(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT);
         descriptor.addValue(NamedResource.create("http://test"));
         lists.persistSimpleList(descriptor);
@@ -71,6 +77,7 @@ public class OwlapiListsTest {
 
     @Test
     public void testUpdateSimpleList() throws Exception {
+        when(adapterMock.getSimpleListHandler()).thenReturn(simpleListHandlerMock);
         final SimpleListValueDescriptor descriptor = new SimpleListValueDescriptor(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT);
         descriptor.addValue(NamedResource.create("http://test"));
         lists.updateSimpleList(descriptor);
@@ -80,6 +87,7 @@ public class OwlapiListsTest {
 
     @Test
     public void testLoadReferencedList() throws Exception {
+        when(adapterMock.getReferencedListHandler()).thenReturn(refListHandlerMock);
         final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT,
                 ListTestHelper.HAS_CONTENT);
         lists.loadReferencedList(descriptor);
@@ -88,6 +96,7 @@ public class OwlapiListsTest {
 
     @Test
     public void testPersistReferencedList() throws Exception {
+        when(adapterMock.getReferencedListHandler()).thenReturn(refListHandlerMock);
         final ReferencedListValueDescriptor<NamedResource> descriptor = new ReferencedListValueDescriptor<>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT,
                 ListTestHelper.HAS_CONTENT);
         descriptor.addValue(NamedResource.create("http://test"));
@@ -98,7 +107,8 @@ public class OwlapiListsTest {
 
     @Test
     public void testUpdateReferencedList() throws Exception {
-        final ReferencedListValueDescriptor<NamedResource> descriptor = new ReferencedListValueDescriptor<NamedResource>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT,
+        when(adapterMock.getReferencedListHandler()).thenReturn(refListHandlerMock);
+        final ReferencedListValueDescriptor<NamedResource> descriptor = new ReferencedListValueDescriptor<>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT,
                 ListTestHelper.HAS_CONTENT);
         descriptor.addValue(NamedResource.create("http://test"));
         lists.updateReferencedList(descriptor);

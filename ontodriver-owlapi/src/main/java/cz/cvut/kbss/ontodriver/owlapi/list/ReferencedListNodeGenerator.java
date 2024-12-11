@@ -80,8 +80,7 @@ class ReferencedListNodeGenerator {
             return List.of(new MutableAddAxiom(ontology, valueAxiom));
         } else {
             assert descriptor.getNodeContent().getType() == Assertion.AssertionType.DATA_PROPERTY;
-            if (value instanceof Translations) {
-                final Translations mls = (Translations) value;
+            if (value instanceof Translations mls) {
                 return mls.getValue().entrySet().stream().map(e -> {
                     final String lang = e.getKey();
                     final String val = e.getValue();

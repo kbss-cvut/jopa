@@ -78,7 +78,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.owl2java.Constants.DESCRIPTION_FIELD_NAME;
 import static cz.cvut.kbss.jopa.owl2java.Constants.ID_FIELD_NAME;
@@ -217,7 +216,7 @@ public class JavaTransformer {
         final List<IRI> ontologyIris = ontologyManager.ontologies().map(o -> o.getOntologyID().getOntologyIRI())
                                                       .filter(Optional::isPresent).map(Optional::get).distinct()
                                                       .sorted(Comparator.comparing(IRI::getIRIString))
-                                                      .collect(Collectors.toList());
+                                                      .toList();
         ontologyIris.forEach(iri -> {
             final String fieldName = ensureVocabularyItemUniqueIdentifier("ONTOLOGY_IRI_" + JavaNameGenerator.makeNameValidJava(nameGenerator.getOntologyPrefix(iri)
                                                                                                                                              .orElseGet(() -> nameGenerator.generateJavaNameForIri(iri)))
@@ -291,7 +290,7 @@ public class JavaTransformer {
         final List<OWLAnnotation> comments = EntitySearcher.getAnnotations(owlEntity, ontology)
                                                            .filter(a -> a.getProperty().isComment() && a.getValue()
                                                                                                         .isLiteral())
-                                                           .collect(Collectors.toList());
+                                                           .toList();
         final Optional<OWLAnnotation> langComment = comments.stream().filter(a -> a.getValue().asLiteral()
                                                                                    .map(l -> l.hasLang(LANGUAGE))
                                                                                    .orElse(false)).findFirst();
@@ -403,7 +402,7 @@ public class JavaTransformer {
 
         int i = 0;
         while (cls.fields().containsKey(newName)) {
-            newName = name + "" + (++i);
+            newName = name + (++i);
         }
 
         final JFieldVar fvId = cls.field(JMod.PROTECTED, fieldType, newName);
@@ -445,18 +444,12 @@ public class JavaTransformer {
 
             final String fieldName = nameGenerator.generateJavaNameForIri(prop.getIRI());
 
-            JFieldVar fv;
+            JFieldVar fv = switch (comp.getCard()) {
+                case MULTIPLE -> addField(fieldName, subj, cm.ref(Set.class).narrow(obj));
+                case ONE -> addField(fieldName, subj, obj);
+                default -> throw new OWL2JavaException("Unsupported data property cardinality type " + comp.getCard());
+            };
 
-            switch (comp.getCard()) {
-                case MULTIPLE:
-                    fv = addField(fieldName, subj, cm.ref(java.util.Set.class).narrow(obj));
-                    break;
-                case ONE:
-                    fv = addField(fieldName, subj, obj);
-                    break;
-                default:
-                    throw new OWL2JavaException("Unsupported data property cardinality type " + comp.getCard());
-            }
             generateJavadoc(ontology, prop, fv);
 
             fv.annotate(OWLDataProperty.class).param("iri", entities.get(prop));

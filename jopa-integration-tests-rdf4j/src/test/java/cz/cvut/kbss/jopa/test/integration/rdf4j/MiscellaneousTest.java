@@ -37,13 +37,10 @@ class MiscellaneousTest {
 
     @Test
     void unwrapExtractsRdf4jRepository() {
-        final EntityManager em = persistenceFactory.getEntityManager("UnwrapTest", false, Collections.emptyMap());
-        try {
+        try (EntityManager em = persistenceFactory.getEntityManager("UnwrapTest", false, Collections.emptyMap())) {
             final Repository repository = em.unwrap(Repository.class);
             assertNotNull(repository);
             assertTrue(repository.isInitialized());
-        } finally {
-            em.close();
         }
     }
 }

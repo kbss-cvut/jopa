@@ -56,22 +56,17 @@ class AxiomSaver {
 
     private static List<Statement> transformToStatements(Assertion assertion, Collection<Value<?>> values, Resource subject) {
         final Property property = ResourceFactory.createProperty(assertion.getIdentifier().toString());
-        switch (assertion.getType()) {
+        return switch (assertion.getType()) {
             // Intentional fall-through
-            case CLASS:
-            case OBJECT_PROPERTY:
-                return values.stream().filter(v -> v != Value.nullValue()).map(v -> ResourceFactory
-                                .createStatement(subject, property, ResourceFactory.createResource(v.stringValue())))
-                        .collect(Collectors.toList());
-            case DATA_PROPERTY:
-                return dataPropertyValuesToStatements(values, subject, assertion, property);
-            default:
-                return values.stream().filter(v -> v != Value.nullValue())
-                        .map(v -> ResourceFactory
-                                .createStatement(subject, property, JenaUtils.valueToRdfNode(assertion, v)))
-                        .collect(Collectors.toList());
-
-        }
+            case CLASS, OBJECT_PROPERTY -> values.stream().filter(v -> v != Value.nullValue()).map(v -> ResourceFactory
+                                                         .createStatement(subject, property, ResourceFactory.createResource(v.stringValue())))
+                                                 .collect(Collectors.toList());
+            case DATA_PROPERTY -> dataPropertyValuesToStatements(values, subject, assertion, property);
+            default -> values.stream().filter(v -> v != Value.nullValue())
+                             .map(v -> ResourceFactory
+                                     .createStatement(subject, property, JenaUtils.valueToRdfNode(assertion, v)))
+                             .collect(Collectors.toList());
+        };
     }
 
     private static List<Statement> dataPropertyValuesToStatements(Collection<Value<?>> values, Resource subject, Assertion a,

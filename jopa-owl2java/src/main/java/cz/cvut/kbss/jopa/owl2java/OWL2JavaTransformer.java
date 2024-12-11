@@ -136,10 +136,10 @@ public class OWL2JavaTransformer {
         final List<String> icContexts = new ArrayList<>();
         a.annotations().filter(p -> p.getProperty().getIRI().toString().equals(Constants.P_IS_INTEGRITY_CONSTRAINT_FOR))
          .forEach(p -> {
-             LOG.trace("Processing annotation : " + p);
+             LOG.trace("Processing annotation: {}", p);
              p.getValue().accept(v);
              final String icContextName = v.getName();
-             LOG.trace("CONTEXT:" + icContextName);
+             LOG.trace("CONTEXT: {}", icContextName);
              if (icContextName == null) {
                  return;
              }
@@ -154,10 +154,10 @@ public class OWL2JavaTransformer {
         EntitySearcher.getAnnotations(entity, ontology)
                       .filter(p -> p.getProperty().getIRI().toString().equals(Constants.P_IS_INTEGRITY_CONSTRAINT_FOR))
                       .forEach(p -> {
-                          LOG.trace("Processing annotation : " + p);
+                          LOG.trace("Processing annotation: {}", p);
                           p.getValue().accept(v);
                           final String icContextName = v.getName();
-                          LOG.trace("CONTEXT:" + icContextName);
+                          LOG.trace("CONTEXT: {}", icContextName);
                           if (icContextName == null) {
                               return;
                           }

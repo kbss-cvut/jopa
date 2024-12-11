@@ -208,8 +208,7 @@ public class SimpleListHandlerTest extends ListHandlerTestHelper {
 
     @Test
     public void updatePersistsListWhenOriginalWasEmpty() {
-        final List<URI> update = IntStream.range(0, 5).mapToObj(i -> Generator.generateUri())
-                                          .collect(Collectors.toList());
+        final List<URI> update = IntStream.range(0, 5).mapToObj(i -> Generator.generateUri()).toList();
         final SimpleListValueDescriptor descriptor = new SimpleListValueDescriptor(OWNER, HAS_LIST, HAS_NEXT);
         update.forEach(v -> descriptor.addValue(NamedResource.create(v)));
         handler.updateList(descriptor);

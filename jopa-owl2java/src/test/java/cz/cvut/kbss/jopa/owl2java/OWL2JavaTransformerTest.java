@@ -17,6 +17,32 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
+import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
+import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
+import cz.cvut.kbss.jopa.owlapi.exception.MappingFileParserException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.vocab.XSDVocabulary;
+import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.BAD_IMPORT_ONTOLOGY_IRI;
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.CONTEXT;
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.IC_ONTOLOGY_IRI;
@@ -29,34 +55,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledOnOs;
-import org.junit.jupiter.api.condition.OS;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.vocab.XSDVocabulary;
-
-import cz.cvut.kbss.jopa.owl2java.cli.PropertiesType;
-import cz.cvut.kbss.jopa.owl2java.config.TransformationConfiguration;
-import cz.cvut.kbss.jopa.owl2java.exception.OWL2JavaException;
-import cz.cvut.kbss.jopa.owlapi.exception.MappingFileParserException;
-import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
 public class OWL2JavaTransformerTest {
     
@@ -75,7 +73,7 @@ public class OWL2JavaTransformerTest {
     private File targetDir;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         this.mappingFilePath = TestUtils.resolveTestResourcesFilePath(TestUtils.MAPPING_FILE_NAME);
         this.dataFactory = new OWLDataFactoryImpl();
         this.transformer = new OWL2JavaTransformer();
@@ -137,8 +135,7 @@ public class OWL2JavaTransformerTest {
     private void verifyGeneratedModel(File currentDir) {
         currentDir = new File(currentDir + File.separator + Constants.MODEL_PACKAGE);
         final List<String> classNames = Arrays.stream(currentDir.list())
-                                              .map(fn -> fn.substring(0, fn.indexOf('.'))).collect(
-                        Collectors.toList());
+                                              .map(fn -> fn.substring(0, fn.indexOf('.'))).toList();
         assertTrue(classNames.containsAll(KNOWN_CLASSES));
     }
 
@@ -447,7 +444,7 @@ public class OWL2JavaTransformerTest {
         final File modelFolder = new File(targetDir + File.separator + Constants.MODEL_PACKAGE);
         for (File entity : modelFolder.listFiles()) {
             final List<String> lines = Files.readAllLines(entity.toPath());
-            lines.removeIf(line -> line.length() == 0);
+            lines.removeIf(String::isEmpty);
             assertThat(lines.get(0), containsString("package " + Constants.MODEL_PACKAGE));
         }
     }

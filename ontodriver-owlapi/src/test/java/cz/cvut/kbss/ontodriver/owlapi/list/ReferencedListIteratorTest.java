@@ -136,21 +136,19 @@ public class ReferencedListIteratorTest extends OwlapiListIteratorBase {
         ));
         sut.next();
         final List<TransactionalChange> result = sut.replaceNode(newMls);
-        final BiConsumer<String, String> axiomPresenceCheck = (lang, val) -> {
-            assertTrue(result.stream().anyMatch(change -> {
-                final List<OWLOntologyChange> ontologyChanges = change.toOwlChanges(snapshot.getOntology());
-                for (OWLOntologyChange c : ontologyChanges) {
-                    final OWLAxiom ax = c.getAxiom();
-                    assert ax instanceof OWLDataPropertyAssertionAxiom;
-                    final OWLDataPropertyAssertionAxiom dpa = (OWLDataPropertyAssertionAxiom) ax;
-                    final OWLLiteral lit = dpa.getObject();
-                    if (Objects.equals(lang, lit.getLang()) && Objects.equals(val, lit.getLiteral())) {
-                        return true;
-                    }
+        final BiConsumer<String, String> axiomPresenceCheck = (lang, val) -> assertTrue(result.stream().anyMatch(change -> {
+            final List<OWLOntologyChange> ontologyChanges = change.toOwlChanges(snapshot.getOntology());
+            for (OWLOntologyChange c : ontologyChanges) {
+                final OWLAxiom ax = c.getAxiom();
+                assert ax instanceof OWLDataPropertyAssertionAxiom;
+                final OWLDataPropertyAssertionAxiom dpa = (OWLDataPropertyAssertionAxiom) ax;
+                final OWLLiteral lit = dpa.getObject();
+                if (Objects.equals(lang, lit.getLang()) && Objects.equals(val, lit.getLiteral())) {
+                    return true;
                 }
-                return false;
-            }));
-        };
+            }
+            return false;
+        }));
         oldMls.getValue().forEach(axiomPresenceCheck);
         newMls.getValue().forEach(axiomPresenceCheck);
     }

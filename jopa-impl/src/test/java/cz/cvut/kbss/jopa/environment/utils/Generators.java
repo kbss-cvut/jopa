@@ -129,20 +129,14 @@ public abstract class Generators {
 
     private static Object generateDataPropertyValue(int counter) {
         final int index = counter % 5;
-        switch (index) {
-            case 0:
-                return "StringValue_" + counter;
-            case 1:
-                return true;
-            case 2:
-                return counter;
-            case 3:
-                return (double) counter;
-            case 4:
-                return new Date();
-            default:
-                return null;
-        }
+        return switch (index) {
+            case 0 -> "StringValue_" + counter;
+            case 1 -> true;
+            case 2 -> counter;
+            case 3 -> (double) counter;
+            case 4 -> new Date();
+            default -> null;
+        };
     }
 
     public static OWLClassA generateOwlClassAInstance() {

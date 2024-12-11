@@ -461,7 +461,7 @@ class EntityDeconstructorTest {
                                      valueDescriptor.getAssertionValues(assertion).size()),
                   () -> {
                       final List<Value<String>> values =
-                              n.getPluralAnnotation().stream().map(Value::new).collect(Collectors.toList());
+                              n.getPluralAnnotation().stream().map(Value::new).toList();
                       assertTrue(valueDescriptor.getAssertionValues(assertion).containsAll(values));
                   });
     }

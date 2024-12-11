@@ -48,7 +48,7 @@ public class OWL2JavaTest {
     private File targetDir;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         this.mappingFilePath = TestUtils.resolveTestResourcesFilePath(TestUtils.MAPPING_FILE_NAME);
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));

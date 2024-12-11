@@ -128,7 +128,7 @@ class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<?
 
     private static Set<Value<?>> objectsToValues(Collection<?> strValues) {
         final Set<Value<?>> ontoValues = new HashSet<>(strValues.size());
-        ontoValues.addAll(strValues.stream().filter(Objects::nonNull).map(Value::new).collect(Collectors.toList()));
+        ontoValues.addAll(strValues.stream().filter(Objects::nonNull).map(Value::new).toList());
         return ontoValues;
     }
 

@@ -59,10 +59,9 @@ public class Literal implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Literal)) {
+        if (!(o instanceof Literal literal)) {
             return false;
         }
-        Literal literal = (Literal) o;
         return lexicalForm.equals(literal.lexicalForm) && datatype.equals(literal.datatype);
     }
 

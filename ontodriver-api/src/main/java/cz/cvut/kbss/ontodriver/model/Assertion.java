@@ -111,13 +111,12 @@ public abstract class Assertion extends NamedResource {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Assertion)) {
+        if (!(o instanceof Assertion assertion)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        Assertion assertion = (Assertion) o;
         return inferred == assertion.inferred && Objects.equals(language, assertion.language);
     }
 
