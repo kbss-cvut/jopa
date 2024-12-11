@@ -21,7 +21,7 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
@@ -158,14 +158,14 @@ class ReferencedListIterator<T> extends OwlapiListIterator<T> {
                 return (T) OwlapiUtils.owlLiteralToValue(literal);
             }
         } else {
-            final MultilingualString mls = new MultilingualString();
+            final Translations translations = new Translations();
             nextItem.forEach(n -> {
                 assert n instanceof OWLLiteral;
                 final OWLLiteral lit = (OWLLiteral) n;
                 assert lit.getLang() != null;
-                mls.set(lit.getLang(), lit.getLiteral());
+                translations.set(lit.getLang(), lit.getLiteral());
             });
-            return (T) mls;
+            return (T) translations;
         }
     }
 

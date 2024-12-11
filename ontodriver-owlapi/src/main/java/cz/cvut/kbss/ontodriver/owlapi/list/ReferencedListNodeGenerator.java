@@ -22,7 +22,7 @@ import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.LangString;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
@@ -80,8 +80,8 @@ class ReferencedListNodeGenerator {
             return List.of(new MutableAddAxiom(ontology, valueAxiom));
         } else {
             assert descriptor.getNodeContent().getType() == Assertion.AssertionType.DATA_PROPERTY;
-            if (value instanceof MultilingualString) {
-                final MultilingualString mls = (MultilingualString) value;
+            if (value instanceof Translations) {
+                final Translations mls = (Translations) value;
                 return mls.getValue().entrySet().stream().map(e -> {
                     final String lang = e.getKey();
                     final String val = e.getValue();
