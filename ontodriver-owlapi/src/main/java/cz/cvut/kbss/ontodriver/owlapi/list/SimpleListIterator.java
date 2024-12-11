@@ -101,15 +101,14 @@ class SimpleListIterator extends OwlapiListIterator<NamedResource> {
 
     @Override
     List<TransactionalChange> removeWithoutReconnect() {
-        final List<TransactionalChange> changes = new ArrayList<>(2);
-        changes.add(new MutableRemoveAxiom(ontology,
-                dataFactory.getOWLObjectPropertyAssertionAxiom(previousProperty, previousNode, currentNode)));
+        final TransactionalChange removeFromPrevious = new MutableRemoveAxiom(ontology,
+                dataFactory.getOWLObjectPropertyAssertionAxiom(previousProperty, previousNode, currentNode));
         final OWLIndividual nextNode = getNextNode();
         if (nextNode != null) {
-            changes.add(new MutableRemoveAxiom(ontology,
+            return List.of(removeFromPrevious, new MutableRemoveAxiom(ontology,
                     dataFactory.getOWLObjectPropertyAssertionAxiom(currentProperty, currentNode, nextNode)));
         }
-        return changes;
+        return List.of(removeFromPrevious);
     }
 
     /**
