@@ -20,7 +20,7 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,17 +72,17 @@ public class ReferencedListIteratorTest extends OwlapiListIteratorBase {
 
     @Test
     void nextValueAllowsMultipleNodeContentStatementsWhenTheyRepresentTranslationsOfString() {
-        initMultilingualStringList(List.of(new MultilingualString(Map.of(
+        initMultilingualStringList(List.of(new Translations(Map.of(
                 "en", "One",
                 "cs", "Jedna"
         ))));
         final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST,
                 ListTestHelper.HAS_NEXT, Assertion.createDataPropertyAssertion(URI.create(HAS_CONTENT_PROPERTY), false));
-        final OwlapiListIterator<MultilingualString> sut = new ReferencedListIterator<>(descriptor, snapshot, axiomAdapter);
+        final OwlapiListIterator<Translations> sut = new ReferencedListIterator<>(descriptor, snapshot, axiomAdapter);
         assertDoesNotThrow(sut::nextValue);
     }
 
-    private void initMultilingualStringList(List<MultilingualString> list) {
+    private void initMultilingualStringList(List<Translations> list) {
         final OWLDataFactory dataFactory = snapshot.getDataFactory();
         final OWLOntology ontology = snapshot.getOntology();
         final OWLObjectProperty hasList = dataFactory.getOWLObjectProperty(IRI.create(HAS_LIST_PROPERTY));
@@ -93,7 +93,7 @@ public class ReferencedListIteratorTest extends OwlapiListIteratorBase {
         final String sequenceNodeBase = ListTestHelper.SUBJECT.getIdentifier() + SEQUENCE_NODE_SUFFIX;
         OWLNamedIndividual previousNode = dataFactory.getOWLNamedIndividual(SUBJECT);
         OWLNamedIndividual node = dataFactory.getOWLNamedIndividual(IRI.create(sequenceNodeBase + i));
-        for (MultilingualString mls : list) {
+        for (Translations mls : list) {
             snapshot.getOntologyManager()
                     .addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(next, previousNode, node));
             for (Map.Entry<String, String> e : mls.getValue().entrySet()) {
@@ -108,29 +108,29 @@ public class ReferencedListIteratorTest extends OwlapiListIteratorBase {
 
     @Test
     void nextValueReturnsMultilingualStringWhenNodeContentAreTranslationsOfString() {
-        final MultilingualString mls = new MultilingualString(Map.of(
+        final Translations mls = new Translations(Map.of(
                 "en", "One",
                 "cs", "Jedna"
         ));
         initMultilingualStringList(List.of(mls));
         final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST,
                 ListTestHelper.HAS_NEXT, Assertion.createDataPropertyAssertion(URI.create(HAS_CONTENT_PROPERTY), false));
-        final OwlapiListIterator<MultilingualString> sut = new ReferencedListIterator<>(descriptor, snapshot, axiomAdapter);
+        final OwlapiListIterator<Translations> sut = new ReferencedListIterator<>(descriptor, snapshot, axiomAdapter);
 
         assertEquals(mls, sut.nextValue());
     }
 
     @Test
     void replaceNodeReplacesAllTranslationAxiomsWhenNodeContainsTranslationsOfString() {
-        final MultilingualString oldMls = new MultilingualString(Map.of(
+        final Translations oldMls = new Translations(Map.of(
                 "en", "One",
                 "cs", "Jedna"
         ));
         initMultilingualStringList(List.of(oldMls));
         final ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST,
                 ListTestHelper.HAS_NEXT, Assertion.createDataPropertyAssertion(URI.create(HAS_CONTENT_PROPERTY), false));
-        final OwlapiListIterator<MultilingualString> sut = new ReferencedListIterator<>(descriptor, snapshot, axiomAdapter);
-        final MultilingualString newMls = new MultilingualString(Map.of(
+        final OwlapiListIterator<Translations> sut = new ReferencedListIterator<>(descriptor, snapshot, axiomAdapter);
+        final Translations newMls = new Translations(Map.of(
                 "en", "New one",
                 "cs", "Nová jedna"
         ));

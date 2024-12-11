@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.oom.converter;
 
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 
 /**
  * Supports mapping selected value types to multilingual strings.
@@ -30,17 +31,16 @@ public class ToMultilingualStringConverter implements ConverterWrapper<Multiling
 
     @Override
     public Object convertToAxiomValue(MultilingualString value) {
-        return new cz.cvut.kbss.ontodriver.model.MultilingualString(value.getValue());
+        return new Translations(value.getValue());
     }
 
     @Override
     public MultilingualString convertToAttribute(Object value) {
         final Class<?> type = value.getClass();
         assert supportsAxiomValueType(type);
-        if (value instanceof cz.cvut.kbss.ontodriver.model.MultilingualString) {
-            return new MultilingualString(((cz.cvut.kbss.ontodriver.model.MultilingualString) value).getValue());
-        } else if (value instanceof LangString) {
-            final LangString ls = (LangString) value;
+        if (value instanceof Translations translations) {
+            return new MultilingualString(translations.getValue());
+        } else if (value instanceof LangString ls) {
             return MultilingualString.create(ls.getValue(), ls.getLanguage().orElse(null));
         } else {
             return MultilingualString.create(value.toString(), null);
@@ -49,7 +49,7 @@ public class ToMultilingualStringConverter implements ConverterWrapper<Multiling
 
     @Override
     public boolean supportsAxiomValueType(Class<?> type) {
-        return cz.cvut.kbss.ontodriver.model.MultilingualString.class.isAssignableFrom(type)
+        return Translations.class.isAssignableFrom(type)
                 || LangString.class.isAssignableFrom(type)
                 || String.class.isAssignableFrom(type);
     }

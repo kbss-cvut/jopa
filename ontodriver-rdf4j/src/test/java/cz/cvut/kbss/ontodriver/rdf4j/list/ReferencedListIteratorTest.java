@@ -22,7 +22,7 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
@@ -86,7 +86,7 @@ class ReferencedListIteratorTest {
                 List.of(VF.createStatement(node, ReferencedListHandlerTest.nodeContentProperty, VF.createLiteral("One", "en")),
                         VF.createStatement(node, ReferencedListHandlerTest.nodeContentProperty, VF.createLiteral("Jedna", "cs")))
         );
-        final ReferencedListIterator<MultilingualString> sut = new ReferencedListIterator<>(
+        final ReferencedListIterator<Translations> sut = new ReferencedListIterator<>(
                 descriptor(Assertion.createDataPropertyAssertion(URI.create(ListHandlerTestHelper.NODE_CONTENT_PROPERTY), false)),
                 connector, VF);
 
@@ -102,13 +102,13 @@ class ReferencedListIteratorTest {
                 List.of(VF.createStatement(node, ReferencedListHandlerTest.nodeContentProperty, VF.createLiteral("One", "en")),
                         VF.createStatement(node, ReferencedListHandlerTest.nodeContentProperty, VF.createLiteral("Jedna", "cs")))
         );
-        final ReferencedListIterator<MultilingualString> sut = new ReferencedListIterator<>(
+        final ReferencedListIterator<Translations> sut = new ReferencedListIterator<>(
                 descriptor(Assertion.createDataPropertyAssertion(URI.create(ListHandlerTestHelper.NODE_CONTENT_PROPERTY), false)),
                 connector, VF);
 
-        final Axiom<MultilingualString> result = sut.nextAxiom();
+        final Axiom<Translations> result = sut.nextAxiom();
         assertNotNull(result);
-        assertEquals(new MultilingualString(Map.of("en", "One", "cs", "Jedna")), result.getValue().getValue());
+        assertEquals(new Translations(Map.of("en", "One", "cs", "Jedna")), result.getValue().getValue());
     }
 
     @Test
@@ -120,13 +120,13 @@ class ReferencedListIteratorTest {
                 List.of(VF.createStatement(node, ReferencedListHandlerTest.nodeContentProperty, VF.createLiteral("One", "en")),
                         VF.createStatement(node, ReferencedListHandlerTest.nodeContentProperty, VF.createLiteral("Jedna", "cs")))
         );
-        final ReferencedListIterator<MultilingualString> sut = new ReferencedListIterator<>(
+        final ReferencedListIterator<Translations> sut = new ReferencedListIterator<>(
                 descriptor(Assertion.createDataPropertyAssertion(URI.create(ListHandlerTestHelper.NODE_CONTENT_PROPERTY), false)),
                 connector, VF);
 
         sut.nextNode();
-        final MultilingualString result = sut.currentContent();
-        assertEquals(new MultilingualString(Map.of("en", "One", "cs", "Jedna")), result);
+        final Translations result = sut.currentContent();
+        assertEquals(new Translations(Map.of("en", "One", "cs", "Jedna")), result);
     }
 
     @Test
@@ -138,11 +138,11 @@ class ReferencedListIteratorTest {
                 List.of(VF.createStatement(node, ReferencedListHandlerTest.nodeContentProperty, VF.createLiteral("One", "en")),
                         VF.createStatement(node, ReferencedListHandlerTest.nodeContentProperty, VF.createLiteral("Jedna", "cs")))
         );
-        final ReferencedListIterator<MultilingualString> sut = new ReferencedListIterator<>(
+        final ReferencedListIterator<Translations> sut = new ReferencedListIterator<>(
                 descriptor(Assertion.createDataPropertyAssertion(URI.create(ListHandlerTestHelper.NODE_CONTENT_PROPERTY), false)),
                 connector, VF);
 
-        final MultilingualString newValue = new MultilingualString(Map.of("en", "new one", "cs", "nová jedna"));
+        final Translations newValue = new Translations(Map.of("en", "new one", "cs", "nová jedna"));
         sut.nextNode();
         sut.replaceCurrentWith(newValue);
         verify(connector).removeStatements(List.of(

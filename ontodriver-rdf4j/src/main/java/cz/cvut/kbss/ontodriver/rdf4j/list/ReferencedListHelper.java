@@ -19,7 +19,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.list;
 
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import org.eclipse.rdf4j.model.Value;
@@ -36,8 +36,8 @@ class ReferencedListHelper {
     ReferencedListHelper(ValueConverter valueConverter) {this.valueConverter = valueConverter;}
 
     Collection<Value> toRdf4jValue(Assertion a, Object value) throws Rdf4jDriverException {
-        if (value instanceof MultilingualString) {
-            final MultilingualString mls = (MultilingualString) value;
+        if (value instanceof Translations) {
+            final Translations mls = (Translations) value;
             final List<Value> values = new ArrayList<>(mls.getValue().size());
             for (Map.Entry<String, String> e : mls.getValue().entrySet()) {
                 values.add(valueConverter.toRdf4jValue(a, new cz.cvut.kbss.ontodriver.model.Value<>(new LangString(e.getValue(), e.getKey()))));

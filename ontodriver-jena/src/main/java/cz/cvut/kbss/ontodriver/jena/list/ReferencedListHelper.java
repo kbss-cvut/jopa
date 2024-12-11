@@ -20,7 +20,7 @@ package cz.cvut.kbss.ontodriver.jena.list;
 import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.LangString;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.RDFNode;
 
@@ -33,7 +33,7 @@ class ReferencedListHelper {
     }
 
     static Stream<RDFNode> toRdfNodes(Object value, Assertion nodeContentAssertion) {
-        if (value instanceof MultilingualString mls) {
+        if (value instanceof Translations mls) {
             return mls.getValue().entrySet().stream()
                       .map(e -> JenaUtils.valueToRdfNode(nodeContentAssertion, new Value<>(new LangString(e.getValue(), e.getKey()))));
         } else {

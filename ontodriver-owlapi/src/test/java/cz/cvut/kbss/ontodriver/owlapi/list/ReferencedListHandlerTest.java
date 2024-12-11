@@ -24,7 +24,7 @@ import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.LangString;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
@@ -382,11 +382,11 @@ public class ReferencedListHandlerTest {
 
     @Test
     void persistListSavesMultilingualStringTranslationsAsContentOfSingleNode() {
-        final List<MultilingualString> refList = List.of(
-                new MultilingualString(Map.of("en", "one", "cs", "jedna")),
-                new MultilingualString(Map.of("en", "two", "cs", "dva"))
+        final List<Translations> refList = List.of(
+                new Translations(Map.of("en", "one", "cs", "jedna")),
+                new Translations(Map.of("en", "two", "cs", "dva"))
         );
-        final ReferencedListValueDescriptor<MultilingualString> valueDescriptor = new ReferencedListValueDescriptor<>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, Assertion.createDataPropertyAssertion(URI.create(ListTestHelper.HAS_CONTENT_PROPERTY), false));
+        final ReferencedListValueDescriptor<Translations> valueDescriptor = new ReferencedListValueDescriptor<>(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, Assertion.createDataPropertyAssertion(URI.create(ListTestHelper.HAS_CONTENT_PROPERTY), false));
         refList.forEach(valueDescriptor::addValue);
 
         sut.persistList(valueDescriptor);
