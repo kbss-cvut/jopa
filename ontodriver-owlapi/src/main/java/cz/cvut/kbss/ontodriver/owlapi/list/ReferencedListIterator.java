@@ -173,10 +173,10 @@ class ReferencedListIterator<T> extends OwlapiListIterator<T> {
         if (values.isEmpty()) {
             throw icViolatedException(currentNode.toStringID(), 0);
         }
-        final Set<String> langs = new HashSet<>();
         if (values.size() == 1) {
             return;
         }
+        final Set<String> langs = new HashSet<>();
         for (OWLObject s : values) {
             if (s.isIndividual()) {
                 throw icViolatedException(currentNode.toStringID(), values.size());
@@ -202,15 +202,14 @@ class ReferencedListIterator<T> extends OwlapiListIterator<T> {
 
     @Override
     List<TransactionalChange> removeWithoutReconnect() {
-        final List<TransactionalChange> changes = new ArrayList<>(2);
-        changes.add(new MutableRemoveAxiom(ontology,
-                dataFactory.getOWLObjectPropertyAssertionAxiom(previousNextNodeProperty, previousNode, currentNode)));
+        final MutableRemoveAxiom removeFromPrevious = new MutableRemoveAxiom(ontology,
+                dataFactory.getOWLObjectPropertyAssertionAxiom(previousNextNodeProperty, previousNode, currentNode));
         final OWLIndividual nextNode = getNextNode();
         if (nextNode != null) {
-            changes.add(new MutableRemoveAxiom(ontology,
+            return List.of(removeFromPrevious, new MutableRemoveAxiom(ontology,
                     dataFactory.getOWLObjectPropertyAssertionAxiom(currentNextNodeProperty, currentNode, nextNode)));
         }
-        return changes;
+        return List.of(removeFromPrevious);
     }
 
     private OWLIndividual getNextNode() {
