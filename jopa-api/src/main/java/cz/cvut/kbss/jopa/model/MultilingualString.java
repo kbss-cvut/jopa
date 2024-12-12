@@ -187,10 +187,9 @@ public class MultilingualString implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof MultilingualString)) {
+        if (!(o instanceof MultilingualString that)) {
             return false;
         }
-        MultilingualString that = (MultilingualString) o;
         return value.equals(that.getValue());
     }
 

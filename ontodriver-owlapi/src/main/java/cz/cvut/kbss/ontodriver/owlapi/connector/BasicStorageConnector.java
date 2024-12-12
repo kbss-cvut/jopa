@@ -242,7 +242,7 @@ public class BasicStorageConnector extends AbstractConnector {
             try {
                 writeToFile();
             } catch (OntologyStorageException e) {
-                LOG.error("Unable to write out ontology." + e);
+                LOG.error("Unable to write out ontology.", e);
             }
         } finally {
             WRITE.unlock();

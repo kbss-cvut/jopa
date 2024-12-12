@@ -29,7 +29,7 @@ class LazyLoadingProxyFactoryTest {
     private static OWLClassW entityW;
 
     @BeforeAll
-    static void setUpBeforeClass() throws Exception {
+    static void setUpBeforeClass() {
         entityA = new OWLClassA();
         entityB = new OWLClassB();
         entityW = new OWLClassW();

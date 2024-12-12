@@ -41,7 +41,7 @@ public class ReferencedListTestHelper extends ListTestHelper {
 
     @Override
     public void persistList(List<?> items) {
-        assert items.size() > 0;
+        assert !items.isEmpty();
         final OWLObjectProperty hasList = dataFactory.getOWLObjectProperty(IRI.create(HAS_LIST_PROPERTY));
         final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(HAS_NEXT_PROPERTY));
         int i = 0;

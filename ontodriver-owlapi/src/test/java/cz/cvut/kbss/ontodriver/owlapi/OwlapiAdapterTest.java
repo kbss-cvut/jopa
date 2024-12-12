@@ -73,6 +73,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -185,29 +186,27 @@ class OwlapiAdapterTest {
         final NamedResource individual = NamedResource.create(
                 "http://krizik.felk.cvut.cz/ontologies/jopa#IndividualOne");
         Assertion assertion = null;
-        Value<?> value = null;
-        switch (assType) {
-            case CLASS:
+        Value<?> value = switch (assType) {
+            case CLASS -> {
                 assertion = Assertion.createClassAssertion(inferred);
-                value = new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#typeOne"));
-                break;
-            case PROPERTY:
-            case OBJECT_PROPERTY:
+                yield new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#typeOne"));
+            }
+            case PROPERTY, OBJECT_PROPERTY -> {
                 assertion = Assertion.createObjectPropertyAssertion(
                         URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#objectProperty"), inferred);
-                value = new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#IndividualTwo"));
-                break;
-            case DATA_PROPERTY:
+                yield new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#IndividualTwo"));
+            }
+            case DATA_PROPERTY -> {
                 assertion = Assertion.createDataPropertyAssertion(
                         URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#dataProperty"), inferred);
-                value = new Value<>("StringDataPropertyValue");
-                break;
-            case ANNOTATION_PROPERTY:
+                yield new Value<>("StringDataPropertyValue");
+            }
+            case ANNOTATION_PROPERTY -> {
                 assertion = Assertion.createAnnotationPropertyAssertion(
                         URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationProperty"), inferred);
-                value = new Value<>("This is annotation value");
-                break;
-        }
+                yield new Value<>("This is annotation value");
+            }
+        };
         return new AxiomImpl<>(individual, assertion, value);
     }
 
@@ -302,7 +301,7 @@ class OwlapiAdapterTest {
         final Set<OWLNamedIndividual> individuals = ax.individualsInSignature().collect(Collectors.toSet());
         assertEquals(1, individuals.size());
         assertEquals(axiom.getSubject().getIdentifier(), individuals.iterator().next().getIRI().toURI());
-        assertTrue(ax instanceof OWLDataPropertyAssertionAxiom);
+        assertInstanceOf(OWLDataPropertyAssertionAxiom.class, ax);
         assertEquals(axiom.getValue().stringValue(), ((OWLDataPropertyAssertionAxiom) ax).getObject().getLiteral());
     }
 
@@ -321,7 +320,7 @@ class OwlapiAdapterTest {
                 ax.annotationPropertiesInSignature().collect(Collectors.toSet());
         assertEquals(1, annotationProperties.size());
         assertEquals(axiom.getAssertion().getIdentifier(), annotationProperties.iterator().next().getIRI().toURI());
-        assertTrue(ax instanceof OWLAnnotationAssertionAxiom);
+        assertInstanceOf(OWLAnnotationAssertionAxiom.class, ax);
         final OWLAnnotationAssertionAxiom assertionAxiom = (OWLAnnotationAssertionAxiom) ax;
         assertEquals(axiom.getValue().stringValue(),
                 assertionAxiom.getAnnotation().getValue().asLiteral().get().getLiteral());

@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.oom.converter;
 
 import cz.cvut.kbss.ontodriver.model.LangString;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -45,7 +45,7 @@ class ToMultilingualStringConverterTest {
 
     static Stream<Arguments> supportedTypes() {
         return Stream.of(
-                Arguments.of(MultilingualString.class),
+                Arguments.of(Translations.class),
                 Arguments.of(LangString.class),
                 Arguments.of(String.class)
         );
@@ -61,13 +61,13 @@ class ToMultilingualStringConverterTest {
         final cz.cvut.kbss.jopa.model.MultilingualString value = cz.cvut.kbss.jopa.model.MultilingualString.create("en", "Test");
 
         final Object result = sut.convertToAxiomValue(value);
-        assertInstanceOf(MultilingualString.class, result);
-        assertEquals(value.getValue(), ((MultilingualString) result).getValue());
+        assertInstanceOf(Translations.class, result);
+        assertEquals(value.getValue(), ((Translations) result).getValue());
     }
 
     @Test
     void convertToAttributeConvertsOntoDriverMultilingualStringToJopaMultilingualString() {
-        final MultilingualString value = new MultilingualString(Map.of("en", "Test"));
+        final Translations value = new Translations(Map.of("en", "Test"));
 
         final cz.cvut.kbss.jopa.model.MultilingualString result = sut.convertToAttribute(value);
         assertEquals(value.getValue(), result.getValue());

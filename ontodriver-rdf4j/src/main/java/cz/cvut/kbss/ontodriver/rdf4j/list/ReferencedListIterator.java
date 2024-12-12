@@ -21,7 +21,7 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
@@ -131,7 +131,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         if (currentContent.size() == 1) {
             return (T) fromRdf4jValue(currentContent.iterator().next().getObject());
         } else {
-            final MultilingualString mls = currentContentToMultilingualString();
+            final Translations mls = currentContentToMultilingualString();
             return (T) mls;
         }
     }
@@ -150,13 +150,13 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
                     listDescriptor.getNodeContent(),
                     new Value<>(fromRdf4jValue(obj)));
         }
-        final MultilingualString mls = currentContentToMultilingualString();
+        final Translations mls = currentContentToMultilingualString();
         return new AxiomImpl(NamedResource.create(currentContent.iterator().next().getSubject().stringValue()),
                 listDescriptor.getNodeContent(), new Value<>(mls));
     }
 
-    private MultilingualString currentContentToMultilingualString() {
-        final MultilingualString mls = new MultilingualString();
+    private Translations currentContentToMultilingualString() {
+        final Translations mls = new Translations();
         currentContent.forEach(s -> {
             assert s.getObject().isLiteral();
             final Literal literal = (Literal) s.getObject();

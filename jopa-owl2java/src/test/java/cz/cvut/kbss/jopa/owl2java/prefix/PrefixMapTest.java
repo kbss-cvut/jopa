@@ -161,7 +161,7 @@ class PrefixMapTest {
     }
 
     @Test
-    void getPrefixReturnsPrefixResolvedFromPrefixMappingFileSpecifiedInConfiguration() throws Exception {
+    void getPrefixReturnsPrefixResolvedFromPrefixMappingFileSpecifiedInConfiguration() {
         final String prefixMappingFilePath = TestUtils.resolveTestResourcesFilePath("prefixMappingFile");
         final TransformationConfiguration config = configBuilder().prefixMappingFile(prefixMappingFilePath).build();
         final PrefixMap sut = new PrefixMap(ontologyManager, config);

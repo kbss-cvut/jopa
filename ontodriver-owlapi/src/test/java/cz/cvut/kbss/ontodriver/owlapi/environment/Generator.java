@@ -17,12 +17,25 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.environment;
 
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
 import java.net.URI;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
 
 public class Generator {
 
@@ -64,9 +77,9 @@ public class Generator {
         final List<OWLObjectProperty> ops = generateOwlObjectProperties(tBoxItemCount);
         final List<OWLDataProperty> dps = generateOwlDataProperties(tBoxItemCount);
         result.addAll(
-                classes.stream().map(DATA_FACTORY::getOWLDeclarationAxiom).collect(Collectors.toList()));
-        result.addAll(ops.stream().map(DATA_FACTORY::getOWLDeclarationAxiom).collect(Collectors.toList()));
-        result.addAll(dps.stream().map(DATA_FACTORY::getOWLDeclarationAxiom).collect(Collectors.toList()));
+                classes.stream().map(DATA_FACTORY::getOWLDeclarationAxiom).toList());
+        result.addAll(ops.stream().map(DATA_FACTORY::getOWLDeclarationAxiom).toList());
+        result.addAll(dps.stream().map(DATA_FACTORY::getOWLDeclarationAxiom).toList());
         result.addAll(generateAssertionAxioms(classes, ops, dps, totalCount - 3 * tBoxItemCount));
         return result;
     }
@@ -133,17 +146,12 @@ public class Generator {
         final OWLNamedIndividual individual = DATA_FACTORY.getOWLNamedIndividual(IRI.create(generateUri("Individual")));
         final int type = randomInt(4);
         final OWLDataProperty dp = dps.get(randomInt(dps.size()));
-        switch (type) {
-            case 0:
-                return DATA_FACTORY.getOWLDataPropertyAssertionAxiom(dp, individual, RANDOM.nextInt());
-            case 1:
-                return DATA_FACTORY.getOWLDataPropertyAssertionAxiom(dp, individual, RANDOM.nextDouble());
-            case 2:
-                return DATA_FACTORY.getOWLDataPropertyAssertionAxiom(dp, individual, RANDOM.nextBoolean());
-            case 3:
-                return DATA_FACTORY.getOWLDataPropertyAssertionAxiom(dp, individual, UUID.randomUUID().toString());
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (type) {
+            case 0 -> DATA_FACTORY.getOWLDataPropertyAssertionAxiom(dp, individual, RANDOM.nextInt());
+            case 1 -> DATA_FACTORY.getOWLDataPropertyAssertionAxiom(dp, individual, RANDOM.nextDouble());
+            case 2 -> DATA_FACTORY.getOWLDataPropertyAssertionAxiom(dp, individual, RANDOM.nextBoolean());
+            case 3 -> DATA_FACTORY.getOWLDataPropertyAssertionAxiom(dp, individual, UUID.randomUUID().toString());
+            default -> throw new IllegalArgumentException();
+        };
     }
 }

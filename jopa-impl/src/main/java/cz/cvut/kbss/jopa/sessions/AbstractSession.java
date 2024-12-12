@@ -28,7 +28,7 @@ import java.util.Objects;
  */
 abstract class AbstractSession implements MetamodelProvider, ConfigurationHolder {
 
-    protected Configuration configuration;
+    protected final Configuration configuration;
 
     protected AbstractSession(Configuration configuration) {
         this.configuration = Objects.requireNonNull(configuration);

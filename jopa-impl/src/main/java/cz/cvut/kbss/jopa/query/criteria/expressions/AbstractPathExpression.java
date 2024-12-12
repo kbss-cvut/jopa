@@ -27,7 +27,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public abstract class AbstractPathExpression<X> extends AbstractExpression<X> implements Path<X> {
 
-    protected AbstractPathExpression pathSource;
+    protected final AbstractPathExpression pathSource;
     protected final Metamodel metamodel;
 
     public AbstractPathExpression(Class<X> type, AbstractPathExpression pathSource, Metamodel metamodel,

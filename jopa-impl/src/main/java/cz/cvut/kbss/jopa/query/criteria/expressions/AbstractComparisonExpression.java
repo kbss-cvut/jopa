@@ -22,8 +22,8 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public abstract class AbstractComparisonExpression extends AbstractExpression<Boolean> {
 
-    protected AbstractExpression<?> right;
-    protected AbstractExpression<?> left;
+    protected final AbstractExpression<?> right;
+    protected final AbstractExpression<?> left;
 
     public AbstractComparisonExpression(AbstractExpression<?> left, AbstractExpression<?> right, CriteriaBuilder cb) {
         super(Boolean.class, cb);

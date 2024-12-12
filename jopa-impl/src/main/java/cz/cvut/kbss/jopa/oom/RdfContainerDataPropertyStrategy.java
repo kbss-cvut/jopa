@@ -56,7 +56,7 @@ class RdfContainerDataPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
         valueCollection.stream()
                        .filter(Objects::nonNull)
                        .map(converter::convertToAxiomValue)
-                       .forEach(v -> valueDescriptor.addValue(v));
+                       .forEach(valueDescriptor::addValue);
         valueBuilder.addContainerValues(valueDescriptor);
     }
 

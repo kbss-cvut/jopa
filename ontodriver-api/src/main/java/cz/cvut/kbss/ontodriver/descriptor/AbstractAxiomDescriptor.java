@@ -79,10 +79,9 @@ public abstract class AbstractAxiomDescriptor {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof AbstractAxiomDescriptor)) {
+        if (!(o instanceof AbstractAxiomDescriptor that)) {
             return false;
         }
-        AbstractAxiomDescriptor that = (AbstractAxiomDescriptor) o;
         return subject.equals(that.subject);
     }
 

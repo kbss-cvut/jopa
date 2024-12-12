@@ -33,13 +33,14 @@ import static org.mockito.Mockito.mock;
 
 public class OrdinalParameterSparqlQueryHolderTest {
 
-    private static final String QUERY = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-            "SELECT ?craft\n" +
-            "{\n" +
-            "?craft foaf:name \"Apollo 7\" .\n" +
-            "?craft foaf:homepage $1 .\n" +
-            "?craft foaf:fundedBy $ .\n" +
-            "}";
+    private static final String QUERY = """
+            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            SELECT ?craft
+            {
+            ?craft foaf:name "Apollo 7" .
+            ?craft foaf:homepage $1 .
+            ?craft foaf:fundedBy $ .
+            }""";
     private static final List<String> PARTS = Arrays.asList("PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
             "SELECT ", "\n{\n", " foaf:name \"Apollo 7\" .\n", " foaf:homepage ", " .\n", " foaf:fundedBy ", " .\n}");
     private static final List<Object> PARAMS = Arrays.asList("craft", "craft", "craft", 1, "craft", 2);

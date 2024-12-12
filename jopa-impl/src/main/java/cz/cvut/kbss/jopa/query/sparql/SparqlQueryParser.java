@@ -100,6 +100,9 @@ public class SparqlQueryParser implements QueryParser {
                     break;
                 case '>':
                     this.inUri = false;
+                    if(inParam) {
+                        parameterEnd(i);
+                    }
                     wordEnd();
                     break;
                 case '\n':

@@ -58,8 +58,7 @@ public class ObjectConverter implements ConverterWrapper<Object, Object> {
     public Object convertToAttribute(Object value) {
         if (value instanceof NamedResource) {
             return ((NamedResource) value).getIdentifier();
-        } else if (value instanceof LangString) {
-            final LangString ls = (LangString) value;
+        } else if (value instanceof LangString ls) {
             if (preferMultilingualString) {
                 final MultilingualString ms = new MultilingualString();
                 ms.set(ls.getLanguage().orElse(null), ls.getValue());

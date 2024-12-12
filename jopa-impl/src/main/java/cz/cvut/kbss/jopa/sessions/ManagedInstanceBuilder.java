@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.utils.ReflectionUtils;
@@ -41,9 +40,9 @@ public class ManagedInstanceBuilder extends DefaultInstanceBuilder {
     @Override
     Object buildClone(Object cloneOwner, Field field, Object original, CloneConfiguration config) {
         assert uow.isEntityType(original.getClass());
-        final EntityType<?> et = uow.getMetamodel().entity(original.getClass());
+        final IdentifiableEntityType<?> et = uow.getMetamodel().entity(original.getClass());
         assert et != null;
-        final Class<?> cls = config.isForPersistenceContext() ? ((IdentifiableEntityType<?>) et).getInstantiableJavaType() : et.getJavaType();
+        final Class<?> cls = config.isForPersistenceContext() ? et.getInstantiableJavaType() : et.getJavaType();
         return ReflectionUtils.instantiateUsingDefaultConstructor(cls);
     }
 }

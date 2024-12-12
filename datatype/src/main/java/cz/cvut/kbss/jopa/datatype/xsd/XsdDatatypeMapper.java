@@ -60,49 +60,25 @@ public class XsdDatatypeMapper implements DatatypeMapper {
         Objects.requireNonNull(literal);
         final String value = literal.getLexicalForm();
         try {
-            switch (literal.getDatatype()) {
-                case XSD.BOOLEAN:
-                    return Optional.of(Boolean.parseBoolean(value));
-                case XSD.BYTE:
-                    return Optional.of(Byte.parseByte(value));
-                case XSD.SHORT:
-                case XSD.UNSIGNED_BYTE:
-                    return Optional.of(Short.parseShort(value));
-                case XSD.INT:
-                case XSD.UNSIGNED_SHORT:
-                    return Optional.of(Integer.parseInt(value));
-                case XSD.LONG:
-                case XSD.UNSIGNED_INT:
-                    return Optional.of(Long.parseLong(value));
-                case XSD.FLOAT:
-                    return Optional.of(toFloat(value));
-                case XSD.DOUBLE:
-                    return Optional.of(toDouble(value));
-                case XSD.STRING:
-                case XSD.NORMALIZED_STRING:
-                    return Optional.of(value);
-                case XSD.DATETIME:
-                    return Optional.of(XsdDateTimeMapper.map(value));
-                case XSD.DATE:
-                    return Optional.of(XsdDateMapper.map(value));
-                case XSD.TIME:
-                    return Optional.of(XsdTimeMapper.map(value));
-                case XSD.DURATION:
-                    return Optional.of(XsdDurationMapper.map(value));
-                case XSD.INTEGER:
-                case XSD.NON_NEGATIVE_INTEGER:
-                case XSD.NON_POSITIVE_INTEGER:
-                case XSD.NEGATIVE_INTEGER:
-                case XSD.POSITIVE_INTEGER:
-                case XSD.UNSIGNED_LONG:
-                    return Optional.of(new BigInteger(value));
-                case XSD.DECIMAL:
-                    return Optional.of(new BigDecimal(value));
-                case XSD.ANY_URI:
-                    return Optional.of(URI.create(value));
-                default:
-                    return Optional.empty();
-            }
+            return switch (literal.getDatatype()) {
+                case XSD.BOOLEAN -> Optional.of(Boolean.parseBoolean(value));
+                case XSD.BYTE -> Optional.of(Byte.parseByte(value));
+                case XSD.SHORT, XSD.UNSIGNED_BYTE -> Optional.of(Short.parseShort(value));
+                case XSD.INT, XSD.UNSIGNED_SHORT -> Optional.of(Integer.parseInt(value));
+                case XSD.LONG, XSD.UNSIGNED_INT -> Optional.of(Long.parseLong(value));
+                case XSD.FLOAT -> Optional.of(toFloat(value));
+                case XSD.DOUBLE -> Optional.of(toDouble(value));
+                case XSD.STRING, XSD.NORMALIZED_STRING -> Optional.of(value);
+                case XSD.DATETIME -> Optional.of(XsdDateTimeMapper.map(value));
+                case XSD.DATE -> Optional.of(XsdDateMapper.map(value));
+                case XSD.TIME -> Optional.of(XsdTimeMapper.map(value));
+                case XSD.DURATION -> Optional.of(XsdDurationMapper.map(value));
+                case XSD.INTEGER, XSD.NON_NEGATIVE_INTEGER, XSD.NON_POSITIVE_INTEGER, XSD.NEGATIVE_INTEGER,
+                     XSD.POSITIVE_INTEGER, XSD.UNSIGNED_LONG -> Optional.of(new BigInteger(value));
+                case XSD.DECIMAL -> Optional.of(new BigDecimal(value));
+                case XSD.ANY_URI -> Optional.of(URI.create(value));
+                default -> Optional.empty();
+            };
         } catch (IllegalArgumentException e) {
             throw new DatatypeMappingException("Unable to map literal " + literal, e);
         }

@@ -130,13 +130,12 @@ public class AxiomDescriptor extends AbstractAxiomDescriptor {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof AxiomDescriptor)) {
+        if (!(o instanceof AxiomDescriptor that)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        AxiomDescriptor that = (AxiomDescriptor) o;
         return subjectContexts.equals(that.subjectContexts) && assertionContexts.equals(that.assertionContexts);
     }
 

@@ -26,7 +26,7 @@ import java.util.List;
 
 public class SimplePredicateImpl extends AbstractPredicate{
 
-    protected Expression<Boolean> expression;
+    protected final Expression<Boolean> expression;
 
     public SimplePredicateImpl(BooleanOperator booleanOperator, Expression<Boolean> expression, CriteriaBuilder cb) {
         super(booleanOperator, cb);
@@ -42,11 +42,6 @@ public class SimplePredicateImpl extends AbstractPredicate{
     @Override
     public List<Expression<Boolean>> getExpressions(){
         return Collections.singletonList(expression);
-    }
-
-    @Override
-    public BooleanOperator getOperator() {
-        return this.booleanOperator;
     }
 
     @Override
