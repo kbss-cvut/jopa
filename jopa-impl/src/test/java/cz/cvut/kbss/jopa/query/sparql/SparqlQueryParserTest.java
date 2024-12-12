@@ -442,4 +442,14 @@ public class SparqlQueryParserTest {
         assertNotNull(holder.getParameter("y"));
         assertNotNull(holder.getParameter("z"));
     }
+
+    @Test
+    void parseQueryHandlesAttributesWithinIris() {
+        final String query = "SELECT ?x WHERE { <http://example.com/?y> a ?z . }";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(3, holder.getParameters().size());
+        assertNotNull(holder.getParameter("x"));
+        assertNotNull(holder.getParameter("y"));
+        assertNotNull(holder.getParameter("z"));
+    }
 }
