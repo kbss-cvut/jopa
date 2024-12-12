@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+## 2.2.1 - 2024-12-12
+- Rename `MultilingualString` in OntoDriver to `Translations` to prevent confusion with `MultilingualString` from JOPA (GH #288).
+- Fix a SPARQL query parsing issue (Bug #294).
+
 ## 2.2.0 - 2024-11-22
 - Treat any non-entity type as immutable w.r.t. to change tracking so that we do not have to explicitly list them in code (GH #278).
 - Allow projecting entity attributes from SOQL/Criteria API queries (Enhancement #277).
