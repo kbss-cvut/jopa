@@ -122,6 +122,10 @@ public class DatatypeTransformer {
             return DATA_FACTORY.getOWLLiteral(value.toString(), OWL2Datatype.XSD_INTEGER);
         } else if (value instanceof Long) {
             return DATA_FACTORY.getOWLLiteral(value.toString(), OWL2Datatype.XSD_LONG);
+        } else if (value instanceof Short) {
+            return DATA_FACTORY.getOWLLiteral(value.toString(), OWL2Datatype.XSD_SHORT);
+        } else if (value instanceof Byte) {
+            return DATA_FACTORY.getOWLLiteral(value.toString(), OWL2Datatype.XSD_BYTE);
         } else if (value instanceof Boolean) {
             return DATA_FACTORY.getOWLLiteral((Boolean) value);
         } else if (value instanceof Double) {
