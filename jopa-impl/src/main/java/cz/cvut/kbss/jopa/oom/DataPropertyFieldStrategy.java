@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.datatype.DatatypeTransformer;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -43,6 +44,14 @@ abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, 
     }
 
     boolean canBeConverted(Object value) {
+        if(attribute.getJavaType() != null && attribute.getJavaType().isPrimitive()) {
+            // if the value is a wrapper for the primitive attribute type, it can be converted automatically
+            Class<?> primitiveClass = DatatypeTransformer.wrapperToPrimitive(value.getClass());
+            if (primitiveClass != null && primitiveClass.equals(attribute.getJavaType())) {
+                return true;
+            }
+        }
+
         return converter.supportsAxiomValueType(value.getClass());
     }
 

@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassAA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassBB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassG;
@@ -1049,6 +1050,56 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         updateSimpleLiteralAndVerify();
     }
+
+    @Test
+    void updateSupportsUpdatingPrimitiveLiteralValue() {
+        this.em = getEntityManager("updateSupportsUpdatingSimpleLiteralValue", true);
+        entityBB.setIntAttribute(15);
+        entityBB.setBooleanAttribute(true);
+        entityBB.setByteAttribute((byte) 5);
+        entityBB.setShortAttribute((short) 10);
+        entityBB.setLongAttribute(20L);
+        entityBB.setFloatAttribute(25.5f);
+        entityBB.setDoubleAttribute(30.7);
+        persist(entityBB);
+
+        final int newIntValue = 20;
+        final boolean newBooleanValue = false;
+        final byte newByteValue = (byte) 8;
+        final short newShortValue = (short) 7;
+        final long newLongValue = 9L;
+        final float newFloatValue = 3.2f;
+        final double newDoubleValue = 8.9d;
+
+        em.getTransaction().begin();
+        final OWLClassBB toUpdate = findRequired(OWLClassBB.class, entityBB.getUri());
+        toUpdate.setIntAttribute(newIntValue);
+        toUpdate.setBooleanAttribute(newBooleanValue);
+        toUpdate.setByteAttribute(newByteValue);
+        toUpdate.setShortAttribute(newShortValue);
+        toUpdate.setLongAttribute(newLongValue);
+        toUpdate.setFloatAttribute(newFloatValue);
+        toUpdate.setDoubleAttribute(newDoubleValue);
+        em.getTransaction().commit();
+
+        verifyValueDatatype(entityBB.getUri(), Vocabulary.P_BB_INT_ATTRIBUTE, XSD.INT);
+        verifyValueDatatype(entityBB.getUri(), Vocabulary.P_BB_BOOLEAN_ATTRIBUTE, XSD.BOOLEAN);
+        verifyValueDatatype(entityBB.getUri(), Vocabulary.P_BB_BYTE_ATTRIBUTE, XSD.BYTE);
+        verifyValueDatatype(entityBB.getUri(), Vocabulary.P_BB_SHORT_ATTRIBUTE, XSD.SHORT);
+        verifyValueDatatype(entityBB.getUri(), Vocabulary.P_BB_LONG_ATTRIBUTE, XSD.LONG);
+        verifyValueDatatype(entityBB.getUri(), Vocabulary.P_BB_FLOAT_ATTRIBUTE, XSD.FLOAT);
+        verifyValueDatatype(entityBB.getUri(), Vocabulary.P_BB_DOUBLE_ATTRIBUTE, XSD.DOUBLE);
+        final OWLClassBB res = findRequired(OWLClassBB.class, entityBB.getUri());
+        assertEquals(entityBB.getUri(), res.getUri());
+        assertEquals(newIntValue, res.getIntAttribute());
+        assertEquals(newBooleanValue, res.getBooleanAttribute());
+        assertEquals(newByteValue, res.getByteAttribute());
+        assertEquals(newShortValue, res.getShortAttribute());
+        assertEquals(newLongValue, res.getLongAttribute());
+        assertEquals(newFloatValue, res.getFloatAttribute());
+        assertEquals(newDoubleValue, res.getDoubleAttribute());
+    }
+
 
     private void updateSimpleLiteralAndVerify() {
         em.getTransaction().begin();

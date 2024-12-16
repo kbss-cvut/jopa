@@ -61,6 +61,7 @@ public class Vocabulary {
     public static final String C_OWL_CLASS_Y = CLASS_IRI_BASE + "OWLClassY";
     public static final String C_OWL_CLASS_Z = CLASS_IRI_BASE + "OWLClassZ";
     public static final String C_OWL_CLASS_PART_CONSTR_IN_PARENT = CLASS_IRI_BASE + "OWLClassWithPartConstraintsInInterfaceParent";
+    public static final String C_OWL_CLASS_BB = CLASS_IRI_BASE + "OWLClassBB";
     public static final String C_OWL_CLASS_Z_CHILD = CLASS_IRI_BASE + "OWLClassZChild";
     public static final String C_OwlClassWithQueryAttr = CLASS_IRI_BASE + "OWLClassWithQueryAttr";
     public static final String C_OwlClassWithQueryAttr2 = CLASS_IRI_BASE + "OWLClassWithQueryAttr2";
@@ -149,6 +150,15 @@ public class Vocabulary {
     public static final String P_Y_PLURAL_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "yPluralMultilingual";
 
     public static final String P_AA_DYNAMIC_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "aaDynamicAttribute";
+    public static final String P_BB_INT_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "bbIntAttribute";
+    public static final String P_BB_BOOLEAN_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "bbBooleanAttribute";
+    public static final String P_BB_BYTE_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "bbByteAttribute";
+    public static final String P_BB_SHORT_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "bbShortAttribute";
+    public static final String P_BB_LONG_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "bbLongAttribute";
+    public static final String P_BB_FLOAT_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "bbFloatAttribute";
+    public static final String P_BB_DOUBLE_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "bbDoubleAttribute";
+    public static final String P_BB_CHAR_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "bbCharAttribute";
+
 
     public static final String P_HAS_H = ATTRIBUTE_IRI_BASE + "hasH";
 
