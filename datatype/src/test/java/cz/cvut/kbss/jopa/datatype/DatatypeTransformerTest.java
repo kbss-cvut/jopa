@@ -33,6 +33,29 @@ import static org.junit.jupiter.api.Assertions.*;
 class DatatypeTransformerTest {
 
     @Test
+    void wrapperToPrimitiveReturnsNullForNullInput() {
+        assertNull(DatatypeTransformer.wrapperToPrimitive(null));
+    }
+
+    @ParameterizedTest
+    @MethodSource("wrapperToPrimitiveTestValues")
+    void wrapperToPrimitive(Class<?> wrapper, Class<?> primitive) {
+        assertEquals(primitive, DatatypeTransformer.wrapperToPrimitive(wrapper));
+    }
+
+    private static Stream<Arguments> wrapperToPrimitiveTestValues() {
+        return Stream.of(
+                Arguments.arguments(Integer.class, int.class),
+                Arguments.arguments(Boolean.class, boolean.class),
+                Arguments.arguments(Byte.class, byte.class),
+                Arguments.arguments(Short.class, short.class),
+                Arguments.arguments(Long.class, long.class),
+                Arguments.arguments(Float.class, float.class),
+                Arguments.arguments(Double.class, double.class)
+        );
+    }
+
+    @Test
     void transformReturnsNullForNullInput() {
         assertNull(DatatypeTransformer.transform(null, String.class));
     }
