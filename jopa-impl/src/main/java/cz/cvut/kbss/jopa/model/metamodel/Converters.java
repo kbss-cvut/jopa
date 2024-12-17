@@ -93,7 +93,8 @@ public class Converters {
                 Map.entry(LangString.class, new ToLangStringConverter()),
                 Map.entry(URI.class, new ToURIConverter()),
                 Map.entry(URL.class, new ToURLConverter()),
-                Map.entry(Character.class, new CharacterConverter()));
+                Map.entry(Character.class, new CharacterConverter()),
+                Map.entry(char.class, new CharacterConverter()));
     }
 
     /**

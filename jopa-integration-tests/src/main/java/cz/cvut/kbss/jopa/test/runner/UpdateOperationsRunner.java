@@ -49,6 +49,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -1063,6 +1064,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         entityBB.setLongAttribute(20L);
         entityBB.setFloatAttribute(25.5f);
         entityBB.setDoubleAttribute(30.7);
+        entityBB.setCharAttribute('c');
         persist(entityBB);
 
         final int newIntValue = 20;
@@ -1072,6 +1074,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final long newLongValue = 9L;
         final float newFloatValue = 3.2f;
         final double newDoubleValue = 8.9d;
+        final char newCharValue = 'o';
 
         em.getTransaction().begin();
         final OWLClassBB toUpdate = findRequired(OWLClassBB.class, entityBB.getUri());
@@ -1082,6 +1085,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         toUpdate.setLongAttribute(newLongValue);
         toUpdate.setFloatAttribute(newFloatValue);
         toUpdate.setDoubleAttribute(newDoubleValue);
+        toUpdate.setCharAttribute(newCharValue);
         em.getTransaction().commit();
 
         verifyValueDatatype(entityBB.getUri(), Vocabulary.P_BB_INT_ATTRIBUTE, XSD.INT);
@@ -1091,6 +1095,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         verifyValueDatatype(entityBB.getUri(), Vocabulary.P_BB_LONG_ATTRIBUTE, XSD.LONG);
         verifyValueDatatype(entityBB.getUri(), Vocabulary.P_BB_FLOAT_ATTRIBUTE, XSD.FLOAT);
         verifyValueDatatype(entityBB.getUri(), Vocabulary.P_BB_DOUBLE_ATTRIBUTE, XSD.DOUBLE);
+        verifyValueDatatype(entityBB.getUri(), Vocabulary.P_BB_CHAR_ATTRIBUTE, XSD.STRING);
         final OWLClassBB res = findRequired(OWLClassBB.class, entityBB.getUri());
         assertEquals(entityBB.getUri(), res.getUri());
         assertEquals(newIntValue, res.getIntAttribute());
@@ -1100,6 +1105,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals(newLongValue, res.getLongAttribute());
         assertEquals(newFloatValue, res.getFloatAttribute());
         assertEquals(newDoubleValue, res.getDoubleAttribute());
+        assertEquals(newCharValue, res.getCharAttribute());
     }
 
 

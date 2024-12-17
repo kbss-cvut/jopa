@@ -124,6 +124,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertEquals(entityBB.getLongAttribute(), res.getLongAttribute());
         assertEquals(entityBB.getFloatAttribute(), res.getFloatAttribute());
         assertEquals(entityBB.getDoubleAttribute(), res.getDoubleAttribute());
+        assertEquals(entityBB.getCharAttribute(), res.getCharAttribute());
         assertTrue(em.contains(res));
     }
 
@@ -147,6 +148,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertEquals(0L, res.getLongAttribute());
         assertEquals(0.0f, res.getFloatAttribute());
         assertEquals(0.0d, res.getDoubleAttribute());
+        assertEquals('\u0000', res.getCharAttribute());
         assertTrue(em.contains(res));
     }
 

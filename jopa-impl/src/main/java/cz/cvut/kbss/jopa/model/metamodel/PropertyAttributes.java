@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.datatype.DatatypeTransformer;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
@@ -133,7 +134,9 @@ abstract class PropertyAttributes {
     }
 
     String resolveLanguage(Class<?> fieldValueCls) {
-        return MultilingualString.class.equals(fieldValueCls) || Character.class.equals(fieldValueCls) ? null : typeBuilderContext.getPuLanguage();
+        return MultilingualString.class.equals(fieldValueCls) || Character.class.equals(fieldValueCls) || char.class.equals(fieldValueCls)
+                ? null
+                : typeBuilderContext.getPuLanguage();
     }
 
     static PropertyAttributes create(PropertyInfo field, FieldMappingValidator validator, TypeBuilderContext<?> context) {
