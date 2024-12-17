@@ -133,7 +133,7 @@ abstract class PropertyAttributes {
     }
 
     String resolveLanguage(Class<?> fieldValueCls) {
-        return MultilingualString.class.equals(fieldValueCls) ? null : typeBuilderContext.getPuLanguage();
+        return MultilingualString.class.equals(fieldValueCls) || Character.class.equals(fieldValueCls) ? null : typeBuilderContext.getPuLanguage();
     }
 
     static PropertyAttributes create(PropertyInfo field, FieldMappingValidator validator, TypeBuilderContext<?> context) {

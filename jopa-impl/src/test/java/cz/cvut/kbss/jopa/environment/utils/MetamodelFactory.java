@@ -95,6 +95,7 @@ import cz.cvut.kbss.jopa.oom.converter.ToDoubleConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLongConverter;
+import cz.cvut.kbss.jopa.oom.converter.CharacterConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.LocalDateTimeConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.DC;
@@ -735,7 +736,7 @@ public class MetamodelFactory {
 
     public static void initOWLClassMMock(IdentifiableEntityType<OWLClassM> etMock, AbstractAttribute booleanAtt,
                                          AbstractAttribute intAtt, SingularAttributeImpl longAtt,
-                                         AbstractAttribute doubleAtt, AbstractAttribute dateAtt,
+                                         AbstractAttribute doubleAtt, AbstractAttribute dateAtt, AbstractAttribute characterAtt,
                                          AbstractAttribute enumAtt, AbstractAttribute ordinalEnumAtt,
                                          AbstractPluralAttribute intSetAtt, SingularAttributeImpl lexicalFormAtt,
                                          SingularAttributeImpl simpleLiteralAtt,
@@ -755,13 +756,13 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(idMock.getName())).thenReturn(idMock);
         when(etMock.getAttributes()).thenReturn(
                 new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt,
-                        dateAtt, enumAtt, ordinalEnumAtt,
+                        dateAtt, characterAtt, enumAtt, ordinalEnumAtt,
                         intSetAtt, lexicalFormAtt,
                         simpleLiteralAtt, explicitDatatypeAtt,
                         mObjectOneOfEnumAttribute)));
         when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt,
-                        enumAtt, ordinalEnumAtt, intSetAtt,
+                        characterAtt, enumAtt, ordinalEnumAtt, intSetAtt,
                         lexicalFormAtt, simpleLiteralAtt,
                         explicitDatatypeAtt, mObjectOneOfEnumAttribute,
                         idMock)));
@@ -835,6 +836,20 @@ public class MetamodelFactory {
         when(dateAtt.getLanguage()).thenReturn(Generators.LANG);
         when(etMock.getFieldSpecification(OWLClassM.getDateAttributeField().getName())).thenReturn(dateAtt);
         when(etMock.getAttribute(OWLClassM.getDateAttributeField().getName())).thenReturn(dateAtt);
+
+        when(characterAtt.getJavaField()).thenReturn(OWLClassM.getCharacterAttributeField());
+        when(characterAtt.getName()).thenReturn(OWLClassM.getCharacterAttributeField().getName());
+        when(characterAtt.getJavaType()).thenReturn(OWLClassM.getCharacterAttributeField().getType());
+        when(characterAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_characterAttribute));
+        when(characterAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(characterAtt.isCollection()).thenReturn(false);
+        when(characterAtt.getDeclaringType()).thenReturn(etMock);
+        when(characterAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(characterAtt.getConverter()).thenReturn(new CharacterConverter());
+        when(characterAtt.hasLanguage()).thenReturn(true);
+        when(characterAtt.getLanguage()).thenReturn(Generators.LANG);
+        when(etMock.getFieldSpecification(OWLClassM.getCharacterAttributeField().getName())).thenReturn(characterAtt);
+        when(etMock.getAttribute(OWLClassM.getCharacterAttributeField().getName())).thenReturn(characterAtt);
 
         when(enumAtt.getJavaField()).thenReturn(OWLClassM.getEnumAttributeField());
         when(enumAtt.getName()).thenReturn(OWLClassM.getEnumAttributeField().getName());

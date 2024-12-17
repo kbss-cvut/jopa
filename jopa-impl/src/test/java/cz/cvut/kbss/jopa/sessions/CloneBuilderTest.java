@@ -536,6 +536,9 @@ public class CloneBuilderTest {
         m.setDateAttribute(new Date(System.currentTimeMillis() + 10000L));
         changeSet.addChangeRecord(
                 new ChangeRecord(metamodelMocks.forOwlClassM().dateAttribute(), m.getDateAttribute()));
+        m.setCharacterAttribute('w');
+        changeSet.addChangeRecord(
+                new ChangeRecord(metamodelMocks.forOwlClassM().characterAttribute(), m.getCharacterAttribute()));
 
         builder.mergeChanges(changeSet);
         assertEquals(m.getBooleanAttribute(), entityM.getBooleanAttribute());
@@ -543,6 +546,7 @@ public class CloneBuilderTest {
         assertEquals(m.getLongAttribute(), entityM.getLongAttribute());
         assertEquals(m.getDoubleAttribute(), entityM.getDoubleAttribute());
         assertEquals(m.getDateAttribute(), entityM.getDateAttribute());
+        assertEquals(m.getCharacterAttribute(), entityM.getCharacterAttribute());
     }
 
     @Test

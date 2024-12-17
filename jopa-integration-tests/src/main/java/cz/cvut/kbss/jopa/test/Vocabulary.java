@@ -88,6 +88,7 @@ public class Vocabulary {
     public static final String p_m_doubleAttribute = ATTRIBUTE_IRI_BASE + "m-doubleAttribute";
     public static final String p_m_floatAttribute = ATTRIBUTE_IRI_BASE + "m-floatAttribute";
     public static final String p_m_dateAttribute = ATTRIBUTE_IRI_BASE + "m-dateAttribute";
+    public static final String p_m_characterAttribute = ATTRIBUTE_IRI_BASE + "m-characterAttribute";
     public static final String p_m_enumAttribute = ATTRIBUTE_IRI_BASE + "m-enumAttribute";
     public static final String p_m_ordinalEnumAttribute = ATTRIBUTE_IRI_BASE + "m-ordinalEnumAttribute";
     public static final String p_m_enumSimpleLiteralAttribute = ATTRIBUTE_IRI_BASE + "m-enumSimpleLiteralAttribute";
