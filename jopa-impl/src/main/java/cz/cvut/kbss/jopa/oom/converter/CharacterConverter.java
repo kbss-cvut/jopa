@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.oom.converter;
 
+import cz.cvut.kbss.jopa.datatype.exception.DatatypeMappingException;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
 /**
@@ -34,12 +35,12 @@ public class CharacterConverter implements ConverterWrapper<Character, Object> {
 
     @Override
     public Character convertToAttribute(Object value) {
-        assert value != null;
-        if (value instanceof LangString ls) {
-            value = ls.getValue();
+        assert value != null && value instanceof String;
+
+        if(((String) value).length() > 1) {
+            throw new DatatypeMappingException("Unable to map literal " + value + " to " + Character.class.getCanonicalName() + ", because its length is greater than 1");
         }
 
-        assert value instanceof String && ((String) value).length() == 1;
         return ((String) value).charAt(0);
     }
 

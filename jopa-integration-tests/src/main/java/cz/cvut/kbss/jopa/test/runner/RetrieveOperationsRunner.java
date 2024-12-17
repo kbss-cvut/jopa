@@ -47,9 +47,12 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.ReloadableDataSource;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.model.Literal;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -110,9 +113,27 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void testRetrievePrimitive() {
+    void testRetrievePrimitive() throws Exception {
         this.em = getEntityManager("RetrieveSimplePrimitive", false);
-        persist(entityBB);
+        persistTestData(Arrays.asList(
+                new Quad(entityBB.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_BB)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_INT_ATTRIBUTE),
+                        new Literal("15", XSD.INT)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_BOOLEAN_ATTRIBUTE),
+                        new Literal("true", XSD.BOOLEAN)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_BYTE_ATTRIBUTE),
+                        new Literal("5", XSD.BYTE)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_SHORT_ATTRIBUTE),
+                        new Literal("10", XSD.SHORT)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_LONG_ATTRIBUTE),
+                        new Literal("20", XSD.LONG)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_FLOAT_ATTRIBUTE),
+                        new Literal("25.5", XSD.FLOAT)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_DOUBLE_ATTRIBUTE),
+                        new Literal("30.7", XSD.DOUBLE)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_CHAR_ATTRIBUTE),
+                        new Literal("j", XSD.STRING))
+        ), em);
 
         em.getEntityManagerFactory().getCache().evictAll();
         final OWLClassBB res = findRequired(OWLClassBB.class, entityBB.getUri());

@@ -146,6 +146,7 @@ class PluralAnnotationPropertyStrategyTest {
         when(att.getCollectionType()).thenReturn(CollectionType.SET);
         when(att.getBindableJavaType()).thenReturn(elementType);
         when(att.getJavaField()).thenReturn(entity.getDeclaredField("sources"));
+        when(att.getJavaType()).thenReturn(Set.class);
         when(att.getIRI()).thenReturn(IRI.create(DC.Terms.SOURCE));
         when(att.getConverter()).thenReturn(converter);
         when(att.hasLanguage()).thenReturn(true);
