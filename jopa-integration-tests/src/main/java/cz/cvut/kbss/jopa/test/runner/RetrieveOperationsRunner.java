@@ -446,6 +446,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertEquals(entityM.getIntAttribute(), result.getIntAttribute());
         assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
         assertEquals(entityM.getDateAttribute(), result.getDateAttribute());
+        assertEquals(entityM.getCharacterAttribute(), result.getCharacterAttribute());
         assertEquals(entityM.getEnumAttribute(), result.getEnumAttribute());
     }
 

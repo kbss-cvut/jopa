@@ -206,6 +206,8 @@ public class MetamodelMocks {
     @Mock
     private SingularAttributeImpl<OWLClassM, Date> mDateAtt;
     @Mock
+    private SingularAttributeImpl<OWLClassM, Character> mCharacterAtt;
+    @Mock
     private SingularAttributeImpl<OWLClassM, OWLClassM.Severity> mEnumAtt;
     @Mock
     private SingularAttributeImpl<OWLClassM, OWLClassM.Severity> mOrdinalEnumAtt;
@@ -388,7 +390,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassJMocks(etJ, jSetAtt, idJ);
         MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, idK);
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
-        MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt,
+        MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mCharacterAtt, mEnumAtt,
                                            mOrdinalEnumAtt, mIntegerSetAtt, mLexicalFormAtt, mSimpleLiteralAtt,
                                            mExplicitDatatypeAtt, mWithConverterAtt, mObjectOneOfEnumAttribute, idM);
         MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nPluralAnnotationAtt,
@@ -784,6 +786,10 @@ public class MetamodelMocks {
 
         public AbstractAttribute<OWLClassM, Date> dateAttribute() {
             return MetamodelMocks.this.mDateAtt;
+        }
+
+        public AbstractAttribute<OWLClassM, Character> characterAttribute() {
+            return MetamodelMocks.this.mCharacterAtt;
         }
 
         public AbstractAttribute<OWLClassM, OWLClassM.Severity> enumAttribute() {

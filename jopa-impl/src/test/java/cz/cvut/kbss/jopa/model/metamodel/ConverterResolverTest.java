@@ -45,10 +45,12 @@ import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToMultilingualStringConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToRdfLiteralConverter;
+import cz.cvut.kbss.jopa.oom.converter.CharacterConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.DateConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.InstantConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.Literal;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.junit.jupiter.api.Test;
@@ -108,6 +110,18 @@ class ConverterResolverTest {
         assertTrue(result.isPresent());
         assertTrue(result.get().supportsAxiomValueType(Literal.class));
         assertThat(result.get(), instanceOf(DateConverter.class));
+    }
+
+    @Test
+    void resolveConverterReturnsBuiltInCharacterConverterForDataPropertyWithCharacterTarget() throws Exception {
+        final PropertyInfo propertyInfo = OWLClassM.getCharacterAttributeFieldPropertyInfo();
+        final PropertyAttributes pa = mock(PropertyAttributes.class);
+        when(pa.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        doReturn(BasicTypeImpl.get(Character.class)).when(pa).getType();
+        final Optional<ConverterWrapper<?, ?>> result = sut.resolveConverter(propertyInfo, pa);
+        assertTrue(result.isPresent());
+        assertTrue(result.get().supportsAxiomValueType(String.class));
+        assertThat(result.get(), instanceOf(CharacterConverter.class));
     }
 
     @Test
