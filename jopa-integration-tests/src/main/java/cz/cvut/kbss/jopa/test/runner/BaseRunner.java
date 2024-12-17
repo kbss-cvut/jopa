@@ -191,6 +191,7 @@ public abstract class BaseRunner {
         entityBB.setLongAttribute(20L);
         entityBB.setFloatAttribute(25.5f);
         entityBB.setDoubleAttribute(30.7d);
+        entityBB.setCharAttribute('j');
     }
 
     @AfterEach

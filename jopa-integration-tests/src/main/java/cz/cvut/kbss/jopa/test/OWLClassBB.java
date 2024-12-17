@@ -49,6 +49,9 @@ public class OWLClassBB implements HasUri {
     @OWLDataProperty(iri = Vocabulary.P_BB_DOUBLE_ATTRIBUTE)
     private double doubleAttribute;
 
+    @OWLDataProperty(iri = Vocabulary.P_BB_CHAR_ATTRIBUTE)
+    private char charAttribute;
+
     public OWLClassBB() {
     }
 
@@ -121,6 +124,14 @@ public class OWLClassBB implements HasUri {
         this.booleanAttribute = booleanAttribute;
     }
 
+    public char getCharAttribute() {
+        return charAttribute;
+    }
+
+    public void setCharAttribute(char charAttribute) {
+        this.charAttribute = charAttribute;
+    }
+
     @Override
     public String toString() {
         return "OWLClassBB{" +
@@ -132,6 +143,7 @@ public class OWLClassBB implements HasUri {
                 ", longAttribute=" + longAttribute +
                 ", floatAttribute=" + floatAttribute +
                 ", doubleAttribute=" + doubleAttribute +
+                ", charAttribute=" + charAttribute +
                 '}';
     }
 }
