@@ -41,22 +41,18 @@ public class DatatypeTransformer {
 
     private static final Map<Pair, Function<Object, ?>> TRANSFORMERS = initTransformers();
 
-    private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVES = initWrapperToPrimitives();
+    private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVES = Map.of(
+            Integer.class, int.class,
+            Boolean.class, boolean.class,
+            Byte.class, byte.class,
+            Short.class, short.class,
+            Long.class, long.class,
+            Float.class, float.class,
+            Double.class, double.class
+    );
 
     private DatatypeTransformer() {
         throw new AssertionError();
-    }
-
-    private static Map<Class<?>, Class<?>> initWrapperToPrimitives() {
-        final Map<Class<?>, Class<?>> map = new HashMap<>();
-        map.put(Integer.class, int.class);
-        map.put(Boolean.class, boolean.class);
-        map.put(Byte.class, byte.class);
-        map.put(Short.class, short.class);
-        map.put(Long.class, long.class);
-        map.put(Float.class, float.class);
-        map.put(Double.class, double.class);
-        return map;
     }
 
     private static Map<Pair, Function<Object, ?>> initTransformers() {
@@ -102,8 +98,11 @@ public class DatatypeTransformer {
      * @param cls - the class to convert
      * @return
      */
-    public static Class<?> wrapperToPrimitive( Class<?> cls ) {
-        return WRAPPER_TO_PRIMITIVES.get(cls);
+    public static Optional<Class<?>> wrapperTypeToPrimitiveType(Class<?> cls) {
+        if(cls != null && WRAPPER_TO_PRIMITIVES.containsKey(cls)) {
+            return Optional.of(WRAPPER_TO_PRIMITIVES.get(cls));
+        }
+        return Optional.empty();
     }
 
     /**

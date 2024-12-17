@@ -17,9 +17,11 @@
  */
 package cz.cvut.kbss.jopa.oom.converter;
 
+import cz.cvut.kbss.jopa.datatype.exception.DatatypeMappingException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CharacterConverterTest {
 
@@ -28,5 +30,12 @@ class CharacterConverterTest {
     @Test
     public void toAttributeSupportsIdentityConversion() {
         assertEquals(Character.valueOf('j'), converter.convertToAttribute("j"));
+    }
+
+    @Test
+    public void toAttributeThrowsWhenValueIsTooLong() {
+        DatatypeMappingException thrown = assertThrows(DatatypeMappingException.class, () -> converter.convertToAttribute("abc"));
+
+        assertEquals(thrown.getMessage(), "Unable to map literal abc to java.lang.Character, because its length is greater than 1");
     }
 }

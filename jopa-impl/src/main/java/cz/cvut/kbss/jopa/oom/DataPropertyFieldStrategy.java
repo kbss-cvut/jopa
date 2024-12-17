@@ -28,6 +28,7 @@ import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 
 abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, ?>, X> extends FieldStrategy<A, X> {
 
@@ -44,10 +45,10 @@ abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, 
     }
 
     boolean canBeConverted(Object value) {
-        if(attribute.getJavaType() != null && attribute.getJavaType().isPrimitive()) {
+        if(attribute.getJavaType().isPrimitive()) {
             // if the value is a wrapper for the primitive attribute type, it can be converted automatically
-            Class<?> primitiveClass = DatatypeTransformer.wrapperToPrimitive(value.getClass());
-            if (primitiveClass != null && primitiveClass.equals(attribute.getJavaType())) {
+            Optional<Class<?>> primitiveClass = DatatypeTransformer.wrapperTypeToPrimitiveType(value.getClass());
+            if (primitiveClass.isPresent() && primitiveClass.get().equals(attribute.getJavaType())) {
                 return true;
             }
         }
