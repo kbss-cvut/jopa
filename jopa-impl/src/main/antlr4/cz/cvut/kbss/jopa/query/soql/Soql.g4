@@ -1,21 +1,16 @@
 grammar Soql;
 
+start: querySentence EOF ;
 
-querySentence : selectStatement whereClauseWrapper? groupByClause? orderByClause? ;
+querySentence: selectStatement ;
 
-selectStatement: typeDef params FROM tables ;
+selectStatement: selectClause fromClause whereClause? groupByClause? orderByClause? ;
 
-typeDef: SELECT ;
+selectClause: SELECT (DISTINCT)? selectItem (',' selectItem)* ;
 
-params: paramComma* distinctParam ;
+selectItem: selectExpression;
 
-paramComma: distinctParam ',' ;
-
-distinctParam: distinct? selectedParam ;
-
-selectedParam: param | count;
-
-count: COUNT '(' param ')' ;
+selectExpression: param | count ;
 
 param: objWithAttr | objWithOutAttr ;
 
@@ -23,26 +18,21 @@ objWithAttr: object DOT attribute;
 
 objWithOutAttr: object ;
 
-distinct: DISTINCT ;
-
 object: IDENTIFICATION_VARIABLE ;
+
+count: COUNT '(' param ')' ;
 
 attribute: IDENTIFICATION_VARIABLE ;
 
 joinedParams: object DOT attribute (DOT attribute)+ ;
 
+fromClause: FROM entityName identificationVariable;
 
+entityName: IDENTIFICATION_VARIABLE ;
 
-tables: tableWithName ;
+identificationVariable: IDENTIFICATION_VARIABLE ;
 
-table: IDENTIFICATION_VARIABLE ;
-
-tableName: IDENTIFICATION_VARIABLE ;
-
-tableWithName: table tableName ;
-
-
-whereClauseWrapper
+whereClause
     : WHERE conditionalExpression
     ;
 

@@ -90,6 +90,16 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
+    public void enterStart(SoqlParser.StartContext ctx) {
+
+    }
+
+    @Override
+    public void exitStart(SoqlParser.StartContext ctx) {
+
+    }
+
+    @Override
     public void enterQuerySentence(SoqlParser.QuerySentenceContext ctx) {
     }
 
@@ -101,18 +111,41 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterSelectStatement(SoqlParser.SelectStatementContext ctx) {
+
     }
 
     @Override
     public void exitSelectStatement(SoqlParser.SelectStatementContext ctx) {
+
     }
 
     @Override
-    public void enterParams(SoqlParser.ParamsContext ctx) {
+    public void enterSelectClause(SoqlParser.SelectClauseContext ctx) {
+        this.typeDef = SparqlConstants.SELECT;
+
+        if(ctx.DISTINCT() != null) {
+            this.isSelectedParamDistinct = true;
+        }
     }
 
     @Override
-    public void exitParams(SoqlParser.ParamsContext ctx) {
+    public void exitSelectClause(SoqlParser.SelectClauseContext ctx) {
+
+    }
+
+    @Override
+    public void enterSelectItem(SoqlParser.SelectItemContext ctx) {
+
+    }
+
+    @Override
+    public void exitSelectItem(SoqlParser.SelectItemContext ctx) {
+
+    }
+
+    @Override
+    public void enterSelectExpression(SoqlParser.SelectExpressionContext ctx) {
+
     }
 
     @Override
@@ -144,27 +177,7 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterParamComma(SoqlParser.ParamCommaContext ctx) {
-    }
-
-    @Override
-    public void exitParamComma(SoqlParser.ParamCommaContext ctx) {
-    }
-
-    @Override
-    public void enterDistinctParam(SoqlParser.DistinctParamContext ctx) {
-    }
-
-    @Override
-    public void exitDistinctParam(SoqlParser.DistinctParamContext ctx) {
-    }
-
-    @Override
-    public void enterSelectedParam(SoqlParser.SelectedParamContext ctx) {
-    }
-
-    @Override
-    public void exitSelectedParam(SoqlParser.SelectedParamContext ctx) {
+    public void exitSelectExpression(SoqlParser.SelectExpressionContext ctx) {
         if (!isSelectedParamCount) {
             this.projectedVariable = ctx.getText();
         }
@@ -245,34 +258,6 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitAttribute(SoqlParser.AttributeContext ctx) {
-    }
-
-    @Override
-    public void enterTypeDef(SoqlParser.TypeDefContext ctx) {
-        typeDef = ctx.getChild(0).getText();
-    }
-
-    @Override
-    public void exitTypeDef(SoqlParser.TypeDefContext ctx) {
-    }
-
-    @Override
-    public void enterDistinct(SoqlParser.DistinctContext ctx) {
-        if (SoqlConstants.DISTINCT.equals(ctx.getChild(0).getText())) {
-            isSelectedParamDistinct = true;
-        }
-    }
-
-    @Override
-    public void exitDistinct(SoqlParser.DistinctContext ctx) {
-    }
-
-    @Override
-    public void enterWhereClauseWrapper(SoqlParser.WhereClauseWrapperContext ctx) {
-    }
-
-    @Override
-    public void exitWhereClauseWrapper(SoqlParser.WhereClauseWrapperContext ctx) {
     }
 
     @Override
@@ -437,42 +422,49 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterTables(SoqlParser.TablesContext ctx) {
-    }
-
-    @Override
-    public void exitTables(SoqlParser.TablesContext ctx) {
-    }
-
-    @Override
-    public void enterTable(SoqlParser.TableContext ctx) {
-    }
-
-    @Override
-    public void exitTable(SoqlParser.TableContext ctx) {
-    }
-
-    @Override
-    public void enterTableName(SoqlParser.TableNameContext ctx) {
-    }
-
-    @Override
-    public void exitTableName(SoqlParser.TableNameContext ctx) {
-    }
-
-    @Override
-    public void enterTableWithName(SoqlParser.TableWithNameContext ctx) {
-        String table = ctx.getChild(0).getChild(0).getText();
-        String objectName = ctx.getChild(1).getChild(0).getText();
-        objectTypes.put(objectName, table);
-        SoqlNode node = new AttributeNode(table);
+    public void enterFromClause(SoqlParser.FromClauseContext ctx) {
+        String entityName = ctx.entityName().getText();
+        String identificationVariable = ctx.identificationVariable().getText();
+                objectTypes.put(identificationVariable, entityName);
+        SoqlNode node = new AttributeNode(entityName);
         setObjectIri(node);
         SoqlAttribute myAttr = new SoqlAttribute(node);
         pushNewAttribute(myAttr);
     }
 
     @Override
-    public void exitTableWithName(SoqlParser.TableWithNameContext ctx) {
+    public void exitFromClause(SoqlParser.FromClauseContext ctx) {
+
+    }
+
+    @Override
+    public void enterEntityName(SoqlParser.EntityNameContext ctx) {
+
+    }
+
+    @Override
+    public void exitEntityName(SoqlParser.EntityNameContext ctx) {
+
+    }
+
+    @Override
+    public void enterIdentificationVariable(SoqlParser.IdentificationVariableContext ctx) {
+
+    }
+
+    @Override
+    public void exitIdentificationVariable(SoqlParser.IdentificationVariableContext ctx) {
+
+    }
+
+    @Override
+    public void enterWhereClause(SoqlParser.WhereClauseContext ctx) {
+
+    }
+
+    @Override
+    public void exitWhereClause(SoqlParser.WhereClauseContext ctx) {
+
     }
 
     @Override
