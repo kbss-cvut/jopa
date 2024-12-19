@@ -20,11 +20,9 @@ selectExpression: simplePath | aggregateExpression ;
 
 aggregateExpression: COUNT '(' (DISTINCT)? simplePath ')';
 
-fromClause: FROM entityName identificationVariable;
+fromClause: FROM entityName IDENTIFICATION_VARIABLE;
 
 entityName: IDENTIFICATION_VARIABLE ;
-
-identificationVariable: IDENTIFICATION_VARIABLE ;
 
 whereClause
     : WHERE conditionalExpression

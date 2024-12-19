@@ -452,7 +452,7 @@ public class SoqlQueryListener implements SoqlListener {
     @Override
     public void enterFromClause(SoqlParser.FromClauseContext ctx) {
         String entityName = ctx.entityName().getText();
-        String identificationVariable = ctx.identificationVariable().getText();
+        String identificationVariable = ctx.IDENTIFICATION_VARIABLE().getText();
                 objectTypes.put(identificationVariable, entityName);
         SoqlNode node = new AttributeNode(entityName);
         setObjectIri(node);
@@ -472,16 +472,6 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitEntityName(SoqlParser.EntityNameContext ctx) {
-
-    }
-
-    @Override
-    public void enterIdentificationVariable(SoqlParser.IdentificationVariableContext ctx) {
-
-    }
-
-    @Override
-    public void exitIdentificationVariable(SoqlParser.IdentificationVariableContext ctx) {
 
     }
 
