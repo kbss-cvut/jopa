@@ -120,18 +120,18 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterObjectPathExpression(SoqlParser.ObjectPathExpressionContext ctx) {
+    public void enterSingleValuedObjectPathExpression(SoqlParser.SingleValuedObjectPathExpressionContext ctx) {
 
     }
 
     @Override
-    public void exitObjectPathExpression(SoqlParser.ObjectPathExpressionContext ctx) {
+    public void exitSingleValuedObjectPathExpression(SoqlParser.SingleValuedObjectPathExpressionContext ctx) {
 
     }
 
     @Override
-    public void enterSimplePath(SoqlParser.SimplePathContext ctx) {
-        if(ctx.simplePath() == null) {
+    public void enterSimpleSubpath(SoqlParser.SimpleSubpathContext ctx) {
+        if(ctx.simpleSubpath() == null) {
             return;
         }
 
@@ -140,11 +140,11 @@ public class SoqlQueryListener implements SoqlListener {
         }
 
         // node was already processed by parent
-        if(ctx.getParent() instanceof SoqlParser.SimplePathContext) {
+        if(ctx.getParent() instanceof SoqlParser.SimpleSubpathContext) {
             return;
         }
 
-        SoqlNode owner = linkSimplePath(ctx);
+        SoqlNode owner = linkSimpleSubpath(ctx);
 
         // don't add top level references multiple times
         if(!owner.hasChild() && objectTypes.containsKey(owner.getValue())) {
@@ -165,7 +165,7 @@ public class SoqlQueryListener implements SoqlListener {
         }
     }
 
-    private SoqlNode linkSimplePath(ParserRuleContext ctx) {
+    private SoqlNode linkSimpleSubpath(ParserRuleContext ctx) {
         AttributeNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
         AttributeNode currentNode = firstNode;
 
@@ -186,17 +186,18 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void exitSimplePath(SoqlParser.SimplePathContext ctx) {
+    public void exitSimpleSubpath(SoqlParser.SimpleSubpathContext ctx) {
 
     }
 
     @Override
-    public void enterObjectField(SoqlParser.ObjectFieldContext ctx) {
+    public void enterSingleValuedObjectField(SoqlParser.SingleValuedObjectFieldContext ctx) {
 
     }
 
     @Override
-    public void exitObjectField(SoqlParser.ObjectFieldContext ctx) {
+    public void exitSingleValuedObjectField(SoqlParser.SingleValuedObjectFieldContext ctx) {
+
     }
 
     @Override
@@ -252,8 +253,8 @@ public class SoqlQueryListener implements SoqlListener {
                 isSelectedParamDistinct = true;
             }
 
-            if(ctx.simplePath() != null) {
-                this.projectedVariable = ctx.simplePath().getText();
+            if(ctx.simpleSubpath() != null) {
+                this.projectedVariable = ctx.simpleSubpath().getText();
             }
         }
     }

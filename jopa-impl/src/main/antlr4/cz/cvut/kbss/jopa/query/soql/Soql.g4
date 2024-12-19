@@ -6,19 +6,19 @@ querySentence: selectStatement ;
 
 selectStatement: selectClause fromClause whereClause? groupByClause? orderByClause? ;
 
-objectPathExpression: simplePath DOT objectField ;
+singleValuedObjectPathExpression: simpleSubpath DOT singleValuedObjectField ;
 
-simplePath: objectField (DOT simplePath)* ;
+simpleSubpath: singleValuedObjectField (DOT simpleSubpath)* ;
 
-objectField: IDENTIFICATION_VARIABLE ;
+singleValuedObjectField: IDENTIFICATION_VARIABLE ;
 
 selectClause: SELECT (DISTINCT)? selectItem (',' selectItem)* ;
 
 selectItem: selectExpression;
 
-selectExpression: simplePath | aggregateExpression ;
+selectExpression: simpleSubpath | aggregateExpression ;
 
-aggregateExpression: COUNT '(' (DISTINCT)? simplePath ')';
+aggregateExpression: COUNT '(' (DISTINCT)? simpleSubpath ')';
 
 fromClause: FROM entityName IDENTIFICATION_VARIABLE;
 
@@ -48,7 +48,7 @@ simpleConditionalExpression
    ;
 
 inExpression
-   : simplePath (NOT)? IN '('? (inItem (',' inItem)*) ')'?
+   : simpleSubpath (NOT)? IN '('? (inItem (',' inItem)*) ')'?
    ;
 
 inItem
@@ -69,7 +69,7 @@ likeExpression
    ;
 
 memberOfExpression
-    : inItem (NOT)? MEMBER OF simplePath
+    : inItem (NOT)? MEMBER OF simpleSubpath
     ;
 
 entityExpression
@@ -84,7 +84,7 @@ comparisonExpression
    ;
 
 stringExpression
-   : simplePath
+   : simpleSubpath
    | STRING_LITERAL
    | inputParameter
    | functionsReturningStrings
@@ -95,7 +95,7 @@ functionsReturningStrings
    | 'SUBSTRING' '(' stringExpression ',' simpleArithmeticExpression ',' simpleArithmeticExpression ')'
    | 'LOWER' '(' stringExpression ')'
    | 'UPPER' '(' stringExpression ')'
-   | 'LANG' '(' simplePath ')'
+   | 'LANG' '(' simpleSubpath ')'
    ;
 
 simpleArithmeticExpression
@@ -111,7 +111,7 @@ arithmeticFactor
    ;
 
 arithmeticPrimary
-   : simplePath
+   : simpleSubpath
    | literal
    | '(' simpleArithmeticExpression ')'
    | inputParameter
@@ -128,11 +128,11 @@ functionsReturningNumerics
 
 orderByClause: ORDER BY orderByItem (',' orderByItem)* ;
 
-orderByItem: objectPathExpression (ASC | DESC) ;
+orderByItem: singleValuedObjectPathExpression (ASC | DESC) ;
 
 groupByClause: GROUP BY groupByItem (',' groupByItem)* ;
 
-groupByItem: objectPathExpression ;
+groupByItem: singleValuedObjectPathExpression ;
 
 inputParameter: COLON IDENTIFICATION_VARIABLE ;
 
