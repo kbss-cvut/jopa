@@ -486,14 +486,6 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterWhereClauseValue(SoqlParser.WhereClauseValueContext ctx) {
-    }
-
-    @Override
-    public void exitWhereClauseValue(SoqlParser.WhereClauseValueContext ctx) {
-    }
-
-    @Override
     public void enterStringExpression(SoqlParser.StringExpressionContext ctx) {
 
     }

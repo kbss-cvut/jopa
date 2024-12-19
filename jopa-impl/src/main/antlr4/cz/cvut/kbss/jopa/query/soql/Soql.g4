@@ -65,7 +65,7 @@ literal
    ;
 
 likeExpression
-   : stringExpression (NOT)? LIKE whereClauseValue
+   : stringExpression (NOT)? LIKE stringExpression
    ;
 
 memberOfExpression
@@ -83,10 +83,9 @@ comparisonExpression
    | entityExpression op=(EQUAL | NOT_EQUAL) ( entityExpression )
    ;
 
-whereClauseValue: (QMARK TEXT QMARK) | inputParameter ;
-
 stringExpression
    : simplePath
+   | STRING_LITERAL
    | inputParameter
    | functionsReturningStrings
    ;
