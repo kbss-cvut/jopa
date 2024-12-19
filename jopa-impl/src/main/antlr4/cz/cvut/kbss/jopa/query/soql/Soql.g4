@@ -74,8 +74,8 @@ entityExpression
     ;
 
 comparisonExpression
-   : stringExpression COMPARISON_OPERATOR stringExpression
-   | simpleArithmeticExpression COMPARISON_OPERATOR simpleArithmeticExpression
+   : stringExpression comparisonOperator stringExpression
+   | simpleArithmeticExpression comparisonOperator simpleArithmeticExpression
    | entityExpression op=(EQUAL | NOT_EQUAL) ( entityExpression )
    ;
 
@@ -133,6 +133,14 @@ groupByItem: objectPathExpression ;
 
 inputParameter: COLON IDENTIFICATION_VARIABLE ;
 
+comparisonOperator
+    : op=EQUAL
+    | op='>'
+    | op='>='
+    | op='<'
+    | op='<='
+    | op=NOT_EQUAL
+    ;
 
 SELECT: 'SELECT' ;
 
@@ -170,7 +178,8 @@ IN: 'IN' ;
 
 MEMBER: 'MEMBER' ;
 
-COMPARISON_OPERATOR: '>' | '<' | '>=' | '<=' | '=' | '<>' | '!=' ;
+EQUAL: '=' ;
+NOT_EQUAL: '<>' | '!=' ;
 
 DOT: '.' ;
 

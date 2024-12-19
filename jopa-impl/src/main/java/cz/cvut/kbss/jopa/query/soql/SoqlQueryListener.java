@@ -678,6 +678,16 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
+    public void enterComparisonOperator(SoqlParser.ComparisonOperatorContext ctx) {
+
+    }
+
+    @Override
+    public void exitComparisonOperator(SoqlParser.ComparisonOperatorContext ctx) {
+
+    }
+
+    @Override
     public void visitTerminal(TerminalNode terminalNode) {
     }
 
