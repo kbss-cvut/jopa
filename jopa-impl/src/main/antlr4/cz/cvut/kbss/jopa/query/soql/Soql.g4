@@ -70,10 +70,15 @@ memberOfExpression
     : inItem (NOT)? MEMBER OF simplePath
     ;
 
+entityExpression
+    : IDENTIFICATION_VARIABLE
+    | inputParameter
+    ;
+
 comparisonExpression
    : stringExpression COMPARISON_OPERATOR stringExpression
    | simpleArithmeticExpression COMPARISON_OPERATOR simpleArithmeticExpression
-   | simplePath COMPARISON_OPERATOR ( simplePath | whereClauseValue )
+   | entityExpression op=(EQUAL | NOT_EQUAL) ( entityExpression )
    ;
 
 whereClauseValue: (QMARK TEXT QMARK) | inputParameter ;
@@ -175,7 +180,19 @@ QMARK: '"' ;
 
 COLON: ':' ;
 
+TRUE: 'TRUE';
+
+FALSE: 'FALSE';
+
 IDENTIFICATION_VARIABLE: (LOWERCASE | UPPERCASE | '_') (LOWERCASE | UPPERCASE | DIGIT | '_')* ;
+
+STRING_LITERAL: QMARK TEXT QMARK ;
+
+INT_LITERAL: DIGIT+;
+
+FLOAT_LITERAL: DIGIT* '.' DIGIT;
+
+BOOLEAN_LITERAL: TRUE | FALSE;
 
 TEXT: (LOWERCASE | UPPERCASE | DIGIT)+ ;
 
@@ -184,9 +201,5 @@ UPPERCASE: ('A'..'Z');
 LOWERCASE: ('a'..'z');
 
 DIGIT: ('0'..'9');
-
-NUMBER: DIGIT+ ;
-
-VALUE: NUMBER ;
 
 WHITESPACE: (' ')+ -> skip;

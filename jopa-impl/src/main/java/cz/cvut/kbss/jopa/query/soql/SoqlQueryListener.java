@@ -402,6 +402,16 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
+    public void enterEntityExpression(SoqlParser.EntityExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void exitEntityExpression(SoqlParser.EntityExpressionContext ctx) {
+
+    }
+
+    @Override
     public void enterComparisonExpression(SoqlParser.ComparisonExpressionContext ctx) {
     }
 
