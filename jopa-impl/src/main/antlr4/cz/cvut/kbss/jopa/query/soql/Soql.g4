@@ -1,48 +1,30 @@
 grammar Soql;
 
+start: querySentence EOF ;
 
-querySentence : selectStatement whereClauseWrapper? groupByClause? orderByClause? ;
+querySentence: selectStatement ;
 
-selectStatement: typeDef params FROM tables ;
+selectStatement: selectClause fromClause whereClause? groupByClause? orderByClause? ;
 
-typeDef: SELECT ;
+singleValuedObjectPathExpression: simpleSubpath DOT singleValuedObjectField ;
 
-params: paramComma* distinctParam ;
+simpleSubpath: singleValuedObjectField (DOT simpleSubpath)* ;
 
-paramComma: distinctParam ',' ;
+singleValuedObjectField: IDENTIFICATION_VARIABLE ;
 
-distinctParam: distinct? selectedParam ;
+selectClause: SELECT (DISTINCT)? selectItem (',' selectItem)* ;
 
-selectedParam: param | count;
+selectItem: selectExpression;
 
-count: COUNT '(' param ')' ;
+selectExpression: simpleSubpath | aggregateExpression ;
 
-param: objWithAttr | objWithOutAttr ;
+aggregateExpression: COUNT '(' (DISTINCT)? simpleSubpath ')';
 
-objWithAttr: object DOT attribute;
+fromClause: FROM entityName IDENTIFICATION_VARIABLE;
 
-objWithOutAttr: object ;
+entityName: IDENTIFICATION_VARIABLE ;
 
-distinct: DISTINCT ;
-
-object: IDENTIFICATION_VARIABLE ;
-
-attribute: IDENTIFICATION_VARIABLE ;
-
-joinedParams: object DOT attribute (DOT attribute)+ ;
-
-
-
-tables: tableWithName ;
-
-table: IDENTIFICATION_VARIABLE ;
-
-tableName: IDENTIFICATION_VARIABLE ;
-
-tableWithName: table tableName ;
-
-
-whereClauseWrapper
+whereClause
     : WHERE conditionalExpression
     ;
 
@@ -66,38 +48,44 @@ simpleConditionalExpression
    ;
 
 inExpression
-   : whereClauseParam (NOT)? IN '('? (inItem (',' inItem)*) ')'?
+   : simpleSubpath (NOT)? IN '('? (inItem (',' inItem)*) ')'?
    ;
 
 inItem
    : literal
-   | whereClauseValue
+   | inputParameter
    ;
 
 literal
-   :
+   : STRING_LITERAL
+   | INT_LITERAL
+   | FLOAT_LITERAL
+   | BOOLEAN_LITERAL
+   | IDENTIFICATION_VARIABLE
    ;
 
 likeExpression
-   : stringExpression (NOT)? LIKE whereClauseValue
+   : stringExpression (NOT)? LIKE stringExpression
    ;
 
 memberOfExpression
-    : inItem (NOT)? MEMBEROF whereClauseParam
+    : inItem (NOT)? MEMBER OF simpleSubpath
+    ;
+
+entityExpression
+    : IDENTIFICATION_VARIABLE
+    | inputParameter
     ;
 
 comparisonExpression
-   : stringExpression COMPARISON_OPERATOR stringExpression
-   | simpleArithmeticExpression COMPARISON_OPERATOR simpleArithmeticExpression
-   | whereClauseParam COMPARISON_OPERATOR ( whereClauseParam | whereClauseValue )
+   : stringExpression comparisonOperator stringExpression
+   | simpleArithmeticExpression comparisonOperator simpleArithmeticExpression
+   | entityExpression op=(EQUAL | NOT_EQUAL) ( entityExpression )
    ;
 
-whereClauseValue: (QMARK TEXT QMARK) | inputParameter ;
-
-whereClauseParam: param | joinedParams ;
-
 stringExpression
-   : whereClauseParam
+   : simpleSubpath
+   | STRING_LITERAL
    | inputParameter
    | functionsReturningStrings
    ;
@@ -107,7 +95,7 @@ functionsReturningStrings
    | 'SUBSTRING' '(' stringExpression ',' simpleArithmeticExpression ',' simpleArithmeticExpression ')'
    | 'LOWER' '(' stringExpression ')'
    | 'UPPER' '(' stringExpression ')'
-   | 'LANG' '(' whereClauseParam ')'
+   | 'LANG' '(' simpleSubpath ')'
    ;
 
 simpleArithmeticExpression
@@ -123,7 +111,7 @@ arithmeticFactor
    ;
 
 arithmeticPrimary
-   : param
+   : simpleSubpath
    | literal
    | '(' simpleArithmeticExpression ')'
    | inputParameter
@@ -138,22 +126,24 @@ functionsReturningNumerics
    | 'FLOOR' '(' simpleArithmeticExpression ')'
    ;
 
-orderByClause: ORDERBY orderByFullFormComma orderByFullFormComma* ;
+orderByClause: ORDER BY orderByItem (',' orderByItem)* ;
 
-orderByFullFormComma: orderByFullForm ','? ;
+orderByItem: singleValuedObjectPathExpression (ASC | DESC) ;
 
-orderByFullForm: orderByParam ORDERING? ;
+groupByClause: GROUP BY groupByItem (',' groupByItem)* ;
 
-orderByParam: object DOT attribute (DOT attribute)* ;
-
-groupByClause: GROUPBY groupByParamComma groupByParamComma* ;
-
-groupByParamComma: groupByParam ','? ;
-
-groupByParam: object DOT attribute (DOT attribute)* ;
+groupByItem: singleValuedObjectPathExpression ;
 
 inputParameter: COLON IDENTIFICATION_VARIABLE ;
 
+comparisonOperator
+    : op=EQUAL
+    | op='>'
+    | op='>='
+    | op='<'
+    | op='<='
+    | op=NOT_EQUAL
+    ;
 
 SELECT: 'SELECT' ;
 
@@ -169,11 +159,13 @@ AND: 'AND' ;
 
 OR: 'OR' ;
 
-ORDERBY: 'ORDER BY' ;
+BY: 'BY' ;
 
-ORDERING: ASC | DESC ;
+OF: 'OF' ;
 
-GROUPBY: 'GROUP BY' ;
+ORDER: 'ORDER' ;
+
+GROUP: 'GROUP' ;
 
 ASC: 'ASC' ;
 
@@ -187,9 +179,10 @@ LIKE: 'LIKE' ;
 
 IN: 'IN' ;
 
-MEMBEROF: 'MEMBER OF' ;
+MEMBER: 'MEMBER' ;
 
-COMPARISON_OPERATOR: '>' | '<' | '>=' | '<=' | '=' | '<>' | '!=' ;
+EQUAL: '=' ;
+NOT_EQUAL: '<>' | '!=' ;
 
 DOT: '.' ;
 
@@ -197,7 +190,19 @@ QMARK: '"' ;
 
 COLON: ':' ;
 
+TRUE: 'TRUE';
+
+FALSE: 'FALSE';
+
 IDENTIFICATION_VARIABLE: (LOWERCASE | UPPERCASE | '_') (LOWERCASE | UPPERCASE | DIGIT | '_')* ;
+
+STRING_LITERAL: QMARK TEXT QMARK ;
+
+INT_LITERAL: DIGIT+;
+
+FLOAT_LITERAL: DIGIT* '.' DIGIT;
+
+BOOLEAN_LITERAL: TRUE | FALSE;
 
 TEXT: (LOWERCASE | UPPERCASE | DIGIT)+ ;
 
@@ -206,9 +211,5 @@ UPPERCASE: ('A'..'Z');
 LOWERCASE: ('a'..'z');
 
 DIGIT: ('0'..'9');
-
-NUMBER: DIGIT+ ;
-
-VALUE: NUMBER ;
 
 WHITESPACE: (' ')+ -> skip;
