@@ -6,6 +6,12 @@ querySentence: selectStatement ;
 
 selectStatement: selectClause fromClause whereClause? groupByClause? orderByClause? ;
 
+objectPathExpression: simplePath DOT objectField ;
+
+simplePath: objectField (DOT simplePath)* ;
+
+objectField: IDENTIFICATION_VARIABLE ;
+
 selectClause: SELECT (DISTINCT)? selectItem (',' selectItem)* ;
 
 selectItem: selectExpression;
@@ -128,19 +134,13 @@ functionsReturningNumerics
    | 'FLOOR' '(' simpleArithmeticExpression ')'
    ;
 
-orderByClause: ORDERBY orderByFullFormComma orderByFullFormComma* ;
+orderByClause: ORDER BY orderByItem (',' orderByItem)* ;
 
-orderByFullFormComma: orderByFullForm ','? ;
+orderByItem: objectPathExpression (ASC | DESC) ;
 
-orderByFullForm: orderByParam ORDERING? ;
+groupByClause: GROUP BY groupByItem (',' groupByItem)* ;
 
-orderByParam: object DOT attribute (DOT attribute)* ;
-
-groupByClause: GROUPBY groupByParamComma groupByParamComma* ;
-
-groupByParamComma: groupByParam ','? ;
-
-groupByParam: object DOT attribute (DOT attribute)* ;
+groupByItem: objectPathExpression ;
 
 inputParameter: COLON IDENTIFICATION_VARIABLE ;
 
@@ -159,11 +159,11 @@ AND: 'AND' ;
 
 OR: 'OR' ;
 
-ORDERBY: 'ORDER BY' ;
+BY: 'BY' ;
 
-ORDERING: ASC | DESC ;
+ORDER: 'ORDER' ;
 
-GROUPBY: 'GROUP BY' ;
+GROUP: 'GROUP' ;
 
 ASC: 'ASC' ;
 

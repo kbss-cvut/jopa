@@ -120,6 +120,36 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
+    public void enterObjectPathExpression(SoqlParser.ObjectPathExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void exitObjectPathExpression(SoqlParser.ObjectPathExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void enterSimplePath(SoqlParser.SimplePathContext ctx) {
+
+    }
+
+    @Override
+    public void exitSimplePath(SoqlParser.SimplePathContext ctx) {
+
+    }
+
+    @Override
+    public void enterObjectField(SoqlParser.ObjectFieldContext ctx) {
+
+    }
+
+    @Override
+    public void exitObjectField(SoqlParser.ObjectFieldContext ctx) {
+
+    }
+
+    @Override
     public void enterSelectClause(SoqlParser.SelectClauseContext ctx) {
         this.typeDef = SparqlConstants.SELECT;
 
@@ -565,24 +595,8 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterOrderByFullFormComma(SoqlParser.OrderByFullFormCommaContext ctx) {
-    }
-
-    @Override
-    public void exitOrderByFullFormComma(SoqlParser.OrderByFullFormCommaContext ctx) {
-    }
-
-    @Override
-    public void enterOrderByFullForm(SoqlParser.OrderByFullFormContext ctx) {
-    }
-
-    @Override
-    public void exitOrderByFullForm(SoqlParser.OrderByFullFormContext ctx) {
-    }
-
-    @Override
-    public void enterOrderByParam(SoqlParser.OrderByParamContext ctx) {
-        SoqlNode firstNode = linkContextNodes(ctx);
+    public void enterOrderByItem(SoqlParser.OrderByItemContext ctx) {
+        SoqlNode firstNode = linkObjectPathExpression(ctx);
         String orderingBy = getOrderingBy(ctx.getParent());
         SoqlOrderParameter orderParam = new SoqlOrderParameter(firstNode, orderingBy);
         boolean attrSet = false;
@@ -603,11 +617,12 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void exitOrderByParam(SoqlParser.OrderByParamContext ctx) {
+    public void exitOrderByItem(SoqlParser.OrderByItemContext ctx) {
     }
 
     @Override
     public void enterGroupByClause(SoqlParser.GroupByClauseContext ctx) {
+
     }
 
     @Override
@@ -615,16 +630,8 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterGroupByParamComma(SoqlParser.GroupByParamCommaContext ctx) {
-    }
-
-    @Override
-    public void exitGroupByParamComma(SoqlParser.GroupByParamCommaContext ctx) {
-    }
-
-    @Override
-    public void enterGroupByParam(SoqlParser.GroupByParamContext ctx) {
-        SoqlNode firstNode = linkContextNodes(ctx);
+    public void enterGroupByItem(SoqlParser.GroupByItemContext ctx) {
+        SoqlNode firstNode = linkObjectPathExpression(ctx);
         SoqlGroupParameter groupParam = new SoqlGroupParameter(firstNode);
         boolean attrSet = false;
         for (SoqlAttribute attr : attributes) {
@@ -643,6 +650,11 @@ public class SoqlQueryListener implements SoqlListener {
         groupAttributes.add(groupParam);
     }
 
+    @Override
+    public void exitGroupByItem(SoqlParser.GroupByItemContext ctx) {
+
+    }
+
     private SoqlNode linkContextNodes(ParserRuleContext ctx) {
         SoqlNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
         SoqlNode currentNode = firstNode;
@@ -659,8 +671,20 @@ public class SoqlQueryListener implements SoqlListener {
         return firstNode;
     }
 
-    @Override
-    public void exitGroupByParam(SoqlParser.GroupByParamContext ctx) {
+    private SoqlNode linkObjectPathExpression(ParserRuleContext ctx) {
+        SoqlNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
+        SoqlNode currentNode = firstNode;
+        for (int i = 2; i < ctx.getChild(0).getChildCount(); i += 2) {
+            SoqlNode prevNode = currentNode;
+            currentNode = new AttributeNode(prevNode, ctx.getChild(0).getChild(i).getText());
+            prevNode.setChild(currentNode);
+        }
+        setIris(firstNode);
+        if (currentNode.getIri().isEmpty()) {
+            currentNode.getParent().setChild(null);
+            this.isInObjectIdentifierExpression = true;
+        }
+        return firstNode;
     }
 
     @Override
