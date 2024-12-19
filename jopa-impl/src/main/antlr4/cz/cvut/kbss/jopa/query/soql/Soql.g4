@@ -16,21 +16,9 @@ selectClause: SELECT (DISTINCT)? selectItem (',' selectItem)* ;
 
 selectItem: selectExpression;
 
-selectExpression: param | count ;
+selectExpression: simplePath | aggregateExpression ;
 
-param: objWithAttr | objWithOutAttr ;
-
-objWithAttr: object DOT attribute;
-
-objWithOutAttr: object ;
-
-object: IDENTIFICATION_VARIABLE ;
-
-count: COUNT '(' param ')' ;
-
-attribute: IDENTIFICATION_VARIABLE ;
-
-joinedParams: object DOT attribute (DOT attribute)+ ;
+aggregateExpression: COUNT '(' (DISTINCT)? simplePath ')';
 
 fromClause: FROM entityName identificationVariable;
 
@@ -62,7 +50,7 @@ simpleConditionalExpression
    ;
 
 inExpression
-   : whereClauseParam (NOT)? IN '('? (inItem (',' inItem)*) ')'?
+   : simplePath (NOT)? IN '('? (inItem (',' inItem)*) ')'?
    ;
 
 inItem
@@ -79,21 +67,19 @@ likeExpression
    ;
 
 memberOfExpression
-    : inItem (NOT)? MEMBEROF whereClauseParam
+    : inItem (NOT)? MEMBER OF simplePath
     ;
 
 comparisonExpression
    : stringExpression COMPARISON_OPERATOR stringExpression
    | simpleArithmeticExpression COMPARISON_OPERATOR simpleArithmeticExpression
-   | whereClauseParam COMPARISON_OPERATOR ( whereClauseParam | whereClauseValue )
+   | simplePath COMPARISON_OPERATOR ( simplePath | whereClauseValue )
    ;
 
 whereClauseValue: (QMARK TEXT QMARK) | inputParameter ;
 
-whereClauseParam: param | joinedParams ;
-
 stringExpression
-   : whereClauseParam
+   : simplePath
    | inputParameter
    | functionsReturningStrings
    ;
@@ -103,7 +89,7 @@ functionsReturningStrings
    | 'SUBSTRING' '(' stringExpression ',' simpleArithmeticExpression ',' simpleArithmeticExpression ')'
    | 'LOWER' '(' stringExpression ')'
    | 'UPPER' '(' stringExpression ')'
-   | 'LANG' '(' whereClauseParam ')'
+   | 'LANG' '(' simplePath ')'
    ;
 
 simpleArithmeticExpression
@@ -119,7 +105,7 @@ arithmeticFactor
    ;
 
 arithmeticPrimary
-   : param
+   : simplePath
    | literal
    | '(' simpleArithmeticExpression ')'
    | inputParameter
@@ -161,6 +147,8 @@ OR: 'OR' ;
 
 BY: 'BY' ;
 
+OF: 'OF' ;
+
 ORDER: 'ORDER' ;
 
 GROUP: 'GROUP' ;
@@ -177,7 +165,7 @@ LIKE: 'LIKE' ;
 
 IN: 'IN' ;
 
-MEMBEROF: 'MEMBER OF' ;
+MEMBER: 'MEMBER' ;
 
 COMPARISON_OPERATOR: '>' | '<' | '>=' | '<=' | '=' | '<>' | '!=' ;
 
