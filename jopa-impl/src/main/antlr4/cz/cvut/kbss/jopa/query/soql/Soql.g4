@@ -53,11 +53,15 @@ inExpression
 
 inItem
    : literal
-   | whereClauseValue
+   | inputParameter
    ;
 
 literal
-   :
+   : STRING_LITERAL
+   | INT_LITERAL
+   | FLOAT_LITERAL
+   | BOOLEAN_LITERAL
+   | IDENTIFICATION_VARIABLE
    ;
 
 likeExpression
