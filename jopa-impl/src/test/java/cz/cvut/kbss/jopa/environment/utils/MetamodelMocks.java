@@ -386,10 +386,10 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassFMocks(etF, fSetAtt, fStringAtt, idF);
         MetamodelFactory.initOWLClassGMocks(etG, gOwlClassHAtt, etH, idG);
         MetamodelFactory.initOWLClassHMocks(etH, hOwlClassAAtt, hOwlClassGAtt, etA, etG, idH);
-        MetamodelFactory.initOWLClassIMocks(etI, iOwlClassAAtt, idI);
+        MetamodelFactory.initOWLClassIMocks(etI, iOwlClassAAtt, etA, idI);
         MetamodelFactory.initOWLClassJMocks(etJ, jSetAtt, idJ);
-        MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, idK);
-        MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
+        MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, etE, idK);
+        MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, etA, idL);
         MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mCharacterAtt, mEnumAtt,
                                            mOrdinalEnumAtt, mIntegerSetAtt, mLexicalFormAtt, mSimpleLiteralAtt,
                                            mExplicitDatatypeAtt, mWithConverterAtt, mObjectOneOfEnumAttribute, idM);
@@ -406,11 +406,11 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassSListeners(etS, parentListenerMock);
         MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
         MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
-        MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, idT);
+        MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, etS, idT);
         MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, uModified, idU);
         MetamodelFactory.initOwlClassWMocks(etW, wSetStringAtt, wListStringAtt, wCollectionStringAtt, wSetQueryStringAtt, wListQueryStringAtt, idW);
         MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, qaEntityQueryAtt,
-                                                        qaEntityAtt, idQA);
+                                                        qaEntityAtt, etA, idQA);
         MetamodelFactory.initPhoneMocks(etPhone, phoneNumberAtt, idPhone);
         MetamodelFactory.initPersonMocks(etPerson, personUsernameAtt, personGenderAtt, personAgeAtt, personPhoneAtt,
                                          etPhone, personTypes, idPerson);
