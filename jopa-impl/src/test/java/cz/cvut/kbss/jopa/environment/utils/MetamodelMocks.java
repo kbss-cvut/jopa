@@ -383,11 +383,11 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassDMocks(etD, dOwlClassAAtt, etA, idD);
         MetamodelClassInitializer.initMetamodelClassOWLClassD(dOwlClassAAtt, idD);
         MetamodelFactory.initOWLClassEMocks(etE, eStringAtt, idE);
-        MetamodelFactory.initOWLClassFMocks(etF, fSetAtt, fStringAtt, idF);
+        MetamodelFactory.initOWLClassFMocks(etF, fSetAtt, fStringAtt, etA, idF);
         MetamodelFactory.initOWLClassGMocks(etG, gOwlClassHAtt, etH, idG);
         MetamodelFactory.initOWLClassHMocks(etH, hOwlClassAAtt, hOwlClassGAtt, etA, etG, idH);
         MetamodelFactory.initOWLClassIMocks(etI, iOwlClassAAtt, etA, idI);
-        MetamodelFactory.initOWLClassJMocks(etJ, jSetAtt, idJ);
+        MetamodelFactory.initOWLClassJMocks(etJ, jSetAtt, etA, idJ);
         MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, etE, idK);
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, etA, idL);
         MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mCharacterAtt, mEnumAtt,
