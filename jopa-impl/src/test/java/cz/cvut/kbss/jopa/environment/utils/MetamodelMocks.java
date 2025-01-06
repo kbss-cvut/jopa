@@ -329,7 +329,7 @@ public class MetamodelMocks {
     @Mock
     private AbstractPluralAttribute<OWLClassW, Set<String>, String> wSetStringAtt;
     @Mock
-    private AbstractPluralAttribute<OWLClassW, List<String>, String> wListStringAtt;
+    private ListAttributeImpl<OWLClassW, String> wListStringAtt;
     @Mock
     private AbstractPluralAttribute<OWLClassW, Collection<String>, String> wCollectionStringAtt;
     @Mock
@@ -378,7 +378,7 @@ public class MetamodelMocks {
         MetamodelClassInitializer.initMetamodelClassOWLClassA(aStringAtt, aTypes, idA);
         MetamodelFactory.initOWLClassBMocks(etB, bStringAtt, bProperties, idB);
         MetamodelClassInitializer.initMetamodelClassOWLClassB(bStringAtt, bProperties, idB);
-        MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, cRdfSeq, idC);
+        MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, cRdfSeq, etA, idC);
         MetamodelClassInitializer.initMetamodelClassOWLClassC(cSimpleList, cReferencedList, cRdfSeq, idC);
         MetamodelFactory.initOWLClassDMocks(etD, dOwlClassAAtt, etA, idD);
         MetamodelClassInitializer.initMetamodelClassOWLClassD(dOwlClassAAtt, idD);
@@ -1031,7 +1031,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.wSetStringAtt;
         }
 
-        public AbstractPluralAttribute<OWLClassW, List<String>, String> vListStringAtt() {
+        public ListAttributeImpl<OWLClassW, String> vListStringAtt() {
             return MetamodelMocks.this.wListStringAtt;
         }
 
