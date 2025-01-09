@@ -18,7 +18,6 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
-import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -47,7 +46,6 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
-import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.ReloadableDataSource;
@@ -74,7 +72,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -184,6 +181,17 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertNotNull(resI.getOwlClassA().getUri());
         assertEquals(entityA.getUri(), resI.getOwlClassA().getUri());
         assertTrue(em.contains(resI.getOwlClassA()));
+    }
+
+    @Test
+    void testContainsTriggersLoadingLazyLoadedAttribute() {
+        this.em = getEntityManager("ContainsTriggersLazyLoading", false);
+        persist(entityI);
+
+        final OWLClassI resI = findRequired(OWLClassI.class, entityI.getUri());
+        assertInstanceOf(LazyLoadingProxy.class, resI.getOwlClassA());
+        assertTrue(em.contains(resI.getOwlClassA()));
+        assertInstanceOf(OWLClassA.class, resI.getOwlClassA());
     }
 
     @Test

@@ -28,6 +28,8 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
+import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxy;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
@@ -396,13 +398,29 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     public boolean contains(Object entity) {
         try {
             ensureOpen();
-            Objects.requireNonNull(entity);
-            checkClassIsValidEntity(entity.getClass());
-            return getCurrentPersistenceContext().contains(entity);
+
+            Object loadedEntity = getLoadedEntity(entity);
+
+            Objects.requireNonNull(loadedEntity);
+            checkClassIsValidEntity(loadedEntity.getClass());
+            return getCurrentPersistenceContext().contains(loadedEntity);
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
         }
+    }
+
+    /**
+     * This method loads the entity if it is lazy loaded.
+     * If the entity is not a {@link LazyLoadingProxy}, nothing happens
+     *
+     * @param entity - the entity to check and load
+     * @return the lazy loaded entity or the original
+     */
+    private Object getLoadedEntity(Object entity) {
+        return entity instanceof LazyLoadingProxy<?> proxy
+                ? proxy.triggerLazyLoading()
+                : entity;
     }
 
     @Override
