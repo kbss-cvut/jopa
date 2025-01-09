@@ -247,27 +247,30 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     @Override
-    public void remove(Object object) {
+    public void remove(Object entity) {
         try {
             ensureOpen();
-            Objects.requireNonNull(object);
-            checkClassIsValidEntity(object.getClass());
-            if (isCascadingCycle(object)) {
-                LOG.warn("Remove cascading cycle detected in instance {}.", object);
+
+            final Object loadedEntity = getLoadedEntity(entity);
+            Objects.requireNonNull(loadedEntity);
+
+            checkClassIsValidEntity(loadedEntity.getClass());
+            if (isCascadingCycle(loadedEntity)) {
+                LOG.warn("Remove cascading cycle detected in instance {}.", loadedEntity);
                 return;
             }
 
-            switch (getState(object)) {
+            switch (getState(loadedEntity)) {
                 case MANAGED_NEW:
                 case MANAGED:
-                    getCurrentPersistenceContext().removeObject(object);
-                    registerProcessedInstance(object);
+                    getCurrentPersistenceContext().removeObject(loadedEntity);
+                    registerProcessedInstance(loadedEntity);
                     // Intentional fall-through
                 case REMOVED:
-                    new OneLevelRemoveCascadeExplorer(this::remove).start(this, object, CascadeType.REMOVE);
+                    new OneLevelRemoveCascadeExplorer(this::remove).start(this, loadedEntity, CascadeType.REMOVE);
                     break;
                 default:
-                    throw new IllegalArgumentException("Entity " + object + " is not managed and cannot be removed.");
+                    throw new IllegalArgumentException("Entity " + loadedEntity + " is not managed and cannot be removed.");
             }
         } catch (RuntimeException e) {
             markTransactionForRollback();
@@ -399,7 +402,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         try {
             ensureOpen();
 
-            Object loadedEntity = getLoadedEntity(entity);
+            final Object loadedEntity = getLoadedEntity(entity);
 
             Objects.requireNonNull(loadedEntity);
             checkClassIsValidEntity(loadedEntity.getClass());
