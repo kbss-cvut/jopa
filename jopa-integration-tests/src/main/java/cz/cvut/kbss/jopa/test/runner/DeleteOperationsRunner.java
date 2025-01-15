@@ -503,7 +503,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void removeTriggersLazyLoading() {
+    public void removeTriggersLazyLoading() {
         this.em = getEntityManager("removeTriggersLazyLoading", true);
         persist(entityI);
 
