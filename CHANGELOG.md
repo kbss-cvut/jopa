@@ -1,5 +1,12 @@
 # JOPA - Change Log
 
+## 2.2.2 - 2025-01-18
+- Fix an issue with parsing SPARQL query parameters (Enhancement #294).
+- Fix an issue with passing a lazy loading proxy to `EntityManager.remove` (Bug #306).
+- Refactor test metamodel setup (GH #301).
+- Allow using primitive types as mapped attribute types.
+- Dependency updates: RDF4J 5.1.0.
+
 ## 2.2.1 - 2024-12-12
 - Rename `MultilingualString` in OntoDriver to `Translations` to prevent confusion with `MultilingualString` from JOPA (GH #288).
 - Fix a SPARQL query parsing issue (Bug #294).
