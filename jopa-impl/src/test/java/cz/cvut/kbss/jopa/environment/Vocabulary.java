@@ -61,6 +61,7 @@ public class Vocabulary {
     public static final String p_m_longAttribute = ATTRIBUTE_BASE + "m-longAttribute";
     public static final String p_m_doubleAttribute = ATTRIBUTE_BASE + "m-doubleAttribute";
     public static final String p_m_dateAttribute = ATTRIBUTE_BASE + "m-dateAttribute";
+    public static final String p_m_characterAttribute = ATTRIBUTE_BASE + "m-characterAttribute";
     public static final String p_m_enumAttribute = ATTRIBUTE_BASE + "m-enumAttribute";
     public static final String p_m_ordinalEnumAttribute = ATTRIBUTE_BASE + "m-ordinalEnumAttribute";
     public static final String p_m_IntegerSet = ATTRIBUTE_BASE + "m-pluralIntAttribute";

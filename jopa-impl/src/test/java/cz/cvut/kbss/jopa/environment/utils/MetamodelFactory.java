@@ -44,7 +44,6 @@ import cz.cvut.kbss.jopa.environment.OneOfEnum;
 import cz.cvut.kbss.jopa.environment.Person;
 import cz.cvut.kbss.jopa.environment.Phone;
 import cz.cvut.kbss.jopa.environment.QMappedSuperclass;
-import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.ZoneOffsetConverter;
 import cz.cvut.kbss.jopa.environment.listener.AnotherListener;
 import cz.cvut.kbss.jopa.environment.listener.ConcreteListener;
@@ -53,14 +52,15 @@ import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.annotations.Inferred;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.annotations.RDFContainerType;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
-import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.model.annotations.Sparql;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
@@ -68,17 +68,16 @@ import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractQueryAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.BasicTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.Bindable;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityLifecycleListenerManager;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.MappedSuperclassTypeImpl;
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.RdfContainerAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttributeImpl;
@@ -86,26 +85,23 @@ import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.gen.ManageableClassGenerator;
 import cz.cvut.kbss.jopa.model.metamodel.gen.PersistenceContextAwareClassGenerator;
+import cz.cvut.kbss.jopa.oom.converter.CharacterConverter;
+import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.CustomConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.DefaultConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.OrdinalEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.StringEnumConverter;
-import cz.cvut.kbss.jopa.oom.converter.ToDoubleConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
-import cz.cvut.kbss.jopa.oom.converter.ToLongConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.LocalDateTimeConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
-import cz.cvut.kbss.jopa.vocabulary.DC;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -121,7 +117,6 @@ import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.PRE_REMOVE;
 import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.PRE_UPDATE;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -150,47 +145,8 @@ public class MetamodelFactory {
     /**
      * Initializes the specified mock objects to return reasonable values.
      */
-    public static void initOWLClassAMocks(IdentifiableEntityType<OWLClassA> etMock, AbstractAttribute strAttMock,
+    public static void initOWLClassAMocks(IdentifiableEntityType<OWLClassA> etMock, SingularAttributeImpl strAttMock,
                                           TypesSpecification typesMock, Identifier idMock) throws Exception {
-        when(etMock.getJavaType()).thenReturn(OWLClassA.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassA.class));
-        when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
-        when(etMock.getAttribute(OWLClassA.getStrAttField().getName())).thenReturn(strAttMock);
-        when(etMock.getName()).thenReturn(OWLClassA.class.getSimpleName());
-        when(etMock.getTypes()).thenReturn(typesMock);
-        when(etMock.getAttributes()).thenReturn(
-                Collections.singleton(strAttMock));
-        when(etMock.getFieldSpecifications()).thenReturn(
-                new HashSet<>(Arrays.<FieldSpecification<? super OWLClassA, ?>>asList(strAttMock, typesMock, idMock)));
-
-        when(strAttMock.getJavaField()).thenReturn(OWLClassA.getStrAttField());
-        when(strAttMock.getJavaType()).thenReturn(OWLClassA.getStrAttField().getType());
-        when(strAttMock.getDeclaringType()).thenReturn(etMock);
-        final String stringAttIri = OWLClassA.getStrAttField().getAnnotation(OWLDataProperty.class).iri();
-        when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
-        when(strAttMock.getName()).thenReturn(OWLClassA.getStrAttField().getName());
-        when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
-        when(strAttMock.getCascadeTypes()).thenReturn(new CascadeType[0]);
-        when(strAttMock.getFetchType()).thenReturn(FetchType.EAGER);
-        when(strAttMock.hasLanguage()).thenReturn(true);
-        when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
-        when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
-        when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
-        when(typesMock.getName()).thenReturn(OWLClassA.getTypesField().getName());
-        when(typesMock.getDeclaringType()).thenReturn(etMock);
-        when(typesMock.getJavaType()).thenReturn(Set.class);
-        when(typesMock.getElementType()).thenReturn(String.class);
-        when(typesMock.isCollection()).thenReturn(true);
-        when(typesMock.getFetchType()).thenReturn(FetchType.EAGER);
-        when(etMock.getFieldSpecification(typesMock.getName())).thenReturn(typesMock);
-
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
-        when(idMock.getDeclaringType()).thenReturn(etMock);
-        when(idMock.getName()).thenReturn(OWLClassA.class.getDeclaredField("uri").getName());
-        when(etMock.getFieldSpecification("uri")).thenReturn(idMock);
         final EntityLifecycleListenerManager listenerManager = new EntityLifecycleListenerManager();
         addLifecycleCallback(listenerManager, POST_LOAD, OWLClassA.getPostLoadCallback());
         when(etMock.getLifecycleListenerManager()).thenReturn(listenerManager);
@@ -201,6 +157,102 @@ public class MetamodelFactory {
             }
             throw new IllegalArgumentException("Unknown attribute " + name);
         });
+        initEntityType(etMock, OWLClassA.class, listenerManager);
+        when(etMock.getAttributes()).thenReturn(Collections.singleton(strAttMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(strAttMock, typesMock, idMock));
+
+        initAttribute(etMock, strAttMock, new AttributeInfo(OWLClassA.getStrAttField(), Attribute.PersistentAttributeType.DATA)
+                .language(Generators.LANG));
+        initTypesAttribute(etMock, typesMock, new AttributeInfo(OWLClassA.getTypesField(), null).elementType(String.class));
+
+        initIdentifier(etMock, idMock, OWLClassA.class.getDeclaredField("uri"), false);
+    }
+
+    private static <X> void initEntityType(IdentifiableEntityType<X> et, Class<X> cls, EntityLifecycleListenerManager listenerManager) {
+        when(et.getJavaType()).thenReturn(cls);
+        when(et.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(cls));
+        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
+        when(et.getIRI()).thenReturn(IRI.create(cls.getAnnotation(OWLClass.class).iri()));
+        when(et.getName()).thenReturn(cls.getSimpleName());
+        when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
+    }
+
+    private static <X> void initIdentifier(IdentifiableEntityType<X> et, Identifier id, Field idField,
+                                           boolean generated) {
+        when(et.getIdentifier()).thenReturn(id);
+        when(id.getJavaField()).thenReturn(idField);
+        when(id.getDeclaringType()).thenReturn(et);
+        when(id.getName()).thenReturn(idField.getName());
+        when(id.isGenerated()).thenReturn(generated);
+        when(et.getFieldSpecification(idField.getName())).thenReturn(id);
+    }
+
+    private static <X> void initAttribute(IdentifiableEntityType<X> etMock, AbstractAttribute attMock,
+                                          AttributeInfo attInfo) {
+        when(etMock.getFieldSpecification(attInfo.field.getName())).thenReturn(attMock);
+        when(etMock.getAttribute(attInfo.field.getName())).thenReturn(attMock);
+        when(attMock.getName()).thenReturn(attInfo.field.getName());
+        when(attMock.getDeclaringType()).thenReturn(etMock);
+        when(attMock.getJavaField()).thenReturn(attInfo.field);
+        when(attMock.getJavaType()).thenReturn(attInfo.field.getType());
+        when(attMock.getConstraints()).thenReturn(attInfo.constraints);
+        when(attMock.isNonEmpty()).thenReturn(attInfo.nonEmpty);
+        when(attMock.getPersistentAttributeType()).thenReturn(attInfo.type);
+        when(attMock.getConverter()).thenReturn(attInfo.converter);
+        when(attMock.isCollection()).thenReturn(Collection.class.isAssignableFrom(attInfo.field.getType()));
+        if (attMock instanceof SingularAttributeImpl) {
+            initSingularAttribute((SingularAttributeImpl) attMock, attInfo);
+        } else {
+            initPluralAttribute((AbstractPluralAttribute) attMock, attInfo);
+        }
+        switch (attInfo.type) {
+            case DATA:
+                final OWLDataProperty dp = attInfo.field.getAnnotation(OWLDataProperty.class);
+                when(attMock.getIRI()).thenReturn(IRI.create(dp.iri()));
+                when(attMock.getFetchType()).thenReturn(dp.fetch());
+                when(attMock.isSimpleLiteral()).thenReturn(dp.simpleLiteral());
+                when(attMock.isLexicalForm()).thenReturn(dp.lexicalForm());
+                when(attMock.isAssociation()).thenReturn(false);
+                when(attMock.getDatatype()).thenReturn(dp.datatype());
+                when(attMock.isInferred()).thenReturn(attInfo.field.getAnnotation(Inferred.class) != null);
+                when(attMock.getCascadeTypes()).thenReturn(new CascadeType[0]);
+                when(attMock.getLanguage()).thenReturn(attInfo.language);
+                when(attMock.hasLanguage()).thenReturn(attInfo.language != null);
+                break;
+            case OBJECT:
+                final OWLObjectProperty op = attInfo.field.getAnnotation(OWLObjectProperty.class);
+                when(attMock.getIRI()).thenReturn(IRI.create(op.iri()));
+                when(attMock.getFetchType()).thenReturn(op.fetch());
+                when(attMock.isAssociation()).thenReturn(true);
+                when(attMock.isInferred()).thenReturn(attInfo.field.getAnnotation(Inferred.class) != null);
+                when(attMock.getCascadeTypes()).thenReturn(op.cascade());
+                break;
+            case ANNOTATION:
+                final OWLAnnotationProperty ap = attInfo.field.getAnnotation(OWLAnnotationProperty.class);
+                when(attMock.getIRI()).thenReturn(IRI.create(ap.iri()));
+                when(attMock.getFetchType()).thenReturn(ap.fetch());
+                when(attMock.isSimpleLiteral()).thenReturn(ap.simpleLiteral());
+                when(attMock.isLexicalForm()).thenReturn(ap.lexicalForm());
+                when(attMock.isAssociation()).thenReturn(false);
+                when(attMock.getDatatype()).thenReturn(ap.datatype());
+                when(attMock.isInferred()).thenReturn(attInfo.field.getAnnotation(Inferred.class) != null);
+                when(attMock.getCascadeTypes()).thenReturn(new CascadeType[0]);
+                when(attMock.getLanguage()).thenReturn(attInfo.language);
+                when(attMock.hasLanguage()).thenReturn(attInfo.language != null);
+                break;
+        }
+    }
+
+    private static void initSingularAttribute(SingularAttributeImpl attMock, AttributeInfo attInfo) {
+        when(attMock.getBindableJavaType()).thenReturn(attInfo.field.getType());
+        when(attMock.getType()).thenReturn(Objects.requireNonNullElseGet(attInfo.valueType, () -> BasicTypeImpl.get(attInfo.field.getType())));
+    }
+
+    private static void initPluralAttribute(AbstractPluralAttribute attMock, AttributeInfo attInfo) {
+        when(attMock.getBindableJavaType()).thenReturn(attInfo.elementType);
+        when(attMock.getBindableType()).thenReturn(Bindable.BindableType.PLURAL_ATTRIBUTE);
+        when(attMock.getCollectionType()).thenReturn(attInfo.collectionType);
+        when(attMock.getElementType()).thenReturn(attInfo.valueType);
     }
 
     private static void addLifecycleCallback(EntityLifecycleListenerManager manager, LifecycleEvent evt,
@@ -213,49 +265,34 @@ public class MetamodelFactory {
         addCallback.invoke(manager, evt, callback);
     }
 
+    private static <X> void initTypesAttribute(IdentifiableEntityType<X> etMock, TypesSpecification typesMock,
+                                               AttributeInfo attInfo) {
+        when(typesMock.getJavaField()).thenReturn(attInfo.field);
+        when(typesMock.getName()).thenReturn(attInfo.field.getName());
+        when(typesMock.getDeclaringType()).thenReturn(etMock);
+        when(typesMock.getJavaType()).thenReturn(Set.class);
+        when(typesMock.getElementType()).thenReturn(attInfo.elementType);
+        when(typesMock.isCollection()).thenReturn(true);
+        when(typesMock.getFetchType()).thenReturn(FetchType.EAGER);
+        when(etMock.getFieldSpecification(attInfo.field.getName())).thenReturn(typesMock);
+        when(etMock.getTypes()).thenReturn(typesMock);
+    }
+
     /**
      * Initializes the specified mock objects to return reasonable values.
      */
-    public static void initOWLClassBMocks(IdentifiableEntityType<OWLClassB> etMock, AbstractAttribute strAttMock,
-                                          PropertiesSpecification propsMock, Identifier idMock) throws
-            NoSuchFieldException,
-            SecurityException {
-        when(etMock.getJavaType()).thenReturn(OWLClassB.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassB.class));
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
-        when(etMock.getName()).thenReturn(OWLClassB.class.getSimpleName());
-        when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
-        when(etMock.getProperties()).thenReturn(propsMock);
-        when(etMock.getAttributes()).thenReturn(
-                Collections.singleton(strAttMock));
-        when(etMock.getFieldSpecifications()).thenReturn(
-                new HashSet<>(Arrays.<FieldSpecification<? super OWLClassB, ?>>asList(strAttMock, propsMock, idMock)));
+    public static void initOWLClassBMocks(IdentifiableEntityType<OWLClassB> etMock, SingularAttributeImpl strAttMock,
+                                          PropertiesSpecification propsMock, Identifier idMock)
+            throws NoSuchFieldException, SecurityException {
+        initEntityType(etMock, OWLClassB.class, EntityLifecycleListenerManager.empty());
+        when(etMock.getAttributes()).thenReturn(Collections.singleton(strAttMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(strAttMock, propsMock, idMock));
 
-        when(strAttMock.getJavaField()).thenReturn(OWLClassB.getStrAttField());
-        when(strAttMock.getJavaType()).thenReturn(OWLClassB.getStrAttField().getType());
-        final String stringAttIri = OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class).iri();
-        when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
-        when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(strAttMock.getName()).thenReturn(OWLClassB.getStrAttField().getName());
-        when(strAttMock.getDeclaringType()).thenReturn(etMock);
-        when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(strAttMock.hasLanguage()).thenReturn(true);
-        when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
-        when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
-        when(propsMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
-        when(propsMock.getJavaType()).thenReturn(OWLClassB.getPropertiesField().getType());
-        when(propsMock.getName()).thenReturn(OWLClassB.getPropertiesField().getName());
-        when(propsMock.getDeclaringType()).thenReturn(etMock);
-        when(propsMock.getPropertyIdentifierType()).thenReturn(String.class);
-        when(propsMock.getPropertyValueType()).thenReturn(String.class);
-        when(etMock.getFieldSpecification(propsMock.getName())).thenReturn(propsMock);
+        initAttribute(etMock, strAttMock, new AttributeInfo(OWLClassB.getStrAttField(), Attribute.PersistentAttributeType.DATA)
+                .language(Generators.LANG));
+        initProperties(etMock, propsMock, new AttributeInfo(OWLClassB.getPropertiesField(), null), String.class, String.class);
 
-        when(idMock.getName()).thenReturn("uri");
-        when(idMock.getJavaField()).thenReturn(OWLClassB.class.getDeclaredField("uri"));
-        when(idMock.getDeclaringType()).thenReturn(etMock);
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(etMock.getFieldSpecification(idMock.getName())).thenReturn(idMock);
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        initIdentifier(etMock, idMock, OWLClassB.class.getDeclaredField("uri"), false);
         when(etMock.getDeclaredAttribute(anyString())).thenAnswer(args -> {
             final String name = args.getArgument(0);
             if (Objects.equals(name, strAttMock.getName())) {
@@ -265,75 +302,35 @@ public class MetamodelFactory {
         });
     }
 
+    private static <X> void initProperties(IdentifiableEntityType<X> etMock, PropertiesSpecification propsMock,
+                                           AttributeInfo attInfo, Class<?> propertyType, Class<?> valueType) {
+        when(propsMock.getJavaField()).thenReturn(attInfo.field);
+        when(propsMock.getJavaType()).thenReturn(attInfo.field.getType());
+        when(propsMock.getName()).thenReturn(attInfo.field.getName());
+        when(propsMock.getDeclaringType()).thenReturn(etMock);
+        when(propsMock.getPropertyIdentifierType()).thenReturn(propertyType);
+        when(propsMock.getPropertyValueType()).thenReturn(valueType);
+        when(etMock.getFieldSpecification(propsMock.getName())).thenReturn(propsMock);
+        when(etMock.getProperties()).thenReturn(propsMock);
+    }
+
     public static void initOWLClassCMocks(IdentifiableEntityType<OWLClassC> etMock,
                                           ListAttributeImpl simpleListMock, ListAttributeImpl refListMock,
                                           RdfContainerAttributeImpl rdfSeqMock,
-                                          Identifier idMock)
+                                          IdentifiableEntityType<OWLClassA> etAMock, Identifier idMock)
             throws NoSuchFieldException, SecurityException {
-        when(etMock.getJavaType()).thenReturn(OWLClassC.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassC.class));
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassC.getClassIri()));
-        when(etMock.getName()).thenReturn(OWLClassC.class.getSimpleName());
-        when(etMock.getAttribute(OWLClassC.getSimpleListField().getName())).thenReturn(
-                simpleListMock);
-        when(etMock.getAttribute(OWLClassC.getRefListField().getName())).thenReturn(refListMock);
+        initEntityType(etMock, OWLClassC.class, EntityLifecycleListenerManager.empty());
+
+        when(etMock.getAttributes()).thenReturn(Set.of(simpleListMock, refListMock, rdfSeqMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(simpleListMock, refListMock, rdfSeqMock, idMock));
+        initListAttribute(etMock, simpleListMock, new AttributeInfo(OWLClassC.getSimpleListField(), Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.LIST)
+                                                                                                                                             .elementType(OWLClassA.class)
+                                                                                                                                             .valueType(etAMock));
+        initListAttribute(etMock, refListMock, new AttributeInfo(OWLClassC.getRefListField(), Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.LIST)
+                                                                                                                                       .elementType(OWLClassA.class)
+                                                                                                                                       .valueType(etAMock));
         when(etMock.getAttribute(OWLClassC.getRdfSeqField().getName())).thenReturn(rdfSeqMock);
-        when(etMock.getAttributes())
-                .thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassC, ?>>asList(simpleListMock, refListMock, rdfSeqMock)));
-        when(etMock.getFieldSpecifications()).thenReturn(
-                new HashSet<>(Arrays.<FieldSpecification<? super OWLClassC, ?>>asList(simpleListMock, refListMock, rdfSeqMock, idMock)));
-        when(simpleListMock.getJavaField()).thenReturn(OWLClassC.getSimpleListField());
-        when(refListMock.getJavaField()).thenReturn(OWLClassC.getRefListField());
         when(rdfSeqMock.getJavaField()).thenReturn(OWLClassC.getRdfSeqField());
-        String attIri = OWLClassC.getSimpleListField().getAnnotation(OWLObjectProperty.class).iri();
-        when(simpleListMock.getIRI()).thenReturn(IRI.create(attIri));
-        when(simpleListMock.getName()).thenReturn(OWLClassC.getSimpleListField().getName());
-        when(etMock.getFieldSpecification(simpleListMock.getName())).thenReturn(simpleListMock);
-        String hasListAttIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
-                                        .listClassIRI();
-        when(simpleListMock.getSequenceType()).thenReturn(SequenceType.simple);
-        when(simpleListMock.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(simpleListMock.getListClassIRI()).thenReturn(IRI.create(hasListAttIri));
-        String hasNextIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
-                                     .hasNextPropertyIRI();
-        when(simpleListMock.getHasNextPropertyIRI()).thenReturn(IRI.create(hasNextIri));
-        when(simpleListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
-        when(simpleListMock.getPersistentAttributeType())
-                .thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(simpleListMock.isCollection()).thenReturn(Boolean.TRUE);
-        when(simpleListMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
-        when(simpleListMock.isAssociation()).thenReturn(true);
-        when(simpleListMock.getDeclaringType()).thenReturn(etMock);
-        when(simpleListMock.getJavaType()).thenReturn(List.class);
-        when(simpleListMock.getFetchType()).thenReturn(FetchType.LAZY);
-        when(simpleListMock.getCascadeTypes())
-                .thenReturn(OWLClassC.getSimpleListField().getAnnotation(OWLObjectProperty.class).cascade());
-
-        hasListAttIri = OWLClassC.getRefListField().getAnnotation(Sequence.class).listClassIRI();
-        when(refListMock.getFetchType()).thenReturn(FetchType.EAGER);
-        when(refListMock.getSequenceType()).thenReturn(SequenceType.referenced);
-        when(refListMock.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(refListMock.getListClassIRI()).thenReturn(IRI.create(hasListAttIri));
-        when(refListMock.getName()).thenReturn(OWLClassC.getRefListField().getName());
-        when(etMock.getFieldSpecification(refListMock.getName())).thenReturn(refListMock);
-        hasNextIri = OWLClassC.getRefListField().getAnnotation(Sequence.class)
-                              .hasNextPropertyIRI();
-        when(refListMock.getHasNextPropertyIRI()).thenReturn(IRI.create(hasNextIri));
-        final String contentIri = OWLClassC.getRefListField().getAnnotation(Sequence.class)
-                                           .hasContentsPropertyIRI();
-        when(refListMock.getHasContentsPropertyIRI()).thenReturn(IRI.create(contentIri));
-        attIri = OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).iri();
-        when(refListMock.getIRI()).thenReturn(IRI.create(attIri));
-        when(refListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
-        when(refListMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(refListMock.isCollection()).thenReturn(Boolean.TRUE);
-        when(refListMock.isAssociation()).thenReturn(true);
-        when(refListMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
-        when(refListMock.getDeclaringType()).thenReturn(etMock);
-        when(refListMock.getJavaType()).thenReturn(List.class);
-        when(refListMock.getCascadeTypes())
-                .thenReturn(OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).cascade());
-
         when(rdfSeqMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(rdfSeqMock.getCollectionType()).thenReturn(CollectionType.LIST);
         when(rdfSeqMock.getContainerType()).thenReturn(RDFContainerType.SEQ);
@@ -352,11 +349,7 @@ public class MetamodelFactory {
                 .thenReturn(OWLClassC.getRdfSeqField().getAnnotation(OWLObjectProperty.class).cascade());
 
 
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(OWLClassC.class.getDeclaredField("uri"));
-        when(idMock.getDeclaringType()).thenReturn(etMock);
-        when(idMock.getFetchType()).thenReturn(FetchType.EAGER);
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        initIdentifier(etMock, idMock, OWLClassC.class.getDeclaredField("uri"), false);
         when(etMock.getDeclaredAttribute(anyString())).thenAnswer(args -> {
             final String name = args.getArgument(0);
             if (Objects.equals(name, refListMock.getName())) {
@@ -370,373 +363,153 @@ public class MetamodelFactory {
         });
     }
 
+    private static <X> void initListAttribute(IdentifiableEntityType<X> etMock, ListAttributeImpl attMock,
+                                              AttributeInfo attInfo) {
+        initAttribute(etMock, attMock, attInfo);
+        final Sequence seq = attInfo.field.getAnnotation(Sequence.class);
+        when(attMock.getHasNextPropertyIRI()).thenReturn(IRI.create(seq.hasNextPropertyIRI()));
+        when(attMock.getHasContentsPropertyIRI()).thenReturn(IRI.create(seq.hasContentsPropertyIRI()));
+        when(attMock.getListClassIRI()).thenReturn(IRI.create(seq.listClassIRI()));
+        when(attMock.getSequenceType()).thenReturn(seq.type());
+    }
+
     /**
      * Initializes the specified mock objects to return reasonable values.
      */
     public static void initOWLClassDMocks(IdentifiableEntityType<OWLClassD> etMock, SingularAttributeImpl clsAMock,
                                           IdentifiableEntityType<OWLClassA> etA, Identifier idMock)
             throws NoSuchFieldException, SecurityException {
-        when(etMock.getJavaType()).thenReturn(OWLClassD.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassD.class));
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassD.getClassIri()));
-        when(etMock.getName()).thenReturn(OWLClassD.class.getSimpleName());
-        when(etMock.getAttribute(OWLClassD.getOwlClassAField().getName())).thenReturn(clsAMock);
-        when(etMock.getAttributes()).thenReturn(
-                Collections.singleton(clsAMock));
-        when(etMock.getFieldSpecifications())
-                .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassD, ?>>asList(clsAMock, idMock)));
-        when(clsAMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
-        when(clsAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        final String clsAIri = OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class).iri();
-        when(clsAMock.getIRI()).thenReturn(IRI.create(clsAIri));
-        when(clsAMock.getJavaType()).thenReturn(OWLClassA.class);
-        when(clsAMock.getName()).thenReturn(OWLClassD.getOwlClassAField().getName());
-        when(clsAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
-        when(clsAMock.getFetchType()).thenReturn(FetchType.EAGER);
-        when(clsAMock.getDeclaringType()).thenReturn(etMock);
-        when(clsAMock.isAssociation()).thenReturn(true);
-        when(clsAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
-        when(clsAMock.getType()).thenReturn(etA);
-        when(etMock.getFieldSpecification(clsAMock.getName())).thenReturn(clsAMock);
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(OWLClassD.getUriField());
-        when(idMock.getName()).thenReturn(OWLClassD.getUriField().getName());
-        when(idMock.getDeclaringType()).thenReturn(etMock);
-        when(etMock.getFieldSpecification(OWLClassD.getUriField().getName())).thenReturn(idMock);
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        initEntityType(etMock, OWLClassD.class, EntityLifecycleListenerManager.empty());
+        when(etMock.getAttributes()).thenReturn(Collections.singleton(clsAMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(clsAMock, idMock));
+        initAttribute(etMock, clsAMock, new AttributeInfo(OWLClassD.getOwlClassAField(), Attribute.PersistentAttributeType.OBJECT).valueType(etA));
+        initIdentifier(etMock, idMock, OWLClassD.getUriField(), false);
     }
 
-    public static void initOWLClassEMocks(IdentifiableEntityType<OWLClassE> etMock, AbstractAttribute strAttMock,
+    public static void initOWLClassEMocks(IdentifiableEntityType<OWLClassE> etMock, SingularAttributeImpl strAttMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
-        when(etMock.getJavaType()).thenReturn(OWLClassE.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassE.class));
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassE.getClassIri()));
-        when(etMock.getName()).thenReturn(OWLClassE.class.getSimpleName());
-        when(etMock.getAttribute(OWLClassE.getStrAttField().getName())).thenReturn(strAttMock);
+        initEntityType(etMock, OWLClassE.class, EntityLifecycleListenerManager.empty());
         when(etMock.getAttributes()).thenReturn(Collections.singleton(strAttMock));
-        when(etMock.getFieldSpecifications())
-                .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassE, ?>>asList(strAttMock, idMock)));
-        when(strAttMock.getJavaField()).thenReturn(OWLClassE.getStrAttField());
-        final String stringAttIri = OWLClassE.getStrAttField().getAnnotation(OWLDataProperty.class)
-                                             .iri();
-        when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
-        when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(strAttMock.getDeclaringType()).thenReturn(etMock);
-        when(strAttMock.hasLanguage()).thenReturn(true);
-        when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(OWLClassE.class.getDeclaredField("uri"));
-        when(idMock.isGenerated()).thenReturn(true);
-        when(idMock.getDeclaringType()).thenReturn(etMock);
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(strAttMock, idMock));
+        initAttribute(etMock, strAttMock, new AttributeInfo(OWLClassE.getStrAttField(), Attribute.PersistentAttributeType.DATA)
+                .language(Generators.LANG));
+        initIdentifier(etMock, idMock, OWLClassE.class.getDeclaredField("uri"), true);
     }
 
     public static void initOWLClassFMocks(IdentifiableEntityType<OWLClassF> etMock, AbstractPluralAttribute setAMock,
-                                          AbstractAttribute strAttMock,
+                                          SingularAttributeImpl strAttMock, IdentifiableEntityType<OWLClassA> etAMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
-        when(etMock.getJavaType()).thenReturn(OWLClassF.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassF.class));
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassF.getClassIri()));
-        when(etMock.getName()).thenReturn(OWLClassF.class.getSimpleName());
-        when(etMock.getAttribute(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
-        when(etMock.getAttributes())
-                .thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassF, ?>>asList(setAMock, strAttMock)));
-        when(etMock.getFieldSpecifications())
-                .thenReturn(new HashSet<>(
-                        Arrays.<FieldSpecification<? super OWLClassF, ?>>asList(setAMock, strAttMock, idMock)));
-        when(setAMock.getJavaField()).thenReturn(OWLClassF.getSimpleSetField());
-        when(setAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(setAMock.getCascadeTypes())
-                .thenReturn(OWLClassF.getSimpleSetField().getAnnotation(OWLObjectProperty.class).cascade());
-        final String setAIri = OWLClassF.getSimpleSetField().getAnnotation(OWLObjectProperty.class).iri();
-        when(setAMock.getIRI()).thenReturn(IRI.create(setAIri));
-        when(setAMock.getJavaType()).thenReturn(Set.class);
-        when(setAMock.getJavaField()).thenReturn(OWLClassF.getSimpleSetField());
-        when(setAMock.isCollection()).thenReturn(Boolean.TRUE);
-        when(setAMock.getCollectionType()).thenReturn(CollectionType.SET);
-        when(setAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
-        when(setAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
-        when(setAMock.getDeclaringType()).thenReturn(etMock);
-        when(setAMock.getName()).thenReturn(OWLClassF.getSimpleSetField().getName());
-        when(setAMock.getFetchType()).thenReturn(FetchType.LAZY);
-        when(etMock.getAttribute(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
-        when(etMock.getFieldSpecification(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
+        initEntityType(etMock, OWLClassF.class, EntityLifecycleListenerManager.empty());
+        when(etMock.getAttributes()).thenReturn(Set.of(setAMock, strAttMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(setAMock, strAttMock, idMock));
+        initAttribute(etMock, setAMock, new AttributeInfo(OWLClassF.getSimpleSetField(),
+                Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.SET)
+                                                         .elementType(OWLClassA.class).valueType(etAMock));
+        initAttribute(etMock, strAttMock, new AttributeInfo(OWLClassF.getStrAttField(), Attribute.PersistentAttributeType.DATA)
+                .language(Generators.LANG));
 
-        when(strAttMock.getJavaField()).thenReturn(OWLClassF.getStrAttField());
-        when(strAttMock.getJavaType()).thenReturn(OWLClassF.getStrAttField().getType());
-        when(strAttMock.getDeclaringType()).thenReturn(etMock);
-        final String stringAttIri = OWLClassF.getStrAttField().getAnnotation(OWLDataProperty.class)
-                                             .iri();
-        when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
-        when(strAttMock.getName()).thenReturn(OWLClassF.getStrAttField().getName());
-        when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
-        when(strAttMock.isInferred()).thenReturn(true);
-        when(strAttMock.hasLanguage()).thenReturn(true);
-        when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
-        when(strAttMock.getFetchType()).thenReturn(FetchType.EAGER);
-        when(etMock.getFieldSpecification(OWLClassF.getStrAttField().getName())).thenReturn(strAttMock);
-
-        when(idMock.getJavaField()).thenReturn(OWLClassF.class.getDeclaredField("uri"));
-        when(idMock.getDeclaringType()).thenReturn(etMock);
-        when(idMock.getName()).thenReturn("uri");
-        when(etMock.getFieldSpecification(idMock.getName())).thenReturn(idMock);
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        initIdentifier(etMock, idMock, OWLClassF.class.getDeclaredField("uri"), false);
     }
 
     public static void initOWLClassGMocks(IdentifiableEntityType<OWLClassG> etMock, SingularAttributeImpl clsHMock,
                                           IdentifiableEntityType<OWLClassH> etHMock, Identifier idMock)
             throws NoSuchFieldException, SecurityException {
-        when(etMock.getJavaType()).thenReturn(OWLClassG.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassG.class));
-        when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassG.getClassIri()));
-        when(etMock.getAttribute(OWLClassG.getOwlClassHField().getName())).thenReturn(clsHMock);
-        when(etMock.getName()).thenReturn(OWLClassG.class.getSimpleName());
+        initEntityType(etMock, OWLClassG.class, EntityLifecycleListenerManager.empty());
         when(etMock.getAttributes()).thenReturn(Collections.singleton(clsHMock));
-        when(etMock.getFieldSpecifications())
-                .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassG, ?>>asList(clsHMock, idMock)));
-        when(clsHMock.getJavaField()).thenReturn(OWLClassG.getOwlClassHField());
-        when(clsHMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(clsHMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_g_hasH));
-        when(clsHMock.getJavaType()).thenReturn(OWLClassH.class);
-        when(clsHMock.getName()).thenReturn(OWLClassG.getOwlClassHField().getName());
-        when(clsHMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
-        when(clsHMock.getFetchType()).thenReturn(FetchType.EAGER);
-        when(clsHMock.getDeclaringType()).thenReturn(etMock);
-        when(clsHMock.getType()).thenReturn(etHMock);
-        when(etMock.getFieldSpecification(clsHMock.getName())).thenReturn(clsHMock);
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getName()).thenReturn(OWLClassG.class.getDeclaredField("uri").getName());
-        when(idMock.getJavaField()).thenReturn(OWLClassG.class.getDeclaredField("uri"));
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(clsHMock, idMock));
+        initAttribute(etMock, clsHMock, new AttributeInfo(OWLClassG.getOwlClassHField(), Attribute.PersistentAttributeType.OBJECT)
+                .valueType(etHMock));
+        initIdentifier(etMock, idMock, OWLClassG.class.getDeclaredField("uri"), false);
     }
 
     public static void initOWLClassHMocks(IdentifiableEntityType<OWLClassH> etMock, SingularAttributeImpl clsAMock,
                                           SingularAttributeImpl clsGMock, IdentifiableEntityType<OWLClassA> etAMock,
                                           IdentifiableEntityType<OWLClassG> etGMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
-        when(etMock.getJavaType()).thenReturn(OWLClassH.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassH.class));
-        when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassH.getClassIri()));
-        when(etMock.getName()).thenReturn(OWLClassH.class.getSimpleName());
-        when(etMock.getAttributes()).thenReturn(
-                new HashSet<>(Arrays.<Attribute<OWLClassH, ?>>asList(clsAMock, clsGMock)));
-        when(etMock.getFieldSpecifications())
-                .thenReturn(new HashSet<>(
-                        Arrays.<FieldSpecification<OWLClassH, ?>>asList(clsAMock, clsGMock, idMock)));
-        when(clsAMock.getJavaField()).thenReturn(OWLClassH.getOwlClassAField());
-        when(clsAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(clsAMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_h_hasA));
-        when(clsAMock.getJavaType()).thenReturn(OWLClassA.class);
-        when(clsAMock.getName()).thenReturn(OWLClassH.getOwlClassAField().getName());
-        when(clsAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
-        when(clsAMock.getFetchType()).thenReturn(FetchType.EAGER);
-        when(clsAMock.getDeclaringType()).thenReturn(etMock);
-        when(clsAMock.getType()).thenReturn(etAMock);
+        initEntityType(etMock, OWLClassH.class,  EntityLifecycleListenerManager.empty());
+        when(etMock.getAttributes()).thenReturn(Set.of(clsAMock, clsGMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(clsAMock, clsGMock, idMock));
 
-        when(clsGMock.getJavaField()).thenReturn(OWLClassH.getOwlClassGField());
-        when(clsGMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(clsGMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_h_hasG));
-        when(clsGMock.getJavaType()).thenReturn(OWLClassG.class);
-        when(clsGMock.getName()).thenReturn(OWLClassH.getOwlClassGField().getName());
-        when(clsGMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
-        when(clsGMock.getFetchType()).thenReturn(FetchType.LAZY);
-        when(clsGMock.getDeclaringType()).thenReturn(etMock);
-        when(clsGMock.getType()).thenReturn(etGMock);
-
-        when(etMock.getFieldSpecification(clsAMock.getName())).thenReturn(clsAMock);
-        when(etMock.getFieldSpecification(clsGMock.getName())).thenReturn(clsGMock);
-        when(etMock.getAttribute(clsAMock.getName())).thenReturn(clsAMock);
-        when(etMock.getAttribute(clsGMock.getName())).thenReturn(clsGMock);
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getName()).thenReturn(OWLClassH.class.getDeclaredField("uri").getName());
-        when(idMock.getJavaField()).thenReturn(OWLClassH.class.getDeclaredField("uri"));
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        initAttribute(etMock, clsAMock, new AttributeInfo(OWLClassH.getOwlClassAField(), Attribute.PersistentAttributeType.OBJECT)
+                .valueType(etAMock));
+        initAttribute(etMock, clsGMock, new AttributeInfo(OWLClassH.getOwlClassGField(), Attribute.PersistentAttributeType.OBJECT)
+                .valueType(etGMock));
+        initIdentifier(etMock, idMock, OWLClassH.class.getDeclaredField("uri"), false);
     }
 
     public static void initOWLClassIMocks(IdentifiableEntityType<OWLClassI> etMock, SingularAttributeImpl aAttMock,
+                                          IdentifiableEntityType<OWLClassA> etAMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
-        when(etMock.getJavaType()).thenReturn(OWLClassI.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassI.class));
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassI.getClassIri()));
-        when(etMock.getName()).thenReturn(OWLClassI.class.getSimpleName());
-        when(etMock.getAttribute(OWLClassI.getOwlClassAField().getName())).thenReturn(aAttMock);
+        initEntityType(etMock, OWLClassI.class,  EntityLifecycleListenerManager.empty());
         when(etMock.getAttributes()).thenReturn(Collections.singleton(aAttMock));
-        when(etMock.getFieldSpecifications())
-                .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassJ, ?>>asList(aAttMock, idMock)));
-        when(aAttMock.getName()).thenReturn(OWLClassI.getOwlClassAField().getName());
-        when(aAttMock.getJavaField()).thenReturn(OWLClassI.getOwlClassAField());
-        when(aAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(aAttMock.getCascadeTypes())
-                .thenReturn(OWLClassI.getOwlClassAField().getAnnotation(OWLObjectProperty.class).cascade());
-        final String clsAIri = OWLClassI.getOwlClassAField().getAnnotation(OWLObjectProperty.class).iri();
-        when(aAttMock.getIRI()).thenReturn(IRI.create(clsAIri));
-        when(aAttMock.getJavaType()).thenReturn(OWLClassA.class);
-        when(aAttMock.isCollection()).thenReturn(false);
-        when(aAttMock.getBindableJavaType()).thenReturn(OWLClassA.class);
-        when(aAttMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
-        when(aAttMock.getDeclaringType()).thenReturn(etMock);
-        when(aAttMock.getFetchType()).thenReturn(FetchType.LAZY);
-        when(etMock.getFieldSpecification(aAttMock.getName())).thenReturn(aAttMock);
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(OWLClassI.class.getDeclaredField("uri"));
-        when(idMock.getDeclaringType()).thenReturn(etMock);
-        when(etMock.getFieldSpecification("uri")).thenReturn(idMock);
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(aAttMock, idMock));
+
+        initAttribute(etMock, aAttMock, new AttributeInfo(OWLClassI.getOwlClassAField(), Attribute.PersistentAttributeType.OBJECT)
+                .valueType(etAMock));
+        initIdentifier(etMock, idMock, OWLClassI.class.getDeclaredField("uri"), false);
     }
 
     public static void initOWLClassJMocks(IdentifiableEntityType<OWLClassJ> etMock, AbstractPluralAttribute setAMock,
+                                          IdentifiableEntityType<OWLClassA> etAMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
-        when(etMock.getJavaType()).thenReturn(OWLClassJ.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassJ.class));
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassJ.getClassIri()));
-        when(etMock.getName()).thenReturn(OWLClassJ.class.getSimpleName());
-        when(etMock.getAttribute(OWLClassJ.getOwlClassAField().getName())).thenReturn(setAMock);
+        initEntityType(etMock, OWLClassJ.class,EntityLifecycleListenerManager.empty());
         when(etMock.getAttributes()).thenReturn(Collections.singleton(setAMock));
-        when(etMock.getFieldSpecifications())
-                .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassJ, ?>>asList(setAMock, idMock)));
-        when(setAMock.getJavaField()).thenReturn(OWLClassJ.getOwlClassAField());
-        when(setAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(setAMock.getCascadeTypes())
-                .thenReturn(OWLClassJ.getOwlClassAField().getAnnotation(OWLObjectProperty.class).cascade());
-        final String clsAIri = OWLClassJ.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
-                                        .iri();
-        when(setAMock.getIRI()).thenReturn(IRI.create(clsAIri));
-        when(setAMock.getJavaType()).thenReturn(Set.class);
-        when(setAMock.isCollection()).thenReturn(Boolean.TRUE);
-        when(setAMock.getCollectionType()).thenReturn(CollectionType.SET);
-        when(setAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
-        when(setAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
-        when(setAMock.getDeclaringType()).thenReturn(etMock);
-        when(etMock.getFieldSpecification(OWLClassJ.getOwlClassAField().getName())).thenReturn(setAMock);
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(OWLClassJ.class.getDeclaredField("uri"));
-        when(idMock.getDeclaringType()).thenReturn(etMock);
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(setAMock, idMock));
+        initAttribute(etMock, setAMock, new AttributeInfo(OWLClassJ.getOwlClassAField(),
+                Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.SET)
+                                                         .elementType(OWLClassA.class).valueType(etAMock));
+        initIdentifier(etMock, idMock, OWLClassJ.class.getDeclaredField("uri"), false);
     }
 
-    public static void initOWLClassKMocks(IdentifiableEntityType<OWLClassK> etMock, AbstractAttribute clsEMock,
+    public static void initOWLClassKMocks(IdentifiableEntityType<OWLClassK> etMock, SingularAttributeImpl clsEMock,
+                                          IdentifiableEntityType<OWLClassE> etEMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
-        when(etMock.getJavaType()).thenReturn(OWLClassK.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassK.class));
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassK.getClassIri()));
-        when(etMock.getName()).thenReturn(OWLClassK.class.getSimpleName());
-        when(etMock.getAttribute(OWLClassK.getOwlClassEField().getName())).thenReturn(clsEMock);
+        initEntityType(etMock, OWLClassK.class, EntityLifecycleListenerManager.empty());
         when(etMock.getAttributes()).thenReturn(Collections.singleton(clsEMock));
-        when(etMock.getFieldSpecifications())
-                .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassK, ?>>asList(clsEMock, idMock)));
-        when(clsEMock.getJavaField()).thenReturn(OWLClassK.getOwlClassEField());
-        when(clsEMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        final String clsEIri = OWLClassK.getOwlClassEField().getAnnotation(OWLObjectProperty.class)
-                                        .iri();
-        when(clsEMock.getIRI()).thenReturn(IRI.create(clsEIri));
-        when(clsEMock.getJavaType()).thenReturn(OWLClassE.class);
-        when(clsEMock.getDeclaringType()).thenReturn(etMock);
-        when(clsEMock.getFetchType()).thenReturn(FetchType.LAZY);
-        when(clsEMock.getName()).thenReturn(OWLClassK.getOwlClassEField().getName());
-        when(etMock.getFieldSpecification(clsEMock.getName())).thenReturn(clsEMock);
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(OWLClassK.class.getDeclaredField("uri"));
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(clsEMock, idMock));
+
+        initAttribute(etMock, clsEMock, new AttributeInfo(OWLClassK.getOwlClassEField(), Attribute.PersistentAttributeType.OBJECT)
+                .valueType(etEMock));
+        initIdentifier(etMock, idMock, OWLClassK.class.getDeclaredField("uri"), false);
     }
 
     public static void initOWLClassLMocks(IdentifiableEntityType<OWLClassL> etMock, ListAttributeImpl refListMock,
                                           ListAttributeImpl simpleListMock, AbstractPluralAttribute setMock,
-                                          AbstractAttribute singleAMock,
-                                          Identifier idMock)
-            throws NoSuchFieldException {
-        when(etMock.getJavaType()).thenReturn(OWLClassL.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassL.class));
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassL.getClassIri()));
-        when(etMock.getName()).thenReturn(OWLClassL.class.getSimpleName());
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(OWLClassL.class.getDeclaredField("uri"));
-        when(idMock.getDeclaringType()).thenReturn(etMock);
-        when(etMock.getDeclaredAttributes()).thenReturn(new HashSet<>(
-                Arrays.<Attribute<OWLClassL, ?>>asList(refListMock, simpleListMock, setMock, singleAMock)));
-        when(etMock.getAttributes()).thenReturn(new HashSet<>(
-                Arrays.<Attribute<OWLClassL, ?>>asList(refListMock, simpleListMock, setMock, singleAMock)));
-        when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
-                Arrays.<FieldSpecification<? super OWLClassL, ?>>asList(refListMock, simpleListMock, setMock,
-                        simpleListMock, singleAMock, idMock)));
+                                          SingularAttributeImpl singleAMock, IdentifiableEntityType<OWLClassA> etAMock,
+                                          Identifier idMock) throws NoSuchFieldException {
+        initEntityType(etMock, OWLClassL.class, EntityLifecycleListenerManager.empty());
+        initIdentifier(etMock, idMock, OWLClassL.class.getDeclaredField("uri"), false);
+        when(etMock.getDeclaredAttributes()).thenReturn(Set.of(refListMock, simpleListMock, setMock, singleAMock));
+        when(etMock.getAttributes()).thenReturn(Set.of(refListMock, simpleListMock, setMock, singleAMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(refListMock, simpleListMock, setMock, singleAMock, idMock));
 
-        when(refListMock.getJavaField()).thenReturn(OWLClassL.getReferencedListField());
-        when(refListMock.getName()).thenReturn(OWLClassL.getReferencedListField().getName());
-        when(refListMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(refListMock.getIRI()).thenReturn(
-                IRI.create(OWLClassL.getReferencedListField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(refListMock.getConstraints()).thenReturn(
-                OWLClassL.getReferencedListField().getAnnotation(ParticipationConstraints.class).value());
-        when(refListMock.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(refListMock.getSequenceType()).thenReturn(SequenceType.referenced);
-        when(refListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
-        when(refListMock.isCollection()).thenReturn(true);
-        when(refListMock.getHasNextPropertyIRI()).thenReturn(IRI.create(
-                OWLClassL.getReferencedListField().getAnnotation(Sequence.class).hasNextPropertyIRI()));
-        when(refListMock.getHasContentsPropertyIRI()).thenReturn(IRI.create(
-                OWLClassL.getReferencedListField().getAnnotation(Sequence.class).hasContentsPropertyIRI()));
-        when(etMock.getFieldSpecification(OWLClassL.getReferencedListField().getName())).thenReturn(refListMock);
-        when(etMock.getAttribute(OWLClassL.getReferencedListField().getName())).thenReturn(refListMock);
-        when(refListMock.getDeclaringType()).thenReturn(etMock);
-        when(refListMock.getJavaType()).thenReturn(List.class);
-
-        when(simpleListMock.getJavaField()).thenReturn(OWLClassL.getSimpleListField());
-        when(simpleListMock.getName()).thenReturn(OWLClassL.getSimpleListField().getName());
-        when(simpleListMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(simpleListMock.getIRI()).thenReturn(
-                IRI.create(OWLClassL.getSimpleListField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(simpleListMock.getConstraints()).thenReturn(
-                OWLClassL.getSimpleListField().getAnnotation(ParticipationConstraints.class).value());
-        when(simpleListMock.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(simpleListMock.getSequenceType()).thenReturn(SequenceType.simple);
-        when(simpleListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
-        when(simpleListMock.isCollection()).thenReturn(true);
-        when(simpleListMock.getHasNextPropertyIRI()).thenReturn(
-                IRI.create(OWLClassL.getSimpleListField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(etMock.getFieldSpecification(OWLClassL.getSimpleListField().getName())).thenReturn(simpleListMock);
-        when(etMock.getAttribute(OWLClassL.getSimpleListField().getName())).thenReturn(simpleListMock);
-        when(simpleListMock.getDeclaringType()).thenReturn(etMock);
-        when(simpleListMock.getJavaType()).thenReturn(List.class);
-
-        when(setMock.getJavaField()).thenReturn(OWLClassL.getSetField());
-        when(setMock.getName()).thenReturn(OWLClassL.getSetField().getName());
-        when(setMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(setMock.getIRI()).thenReturn(
-                IRI.create(OWLClassL.getSetField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(setMock.getConstraints()).thenReturn(
-                OWLClassL.getSetField().getAnnotation(ParticipationConstraints.class).value());
-        when(setMock.getCollectionType()).thenReturn(CollectionType.SET);
-        when(setMock.getBindableJavaType()).thenReturn(OWLClassA.class);
-        when(setMock.isCollection()).thenReturn(true);
-        when(etMock.getFieldSpecification(OWLClassL.getSetField().getName())).thenReturn(setMock);
-        when(etMock.getAttribute(OWLClassL.getSetField().getName())).thenReturn(setMock);
-        when(setMock.getDeclaringType()).thenReturn(etMock);
-        when(setMock.getJavaType()).thenReturn(Set.class);
-
-        when(singleAMock.getJavaField()).thenReturn(OWLClassL.getSingleAField());
-        when(singleAMock.getName()).thenReturn(OWLClassL.getSingleAField().getName());
-        when(singleAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(singleAMock.getIRI()).thenReturn(
-                IRI.create(OWLClassL.getSingleAField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(singleAMock.isCollection()).thenReturn(false);
-        when(singleAMock.getConstraints()).thenReturn(
-                OWLClassL.getSingleAField().getAnnotation(ParticipationConstraints.class).value());
-        when(singleAMock.isNonEmpty())
-                .thenReturn(OWLClassL.getSingleAField().getAnnotation(ParticipationConstraints.class).nonEmpty());
-        when(singleAMock.getDeclaringType()).thenReturn(etMock);
-        when(etMock.getFieldSpecification(OWLClassL.getSingleAField().getName())).thenReturn(singleAMock);
-        when(etMock.getAttribute(OWLClassL.getSingleAField().getName())).thenReturn(singleAMock);
-        when(singleAMock.getJavaType()).thenReturn(OWLClassA.class);
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        initListAttribute(etMock, refListMock, new AttributeInfo(OWLClassL.getReferencedListField(), Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.LIST)
+                                                                                                                                              .elementType(OWLClassA.class)
+                                                                                                                                              .valueType(etAMock)
+                                                                                                                                              .constraints(OWLClassL.getReferencedListField()
+                                                                                                                                                                    .getAnnotation(ParticipationConstraints.class)
+                                                                                                                                                                    .value()));
+        initListAttribute(etMock, simpleListMock, new AttributeInfo(OWLClassL.getSimpleListField(), Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.LIST)
+                                                                                                                                             .elementType(OWLClassA.class)
+                                                                                                                                             .valueType(etAMock)
+                                                                                                                                             .constraints(OWLClassL.getSimpleListField()
+                                                                                                                                                                   .getAnnotation(ParticipationConstraints.class)
+                                                                                                                                                                   .value()));
+        initAttribute(etMock, setMock, new AttributeInfo(OWLClassL.getSetField(),
+                Attribute.PersistentAttributeType.OBJECT).valueType(etAMock).elementType(OWLClassA.class)
+                                                         .collectionType(CollectionType.SET)
+                                                         .constraints(OWLClassL.getSetField()
+                                                                               .getAnnotation(ParticipationConstraints.class)
+                                                                               .value()));
+        initAttribute(etMock, singleAMock, new AttributeInfo(OWLClassL.getSingleAField(), Attribute.PersistentAttributeType.OBJECT)
+                .valueType(etAMock).nonEmpty());
     }
 
-    public static void initOWLClassMMock(IdentifiableEntityType<OWLClassM> etMock, AbstractAttribute booleanAtt,
-                                         AbstractAttribute intAtt, SingularAttributeImpl longAtt,
-                                         AbstractAttribute doubleAtt, AbstractAttribute dateAtt,
-                                         AbstractAttribute enumAtt, AbstractAttribute ordinalEnumAtt,
+    public static void initOWLClassMMock(IdentifiableEntityType<OWLClassM> etMock, SingularAttributeImpl booleanAtt,
+                                         SingularAttributeImpl intAtt, SingularAttributeImpl longAtt,
+                                         SingularAttributeImpl doubleAtt, SingularAttributeImpl dateAtt,
+                                         SingularAttributeImpl characterAtt,
+                                         SingularAttributeImpl enumAtt, SingularAttributeImpl ordinalEnumAtt,
                                          AbstractPluralAttribute intSetAtt, SingularAttributeImpl lexicalFormAtt,
                                          SingularAttributeImpl simpleLiteralAtt,
                                          SingularAttributeImpl explicitDatatypeAtt,
@@ -744,215 +517,36 @@ public class MetamodelFactory {
                                          SingularAttributeImpl mObjectOneOfEnumAttribute,
                                          Identifier idMock)
             throws Exception {
-        when(etMock.getJavaType()).thenReturn(OWLClassM.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassM.class));
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassM.getClassIri()));
-        when(etMock.getName()).thenReturn(OWLClassM.class.getSimpleName());
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(OWLClassM.getUriField());
-        when(idMock.getName()).thenReturn(OWLClassM.getUriField().getName());
-        when(idMock.getDeclaringType()).thenReturn(etMock);
-        when(etMock.getFieldSpecification(idMock.getName())).thenReturn(idMock);
-        when(etMock.getAttributes()).thenReturn(
-                new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt,
-                        dateAtt, enumAtt, ordinalEnumAtt,
-                        intSetAtt, lexicalFormAtt,
-                        simpleLiteralAtt, explicitDatatypeAtt,
-                        mObjectOneOfEnumAttribute)));
-        when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
-                Arrays.<FieldSpecification<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt,
-                        enumAtt, ordinalEnumAtt, intSetAtt,
-                        lexicalFormAtt, simpleLiteralAtt,
-                        explicitDatatypeAtt, mObjectOneOfEnumAttribute,
-                        idMock)));
+        initEntityType(etMock, OWLClassM.class, EntityLifecycleListenerManager.empty());
+        initIdentifier(etMock, idMock, OWLClassM.getUriField(), false);
+        when(etMock.getAttributes()).thenReturn(Set.of(booleanAtt, intAtt, longAtt, doubleAtt,
+                dateAtt, characterAtt, enumAtt, ordinalEnumAtt, intSetAtt, lexicalFormAtt,
+                simpleLiteralAtt, explicitDatatypeAtt, mObjectOneOfEnumAttribute));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt,
+                characterAtt, enumAtt, ordinalEnumAtt, intSetAtt, lexicalFormAtt, simpleLiteralAtt,
+                explicitDatatypeAtt, mObjectOneOfEnumAttribute, idMock));
 
-        when(booleanAtt.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
-        when(booleanAtt.getName()).thenReturn(OWLClassM.getBooleanAttributeField().getName());
-        when(booleanAtt.getJavaType()).thenReturn(OWLClassM.getBooleanAttributeField().getType());
-        when(booleanAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_booleanAttribute));
-        when(booleanAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(booleanAtt.isCollection()).thenReturn(false);
-        when(booleanAtt.getDeclaringType()).thenReturn(etMock);
-        when(booleanAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(booleanAtt.hasLanguage()).thenReturn(true);
-        when(booleanAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(etMock.getFieldSpecification(OWLClassM.getBooleanAttributeField().getName())).thenReturn(booleanAtt);
-        when(etMock.getAttribute(OWLClassM.getBooleanAttributeField().getName())).thenReturn(booleanAtt);
-
-        when(intAtt.getJavaField()).thenReturn(OWLClassM.getIntAttributeField());
-        when(intAtt.getName()).thenReturn(OWLClassM.getIntAttributeField().getName());
-        when(intAtt.getJavaType()).thenReturn(OWLClassM.getIntAttributeField().getType());
-        when(intAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_intAttribute));
-        when(intAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(intAtt.isCollection()).thenReturn(false);
-        when(intAtt.getDeclaringType()).thenReturn(etMock);
-        when(intAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(intAtt.getConverter()).thenReturn(new ToIntegerConverter());
-        when(intAtt.hasLanguage()).thenReturn(true);
-        when(intAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(etMock.getFieldSpecification(OWLClassM.getIntAttributeField().getName())).thenReturn(intAtt);
-        when(etMock.getAttribute(OWLClassM.getIntAttributeField().getName())).thenReturn(intAtt);
-
-
-        when(longAtt.getJavaField()).thenReturn(OWLClassM.getLongAttributeField());
-        when(longAtt.getName()).thenReturn(OWLClassM.getLongAttributeField().getName());
-        when(longAtt.getJavaType()).thenReturn(OWLClassM.getLongAttributeField().getType());
-        when(longAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_longAttribute));
-        when(longAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(longAtt.isCollection()).thenReturn(false);
-        when(longAtt.getBindableJavaType()).thenReturn(Long.class);
-        when(longAtt.getDeclaringType()).thenReturn(etMock);
-        when(longAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(longAtt.getConverter()).thenReturn(new ToLongConverter());
-        when(longAtt.hasLanguage()).thenReturn(true);
-        when(longAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(etMock.getFieldSpecification(OWLClassM.getLongAttributeField().getName())).thenReturn(longAtt);
-        when(etMock.getAttribute(OWLClassM.getLongAttributeField().getName())).thenReturn(longAtt);
-
-        when(doubleAtt.getJavaField()).thenReturn(OWLClassM.getDoubleAttributeField());
-        when(doubleAtt.getName()).thenReturn(OWLClassM.getDoubleAttributeField().getName());
-        when(doubleAtt.getJavaType()).thenReturn(OWLClassM.getDoubleAttributeField().getType());
-        when(doubleAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_doubleAttribute));
-        when(doubleAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(doubleAtt.isCollection()).thenReturn(false);
-        when(doubleAtt.getDeclaringType()).thenReturn(etMock);
-        when(doubleAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(doubleAtt.getConverter()).thenReturn(new ToDoubleConverter());
-        when(doubleAtt.hasLanguage()).thenReturn(true);
-        when(doubleAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(etMock.getFieldSpecification(OWLClassM.getDoubleAttributeField().getName())).thenReturn(doubleAtt);
-        when(etMock.getAttribute(OWLClassM.getDoubleAttributeField().getName())).thenReturn(doubleAtt);
-
-        when(dateAtt.getJavaField()).thenReturn(OWLClassM.getDateAttributeField());
-        when(dateAtt.getName()).thenReturn(OWLClassM.getDateAttributeField().getName());
-        when(dateAtt.getJavaType()).thenReturn(OWLClassM.getDateAttributeField().getType());
-        when(dateAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_dateAttribute));
-        when(dateAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(dateAtt.isCollection()).thenReturn(false);
-        when(dateAtt.getDeclaringType()).thenReturn(etMock);
-        when(dateAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(dateAtt.hasLanguage()).thenReturn(true);
-        when(dateAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(etMock.getFieldSpecification(OWLClassM.getDateAttributeField().getName())).thenReturn(dateAtt);
-        when(etMock.getAttribute(OWLClassM.getDateAttributeField().getName())).thenReturn(dateAtt);
-
-        when(enumAtt.getJavaField()).thenReturn(OWLClassM.getEnumAttributeField());
-        when(enumAtt.getName()).thenReturn(OWLClassM.getEnumAttributeField().getName());
-        when(enumAtt.getJavaType()).thenReturn(OWLClassM.getEnumAttributeField().getType());
-        when(enumAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_enumAttribute));
-        when(enumAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(enumAtt.isCollection()).thenReturn(false);
-        when(enumAtt.getDeclaringType()).thenReturn(etMock);
-        when(enumAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(enumAtt.getConverter()).thenReturn(new StringEnumConverter<>(OWLClassM.Severity.class));
-        when(enumAtt.hasLanguage()).thenReturn(true);
-        when(enumAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(etMock.getFieldSpecification(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
-        when(etMock.getAttribute(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
-
-        when(ordinalEnumAtt.getJavaField()).thenReturn(OWLClassM.getOrdinalEnumAttributeField());
-        when(ordinalEnumAtt.getName()).thenReturn(OWLClassM.getOrdinalEnumAttributeField().getName());
-        when(ordinalEnumAtt.getJavaType()).thenReturn(OWLClassM.getOrdinalEnumAttributeField().getType());
-        when(ordinalEnumAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_ordinalEnumAttribute));
-        when(ordinalEnumAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(ordinalEnumAtt.isCollection()).thenReturn(false);
-        when(ordinalEnumAtt.getDeclaringType()).thenReturn(etMock);
-        when(ordinalEnumAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(ordinalEnumAtt.getConverter()).thenReturn(new OrdinalEnumConverter(OWLClassM.Severity.class));
-        when(ordinalEnumAtt.hasLanguage()).thenReturn(false);
-        when(etMock.getFieldSpecification(OWLClassM.getOrdinalEnumAttributeField().getName())).thenReturn(
-                ordinalEnumAtt);
-        when(etMock.getAttribute(OWLClassM.getOrdinalEnumAttributeField().getName())).thenReturn(ordinalEnumAtt);
-
-        when(intSetAtt.getJavaField()).thenReturn(OWLClassM.getIntegerSetField());
-        when(intSetAtt.getName()).thenReturn(OWLClassM.getIntegerSetField().getName());
-        when(intSetAtt.getJavaType()).thenReturn(OWLClassM.getIntegerSetField().getType());
-        when(intSetAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_IntegerSet));
-        when(intSetAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(intSetAtt.isCollection()).thenReturn(true);
-        when(intSetAtt.getCollectionType()).thenReturn(CollectionType.SET);
-        when(intSetAtt.getDeclaringType()).thenReturn(etMock);
-        when(intSetAtt.getConverter()).thenReturn(new ToIntegerConverter());
-        final Type typeMock = mock(Type.class);
-        when(intSetAtt.getElementType()).thenReturn(typeMock);
-        when(intSetAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(intSetAtt.hasLanguage()).thenReturn(true);
-        when(intSetAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(typeMock.getJavaType()).thenReturn(Integer.class);
-        when(etMock.getFieldSpecification(OWLClassM.getIntegerSetField().getName())).thenReturn(intSetAtt);
-
-        when(lexicalFormAtt.getJavaField()).thenReturn(OWLClassM.getLexicalFormField());
-        when(lexicalFormAtt.getName()).thenReturn(OWLClassM.getLexicalFormField().getName());
-        when(lexicalFormAtt.getJavaType()).thenReturn(OWLClassM.getLexicalFormField().getType());
-        when(lexicalFormAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_lexicalForm));
-        when(lexicalFormAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(lexicalFormAtt.isCollection()).thenReturn(false);
-        when(lexicalFormAtt.getDeclaringType()).thenReturn(etMock);
-        when(lexicalFormAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(lexicalFormAtt.getConverter()).thenReturn(new ToLexicalFormConverter());
-        when(lexicalFormAtt.isLexicalForm()).thenReturn(true);
-        when(etMock.getFieldSpecification(OWLClassM.getLexicalFormField().getName())).thenReturn(lexicalFormAtt);
-
-        when(simpleLiteralAtt.getJavaField()).thenReturn(OWLClassM.getSimpleLiteralField());
-        when(simpleLiteralAtt.getName()).thenReturn(OWLClassM.getSimpleLiteralField().getName());
-        when(simpleLiteralAtt.getJavaType()).thenReturn(OWLClassM.getSimpleLiteralField().getType());
-        when(simpleLiteralAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
-        when(simpleLiteralAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(simpleLiteralAtt.isCollection()).thenReturn(false);
-        when(simpleLiteralAtt.getDeclaringType()).thenReturn(etMock);
-        when(simpleLiteralAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(simpleLiteralAtt.getConverter()).thenReturn(new ToLexicalFormConverter());
-        when(simpleLiteralAtt.isSimpleLiteral()).thenReturn(true);
-        when(etMock.getFieldSpecification(OWLClassM.getSimpleLiteralField().getName())).thenReturn(simpleLiteralAtt);
-        when(etMock.getAttribute(OWLClassM.getSimpleLiteralField().getName())).thenReturn(simpleLiteralAtt);
-
-        when(explicitDatatypeAtt.getJavaField()).thenReturn(OWLClassM.getExplicitDatatypeField());
-        when(explicitDatatypeAtt.getName()).thenReturn(OWLClassM.getExplicitDatatypeField().getName());
-        when(explicitDatatypeAtt.getJavaType()).thenReturn(OWLClassM.getExplicitDatatypeField().getType());
-        when(explicitDatatypeAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_explicitDatatype));
-        when(explicitDatatypeAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(explicitDatatypeAtt.isCollection()).thenReturn(false);
-        when(explicitDatatypeAtt.getDeclaringType()).thenReturn(etMock);
-        when(explicitDatatypeAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(explicitDatatypeAtt.getConverter()).thenReturn(new ToLexicalFormConverter());
-        when(explicitDatatypeAtt.isSimpleLiteral()).thenReturn(false);
-        when(explicitDatatypeAtt.getDatatype()).thenReturn(OWLClassM.getExplicitDatatypeField()
-                                                                    .getAnnotation(OWLDataProperty.class).datatype());
-        when(etMock.getFieldSpecification(OWLClassM.getExplicitDatatypeField().getName())).thenReturn(
-                explicitDatatypeAtt);
-        when(etMock.getAttribute(OWLClassM.getExplicitDatatypeField().getName())).thenReturn(explicitDatatypeAtt);
-
-        when(mWithConverterAtt.getJavaField()).thenReturn(OWLClassM.getWithConverterField());
-        when(mWithConverterAtt.getName()).thenReturn(OWLClassM.getWithConverterField().getName());
-        when(mWithConverterAtt.getJavaType()).thenReturn(OWLClassM.getWithConverterField().getType());
-        when(mWithConverterAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_withConverter));
-        when(mWithConverterAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(mWithConverterAtt.isCollection()).thenReturn(false);
-        when(mWithConverterAtt.getDeclaringType()).thenReturn(etMock);
-        when(mWithConverterAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(mWithConverterAtt.getConverter()).thenReturn(
-                new CustomConverterWrapper(new ZoneOffsetConverter(), String.class));
-        when(mWithConverterAtt.isSimpleLiteral()).thenReturn(false);
-        when(etMock.getFieldSpecification(OWLClassM.getWithConverterField().getName())).thenReturn(mWithConverterAtt);
-        when(etMock.getAttribute(OWLClassM.getWithConverterField().getName())).thenReturn(mWithConverterAtt);
-
-        when(mObjectOneOfEnumAttribute.getJavaField()).thenReturn(OWLClassM.getObjectOneOfEnumAttributeField());
-        when(mObjectOneOfEnumAttribute.getName()).thenReturn(OWLClassM.getObjectOneOfEnumAttributeField().getName());
-        when(mObjectOneOfEnumAttribute.getJavaType()).thenReturn(OneOfEnum.class);
-        when(mObjectOneOfEnumAttribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_objectOneOfEnumAttribute));
-        when(mObjectOneOfEnumAttribute.getPersistentAttributeType()).thenReturn(
-                Attribute.PersistentAttributeType.OBJECT);
-        when(mObjectOneOfEnumAttribute.isCollection()).thenReturn(false);
-        when(mObjectOneOfEnumAttribute.getDeclaringType()).thenReturn(etMock);
-        when(mObjectOneOfEnumAttribute.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(mObjectOneOfEnumAttribute.getConverter()).thenReturn(new ObjectOneOfEnumConverter(OneOfEnum.class));
-        when(mObjectOneOfEnumAttribute.hasLanguage()).thenReturn(false);
-        when(etMock.getFieldSpecification(OWLClassM.getObjectOneOfEnumAttributeField().getName())).thenReturn(
-                mObjectOneOfEnumAttribute);
-        when(etMock.getAttribute(OWLClassM.getObjectOneOfEnumAttributeField().getName())).thenReturn(
-                mObjectOneOfEnumAttribute);
-
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        initAttribute(etMock, booleanAtt, new AttributeInfo(OWLClassM.getBooleanAttributeField(), Attribute.PersistentAttributeType.DATA));
+        initAttribute(etMock, intAtt, new AttributeInfo(OWLClassM.getIntAttributeField(), Attribute.PersistentAttributeType.DATA));
+        initAttribute(etMock, longAtt, new AttributeInfo(OWLClassM.getLongAttributeField(), Attribute.PersistentAttributeType.DATA));
+        initAttribute(etMock, doubleAtt, new AttributeInfo(OWLClassM.getDoubleAttributeField(), Attribute.PersistentAttributeType.DATA));
+        initAttribute(etMock, dateAtt, new AttributeInfo(OWLClassM.getDateAttributeField(), Attribute.PersistentAttributeType.DATA));
+        initAttribute(etMock, characterAtt, new AttributeInfo(OWLClassM.getCharacterAttributeField(), Attribute.PersistentAttributeType.DATA).converter(new CharacterConverter())
+                                                                                                                                             .language(null));
+        initAttribute(etMock, enumAtt, new AttributeInfo(OWLClassM.getEnumAttributeField(), Attribute.PersistentAttributeType.DATA).converter(new StringEnumConverter<>(OWLClassM.Severity.class))
+                                                                                                                                   .language(Generators.LANG));
+        initAttribute(etMock, ordinalEnumAtt, new AttributeInfo(OWLClassM.getOrdinalEnumAttributeField(), Attribute.PersistentAttributeType.DATA).converter(new OrdinalEnumConverter(OWLClassM.Severity.class)));
+        initAttribute(etMock, lexicalFormAtt, new AttributeInfo(OWLClassM.getLexicalFormField(), Attribute.PersistentAttributeType.DATA).converter(new ToLexicalFormConverter()));
+        initAttribute(etMock, simpleLiteralAtt, new AttributeInfo(OWLClassM.getSimpleLiteralField(), Attribute.PersistentAttributeType.DATA).converter(new ToLexicalFormConverter())
+                                                                                                                                            .language(null));
+        initAttribute(etMock, explicitDatatypeAtt, new AttributeInfo(OWLClassM.getExplicitDatatypeField(), Attribute.PersistentAttributeType.DATA).converter(new ToLexicalFormConverter()));
+        initAttribute(etMock, mWithConverterAtt, new AttributeInfo(OWLClassM.getWithConverterField(), Attribute.PersistentAttributeType.DATA).converter(
+                new CustomConverterWrapper(new ZoneOffsetConverter(), String.class)));
+        initAttribute(etMock, mObjectOneOfEnumAttribute, new AttributeInfo(OWLClassM.getObjectOneOfEnumAttributeField(), Attribute.PersistentAttributeType.OBJECT).converter(new ObjectOneOfEnumConverter(OneOfEnum.class)));
+        initAttribute(etMock, intSetAtt, new AttributeInfo(OWLClassM.getIntegerSetField(), Attribute.PersistentAttributeType.DATA).collectionType(CollectionType.SET)
+                                                                                                                                  .elementType(Integer.class)
+                                                                                                                                  .valueType(BasicTypeImpl.get(Integer.class))
+                                                                                                                                  .converter(new ToIntegerConverter()));
     }
 
     public static void initOWLClassNMock(IdentifiableEntityType<OWLClassN> et, SingularAttributeImpl annotationAtt,
@@ -960,200 +554,54 @@ public class MetamodelFactory {
                                          AbstractPluralAttribute pluralAnnotationAtt,
                                          PropertiesSpecification props, Identifier idN)
             throws Exception {
-        when(et.getJavaType()).thenReturn(OWLClassN.class);
-        when(et.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassN.class));
-        when(et.getName()).thenReturn(OWLClassN.class.getSimpleName());
-        when(et.getIRI()).thenReturn(IRI.create(OWLClassN.getClassIri()));
-        when(et.getIdentifier()).thenReturn(idN);
-        when(idN.getJavaField()).thenReturn(OWLClassN.getUriField());
-        when(et.getFieldSpecifications()).thenReturn(new HashSet<>(
-                Arrays.<FieldSpecification<? super OWLClassN, ?>>asList(annotationAtt, annotationUriAtt, stringAtt,
-                        pluralAnnotationAtt, props, idN)));
-        when(et.getAttributes()).thenReturn(new HashSet<>(
-                Arrays.<Attribute<? super OWLClassN, ?>>asList(annotationAtt, annotationUriAtt, stringAtt,
-                        pluralAnnotationAtt)));
+        initEntityType(et, OWLClassN.class, EntityLifecycleListenerManager.empty());
+        initIdentifier(et, idN, OWLClassN.getUriField(), false);
+        when(et.getFieldSpecifications()).thenReturn(Set.of(annotationAtt, annotationUriAtt, stringAtt, pluralAnnotationAtt, props, idN));
+        when(et.getAttributes()).thenReturn(Set.of(annotationAtt, annotationUriAtt, stringAtt, pluralAnnotationAtt));
 
-        when(annotationAtt.getJavaField()).thenReturn(OWLClassN.getAnnotationPropertyField());
-        when(annotationAtt.getJavaType()).thenReturn(OWLClassN.getAnnotationPropertyField().getType());
-        when(et.getAttribute(OWLClassN.getAnnotationPropertyField().getName())).thenReturn(annotationAtt);
-        when(annotationAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
-        when(annotationAtt.isCollection()).thenReturn(false);
-        when(annotationAtt.getBindableJavaType()).thenReturn(String.class);
-        when(annotationAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassN.getAnnotationPropertyField().getAnnotation(OWLAnnotationProperty.class).iri()));
-        when(annotationAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(annotationAtt.getDeclaringType()).thenReturn(et);
-        when(annotationAtt.hasLanguage()).thenReturn(true);
-        when(annotationAtt.getLanguage()).thenReturn(Generators.LANG);
+        initAttribute(et, annotationAtt, new AttributeInfo(OWLClassN.getAnnotationPropertyField(), Attribute.PersistentAttributeType.ANNOTATION));
+        initAttribute(et, annotationUriAtt, new AttributeInfo(OWLClassN.getAnnotationUriField(), Attribute.PersistentAttributeType.ANNOTATION));
+        initAttribute(et, stringAtt, new AttributeInfo(OWLClassN.getStringAttributeField(), Attribute.PersistentAttributeType.DATA));
+        initAttribute(et, pluralAnnotationAtt,
+                new AttributeInfo(OWLClassN.getPluralAnnotationField(), Attribute.PersistentAttributeType.ANNOTATION).elementType(String.class)
+                                                                                                                     .collectionType(CollectionType.SET)
+                                                                                                                     .valueType(BasicTypeImpl.get(String.class)));
 
-        when(annotationUriAtt.getJavaField()).thenReturn(OWLClassN.getAnnotationUriField());
-        when(annotationUriAtt.getJavaType()).thenReturn(OWLClassN.getAnnotationUriField().getType());
-        when(et.getAttribute(OWLClassN.getAnnotationUriField().getName())).thenReturn(annotationUriAtt);
-        when(annotationUriAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
-        when(annotationUriAtt.isCollection()).thenReturn(false);
-        when(annotationUriAtt.getBindableJavaType()).thenReturn(String.class);
-        when(annotationUriAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassN.getAnnotationUriField().getAnnotation(OWLAnnotationProperty.class).iri()));
-        when(annotationUriAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(annotationUriAtt.getDeclaringType()).thenReturn(et);
-        when(annotationUriAtt.hasLanguage()).thenReturn(true);
-        when(annotationUriAtt.getLanguage()).thenReturn(Generators.LANG);
-
-        when(stringAtt.getJavaField()).thenReturn(OWLClassN.getStringAttributeField());
-        when(stringAtt.getJavaType()).thenReturn(OWLClassN.getStringAttributeField().getType());
-        when(et.getAttribute(OWLClassN.getStringAttributeField().getName())).thenReturn(stringAtt);
-        when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(stringAtt.isCollection()).thenReturn(false);
-        when(stringAtt.getBindableJavaType()).thenReturn(String.class);
-        when(stringAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassN.getStringAttributeField().getAnnotation(OWLDataProperty.class).iri()));
-        when(stringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(stringAtt.getDeclaringType()).thenReturn(et);
-        when(stringAtt.hasLanguage()).thenReturn(true);
-        when(stringAtt.getLanguage()).thenReturn(Generators.LANG);
-
-        when(pluralAnnotationAtt.getJavaField()).thenReturn(OWLClassN.getPluralAnnotationField());
-        when(pluralAnnotationAtt.getJavaType()).thenReturn(OWLClassN.getPluralAnnotationField().getType());
-        when(et.getAttribute(OWLClassN.getPluralAnnotationField().getName())).thenReturn(pluralAnnotationAtt);
-        when(pluralAnnotationAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
-        when(pluralAnnotationAtt.isCollection()).thenReturn(true);
-        when(pluralAnnotationAtt.getBindableJavaType()).thenReturn(String.class);
-        when(pluralAnnotationAtt.getCollectionType()).thenReturn(CollectionType.SET);
-        final Type elemType = mock(Type.class);
-        when(elemType.getJavaType()).thenReturn(String.class);
-        when(pluralAnnotationAtt.getElementType()).thenReturn(elemType);
-        when(pluralAnnotationAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassN.getPluralAnnotationField().getAnnotation(OWLAnnotationProperty.class).iri()));
-        when(pluralAnnotationAtt.getDeclaringType()).thenReturn(et);
-        when(pluralAnnotationAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(pluralAnnotationAtt.hasLanguage()).thenReturn(true);
-        when(pluralAnnotationAtt.getLanguage()).thenReturn(Generators.LANG);
-
-        when(props.getJavaField()).thenReturn(OWLClassN.getPropertiesField());
-        when(props.getName()).thenReturn(OWLClassN.getPropertiesField().getName());
-        when(props.getDeclaringType()).thenReturn(et);
-        when(props.getPropertyIdentifierType()).thenReturn(SingularAttribute.class);
-        when(props.getPropertyValueType()).thenReturn(String.class);
-        when(et.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        initProperties(et, props, new AttributeInfo(OWLClassN.getPropertiesField(), null), SingularAttribute.class, String.class);
     }
 
     public static void initOWLClassOMock(IdentifiableEntityType<OWLClassO> et, SingularAttributeImpl stringAtt,
                                          Identifier idO)
             throws Exception {
-        when(et.getJavaType()).thenReturn(OWLClassO.class);
-        when(et.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassO.class));
-        when(et.getIdentifier()).thenReturn(idO);
-        when(et.getName()).thenReturn(OWLClassO.class.getSimpleName());
-        when(et.getIRI()).thenReturn(IRI.create(OWLClassO.getClassIri()));
-        when(idO.getJavaField()).thenReturn(OWLClassO.getUriField());
+        initEntityType(et, OWLClassO.class, EntityLifecycleListenerManager.empty());
+        initIdentifier(et, idO, OWLClassO.getUriField(), false);
         when(et.getAttributes()).thenReturn(Collections.singleton(stringAtt));
-        when(et.getFieldSpecifications())
-                .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassO, ?>>asList(stringAtt, idO)));
-        when(et.getFieldSpecification(stringAtt.getName())).thenReturn(stringAtt);
-        when(stringAtt.getJavaField()).thenReturn(OWLClassO.getStringAttributeField());
-        when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(stringAtt.isCollection()).thenReturn(false);
-        when(stringAtt.getBindableJavaType()).thenReturn(String.class);
-        when(stringAtt.getIRI())
-                .thenReturn(IRI.create(OWLClassO.getStringAttributeField().getAnnotation(OWLDataProperty.class).iri()));
-        when(stringAtt.getDeclaringType()).thenReturn(et);
-        when(stringAtt.hasLanguage()).thenReturn(true);
-        when(stringAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(et.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        when(et.getFieldSpecifications()).thenReturn(Set.of(stringAtt, idO));
+        initAttribute(et, stringAtt, new AttributeInfo(OWLClassO.getStringAttributeField(), Attribute.PersistentAttributeType.DATA));
         when(et.getFieldSpecification(anyString())).thenThrow(IllegalArgumentException.class);
     }
 
     public static void initOWLClassPMock(IdentifiableEntityType<OWLClassP> et, TypesSpecification types,
                                          PropertiesSpecification props,
-                                         SingularAttribute uriAtt, PluralAttribute urlsAtt,
-                                         ListAttribute simpleListAtt, ListAttribute refListAtt, Identifier idP) throws
+                                         SingularAttributeImpl uriAtt, AbstractPluralAttribute urlsAtt,
+                                         ListAttributeImpl simpleListAtt, ListAttributeImpl refListAtt,
+                                         Identifier idP) throws
             Exception {
-        when(et.getJavaType()).thenReturn(OWLClassP.class);
-        when(et.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassP.class));
-        when(et.getIdentifier()).thenReturn(idP);
-        when(et.getName()).thenReturn(OWLClassP.class.getSimpleName());
-        when(et.getIRI()).thenReturn(IRI.create(OWLClassP.getClassIri()));
-        when(idP.getJavaField()).thenReturn(OWLClassP.getUriField());
-        when(et.getFieldSpecifications())
-                .thenReturn(
-                        new HashSet<>(
-                                Arrays.<FieldSpecification<? super OWLClassP, ?>>asList(uriAtt, urlsAtt, simpleListAtt,
-                                        refListAtt, props, types,
-                                        idP)));
-        when(et.getAttributes())
-                .thenReturn(new HashSet<>(
-                        Arrays.<Attribute<? super OWLClassP, ?>>asList(uriAtt, urlsAtt, simpleListAtt, refListAtt)));
-        when(et.getFieldSpecification(props.getName())).thenReturn(props);
-        when(et.getProperties()).thenReturn(props);
-        when(props.getJavaField()).thenReturn(OWLClassP.getPropertiesField());
-        when(props.getName()).thenReturn(OWLClassP.getPropertiesField().getName());
-        when(props.getDeclaringType()).thenReturn(et);
-        when(props.getPropertyIdentifierType()).thenReturn(URI.class);
-        when(props.getPropertyValueType()).thenReturn(Object.class);
-        when(et.getFieldSpecification(types.getName())).thenReturn(types);
-        when(et.getTypes()).thenReturn(types);
-        when(types.getJavaField()).thenReturn(OWLClassP.getTypesField());
-        when(types.getName()).thenReturn(OWLClassP.getTypesField().getName());
-        when(types.getDeclaringType()).thenReturn(et);
-        when(types.getJavaType()).thenReturn(Set.class);
-        when(types.getElementType()).thenReturn(URI.class);
-        when(et.getFieldSpecification(uriAtt.getName())).thenReturn(uriAtt);
-        when(uriAtt.getName()).thenReturn(OWLClassP.getIndividualUriField().getName());
-        when(uriAtt.getJavaField()).thenReturn(OWLClassP.getIndividualUriField());
-        when(uriAtt.getDeclaringType()).thenReturn(et);
-        when(uriAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(uriAtt.isCollection()).thenReturn(false);
-        when(uriAtt.getIRI())
-                .thenReturn(IRI.create(OWLClassP.getIndividualUriField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(uriAtt.getBindableJavaType()).thenReturn(URI.class);
-        when(uriAtt.getJavaType()).thenReturn(OWLClassP.getIndividualUriField().getType());
-        when(et.getFieldSpecification(urlsAtt.getName())).thenReturn(urlsAtt);
-        when(urlsAtt.getName()).thenReturn(OWLClassP.getIndividualUrlsField().getName());
-        when(urlsAtt.getJavaField()).thenReturn(OWLClassP.getIndividualUrlsField());
-        when(urlsAtt.isCollection()).thenReturn(true);
-        when(urlsAtt.getDeclaringType()).thenReturn(et);
-        when(urlsAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(urlsAtt.getCollectionType()).thenReturn(CollectionType.SET);
-        when(urlsAtt.getBindableJavaType()).thenReturn(URL.class);
-        when(urlsAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassP.getIndividualUrlsField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(simpleListAtt.getName()).thenReturn(OWLClassP.getSimpleListField().getName());
-        when(simpleListAtt.getJavaField()).thenReturn(OWLClassP.getSimpleListField());
-        when(et.getFieldSpecification(OWLClassP.getSimpleListField().getName())).thenReturn(simpleListAtt);
-        when(simpleListAtt.isCollection()).thenReturn(true);
-        when(simpleListAtt.isAssociation()).thenReturn(true);
-        when(simpleListAtt.getDeclaringType()).thenReturn(et);
-        when(simpleListAtt.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(simpleListAtt.getBindableJavaType()).thenReturn(URI.class);
-        when(simpleListAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(simpleListAtt.getSequenceType()).thenReturn(SequenceType.simple);
-        final Field simpleListField = OWLClassP.getSimpleListField();
-        when(simpleListAtt.getIRI())
-                .thenReturn(IRI.create(simpleListField.getAnnotation(OWLObjectProperty.class).iri()));
-        when(simpleListAtt.getListClassIRI())
-                .thenReturn(IRI.create(simpleListField.getAnnotation(Sequence.class).listClassIRI()));
-        when(simpleListAtt.getHasNextPropertyIRI())
-                .thenReturn(IRI.create(simpleListField.getAnnotation(Sequence.class).hasNextPropertyIRI()));
-
-        when(refListAtt.getName()).thenReturn(OWLClassP.getReferencedListField().getName());
-        when(refListAtt.getJavaField()).thenReturn(OWLClassP.getReferencedListField());
-        when(et.getFieldSpecification(OWLClassP.getReferencedListField().getName())).thenReturn(refListAtt);
-        when(refListAtt.isCollection()).thenReturn(true);
-        when(refListAtt.isAssociation()).thenReturn(true);
-        when(refListAtt.getDeclaringType()).thenReturn(et);
-        when(refListAtt.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(refListAtt.getBindableJavaType()).thenReturn(URI.class);
-        when(refListAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(refListAtt.getSequenceType()).thenReturn(SequenceType.referenced);
-        final Field refListField = OWLClassP.getReferencedListField();
-        when(refListAtt.getIRI()).thenReturn(IRI.create(refListField.getAnnotation(OWLObjectProperty.class).iri()));
-        when(refListAtt.getListClassIRI())
-                .thenReturn(IRI.create(refListField.getAnnotation(Sequence.class).listClassIRI()));
-        when(refListAtt.getHasNextPropertyIRI())
-                .thenReturn(IRI.create(refListField.getAnnotation(Sequence.class).hasNextPropertyIRI()));
-        when(refListAtt.getHasContentsPropertyIRI())
-                .thenReturn(IRI.create(refListField.getAnnotation(Sequence.class).hasContentsPropertyIRI()));
-        when(et.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        initEntityType(et, OWLClassP.class, EntityLifecycleListenerManager.empty());
+        initIdentifier(et, idP, OWLClassP.getUriField(), false);
+        when(et.getFieldSpecifications()).thenReturn(Set.of(uriAtt, urlsAtt, simpleListAtt, refListAtt, props, types, idP));
+        when(et.getAttributes()).thenReturn(Set.of(uriAtt, urlsAtt, simpleListAtt, refListAtt));
+        initProperties(et, props, new AttributeInfo(OWLClassP.getPropertiesField(), null), URI.class, Object.class);
+        initTypesAttribute(et, types, new AttributeInfo(OWLClassP.getTypesField(), null).elementType(URI.class));
+        initAttribute(et, uriAtt, new AttributeInfo(OWLClassP.getIndividualUriField(), Attribute.PersistentAttributeType.OBJECT));
+        initAttribute(et, urlsAtt, new AttributeInfo(OWLClassP.getIndividualUrlsField(), Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.SET)
+                                                                                                                                  .elementType(URL.class));
+        initListAttribute(et, simpleListAtt, new AttributeInfo(OWLClassP.getSimpleListField(), Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.LIST)
+                                                                                                                                        .elementType(URI.class)
+                                                                                                                                        .valueType(BasicTypeImpl.get(URI.class)));
+        initListAttribute(et, refListAtt, new AttributeInfo(OWLClassP.getReferencedListField(), Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.LIST)
+                                                                                                                                         .elementType(URI.class)
+                                                                                                                                         .valueType(BasicTypeImpl.get(URI.class)));
     }
 
     public static void initOwlClassQMock(IdentifiableEntityType<OWLClassQ> et,
@@ -1162,85 +610,18 @@ public class MetamodelFactory {
                                          SingularAttributeImpl qLabelAtt, SingularAttributeImpl qOwlClassAAtt,
                                          Identifier idQ)
             throws Exception {
-        when(et.getIdentifier()).thenReturn(idQ);
-        when(et.getJavaType()).thenReturn(OWLClassQ.class);
-        when(et.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassQ.class));
-        when(et.getName()).thenReturn(OWLClassQ.class.getSimpleName());
-        when(idQ.getJavaField()).thenReturn(OWLClassQ.getUriField());
-        when(idQ.isGenerated()).thenReturn(true);
-        when(idQ.getDeclaringType()).thenReturn(superclassType);
-        when(et.getIRI()).thenReturn(IRI.create(OWLClassQ.getClassIri()));
+        initEntityType(et, OWLClassQ.class, EntityLifecycleListenerManager.empty());
+        initIdentifier(et, idQ, OWLClassQ.getUriField(), false);
         when(et.getSupertypes()).thenReturn(Collections.singleton(superclassType));
         when(superclassType.getSubtypes()).thenReturn(Collections.singleton(et));
         when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
-        when(et.getFieldSpecifications())
-                .thenReturn(
-                        new HashSet<>(
-                                Arrays.<FieldSpecification<? super OWLClassQ, ?>>asList(qStringAtt, qParentStringAtt,
-                                        qLabelAtt, qOwlClassAAtt,
-                                        idQ)));
-        when(et.getAttributes())
-                .thenReturn(new HashSet<>(
-                        Arrays.<Attribute<? super OWLClassQ, ?>>asList(qStringAtt, qParentStringAtt, qLabelAtt,
-                                qOwlClassAAtt)));
+        when(et.getFieldSpecifications()).thenReturn(Set.of(qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ));
+        when(et.getAttributes()).thenReturn(Set.of(qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt));
 
-        when(qStringAtt.getJavaField()).thenReturn(OWLClassQ.getStringAttributeField());
-        when(qStringAtt.getJavaType()).thenReturn(OWLClassQ.getStringAttributeField().getType());
-        when(qStringAtt.getName()).thenReturn(OWLClassQ.getStringAttributeField().getName());
-        when(et.getAttribute(OWLClassQ.getStringAttributeField().getName())).thenReturn(qStringAtt);
-        when(qStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(qStringAtt.isCollection()).thenReturn(false);
-        when(qStringAtt.getBindableJavaType()).thenReturn(String.class);
-        when(qStringAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassQ.getStringAttributeField().getAnnotation(OWLDataProperty.class).iri()));
-        when(qStringAtt.getDeclaringType()).thenReturn(et);
-        when(qStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(qStringAtt.hasLanguage()).thenReturn(true);
-        when(qStringAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(et.getFieldSpecification(qStringAtt.getName())).thenReturn(qStringAtt);
-
-        when(qParentStringAtt.getJavaField()).thenReturn(OWLClassQ.getParentStringField());
-        when(qParentStringAtt.getJavaType()).thenReturn(OWLClassQ.getParentStringField().getType());
-        when(qParentStringAtt.getName()).thenReturn(OWLClassQ.getParentStringField().getName());
-        when(et.getAttribute(OWLClassQ.getParentStringField().getName())).thenReturn(qParentStringAtt);
-        when(qParentStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(qParentStringAtt.isCollection()).thenReturn(false);
-        when(qParentStringAtt.getBindableJavaType()).thenReturn(String.class);
-        when(qParentStringAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassQ.getParentStringField().getAnnotation(OWLDataProperty.class).iri()));
-        when(qParentStringAtt.getDeclaringType()).thenReturn(superclassType);
-        when(qParentStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(qParentStringAtt.hasLanguage()).thenReturn(true);
-        when(qParentStringAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(et.getFieldSpecification(qParentStringAtt.getName())).thenReturn(qParentStringAtt);
-
-        when(qLabelAtt.getJavaField()).thenReturn(OWLClassQ.getLabelField());
-        when(qLabelAtt.getJavaType()).thenReturn(OWLClassQ.getLabelField().getType());
-        when(qLabelAtt.getName()).thenReturn(OWLClassQ.getLabelField().getName());
-        when(et.getAttribute(OWLClassQ.getLabelField().getName())).thenReturn(qLabelAtt);
-        when(qLabelAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
-        when(qLabelAtt.isCollection()).thenReturn(false);
-        when(qLabelAtt.getBindableJavaType()).thenReturn(String.class);
-        when(qLabelAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassQ.getLabelField().getAnnotation(OWLAnnotationProperty.class).iri()));
-        when(qLabelAtt.getDeclaringType()).thenReturn(superclassType);
-        when(qLabelAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(qLabelAtt.hasLanguage()).thenReturn(true);
-        when(qLabelAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(et.getFieldSpecification(qLabelAtt.getName())).thenReturn(qLabelAtt);
-
-        when(qOwlClassAAtt.getIRI())
-                .thenReturn(IRI.create(OWLClassQ.getOwlClassAField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(qOwlClassAAtt.getJavaType()).thenReturn(OWLClassA.class);
-        when(qOwlClassAAtt.getJavaField()).thenReturn(OWLClassQ.getOwlClassAField());
-        when(qOwlClassAAtt.getName()).thenReturn(OWLClassQ.getOwlClassAField().getName());
-        when(qOwlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[]{});
-        when(qOwlClassAAtt.getFetchType()).thenReturn(FetchType.EAGER);
-        when(qOwlClassAAtt.getDeclaringType()).thenReturn(superclassType);
-        when(qOwlClassAAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(qOwlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(et.getFieldSpecification(qOwlClassAAtt.getName())).thenReturn(qOwlClassAAtt);
-        when(et.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        initAttribute(et, qStringAtt, new AttributeInfo(OWLClassQ.getStringAttributeField(), Attribute.PersistentAttributeType.DATA));
+        initAttribute(et, qParentStringAtt, new AttributeInfo(OWLClassQ.getParentStringField(), Attribute.PersistentAttributeType.DATA));
+        initAttribute(et, qLabelAtt, new AttributeInfo(OWLClassQ.getLabelField(), Attribute.PersistentAttributeType.ANNOTATION));
+        initAttribute(et, qOwlClassAAtt, new AttributeInfo(OWLClassQ.getOwlClassAField(), Attribute.PersistentAttributeType.OBJECT));
         when(et.getDeclaredAttribute(anyString())).thenAnswer(arg -> {
             if (Objects.equals(arg.getArgument(0), qStringAtt.getName())) {
                 return qStringAtt;
@@ -1259,106 +640,26 @@ public class MetamodelFactory {
         when(superclassType.getDeclaredAttribute(qLabelAtt.getName())).thenReturn(qLabelAtt);
         when(superclassType.getDeclaredAttribute(qOwlClassAAtt.getName())).thenReturn(qOwlClassAAtt);
         when(superclassType.getIdentifier()).thenReturn(idQ);
-        doReturn(new HashSet<>(Arrays.asList(qLabelAtt, qParentStringAtt, qOwlClassAAtt))).when(superclassType)
-                                                                                          .getDeclaredAttributes();
+        doReturn(Set.of(qLabelAtt, qParentStringAtt, qOwlClassAAtt)).when(superclassType).getDeclaredAttributes();
     }
 
     public static void initOwlClassSMock(IdentifiableEntityType<OWLClassS> et, SingularAttributeImpl sNameAtt,
                                          TypesSpecification sTypes, Identifier idS) throws Exception {
-        when(et.getName()).thenReturn(OWLClassS.class.getSimpleName());
-        when(et.getIdentifier()).thenReturn(idS);
-        when(idS.isGenerated()).thenReturn(true);
-        when(et.getJavaType()).thenReturn(OWLClassS.class);
-        when(et.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassS.class));
-        when(idS.getJavaField()).thenReturn(OWLClassS.getUriField());
-        when(idS.getDeclaringType()).thenReturn(et);
-        when(et.getIRI()).thenReturn(IRI.create(OWLClassS.getClassIri()));
-        when(et.getFieldSpecifications()).thenReturn(new HashSet(Arrays.asList(sNameAtt, sTypes, idS)));
-        when(et.getAttributes()).thenReturn(Collections.singleton(sNameAtt));
-        when(et.getTypes()).thenReturn(sTypes);
-        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
-
-        when(sNameAtt.getJavaField()).thenReturn(OWLClassS.getNameField());
-        when(sNameAtt.getJavaType()).thenReturn(OWLClassS.getNameField().getType());
-        when(sNameAtt.getName()).thenReturn(OWLClassS.getNameField().getName());
-        when(et.getAttribute(OWLClassS.getNameField().getName())).thenReturn(sNameAtt);
-        when(sNameAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(sNameAtt.isCollection()).thenReturn(false);
-        when(sNameAtt.getBindableJavaType()).thenReturn(String.class);
-        when(sNameAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassS.getNameField().getAnnotation(OWLAnnotationProperty.class).iri()));
-        when(sNameAtt.getDeclaringType()).thenReturn(et);
-        when(sNameAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(sNameAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
-        when(sNameAtt.hasLanguage()).thenReturn(true);
-        when(sNameAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(sTypes.getJavaField()).thenReturn(OWLClassS.getTypesField());
-        when(sTypes.getName()).thenReturn(OWLClassS.getTypesField().getName());
-        when(sTypes.getDeclaringType()).thenReturn(et);
-        when(sTypes.getJavaType()).thenReturn(Set.class);
-        when(sTypes.getElementType()).thenReturn(String.class);
-        when(et.getFieldSpecification(sNameAtt.getName())).thenReturn(sNameAtt);
-        when(et.getFieldSpecification(sTypes.getName())).thenReturn(sTypes);
         final EntityLifecycleListenerManager listenerManager = new EntityLifecycleListenerManager();
         addLifecycleCallback(listenerManager, PRE_PERSIST, OWLClassS.getPrePersistHook());
         when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
+        initEntityType(et, OWLClassS.class, listenerManager);
+        when(et.getFieldSpecifications()).thenReturn(Set.of(sNameAtt, sTypes, idS));
+        when(et.getAttributes()).thenReturn(Collections.singleton(sNameAtt));
+        initIdentifier(et, idS, OWLClassS.getUriField(), true);
+
+        initAttribute(et, sNameAtt, new AttributeInfo(OWLClassS.getNameField(), Attribute.PersistentAttributeType.ANNOTATION));
+        initTypesAttribute(et, sTypes, new AttributeInfo(OWLClassS.getTypesField(), null).elementType(String.class));
     }
 
     static void initOwlClassRMock(IdentifiableEntityType<OWLClassR> et, SingularAttributeImpl rStringAtt,
                                   SingularAttributeImpl owlClassAAtt, IdentifiableEntityType<OWLClassS> parentEt)
             throws Exception {
-        final Identifier id = parentEt.getIdentifier();
-        when(et.getIdentifier()).thenReturn(id);
-        when(et.getJavaType()).thenReturn(OWLClassR.class);
-        when(et.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassR.class));
-        when(et.getIRI()).thenReturn(IRI.create(OWLClassR.getClassIri()));
-        when(et.getName()).thenReturn(OWLClassR.class.getSimpleName());
-        final Set attributes = new HashSet<>(parentEt.getAttributes());
-        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
-        attributes.add(rStringAtt);
-        attributes.add(owlClassAAtt);
-        final Set fieldSpecs = new HashSet(parentEt.getFieldSpecifications());
-        fieldSpecs.add(rStringAtt);
-        fieldSpecs.add(owlClassAAtt);
-        when(et.getFieldSpecifications()).thenReturn(fieldSpecs);
-        when(et.getAttributes()).thenReturn(attributes);
-        when(et.getSupertypes()).thenReturn(Collections.singleton(parentEt));
-        when(parentEt.getSubtypes()).thenReturn(Collections.singleton(et));
-        when(parentEt.hasSubtypes()).thenReturn(true);
-
-        when(rStringAtt.getJavaField()).thenReturn(OWLClassR.getStringAttField());
-        when(rStringAtt.getJavaType()).thenReturn(OWLClassR.getStringAttField().getType());
-        when(rStringAtt.getName()).thenReturn(OWLClassR.getStringAttField().getName());
-        when(et.getAttribute(OWLClassR.getStringAttField().getName())).thenReturn(rStringAtt);
-        when(rStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(rStringAtt.isCollection()).thenReturn(false);
-        when(rStringAtt.getBindableJavaType()).thenReturn(String.class);
-        when(rStringAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassR.getStringAttField().getAnnotation(OWLDataProperty.class).iri()));
-        when(rStringAtt.getDeclaringType()).thenReturn(et);
-        when(rStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(rStringAtt.hasLanguage()).thenReturn(true);
-        when(rStringAtt.getLanguage()).thenReturn(Generators.LANG);
-        when(et.getFieldSpecification(rStringAtt.getName())).thenReturn(rStringAtt);
-
-        when(owlClassAAtt.getIRI())
-                .thenReturn(IRI.create(OWLClassR.getOwlClassAField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(owlClassAAtt.getJavaType()).thenReturn(OWLClassA.class);
-        when(owlClassAAtt.getJavaField()).thenReturn(OWLClassR.getOwlClassAField());
-        when(owlClassAAtt.getName()).thenReturn(OWLClassR.getOwlClassAField().getName());
-        when(owlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(owlClassAAtt.getFetchType()).thenReturn(FetchType.EAGER);
-        when(owlClassAAtt.getDeclaringType()).thenReturn(et);
-        when(owlClassAAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(owlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(owlClassAAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
-        when(et.getFieldSpecification(owlClassAAtt.getName())).thenReturn(owlClassAAtt);
-        for (Attribute att : parentEt.getAttributes()) {
-            when(et.getAttribute(att.getName())).thenReturn((AbstractAttribute) att);
-        }
-        for (FieldSpecification fs : parentEt.getFieldSpecifications()) {
-            when(et.getFieldSpecification(fs.getName())).thenReturn(fs);
-        }
         final EntityLifecycleListenerManager listenerManager = new EntityLifecycleListenerManager();
         final Method addParent = EntityLifecycleListenerManager.class
                 .getDeclaredMethod("addParent", EntityLifecycleListenerManager.class);
@@ -1372,6 +673,31 @@ public class MetamodelFactory {
         addLifecycleCallback(listenerManager, POST_REMOVE, OWLClassR.getPostRemoveHook());
         addLifecycleCallback(listenerManager, POST_LOAD, OWLClassR.getPostLoadHook());
         when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
+
+        initEntityType(et, OWLClassR.class, listenerManager);
+        final Identifier id = parentEt.getIdentifier();
+        when(et.getIdentifier()).thenReturn(id);
+        final Set attributes = new HashSet<>(parentEt.getAttributes());
+        attributes.add(rStringAtt);
+        attributes.add(owlClassAAtt);
+        final Set fieldSpecs = new HashSet(parentEt.getFieldSpecifications());
+        fieldSpecs.add(rStringAtt);
+        fieldSpecs.add(owlClassAAtt);
+        when(et.getFieldSpecifications()).thenReturn(fieldSpecs);
+        when(et.getAttributes()).thenReturn(attributes);
+        when(et.getSupertypes()).thenReturn(Collections.singleton(parentEt));
+        when(parentEt.getSubtypes()).thenReturn(Collections.singleton(et));
+        when(parentEt.hasSubtypes()).thenReturn(true);
+
+        initAttribute(et, rStringAtt, new AttributeInfo(OWLClassR.getStringAttField(), Attribute.PersistentAttributeType.DATA));
+        initAttribute(et, owlClassAAtt, new AttributeInfo(OWLClassR.getOwlClassAField(), Attribute.PersistentAttributeType.OBJECT));
+
+        for (Attribute att : parentEt.getAttributes()) {
+            when(et.getAttribute(att.getName())).thenReturn((AbstractAttribute) att);
+        }
+        for (FieldSpecification fs : parentEt.getFieldSpecifications()) {
+            when(et.getFieldSpecification(fs.getName())).thenReturn(fs);
+        }
     }
 
     static void initOwlClassSListeners(IdentifiableEntityType<OWLClassS> etS,
@@ -1421,203 +747,69 @@ public class MetamodelFactory {
 
     static void initOwlClassTMock(IdentifiableEntityType<OWLClassT> et, SingularAttributeImpl localDateAtt,
                                   SingularAttributeImpl localDateTimeAtt, SingularAttributeImpl owlClassSAtt,
+                                  IdentifiableEntityType<OWLClassS> etS,
                                   Identifier id) throws Exception {
-        when(et.getIdentifier()).thenReturn(id);
-        when(id.isGenerated()).thenReturn(true);
-        when(et.getJavaType()).thenReturn(OWLClassT.class);
-        when(et.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassT.class));
-        when(id.getJavaField()).thenReturn(OWLClassT.getUriField());
-        when(id.getDeclaringType()).thenReturn(et);
-        when(et.getIRI()).thenReturn(IRI.create(OWLClassT.getClassIri()));
-        when(et.getName()).thenReturn(OWLClassT.class.getSimpleName());
-        when(et.getFieldSpecifications()).thenReturn(new HashSet(Arrays.asList(localDateAtt, localDateTimeAtt, id)));
-        when(et.getAttributes()).thenReturn(new HashSet(Arrays.asList(localDateAtt, localDateTimeAtt)));
-        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
+        initEntityType(et, OWLClassT.class, etS.getLifecycleListenerManager());
+        initIdentifier(et, id, OWLClassT.getUriField(), true);
+        when(et.getFieldSpecifications()).thenReturn(Set.of(localDateAtt, localDateTimeAtt, id));
+        when(et.getAttributes()).thenReturn(Set.of(localDateAtt, localDateTimeAtt));
 
-        when(localDateAtt.getJavaField()).thenReturn(OWLClassT.getLocalDateField());
-        when(localDateAtt.getJavaType()).thenReturn(OWLClassT.getLocalDateField().getType());
-        when(localDateAtt.getName()).thenReturn(OWLClassT.getLocalDateField().getName());
-        when(et.getAttribute(OWLClassT.getLocalDateField().getName())).thenReturn(localDateAtt);
-        when(localDateAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(localDateAtt.isCollection()).thenReturn(false);
-        when(localDateAtt.getBindableJavaType()).thenReturn(LocalDate.class);
-        when(localDateAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassT.getLocalDateField().getAnnotation(OWLDataProperty.class).iri()));
-        when(localDateAtt.getDeclaringType()).thenReturn(et);
-        when(localDateAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(localDateAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
-        when(localDateAtt.getConverter()).thenReturn(DefaultConverterWrapper.INSTANCE);
-
-        when(localDateTimeAtt.getJavaField()).thenReturn(OWLClassT.getLocalDateTimeField());
-        when(localDateTimeAtt.getJavaType()).thenReturn(OWLClassT.getLocalDateTimeField().getType());
-        when(localDateTimeAtt.getName()).thenReturn(OWLClassT.getLocalDateTimeField().getName());
-        when(et.getAttribute(OWLClassT.getLocalDateTimeField().getName())).thenReturn(localDateTimeAtt);
-        when(localDateTimeAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(localDateTimeAtt.isCollection()).thenReturn(false);
-        when(localDateTimeAtt.getBindableJavaType()).thenReturn(LocalDateTime.class);
-        when(localDateTimeAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassT.getLocalDateTimeField().getAnnotation(OWLDataProperty.class).iri()));
-        when(localDateTimeAtt.getDeclaringType()).thenReturn(et);
-        when(localDateTimeAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(localDateTimeAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
-        when(localDateTimeAtt.getConverter()).thenReturn(new LocalDateTimeConverter());
-
-        when(owlClassSAtt.getJavaField()).thenReturn(OWLClassT.getOwlClassSField());
-        when(owlClassSAtt.getJavaType()).thenReturn(OWLClassT.getOwlClassSField().getType());
-        when(owlClassSAtt.getName()).thenReturn(OWLClassT.getOwlClassSField().getName());
-        when(et.getAttribute(OWLClassT.getOwlClassSField().getName())).thenReturn(owlClassSAtt);
-        when(owlClassSAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(owlClassSAtt.isCollection()).thenReturn(false);
-        when(owlClassSAtt.getBindableJavaType()).thenReturn(OWLClassS.class);
-        when(owlClassSAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassT.getOwlClassSField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(owlClassSAtt.getDeclaringType()).thenReturn(et);
-        when(owlClassSAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(owlClassSAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+        initAttribute(et, localDateAtt, new AttributeInfo(OWLClassT.getLocalDateField(), Attribute.PersistentAttributeType.DATA)
+                .converter(DefaultConverterWrapper.INSTANCE));
+        initAttribute(et, localDateTimeAtt, new AttributeInfo(OWLClassT.getLocalDateTimeField(), Attribute.PersistentAttributeType.DATA)
+                .converter(new LocalDateTimeConverter()));
+        initAttribute(et, owlClassSAtt, new AttributeInfo(OWLClassT.getOwlClassSField(), Attribute.PersistentAttributeType.OBJECT)
+                .valueType(etS));
     }
 
     static void initOwlClassUMocks(IdentifiableEntityType<OWLClassU> et, SingularAttributeImpl singularStringAtt,
                                    AbstractPluralAttribute pluralStringAtt, SingularAttributeImpl modified,
                                    Identifier id) throws Exception {
-        when(et.getIdentifier()).thenReturn(id);
-        when(id.isGenerated()).thenReturn(true);
-        when(et.getJavaType()).thenReturn(OWLClassU.class);
-        when(et.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassU.class));
-        when(id.getJavaField()).thenReturn(OWLClassU.getIdField());
-        when(id.getDeclaringType()).thenReturn(et);
-        when(id.getName()).thenReturn(OWLClassU.getIdField().getName());
-        when(et.getIRI()).thenReturn(IRI.create(OWLClassU.getClassIri()));
-        when(et.getName()).thenReturn(OWLClassU.class.getSimpleName());
-        when(et.getFieldSpecifications())
-                .thenReturn(new HashSet(Arrays.asList(singularStringAtt, pluralStringAtt, modified, id)));
-        when(et.getAttributes()).thenReturn(new HashSet(Arrays.asList(singularStringAtt, pluralStringAtt, modified)));
-        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
-
-        when(singularStringAtt.getJavaField()).thenReturn(OWLClassU.getSingularStringAttField());
-        when(singularStringAtt.getJavaType()).thenReturn(OWLClassU.getSingularStringAttField().getType());
-        when(singularStringAtt.getName()).thenReturn(OWLClassU.getSingularStringAttField().getName());
-        when(et.getAttribute(OWLClassU.getSingularStringAttField().getName())).thenReturn(singularStringAtt);
-        when(et.getFieldSpecification(OWLClassU.getSingularStringAttField().getName())).thenReturn(singularStringAtt);
-        when(singularStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(singularStringAtt.isCollection()).thenReturn(false);
-        when(singularStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
-        when(singularStringAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassU.getSingularStringAttField().getAnnotation(OWLDataProperty.class).iri()));
-        when(singularStringAtt.getDeclaringType()).thenReturn(et);
-        when(singularStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(singularStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
-        when(singularStringAtt.hasLanguage()).thenReturn(false);
-        when(singularStringAtt.getLanguage()).thenReturn(null);
-
-        when(pluralStringAtt.getJavaField()).thenReturn(OWLClassU.getPluralStringAttField());
-        when(pluralStringAtt.getJavaType()).thenReturn(OWLClassU.getPluralStringAttField().getType());
-        when(pluralStringAtt.getName()).thenReturn(OWLClassU.getPluralStringAttField().getName());
-        when(et.getAttribute(OWLClassU.getPluralStringAttField().getName())).thenReturn(pluralStringAtt);
-        when(et.getFieldSpecification(OWLClassU.getPluralStringAttField().getName())).thenReturn(pluralStringAtt);
-        when(pluralStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(pluralStringAtt.isCollection()).thenReturn(true);
-        when(pluralStringAtt.getCollectionType()).thenReturn(CollectionType.SET);
-        when(pluralStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
-        when(pluralStringAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassU.getPluralStringAttField().getAnnotation(OWLDataProperty.class).iri()));
-        when(pluralStringAtt.getDeclaringType()).thenReturn(et);
-        when(pluralStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(pluralStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
-        when(pluralStringAtt.hasLanguage()).thenReturn(false);
-        when(pluralStringAtt.getLanguage()).thenReturn(null);
-
-        when(modified.getJavaField()).thenReturn(OWLClassU.getModifiedField());
-        when(modified.getJavaType()).thenReturn(OWLClassU.getModifiedField().getType());
-        when(modified.getName()).thenReturn(OWLClassU.getModifiedField().getName());
-        when(et.getAttribute(OWLClassU.getModifiedField().getName())).thenReturn(modified);
-        when(et.getFieldSpecification(OWLClassU.getModifiedField().getName())).thenReturn(modified);
-        when(modified.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(modified.isCollection()).thenReturn(false);
-        when(modified.getBindableJavaType()).thenReturn(LocalDateTime.class);
-        when(modified.getIRI()).thenReturn(IRI.create(DC.Terms.MODIFIED));
-        when(modified.getDeclaringType()).thenReturn(et);
-        when(modified.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(modified.getCascadeTypes()).thenReturn(new CascadeType[0]);
-        when(modified.hasLanguage()).thenReturn(false);
-        when(modified.getLanguage()).thenReturn(null);
-
         final EntityLifecycleListenerManager listenerManager = new EntityLifecycleListenerManager();
         addLifecycleCallback(listenerManager, PRE_UPDATE, OWLClassU.class.getDeclaredMethod("preUpdate"));
         when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
+        initEntityType(et, OWLClassU.class, listenerManager);
+        initIdentifier(et, id, OWLClassU.getIdField(), true);
+        when(et.getFieldSpecifications()).thenReturn(Set.of(singularStringAtt, pluralStringAtt, modified, id));
+        when(et.getAttributes()).thenReturn(Set.of(singularStringAtt, pluralStringAtt, modified));
+
+        initAttribute(et, singularStringAtt, new AttributeInfo(OWLClassU.getSingularStringAttField(), Attribute.PersistentAttributeType.DATA).language(null));
+        initAttribute(et, modified, new AttributeInfo(OWLClassU.getModifiedField(), Attribute.PersistentAttributeType.DATA).converter(new LocalDateTimeConverter())
+                                                                                                                           .language(null));
+        initAttribute(et, pluralStringAtt, new AttributeInfo(OWLClassU.getPluralStringAttField(), Attribute.PersistentAttributeType.DATA).collectionType(CollectionType.SET)
+                                                                                                                                         .elementType(MultilingualString.class)
+                                                                                                                                         .language(null));
     }
 
-    static void initOwlClassWMocks(IdentifiableEntityType<OWLClassW> et, AbstractPluralAttribute setStringAtt, AbstractPluralAttribute listStringAtt, AbstractPluralAttribute collectionStringAtt, AbstractQueryAttribute setQueryStringAtt, AbstractQueryAttribute listQueryStringAtt, Identifier id) throws Exception {
-        when(et.getIdentifier()).thenReturn(id);
-        when(id.isGenerated()).thenReturn(true);
-        when(et.getJavaType()).thenReturn(OWLClassW.class);
-        when(et.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassW.class));
-        when(id.getJavaField()).thenReturn(OWLClassW.getIdField());
-        when(id.getDeclaringType()).thenReturn(et);
-        when(id.getName()).thenReturn(OWLClassW.getIdField().getName());
-        when(et.getIRI()).thenReturn(IRI.create(OWLClassW.getClassIri()));
-        when(et.getName()).thenReturn(OWLClassW.class.getSimpleName());
+    static void initOwlClassWMocks(IdentifiableEntityType<OWLClassW> et, AbstractPluralAttribute setStringAtt,
+                                   ListAttributeImpl listStringAtt, AbstractPluralAttribute collectionStringAtt,
+                                   AbstractQueryAttribute setQueryStringAtt, AbstractQueryAttribute listQueryStringAtt,
+                                   Identifier id) throws Exception {
+        initEntityType(et, OWLClassW.class, EntityLifecycleListenerManager.empty());
+        initIdentifier(et, id, OWLClassW.getIdField(), true);
         when(et.getFieldSpecifications())
-                .thenReturn(new HashSet(Arrays.asList(setStringAtt, listStringAtt, collectionStringAtt, setQueryStringAtt, listQueryStringAtt, id)));
-        when(et.getAttributes()).thenReturn(new HashSet(Arrays.asList(setStringAtt, listStringAtt, collectionStringAtt, setQueryStringAtt, listQueryStringAtt)));
-        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
+                .thenReturn(Set.of(setStringAtt, listStringAtt, collectionStringAtt, setQueryStringAtt, listQueryStringAtt, id));
+        when(et.getAttributes()).thenReturn((Set) Set.of(setStringAtt, listStringAtt, collectionStringAtt, setQueryStringAtt, listQueryStringAtt));
 
-        when(setStringAtt.getJavaField()).thenReturn(OWLClassW.getSetStringAttField());
-        when(setStringAtt.getJavaType()).thenReturn(OWLClassW.getSetStringAttField().getType());
-        when(setStringAtt.getName()).thenReturn(OWLClassW.getSetStringAttField().getName());
-        when(et.getAttribute(OWLClassW.getSetStringAttField().getName())).thenReturn(setStringAtt);
-        when(et.getFieldSpecification(OWLClassW.getSetStringAttField().getName())).thenReturn(setStringAtt);
-        when(setStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(setStringAtt.isCollection()).thenReturn(true);
-        when(setStringAtt.getCollectionType()).thenReturn(CollectionType.SET);
-        when(setStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
-        when(setStringAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassW.getSetStringAttField().getAnnotation(OWLDataProperty.class).iri()));
-        when(setStringAtt.getDeclaringType()).thenReturn(et);
-        when(setStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(setStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
-        when(setStringAtt.hasLanguage()).thenReturn(false);
-        when(setStringAtt.getLanguage()).thenReturn(null);
-
-        when(listStringAtt.getJavaField()).thenReturn(OWLClassW.getListStringAttField());
-        when(listStringAtt.getJavaType()).thenReturn(OWLClassW.getListStringAttField().getType());
-        when(listStringAtt.getName()).thenReturn(OWLClassW.getListStringAttField().getName());
-        when(et.getAttribute(OWLClassW.getListStringAttField().getName())).thenReturn(listStringAtt);
-        when(et.getFieldSpecification(OWLClassW.getListStringAttField().getName())).thenReturn(listStringAtt);
-        when(listStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(listStringAtt.isCollection()).thenReturn(true);
-        when(listStringAtt.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(listStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
-        when(listStringAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassW.getListStringAttField().getAnnotation(OWLDataProperty.class).iri()));
-        when(listStringAtt.getDeclaringType()).thenReturn(et);
-        when(listStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(listStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
-        when(listStringAtt.hasLanguage()).thenReturn(false);
-        when(listStringAtt.getLanguage()).thenReturn(null);
-
-        when(collectionStringAtt.getJavaField()).thenReturn(OWLClassW.getCollectionStringAttField());
-        when(collectionStringAtt.getJavaType()).thenReturn(OWLClassW.getCollectionStringAttField().getType());
-        when(collectionStringAtt.getName()).thenReturn(OWLClassW.getCollectionStringAttField().getName());
-        when(et.getAttribute(OWLClassW.getCollectionStringAttField().getName())).thenReturn(collectionStringAtt);
-        when(et.getFieldSpecification(OWLClassW.getCollectionStringAttField().getName())).thenReturn(collectionStringAtt);
-        when(collectionStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(collectionStringAtt.isCollection()).thenReturn(true);
-        when(collectionStringAtt.getCollectionType()).thenReturn(CollectionType.COLLECTION);
-        when(collectionStringAtt.getBindableJavaType()).thenReturn(MultilingualString.class);
-        when(collectionStringAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassW.getCollectionStringAttField().getAnnotation(OWLDataProperty.class).iri()));
-        when(collectionStringAtt.getDeclaringType()).thenReturn(et);
-        when(collectionStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(collectionStringAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
-        when(collectionStringAtt.hasLanguage()).thenReturn(false);
-        when(collectionStringAtt.getLanguage()).thenReturn(null);
+        initAttribute(et, setStringAtt,
+                new AttributeInfo(OWLClassW.getSetStringAttField(), Attribute.PersistentAttributeType.DATA).collectionType(CollectionType.SET)
+                                                                                                           .elementType(MultilingualString.class)
+                                                                                                           .language(null));
+        initAttribute(et, collectionStringAtt, new AttributeInfo(OWLClassW.getCollectionStringAttField(), Attribute.PersistentAttributeType.DATA).collectionType(CollectionType.COLLECTION)
+                                                                                                                                                 .elementType(MultilingualString.class)
+                                                                                                                                                 .language(null));
+        initListAttribute(et, listStringAtt, new AttributeInfo(OWLClassW.getListStringAttField(), Attribute.PersistentAttributeType.DATA).collectionType(CollectionType.LIST)
+                                                                                                                                         .elementType(String.class)
+                                                                                                                                         .valueType(BasicTypeImpl.get(String.class))
+                                                                                                                                         .language(null));
 
         when(setQueryStringAtt.getJavaField()).thenReturn(OWLClassW.getSetQueryStringAttField());
         when(setQueryStringAtt.getJavaType()).thenReturn(OWLClassW.getSetQueryStringAttField().getType());
         when(setQueryStringAtt.getName()).thenReturn(OWLClassW.getSetQueryStringAttField().getName());
         when(setQueryStringAtt.getDeclaringType()).thenReturn(et);
         when(setQueryStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(setQueryStringAtt.getQuery()).thenReturn(OWLClassW.getSetQueryStringAttField().getAnnotation(Sparql.class).query());
+        when(setQueryStringAtt.getQuery()).thenReturn(OWLClassW.getSetQueryStringAttField().getAnnotation(Sparql.class)
+                                                               .query());
         when(setQueryStringAtt.enableReferencingAttributes()).thenReturn(true);
         when(et.getFieldSpecification(OWLClassW.getSetQueryStringAttField().getName())).thenReturn(setQueryStringAtt);
 
@@ -1626,58 +818,30 @@ public class MetamodelFactory {
         when(listQueryStringAtt.getName()).thenReturn(OWLClassW.getListQueryStringAttField().getName());
         when(listQueryStringAtt.getDeclaringType()).thenReturn(et);
         when(listQueryStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(listQueryStringAtt.getQuery()).thenReturn(OWLClassW.getListQueryStringAttField().getAnnotation(Sparql.class).query());
+        when(listQueryStringAtt.getQuery()).thenReturn(OWLClassW.getListQueryStringAttField()
+                                                                .getAnnotation(Sparql.class).query());
         when(listQueryStringAtt.enableReferencingAttributes()).thenReturn(true);
         when(et.getFieldSpecification(OWLClassW.getListQueryStringAttField().getName())).thenReturn(listQueryStringAtt);
     }
 
     static void initOWLClassWithQueryAttrMocks(IdentifiableEntityType<OWLClassWithQueryAttr> etMock,
-                                               AbstractQueryAttribute strQueryAttMock, AbstractAttribute strAttMock,
+                                               AbstractQueryAttribute strQueryAttMock, SingularAttributeImpl strAttMock,
                                                AbstractQueryAttribute entityQueryAttMock,
-                                               AbstractAttribute entityAttMock,
+                                               SingularAttributeImpl entityAttMock,
+                                               IdentifiableEntityType<OWLClassA> etAMock,
                                                Identifier idMock) throws NoSuchFieldException {
-        when(etMock.getJavaType()).thenReturn(OWLClassWithQueryAttr.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(OWLClassWithQueryAttr.class));
-        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassWithQueryAttr.getClassIri()));
-        when(etMock.getAttribute(OWLClassWithQueryAttr.getStrAttField().getName())).thenReturn(strAttMock);
+        initEntityType(etMock, OWLClassWithQueryAttr.class, EntityLifecycleListenerManager.empty());
         when(etMock.getQueryAttribute(OWLClassWithQueryAttr.getStrQueryAttField()
                                                            .getName())).thenReturn(strQueryAttMock);
-        when(etMock.getName()).thenReturn(OWLClassWithQueryAttr.class.getSimpleName());
 
-        when(etMock.getAttributes()).thenReturn(
-                new HashSet<>(Arrays.<Attribute<? super OWLClassWithQueryAttr, ?>>asList(strAttMock, entityAttMock)));
-        when(etMock.getQueryAttributes()).thenReturn(
-                new HashSet<>(Arrays.<QueryAttribute<? super OWLClassWithQueryAttr, ?>>asList(strQueryAttMock,
-                        entityQueryAttMock)));
-        when(etMock.getFieldSpecifications()).thenReturn(
-                new HashSet<>(Arrays.<FieldSpecification<? super OWLClassWithQueryAttr, ?>>asList(
-                        strAttMock, strQueryAttMock, entityAttMock, entityQueryAttMock, idMock)));
+        when(etMock.getAttributes()).thenReturn(Set.of(strAttMock, entityAttMock));
+        when(etMock.getQueryAttributes()).thenReturn(Set.of(strQueryAttMock, entityQueryAttMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(strAttMock, strQueryAttMock, entityAttMock, entityQueryAttMock, idMock));
 
-        when(strAttMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.getStrAttField());
-        when(strAttMock.getJavaType()).thenReturn(OWLClassWithQueryAttr.getStrAttField().getType());
-        final String stringAttIri = OWLClassWithQueryAttr.getStrAttField().getAnnotation(OWLDataProperty.class).iri();
-        when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
-        when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(strAttMock.getName()).thenReturn(OWLClassWithQueryAttr.getStrAttField().getName());
-        when(strAttMock.getDeclaringType()).thenReturn(etMock);
-        when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(strAttMock.hasLanguage()).thenReturn(true);
-        when(strAttMock.getLanguage()).thenReturn(Generators.LANG);
+        initAttribute(etMock, strAttMock, new AttributeInfo(OWLClassWithQueryAttr.getStrAttField(), Attribute.PersistentAttributeType.DATA));
+        initAttribute(etMock, entityAttMock, new AttributeInfo(OWLClassWithQueryAttr.getEntityAttField(), Attribute.PersistentAttributeType.OBJECT).valueType(etAMock));
 
-        when(entityAttMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.getEntityAttField());
-        when(entityAttMock.getJavaType()).thenReturn(OWLClassWithQueryAttr.getEntityAttField().getType());
-        final String entityAttIri = OWLClassWithQueryAttr.getEntityAttField().getAnnotation(OWLObjectProperty.class)
-                                                         .iri();
-        when(entityAttMock.getIRI()).thenReturn(IRI.create(entityAttIri));
-        when(entityAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(entityAttMock.getName()).thenReturn(OWLClassWithQueryAttr.getEntityAttField().getName());
-        when(entityAttMock.getDeclaringType()).thenReturn(etMock);
-        when(entityAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(entityAttMock.getFetchType()).thenReturn(FetchType.EAGER);
-
-        when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(etMock.getFieldSpecification(strQueryAttMock.getName())).thenReturn(strQueryAttMock);
-        when(etMock.getFieldSpecification(entityAttMock.getName())).thenReturn(entityAttMock);
         when(etMock.getFieldSpecification(entityQueryAttMock.getName())).thenReturn(entityQueryAttMock);
 
         when(strQueryAttMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.getStrQueryAttField());
@@ -1698,100 +862,91 @@ public class MetamodelFactory {
                 OWLClassWithQueryAttr.getEntityQueryAttField().getAnnotation(Sparql.class).query());
         when(entityQueryAttMock.enableReferencingAttributes()).thenReturn(true);
 
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.class.getDeclaredField("uri"));
-        when(idMock.getDeclaringType()).thenReturn(etMock);
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        initIdentifier(etMock, idMock, OWLClassWithQueryAttr.class.getDeclaredField("uri"), false);
     }
 
-    public static void initPhoneMocks(IdentifiableEntityType<Phone> etMock, AbstractAttribute phoneNumberAttMock,
+    public static void initPhoneMocks(IdentifiableEntityType<Phone> etMock, SingularAttributeImpl phoneNumberAttMock,
                                       Identifier idMock) throws NoSuchFieldException, SecurityException {
-        when(etMock.getJavaType()).thenReturn(Phone.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(Phone.class));
-        when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
-        when(etMock.getIRI()).thenReturn(IRI.create(Vocabulary.c_Phone));
-        when(etMock.getName()).thenReturn(Phone.class.getSimpleName());
-        when(etMock.getAttribute(Phone.class.getDeclaredField("number").getName())).thenReturn(phoneNumberAttMock);
+        initEntityType(etMock, Phone.class, EntityLifecycleListenerManager.empty());
         when(etMock.getAttributes()).thenReturn(Collections.singleton(phoneNumberAttMock));
-        when(etMock.getFieldSpecifications())
-                .thenReturn(new HashSet<>(
-                        Arrays.<FieldSpecification<? super Phone, ?>>asList(phoneNumberAttMock, idMock)));
-        when(phoneNumberAttMock.getJavaField()).thenReturn(Phone.class.getDeclaredField("number"));
-        when(phoneNumberAttMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_p_phoneNumber));
-        when(phoneNumberAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(phoneNumberAttMock.getDeclaringType()).thenReturn(etMock);
-        when(phoneNumberAttMock.hasLanguage()).thenReturn(false);
-        when(phoneNumberAttMock.getName()).thenReturn(Phone.class.getDeclaredField("number").getName());
-        when(etMock.getAttribute(Phone.class.getDeclaredField("number").getName())).thenReturn(phoneNumberAttMock);
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getName()).thenReturn(Phone.class.getDeclaredField("uri").getName());
-        when(idMock.getJavaField()).thenReturn(Phone.class.getDeclaredField("uri"));
-        when(etMock.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(phoneNumberAttMock, idMock));
+        initAttribute(etMock, phoneNumberAttMock, new AttributeInfo(Phone.class.getDeclaredField("number"), Attribute.PersistentAttributeType.DATA));
+        initIdentifier(etMock, idMock, Phone.class.getDeclaredField("uri"), false);
     }
 
-    public static void initPersonMocks(IdentifiableEntityType<Person> etMock, AbstractAttribute usernameAttMock,
-                                       AbstractAttribute genderAttMock,
-                                       AbstractAttribute ageAttMock, SingularAttributeImpl phoneAttMock,
+    public static void initPersonMocks(IdentifiableEntityType<Person> etMock, SingularAttributeImpl usernameAttMock,
+                                       SingularAttributeImpl genderAttMock,
+                                       SingularAttributeImpl ageAttMock, SingularAttributeImpl phoneAttMock,
                                        AbstractIdentifiableType<Phone> etPhone,
                                        TypesSpecification typesMock,
                                        Identifier idMock) throws NoSuchFieldException, SecurityException {
-        when(etMock.getJavaType()).thenReturn(Person.class);
-        when(etMock.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(Person.class));
-        when(etMock.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
-        when(etMock.getIRI()).thenReturn(IRI.create(Vocabulary.c_Person));
-        when(etMock.getName()).thenReturn(Person.class.getSimpleName());
-        when(etMock.getIdentifier()).thenReturn(idMock);
-        when(idMock.getJavaField()).thenReturn(Person.class.getDeclaredField("uri"));
-        when(idMock.getName()).thenReturn(Person.class.getDeclaredField("uri").getName());
-        when(idMock.getDeclaringType()).thenReturn(etMock);
-        when(etMock.getFieldSpecification(idMock.getName())).thenReturn(idMock);
-        when(etMock.getAttributes()).thenReturn(
-                new HashSet<>(Arrays.<Attribute<? super Person, ?>>asList(usernameAttMock, genderAttMock, ageAttMock,
-                        phoneAttMock)));
-        when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
-                Arrays.<FieldSpecification<? super Person, ?>>asList(usernameAttMock, genderAttMock, ageAttMock,
-                        phoneAttMock, idMock)));
-        when(usernameAttMock.getJavaField()).thenReturn(Person.class.getDeclaredField("username"));
-        when(usernameAttMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_p_username));
-        when(usernameAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(usernameAttMock.getDeclaringType()).thenReturn(etMock);
-        when(usernameAttMock.hasLanguage()).thenReturn(false);
-        when(usernameAttMock.getName()).thenReturn(Person.class.getDeclaredField("username").getName());
-        when(etMock.getAttribute(Person.class.getDeclaredField("username").getName())).thenReturn(usernameAttMock);
+        initEntityType(etMock, Person.class, EntityLifecycleListenerManager.empty());
+        initIdentifier(etMock, idMock, Person.class.getDeclaredField("uri"), false);
+        when(etMock.getAttributes()).thenReturn(Set.of(usernameAttMock, genderAttMock, ageAttMock, phoneAttMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(usernameAttMock, genderAttMock, ageAttMock, phoneAttMock, idMock));
 
-        when(genderAttMock.getJavaField()).thenReturn(Person.class.getDeclaredField("gender"));
-        when(genderAttMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_p_gender));
-        when(genderAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(genderAttMock.getDeclaringType()).thenReturn(etMock);
-        when(genderAttMock.hasLanguage()).thenReturn(false);
-        when(genderAttMock.getName()).thenReturn(Person.class.getDeclaredField("gender").getName());
-        when(etMock.getAttribute(Person.class.getDeclaredField("gender").getName())).thenReturn(genderAttMock);
+        initAttribute(etMock, usernameAttMock, new AttributeInfo(Person.class.getDeclaredField("username"),
+                Attribute.PersistentAttributeType.DATA).language(null));
+        initAttribute(etMock, genderAttMock, new AttributeInfo(Person.class.getDeclaredField("gender"),
+                Attribute.PersistentAttributeType.DATA).language(null));
+        initAttribute(etMock, ageAttMock, new AttributeInfo(Person.class.getDeclaredField("age"),
+                Attribute.PersistentAttributeType.DATA).language(null));
+        initAttribute(etMock, phoneAttMock, new AttributeInfo(Person.class.getDeclaredField("phone"),
+                Attribute.PersistentAttributeType.OBJECT).valueType(etPhone));
 
-        when(ageAttMock.getJavaField()).thenReturn(Person.class.getDeclaredField("age"));
-        when(ageAttMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_p_age));
-        when(ageAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        when(ageAttMock.getDeclaringType()).thenReturn(etMock);
-        when(ageAttMock.hasLanguage()).thenReturn(false);
-        when(ageAttMock.getName()).thenReturn(Person.class.getDeclaredField("age").getName());
-        when(etMock.getAttribute(Person.class.getDeclaredField("age").getName())).thenReturn(ageAttMock);
+        initTypesAttribute(etMock, typesMock, new AttributeInfo(Person.class.getDeclaredField("types"), null)
+                .elementType(String.class));
+    }
 
-        when(phoneAttMock.getJavaField()).thenReturn(Person.class.getDeclaredField("phone"));
-        when(phoneAttMock.getIRI()).thenReturn(IRI.create(Vocabulary.p_p_hasPhone));
-        when(phoneAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(phoneAttMock.getDeclaringType()).thenReturn(etMock);
-        when(phoneAttMock.hasLanguage()).thenReturn(false);
-        when(phoneAttMock.getName()).thenReturn(Person.class.getDeclaredField("phone").getName());
-        when(phoneAttMock.getType()).thenReturn(etPhone);
-        when(etMock.getAttribute(Person.class.getDeclaredField("phone").getName())).thenReturn(phoneAttMock);
+    private static class AttributeInfo<V> {
+        private final Field field;
+        private final Attribute.PersistentAttributeType type;
+        private ParticipationConstraint[] constraints = new ParticipationConstraint[0];
+        private boolean nonEmpty;
+        private String language = Generators.LANG;
+        private Type<V> valueType;
+        private Class<V> elementType;
+        private ConverterWrapper converter;
+        private CollectionType collectionType;
 
-        when(typesMock.getJavaField()).thenReturn(Person.class.getDeclaredField("types"));
-        when(typesMock.getName()).thenReturn(Person.class.getDeclaredField("types").getName());
-        when(typesMock.getDeclaringType()).thenReturn(etMock);
-        when(typesMock.getJavaType()).thenReturn(Set.class);
-        when(typesMock.getElementType()).thenReturn(String.class);
-        when(typesMock.isCollection()).thenReturn(true);
-        when(typesMock.getFetchType()).thenReturn(FetchType.EAGER);
-        when(etMock.getTypes()).thenReturn(typesMock);
-        when(etMock.getFieldSpecification("types")).thenReturn(typesMock);
+        private AttributeInfo(Field field, Attribute.PersistentAttributeType type) {
+            this.field = field;
+            this.type = type;
+        }
+
+        private AttributeInfo constraints(ParticipationConstraint... constraints) {
+            this.constraints = constraints;
+            return this;
+        }
+
+        private AttributeInfo nonEmpty() {
+            this.nonEmpty = true;
+            return this;
+        }
+
+        private AttributeInfo language(String language) {
+            this.language = language;
+            return this;
+        }
+
+        private AttributeInfo valueType(Type<V> valueType) {
+            this.valueType = valueType;
+            return this;
+        }
+
+        private AttributeInfo elementType(Class<V> elementType) {
+            this.elementType = elementType;
+            return this;
+        }
+
+        private AttributeInfo converter(ConverterWrapper converter) {
+            this.converter = converter;
+            return this;
+        }
+
+        private AttributeInfo collectionType(CollectionType collectionType) {
+            this.collectionType = collectionType;
+            return this;
+        }
     }
 }

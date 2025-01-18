@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassAA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassBB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
@@ -95,6 +96,8 @@ public abstract class BaseRunner {
     protected OWLClassWithQueryAttr7 entityWithQueryAttr7;
     // Dynamic attributes
     protected OWLClassAA entityAA;
+    // Primitive attributes
+    protected OWLClassBB entityBB;
 
     protected final DataAccessor dataAccessor;
     protected final PersistenceFactory persistenceFactory;
@@ -179,6 +182,16 @@ public abstract class BaseRunner {
         entityWithQueryAttr7.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityWithQueryAttr7"));
         this.entityAA = new OWLClassAA();
         this.entityAA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAA"));
+        this.entityBB = new OWLClassBB();
+        this.entityBB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityBB"));
+        entityBB.setIntAttribute(15);
+        entityBB.setBooleanAttribute(true);
+        entityBB.setByteAttribute((byte) 5);
+        entityBB.setShortAttribute((short) 10);
+        entityBB.setLongAttribute(20L);
+        entityBB.setFloatAttribute(25.5f);
+        entityBB.setDoubleAttribute(30.7d);
+        entityBB.setCharAttribute('j');
     }
 
     @AfterEach

@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassBB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassG;
@@ -242,6 +243,25 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertEquals(entityM.getFloatAttribute(), res.getFloatAttribute());
         assertEquals(entityM.getDoubleAttribute(), res.getDoubleAttribute());
         assertEquals(entityM.getDateAttribute(), res.getDateAttribute());
+        assertEquals(entityM.getCharacterAttribute(), res.getCharacterAttribute());
+    }
+
+    @Test
+    void testPersistEntityWithBasicPrimitiveTypeAttributes() {
+        this.em = getEntityManager("PersistEntityWithBasicPrimitiveTypeAttributes", false);
+        persist(entityBB);
+        em.clear();
+
+        final OWLClassBB res = findRequired(OWLClassBB.class, entityBB.getUri());
+        assertEquals(entityBB.getUri(), res.getUri());
+        assertEquals(entityBB.getIntAttribute(), res.getIntAttribute());
+        assertEquals(entityBB.getBooleanAttribute(), res.getBooleanAttribute());
+        assertEquals(entityBB.getByteAttribute(), res.getByteAttribute());
+        assertEquals(entityBB.getShortAttribute(), res.getShortAttribute());
+        assertEquals(entityBB.getLongAttribute(), res.getLongAttribute());
+        assertEquals(entityBB.getFloatAttribute(), res.getFloatAttribute());
+        assertEquals(entityBB.getDoubleAttribute(), res.getDoubleAttribute());
+        assertEquals(entityBB.getCharAttribute(), res.getCharAttribute());
     }
 
     @Test

@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
@@ -498,6 +499,25 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
         assertFalse(
                 em.createNativeQuery("ASK { ?x ?y ?z .}", Boolean.class).setParameter("x", URI.create(entityM.getKey()))
+                  .getSingleResult());
+    }
+
+    @Test
+    public void removeTriggersLazyLoading() {
+        this.em = getEntityManager("removeTriggersLazyLoading", true);
+        persist(entityI);
+
+        em.getEntityManagerFactory().getCache().evictAll();
+        final OWLClassI resI = findRequired(OWLClassI.class, entityI.getUri());
+        assertInstanceOf(LazyLoadingProxy.class, resI.getOwlClassA());
+
+        em.getTransaction().begin();
+        em.remove(resI.getOwlClassA());
+        em.getTransaction().commit();
+
+        assertNull(em.find(OWLClassA.class, entityA.getUri()));
+        assertFalse(
+                em.createNativeQuery("ASK { ?x ?y ?z .}", Boolean.class).setParameter("x", entityA.getUri())
                   .getSingleResult());
     }
 }

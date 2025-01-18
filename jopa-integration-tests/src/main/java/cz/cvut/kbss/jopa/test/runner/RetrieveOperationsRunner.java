@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassAA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassBB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
@@ -46,8 +47,10 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.ReloadableDataSource;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.model.Literal;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -107,6 +110,67 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
+    void testRetrievePrimitive() throws Exception {
+        this.em = getEntityManager("RetrieveSimplePrimitive", false);
+        persistTestData(Arrays.asList(
+                new Quad(entityBB.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_BB)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_INT_ATTRIBUTE),
+                        new Literal("15", XSD.INT)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_BOOLEAN_ATTRIBUTE),
+                        new Literal("true", XSD.BOOLEAN)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_BYTE_ATTRIBUTE),
+                        new Literal("5", XSD.BYTE)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_SHORT_ATTRIBUTE),
+                        new Literal("10", XSD.SHORT)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_LONG_ATTRIBUTE),
+                        new Literal("20", XSD.LONG)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_FLOAT_ATTRIBUTE),
+                        new Literal("25.5", XSD.FLOAT)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_DOUBLE_ATTRIBUTE),
+                        new Literal("30.7", XSD.DOUBLE)),
+                new Quad(entityBB.getUri(), URI.create(Vocabulary.P_BB_CHAR_ATTRIBUTE),
+                        new Literal("j", XSD.STRING))
+        ), em);
+
+        em.getEntityManagerFactory().getCache().evictAll();
+        final OWLClassBB res = findRequired(OWLClassBB.class, entityBB.getUri());
+        assertEquals(entityBB.getUri(), res.getUri());
+        assertEquals(entityBB.getIntAttribute(), res.getIntAttribute());
+        assertEquals(entityBB.getBooleanAttribute(), res.getBooleanAttribute());
+        assertEquals(entityBB.getByteAttribute(), res.getByteAttribute());
+        assertEquals(entityBB.getShortAttribute(), res.getShortAttribute());
+        assertEquals(entityBB.getLongAttribute(), res.getLongAttribute());
+        assertEquals(entityBB.getFloatAttribute(), res.getFloatAttribute());
+        assertEquals(entityBB.getDoubleAttribute(), res.getDoubleAttribute());
+        assertEquals(entityBB.getCharAttribute(), res.getCharAttribute());
+        assertTrue(em.contains(res));
+    }
+
+    @Test
+    void testRetrieveMissingPrimitive() throws Exception {
+        this.em = getEntityManager("RetrieveSimplePrimitive", false);
+        final List<Quad> data = new ArrayList<>(List.of(
+                new Quad(entityBB.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_BB))
+        ));
+        persistTestData(data, em);
+
+        em.getEntityManagerFactory().getCache().evictAll();
+        final OWLClassBB res = findRequired(OWLClassBB.class, entityBB.getUri());
+
+        // if primitives are not set, they should fall back to their default values
+        assertEquals(entityBB.getUri(), res.getUri());
+        assertEquals(0, res.getIntAttribute());
+        assertEquals(false, res.getBooleanAttribute());
+        assertEquals(0, res.getByteAttribute());
+        assertEquals((short) 0, res.getShortAttribute());
+        assertEquals(0L, res.getLongAttribute());
+        assertEquals(0.0f, res.getFloatAttribute());
+        assertEquals(0.0d, res.getDoubleAttribute());
+        assertEquals('\u0000', res.getCharAttribute());
+        assertTrue(em.contains(res));
+    }
+
+    @Test
     void testRetrieveWithLazyAttribute() {
         this.em = getEntityManager("RetrieveLazy", false);
         persist(entityI);
@@ -117,6 +181,17 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertNotNull(resI.getOwlClassA().getUri());
         assertEquals(entityA.getUri(), resI.getOwlClassA().getUri());
         assertTrue(em.contains(resI.getOwlClassA()));
+    }
+
+    @Test
+    void testContainsTriggersLoadingLazyLoadedAttribute() {
+        this.em = getEntityManager("ContainsTriggersLazyLoading", false);
+        persist(entityI);
+
+        final OWLClassI resI = findRequired(OWLClassI.class, entityI.getUri());
+        assertInstanceOf(LazyLoadingProxy.class, resI.getOwlClassA());
+        assertTrue(em.contains(resI.getOwlClassA()));
+        assertInstanceOf(OWLClassA.class, resI.getOwlClassA());
     }
 
     @Test
@@ -402,6 +477,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertEquals(entityM.getIntAttribute(), result.getIntAttribute());
         assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
         assertEquals(entityM.getDateAttribute(), result.getDateAttribute());
+        assertEquals(entityM.getCharacterAttribute(), result.getCharacterAttribute());
         assertEquals(entityM.getEnumAttribute(), result.getEnumAttribute());
     }
 

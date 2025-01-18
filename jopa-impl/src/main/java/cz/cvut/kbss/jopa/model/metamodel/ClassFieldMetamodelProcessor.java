@@ -82,9 +82,6 @@ class ClassFieldMetamodelProcessor<X> {
             }
             return;
         }
-        if (field.getType().isPrimitive()) {
-            throw new MetamodelInitializationException("Primitive types cannot be used for entity fields. Field " + field + " in class " + cls);
-        }
 
         final Class<?> fieldValueCls = getFieldValueType(field);
         field.setAccessible(true);

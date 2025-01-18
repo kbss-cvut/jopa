@@ -108,6 +108,8 @@ public final class Rdf4jUtils {
 
         if (value instanceof Integer) {
             return vf.createLiteral((Integer) value);
+        } else if(value instanceof Character c) {
+            return vf.createLiteral(c.toString());
         } else if (value instanceof String) {
             return language != null ? vf.createLiteral((String) value, language) : vf.createLiteral((String) value);
         } else if (value instanceof LangString ls) {

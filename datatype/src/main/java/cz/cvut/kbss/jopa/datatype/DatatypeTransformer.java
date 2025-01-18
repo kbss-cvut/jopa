@@ -41,6 +41,16 @@ public class DatatypeTransformer {
 
     private static final Map<Pair, Function<Object, ?>> TRANSFORMERS = initTransformers();
 
+    private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVES = Map.of(
+            Integer.class, int.class,
+            Boolean.class, boolean.class,
+            Byte.class, byte.class,
+            Short.class, short.class,
+            Long.class, long.class,
+            Float.class, float.class,
+            Double.class, double.class
+    );
+
     private DatatypeTransformer() {
         throw new AssertionError();
     }
@@ -80,13 +90,30 @@ public class DatatypeTransformer {
     }
 
     /**
+     * Converts the specified wrapper class to its corresponding primitive class.
+     * <p>
+     * If the class parameter is a wrapper type, the equivalent primitive type will be returned (e.g. int.class for
+     * Integer.class) In all other cases, the return value is null.
+     *
+     * @param cls - the class to convert
+     * @return Optional containing the primitive type, or empty if the specified class is not a wrapper type
+     */
+    public static Optional<Class<?>> wrapperTypeToPrimitiveType(Class<?> cls) {
+        if (cls != null && WRAPPER_TO_PRIMITIVES.containsKey(cls)) {
+            return Optional.of(WRAPPER_TO_PRIMITIVES.get(cls));
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Maps the specified value to the target type (if possible).
      *
      * @param value      The value to convert
      * @param targetType The type to which the specified value should be converted
      * @param <T>        Target type
      * @return Value as the target type
-     * @throws UnsupportedTypeTransformationException If the specified value cannot be transformed to the specified target type
+     * @throws UnsupportedTypeTransformationException If the specified value cannot be transformed to the specified
+     *                                                target type
      */
     public static <T> T transform(Object value, Class<T> targetType) {
         Objects.requireNonNull(targetType);

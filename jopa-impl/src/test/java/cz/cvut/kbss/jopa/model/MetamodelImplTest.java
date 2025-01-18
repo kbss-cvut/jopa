@@ -181,6 +181,12 @@ class MetamodelImplTest {
                                FetchType.EAGER, false, dateField.getAnnotation(OWLDataProperty.class).iri(),
                                dateField.getType(),
                                new CascadeType[]{});
+        final Field characterField = OWLClassM.getCharacterAttributeField();
+        final FieldSpecification<? super OWLClassM, ?> characterAtt = et.getFieldSpecification(characterField.getName());
+        checkSingularAttribute(characterAtt, et, characterField.getName(), Attribute.PersistentAttributeType.DATA, characterField,
+                FetchType.EAGER, false, characterField.getAnnotation(OWLDataProperty.class).iri(),
+                characterField.getType(),
+                new CascadeType[]{});
         final Field enumField = OWLClassM.getEnumAttributeField();
         final FieldSpecification<? super OWLClassM, ?> enumAtt = et.getFieldSpecification(enumField.getName());
         checkSingularAttribute(enumAtt, et, enumField.getName(), Attribute.PersistentAttributeType.DATA, enumField,
