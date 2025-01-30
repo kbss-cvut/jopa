@@ -60,13 +60,10 @@ class PersistenceUnitTest extends PersistenceUnitTestRunner {
                                 createLangLiteral(entityA.getStringAttribute(), TestEnvironment.PERSISTENCE_LANGUAGE))
                 ));
         ds.setDataset(newDataset);
-        final EntityManager anotherEm = em.getEntityManagerFactory().createEntityManager();
-        try {
+        try (EntityManager anotherEm = em.getEntityManagerFactory().createEntityManager()) {
             final OWLClassA result = anotherEm.find(OWLClassA.class, entityA.getUri());
             assertNotNull(result);
             assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
-        } finally {
-            anotherEm.close();
         }
     }
 }

@@ -270,7 +270,7 @@ class EntityConstructorTest {
         return axioms;
     }
 
-    private Axiom<NamedResource> createObjectPropertyAxiomForD() throws NoSuchFieldException {
+    private Axiom<NamedResource> createObjectPropertyAxiomForD() {
         return new AxiomImpl<>(NamedResource.create(ID), getClassDObjectPropertyAssertion(),
                 new Value<>(NamedResource.create(ID_TWO)));
     }
@@ -500,7 +500,8 @@ class EntityConstructorTest {
         final Long lng = 365L;
         final Double d = 3.14;
         final Date date = new Date();
-        axioms.addAll(createAxiomsForValues(true, i, lng, d, date, null));
+        final Character character = 'j';
+        axioms.addAll(createAxiomsForValues(true, i, lng, d, date, character, null));
 
         final OWLClassM res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassM()
                                                                                         .entityType(), descriptor), axioms);
@@ -509,9 +510,10 @@ class EntityConstructorTest {
         assertEquals(lng, res.getLongAttribute());
         assertEquals(d, res.getDoubleAttribute());
         assertEquals(date, res.getDateAttribute());
+        assertEquals(character, res.getCharacterAttribute());
     }
 
-    private Collection<Axiom<?>> createAxiomsForValues(Boolean b, Integer i, Long lng, Double d, Date date,
+    private Collection<Axiom<?>> createAxiomsForValues(Boolean b, Integer i, Long lng, Double d, Date date, Character character,
                                                        OWLClassM.Severity severity) throws
             Exception {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
@@ -543,6 +545,12 @@ class EntityConstructorTest {
                     new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(dateAttIri), false),
                             new Value<>(date)));
         }
+        if (character != null) {
+            final String characterAttIri = OWLClassM.getCharacterAttributeField().getAnnotation(OWLDataProperty.class).iri();
+            axioms.add(
+                    new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(characterAttIri), false),
+                            new Value<>(character.toString())));
+        }
         if (severity != null) {
             final String enumAttIri = OWLClassM.getEnumAttributeField().getAnnotation(OWLDataProperty.class).iri();
             axioms.add(
@@ -557,7 +565,7 @@ class EntityConstructorTest {
         final Set<Axiom<?>> axioms = new HashSet<>();
         axioms.add(getClassAssertionAxiomForType(ID, OWLClassM.getClassIri()));
         final OWLClassM.Severity enumValue = OWLClassM.Severity.HIGH;
-        axioms.addAll(createAxiomsForValues(null, null, null, null, null, enumValue));
+        axioms.addAll(createAxiomsForValues(null, null, null, null, null, null, enumValue));
 
         final OWLClassM result = constructor
                 .reconstructEntity(constructionConfig(ID, mocks.forOwlClassM().entityType(), descriptor), axioms);

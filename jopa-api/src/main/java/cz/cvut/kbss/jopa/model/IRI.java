@@ -42,10 +42,9 @@ public class IRI {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof IRI)) {
+        if (!(o instanceof IRI iri)) {
             return false;
         }
-        IRI iri = (IRI) o;
         return value.equals(iri.value);
     }
 

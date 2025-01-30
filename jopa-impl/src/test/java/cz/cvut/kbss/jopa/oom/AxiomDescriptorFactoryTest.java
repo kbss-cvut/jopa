@@ -32,6 +32,8 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.RDFContainer;
+import cz.cvut.kbss.jopa.model.annotations.RDFContainerType;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -40,6 +42,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.RDFContainerAttribute;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
@@ -606,5 +609,36 @@ class AxiomDescriptorFactoryTest {
         final AxiomDescriptor result = sut.createForEntityLoading(lp, metamodelMocks.forOwlClassA().entityType());
         final Set<URI> contexts = result.getAssertionContexts(Assertion.createClassAssertion(false));
         assertThat(contexts, hasItems(attContext, CONTEXT));
+    }
+
+    @Test
+    void createForEntityLoadingReturnsObjectPropertyAssertionForRdfContainerProperty() {
+        final LoadingParameters<WithDataRdfContainerProperty> lp = new LoadingParameters<>(WithDataRdfContainerProperty.class, ID, descriptor);
+        final EntityType<WithDataRdfContainerProperty> et = mock(EntityType.class);
+        final RDFContainerAttribute<WithDataRdfContainerProperty, List<Integer>, Integer> att = mock(RDFContainerAttribute.class);
+        when(et.getAttributes()).thenReturn(Set.of(att));
+        when(att.isAssociation()).thenReturn(false);
+        when(att.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
+        when(att.isCollection()).thenReturn(true);
+        when(att.isRdfContainer()).thenReturn(true);
+        when(att.getContainerType()).thenReturn(RDFContainerType.SEQ);
+        when(att.getCollectionType()).thenReturn(CollectionType.LIST);
+        when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "literalRdfContainer"));
+
+        final AxiomDescriptor desc = sut.createForEntityLoading(lp, et);
+        final Optional<Assertion> listAss = desc.getAssertions().stream().filter(a -> a.getIdentifier().toString()
+                                                                                       .equals(Vocabulary.ATTRIBUTE_BASE + "literalRdfContainer"))
+                                                .findAny();
+        assertTrue(listAss.isPresent());
+        assertEquals(Assertion.AssertionType.OBJECT_PROPERTY, listAss.get().getType());
+    }
+
+
+    private static class WithDataRdfContainerProperty {
+        @Id
+        private URI uri;
+
+        @RDFContainer(type = RDFContainerType.SEQ)
+        private List<Integer> literalSequence;
     }
 }

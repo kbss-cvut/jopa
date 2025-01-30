@@ -23,16 +23,23 @@ import cz.cvut.kbss.ontodriver.jena.config.JenaConfigParam;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import org.apache.jena.query.DatasetFactory;
+import org.apache.jena.query.ReadWrite;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Files;
 
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class StorageTest extends StorageTestUtil {
 
@@ -42,7 +49,7 @@ public class StorageTest extends StorageTestUtil {
         config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
         final Storage result = Storage.create(config);
         assertNotNull(result);
-        assertTrue(result instanceof MemoryStorage);
+        assertInstanceOf(MemoryStorage.class, result);
         assertNotNull(result.getDataset());
     }
 
@@ -54,7 +61,7 @@ public class StorageTest extends StorageTestUtil {
         config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.FILE);
         final Storage result = Storage.create(config);
         assertNotNull(result);
-        assertTrue(result instanceof FileStorage);
+        assertInstanceOf(FileStorage.class, result);
     }
 
     @Test
@@ -71,7 +78,7 @@ public class StorageTest extends StorageTestUtil {
         final DriverConfiguration config = createConfiguration("test:uri");
         final Storage result = Storage.create(config);
         assertNotNull(result);
-        assertTrue(result instanceof MemoryStorage);
+        assertInstanceOf(MemoryStorage.class, result);
     }
 
     @Test
@@ -96,5 +103,64 @@ public class StorageTest extends StorageTestUtil {
         final Storage storage = Storage.create(config);
         assertNotNull(storage);
         assertThrows(UnsupportedOperationException.class, () -> storage.setDataset(DatasetFactory.create()));
+    }
+
+    // Bug #274
+    @Test
+    void removeHandlesStatementIteratorForInMemoryStorage() {
+        final DriverConfiguration config = createConfiguration("test:uri");
+        config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
+        final Storage storage = Storage.create(config);
+        storage.begin(ReadWrite.WRITE);
+        generateTestData(storage.getDataset());
+        storage.commit();
+
+        storage.begin(ReadWrite.WRITE);
+        final StmtIterator iterator = storage.getDefaultGraph()
+                                             .listStatements(createResource(TYPE_ONE), null, (RDFNode) null);
+        storage.remove(iterator, null);
+        storage.commit();
+    }
+
+    // Bug #274
+    @Test
+    void removeHandlesStatementIteratorForLocalStorage() throws Exception {
+        final File file = Files.createTempFile("jena-onto", ".ttl").toFile();
+        file.deleteOnExit();
+        final DriverConfiguration config = createConfiguration(file.getAbsolutePath());
+        config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.FILE);
+        final Storage storage = Storage.create(config);
+        storage.begin(ReadWrite.WRITE);
+        generateTestData(storage.getDataset());
+        storage.commit();
+
+        storage.begin(ReadWrite.WRITE);
+        final StmtIterator iterator = storage.getDefaultGraph()
+                                             .listStatements(createResource(TYPE_ONE), null, (RDFNode) null);
+        storage.remove(iterator, null);
+        storage.commit();
+    }
+
+    // Bug #274
+    @Test
+    void removeHandlesStatementIteratorForTDB2Storage() throws Exception {
+        final File file = Files.createTempDirectory("jena-onto").toFile();
+        file.deleteOnExit();
+        try {
+            final DriverConfiguration config = createConfiguration(file.getAbsolutePath());
+            config.setProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.TDB2);
+            final Storage storage = Storage.create(config);
+            storage.begin(ReadWrite.WRITE);
+            generateTestData(storage.getDataset());
+            storage.commit();
+
+            storage.begin(ReadWrite.WRITE);
+            final StmtIterator iterator = storage.getDefaultGraph()
+                                                 .listStatements(createResource(TYPE_ONE), null, (RDFNode) null);
+            storage.remove(iterator, null);
+            storage.commit();
+        } finally {
+            deleteStorageDir(file);
+        }
     }
 }

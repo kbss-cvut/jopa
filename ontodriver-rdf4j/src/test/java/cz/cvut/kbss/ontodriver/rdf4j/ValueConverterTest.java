@@ -32,6 +32,7 @@ import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -53,20 +54,13 @@ class ValueConverterTest {
     }
 
     private Assertion assertion(Assertion.AssertionType type) {
-        switch (type) {
-            case CLASS:
-                return Assertion.createClassAssertion(false);
-            case PROPERTY:
-                return Assertion.createPropertyAssertion(PROPERTY, false);
-            case OBJECT_PROPERTY:
-                return Assertion.createObjectPropertyAssertion(PROPERTY, false);
-            case DATA_PROPERTY:
-                return Assertion.createDataPropertyAssertion(PROPERTY, false);
-            case ANNOTATION_PROPERTY:
-                return Assertion.createAnnotationPropertyAssertion(PROPERTY, false);
-            default:
-                throw new IllegalArgumentException("Unknown assertion type: " + type);
-        }
+        return switch (type) {
+            case CLASS -> Assertion.createClassAssertion(false);
+            case PROPERTY -> Assertion.createPropertyAssertion(PROPERTY, false);
+            case OBJECT_PROPERTY -> Assertion.createObjectPropertyAssertion(PROPERTY, false);
+            case DATA_PROPERTY -> Assertion.createDataPropertyAssertion(PROPERTY, false);
+            case ANNOTATION_PROPERTY -> Assertion.createAnnotationPropertyAssertion(PROPERTY, false);
+        };
     }
 
     private <T> cz.cvut.kbss.ontodriver.model.Value<T> value(T val) {
@@ -155,7 +149,7 @@ class ValueConverterTest {
         final String value = "test:value";
         final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(PROPERTY, false);
         final Value res = sut.toRdf4jValue(apAssertion, value(value));
-        assertTrue(res instanceof Literal);
+        assertInstanceOf(Literal.class, res);
         final Literal literal = (Literal) res;
         assertFalse(literal.getLanguage().isPresent());
     }

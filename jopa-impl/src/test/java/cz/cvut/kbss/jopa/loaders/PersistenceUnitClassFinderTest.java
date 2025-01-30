@@ -38,6 +38,8 @@ import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
+import cz.cvut.kbss.jopa.environment.OWLClassV;
+import cz.cvut.kbss.jopa.environment.OWLClassW;
 import cz.cvut.kbss.jopa.environment.OWLClassWithQueryAttr;
 import cz.cvut.kbss.jopa.environment.Person;
 import cz.cvut.kbss.jopa.environment.Phone;
@@ -86,6 +88,8 @@ public class PersistenceUnitClassFinderTest {
         set.add(OWLClassS.class);
         set.add(OWLClassT.class);
         set.add(OWLClassU.class);
+        set.add(OWLClassV.class);
+        set.add(OWLClassW.class);
         set.add(OWLClassWithQueryAttr.class);
         set.add(Person.class);
         set.add(Phone.class);

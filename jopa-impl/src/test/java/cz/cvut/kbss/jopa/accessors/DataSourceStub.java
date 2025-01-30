@@ -173,6 +173,11 @@ public class DataSourceStub implements DataSource {
         }
 
         @Override
+        public Containers containers() {
+            return null;
+        }
+
+        @Override
         public void close() {
 
         }

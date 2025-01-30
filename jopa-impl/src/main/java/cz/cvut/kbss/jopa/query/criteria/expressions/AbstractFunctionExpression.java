@@ -22,7 +22,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public abstract class AbstractFunctionExpression<X> extends AbstractExpression<X> {
 
-    protected AbstractPathExpression argumentExpression;
+    protected final AbstractPathExpression argumentExpression;
 
     public AbstractFunctionExpression(Class<X> type, AbstractPathExpression argumentExpression, CriteriaBuilder cb) {
         super(type, cb);

@@ -80,6 +80,7 @@ class OwlapiDriver implements Closeable, ConnectionListener {
         c.setTypes(new OwlapiTypes(adapter, c::ensureOpen, c::commitIfAuto));
         c.setProperties(new OwlapiProperties(adapter, c::ensureOpen, c::commitIfAuto));
         c.setLists(new OwlapiLists(adapter, c::ensureOpen, c::commitIfAuto));
+        c.setContainers(new OwlapiContainers(adapter, c::ensureOpen, c::commitIfAuto));
         openConnections.add(c);
         c.setListener(this);
         return c;

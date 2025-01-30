@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.environment.utils;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -40,14 +41,15 @@ public class MetamodelClassInitializer {
         OWLClassB_.uri = uri;
     }
 
-    public static void initMetamodelClassOWLClassC(ListAttributeImpl<OWLClassC, OWLClassA> simpleList, ListAttributeImpl<OWLClassC, OWLClassA> referencedList, Identifier uri) {
+    public static void initMetamodelClassOWLClassC(ListAttributeImpl<OWLClassC, OWLClassA> simpleList, ListAttributeImpl<OWLClassC, OWLClassA> referencedList, RDFContainerAttribute<OWLClassC, List<OWLClassA>, OWLClassA> rdfSeq, Identifier uri) {
         OWLClassC_.simpleList = simpleList;
         OWLClassC_.referencedList = referencedList;
+        OWLClassC_.rdfSeq = rdfSeq;
         OWLClassC_.uri = uri;
     }
 
-    public static void initMetamodelClassOWLClassD(SingularAttributeImpl<OWLClassD, OWLClassA> owlClassAAtribute, Identifier uri) {
-        OWLClassD_.owlClassA = owlClassAAtribute;
+    public static void initMetamodelClassOWLClassD(SingularAttributeImpl<OWLClassD, OWLClassA> owlClassAAttribute, Identifier uri) {
+        OWLClassD_.owlClassA = owlClassAAttribute;
         OWLClassD_.uri = uri;
         }
 

@@ -169,17 +169,13 @@ interface Storage {
      */
     static Storage create(DriverConfiguration configuration) {
         final String type = configuration.getProperty(JenaConfigParam.STORAGE_TYPE, JenaOntoDriverProperties.IN_MEMORY);
-        switch (type) {
-            case JenaOntoDriverProperties.IN_MEMORY:
-                return new MemoryStorage(configuration);
-            case JenaOntoDriverProperties.FILE:
-                return new FileStorage(configuration);
-            case JenaOntoDriverProperties.TDB:
-                return new TDBStorage(configuration);
-            case JenaOntoDriverProperties.FUSEKI:
-                return new FusekiStorage(configuration);
-            default:
-                throw new OntoDriverInitializationException("Unsupported storage type '" + type + "'.");
-        }
+        return switch (type) {
+            case JenaOntoDriverProperties.IN_MEMORY -> new MemoryStorage(configuration);
+            case JenaOntoDriverProperties.FILE -> new FileStorage(configuration);
+            case JenaOntoDriverProperties.TDB -> new TDBStorage(configuration);
+            case JenaOntoDriverProperties.TDB2 -> new TDB2Storage(configuration);
+            case JenaOntoDriverProperties.FUSEKI -> new FusekiStorage(configuration);
+            default -> throw new OntoDriverInitializationException("Unsupported storage type '" + type + "'.");
+        };
     }
 }

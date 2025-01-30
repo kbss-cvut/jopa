@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassBB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassG;
@@ -58,6 +59,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -241,6 +243,25 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertEquals(entityM.getFloatAttribute(), res.getFloatAttribute());
         assertEquals(entityM.getDoubleAttribute(), res.getDoubleAttribute());
         assertEquals(entityM.getDateAttribute(), res.getDateAttribute());
+        assertEquals(entityM.getCharacterAttribute(), res.getCharacterAttribute());
+    }
+
+    @Test
+    void testPersistEntityWithBasicPrimitiveTypeAttributes() {
+        this.em = getEntityManager("PersistEntityWithBasicPrimitiveTypeAttributes", false);
+        persist(entityBB);
+        em.clear();
+
+        final OWLClassBB res = findRequired(OWLClassBB.class, entityBB.getUri());
+        assertEquals(entityBB.getUri(), res.getUri());
+        assertEquals(entityBB.getIntAttribute(), res.getIntAttribute());
+        assertEquals(entityBB.getBooleanAttribute(), res.getBooleanAttribute());
+        assertEquals(entityBB.getByteAttribute(), res.getByteAttribute());
+        assertEquals(entityBB.getShortAttribute(), res.getShortAttribute());
+        assertEquals(entityBB.getLongAttribute(), res.getLongAttribute());
+        assertEquals(entityBB.getFloatAttribute(), res.getFloatAttribute());
+        assertEquals(entityBB.getDoubleAttribute(), res.getDoubleAttribute());
+        assertEquals(entityBB.getCharAttribute(), res.getCharAttribute());
     }
 
     @Test
@@ -682,5 +703,38 @@ public abstract class CreateOperationsRunner extends BaseRunner {
                         entityM.getAnnotationSimpleLiteral(), (String) null),
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_simpleLiteral),
                         entityM.getSimpleLiteral(), (String) null)), em);
+    }
+
+    @Test
+    void persistSupportsDynamicPropertyIntegerValueMappedToSimpleLiteral() throws Exception {
+        this.em = getEntityManager("persistSupportsDynamicPropertyValueMappedToSimpleLiteral", false);
+        entityAA.setDynamicProperty(1234);
+        persist(entityAA);
+
+        verifyStatementsPresent(List.of(
+                new Quad(entityAA.getUri(), URI.create(Vocabulary.P_AA_DYNAMIC_ATTRIBUTE),
+                        entityAA.getDynamicProperty(), (String) null)), em);
+    }
+
+    @Test
+    void persistSupportsDynamicPropertyStringValueMappedToSimpleLiteral() throws Exception {
+        this.em = getEntityManager("persistSupportsDynamicPropertyValueMappedToSimpleLiteral", false);
+        entityAA.setDynamicProperty("Hello, world!");
+        persist(entityAA);
+
+        verifyStatementsPresent(List.of(
+                new Quad(entityAA.getUri(), URI.create(Vocabulary.P_AA_DYNAMIC_ATTRIBUTE),
+                        entityAA.getDynamicProperty(), (String) null)), em);
+    }
+
+    @Test
+    void persistSupportsDynamicPropertyDateValueMappedToSimpleLiteral() throws Exception {
+        this.em = getEntityManager("persistSupportsDynamicPropertyValueMappedToSimpleLiteral", false);
+        entityAA.setDynamicProperty(new Date());
+        persist(entityAA);
+
+        verifyStatementsPresent(List.of(
+                new Quad(entityAA.getUri(), URI.create(Vocabulary.P_AA_DYNAMIC_ATTRIBUTE),
+                        entityAA.getDynamicProperty(), (String) null)), em);
     }
 }

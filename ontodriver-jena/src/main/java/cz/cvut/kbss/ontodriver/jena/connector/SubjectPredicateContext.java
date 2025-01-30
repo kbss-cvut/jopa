@@ -26,7 +26,7 @@ import java.util.Set;
 
 /**
  * Represents the subject, predicate and context(s) of a statement.
- *
+ * <p>
  * Used to indicate what property values to remove from the repository.
  */
 public final class SubjectPredicateContext {
@@ -65,11 +65,9 @@ public final class SubjectPredicateContext {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SubjectPredicateContext)) return false;
-        SubjectPredicateContext that = (SubjectPredicateContext) o;
-        return subject.equals(that.subject) && Objects.equals(predicate, that.predicate) && contexts.equals(
-                that.contexts);
+        if (this == o) {return true;}
+        if (!(o instanceof SubjectPredicateContext that)) {return false;}
+        return subject.equals(that.subject) && Objects.equals(predicate, that.predicate) && contexts.equals(that.contexts);
     }
 
     @Override

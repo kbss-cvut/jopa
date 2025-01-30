@@ -64,13 +64,12 @@ public class MutableRemoveAxiom extends RemoveAxiom implements MutableAxiomChang
         if (this == o) {
             return true;
         }
-        if (!(o instanceof MutableRemoveAxiom)) {
+        if (!(o instanceof MutableRemoveAxiom that)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        MutableRemoveAxiom that = (MutableRemoveAxiom) o;
         return Objects.equals(ontology, that.ontology) && Objects.equals(getAxiom(), that.getAxiom());
     }
 

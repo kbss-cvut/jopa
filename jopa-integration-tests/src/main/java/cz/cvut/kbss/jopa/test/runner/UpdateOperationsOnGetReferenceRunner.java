@@ -79,6 +79,7 @@ public abstract class UpdateOperationsOnGetReferenceRunner extends BaseRunner {
         assertEquals(entityM.getBooleanAttribute(), result.getBooleanAttribute());
         assertEquals(entityM.getEnumAttribute(), result.getEnumAttribute());
         assertEquals(entityM.getDateAttribute(), result.getDateAttribute());
+        assertEquals(entityM.getCharacterAttribute(), result.getCharacterAttribute());
         assertEquals(entityM.getDoubleAttribute(), result.getDoubleAttribute());
     }
 

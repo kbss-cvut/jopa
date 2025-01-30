@@ -259,7 +259,7 @@ public class StorageConnector implements Closeable, Wrapper {
      * This kind of repository stores data in files and is persistent after the VM shuts down.
      */
     private Repository createNativeRepository(DriverConfiguration configuration, String localUri) {
-        LOG.trace("Creating local native repository at " + localUri);
+        LOG.trace("Creating local native repository at {}", localUri);
         validateNativeStorePath(localUri);
         try {
             this.manager = RepositoryProvider.getRepositoryManagerOfRepository(localUri);

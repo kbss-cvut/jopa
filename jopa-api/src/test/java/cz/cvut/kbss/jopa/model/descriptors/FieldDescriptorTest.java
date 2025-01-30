@@ -19,19 +19,25 @@ package cz.cvut.kbss.jopa.model.descriptors;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class FieldDescriptorTest {
 
     private static final URI CONTEXT_ONE = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/contextOne");
@@ -49,7 +55,6 @@ class FieldDescriptorTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         when(stringAtt.getJavaField()).thenReturn(TestClass.stringAttField());
     }
 
@@ -65,5 +70,18 @@ class FieldDescriptorTest {
         } else {
             assertNotEquals(dOne, dTwo);
         }
+    }
+
+    @Test
+    void getAttributeDescriptorReturnsThisInstanceWhenAttributeMatches() {
+        final Descriptor d = new FieldDescriptor(stringAtt);
+        assertSame(d, d.getAttributeDescriptor(stringAtt));
+    }
+
+    @Test
+    void getAttributeDescriptorThrowsIllegalArgumentWhenRequestedAttributeIsNotRepresentedByThisDescriptor() {
+        final Descriptor d = new FieldDescriptor(stringAtt);
+        final FieldSpecification<TestClass, Integer> intAtt = mock(FieldSpecification.class);
+        assertThrows(IllegalArgumentException.class, () -> d.getAttributeDescriptor(intAtt));
     }
 }

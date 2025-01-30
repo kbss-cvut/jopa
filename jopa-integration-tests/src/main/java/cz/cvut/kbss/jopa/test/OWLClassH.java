@@ -28,10 +28,6 @@ public class OWLClassH implements HasUri {
     private URI uri;
 
     @OWLObjectProperty(iri = Vocabulary.P_HAS_OWL_CLASS_A, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    // @ParticipationConstraints({
-    // @ParticipationConstraint(owlObjectIRI="http://new.owl#OWLClassA", min=1,
-    // max=1)
-    // })
     private OWLClassA owlClassA;
 
     public OWLClassH() {

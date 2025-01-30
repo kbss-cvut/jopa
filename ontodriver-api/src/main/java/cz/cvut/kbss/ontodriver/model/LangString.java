@@ -71,10 +71,9 @@ public class LangString implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof LangString)) {
+        if (!(o instanceof LangString that)) {
             return false;
         }
-        LangString that = (LangString) o;
         return Objects.equals(value, that.value) && Objects.equals(language, that.language);
     }
 

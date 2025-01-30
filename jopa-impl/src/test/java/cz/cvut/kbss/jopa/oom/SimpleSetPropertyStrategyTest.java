@@ -42,8 +42,11 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -61,6 +64,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,6 +75,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class SimpleSetPropertyStrategyTest {
 
     private static final URI PK = Generators.createIndividualIdentifier();
@@ -88,8 +94,6 @@ class SimpleSetPropertyStrategyTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
-
         this.gatherer = new AxiomValueGatherer(NamedResource.create(PK), null);
         this.mocks = new MetamodelMocks();
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(mocks.forOwlClassA().entityType());
@@ -199,7 +203,7 @@ class SimpleSetPropertyStrategyTest {
             try {
                 assertTrue(p.getIndividualUrls().contains(a.getUri().toURL()));
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                throw new RuntimeException("Failed to assert test result.", e);
             }
         });
     }
@@ -224,7 +228,7 @@ class SimpleSetPropertyStrategyTest {
                 values = axiomDescriptor.getAssertionValues(Assertion.createObjectPropertyAssertion(property, false));
         assertEquals(expected.size(), values.size());
         for (Value<?> v : values) {
-            assertTrue(v.getValue() instanceof NamedResource);
+            assertInstanceOf(NamedResource.class, v.getValue());
             assertTrue(expected.contains(new URL(v.stringValue())));
         }
     }

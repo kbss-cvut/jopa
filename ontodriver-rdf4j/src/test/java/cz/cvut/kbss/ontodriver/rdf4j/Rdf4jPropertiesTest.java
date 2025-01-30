@@ -131,7 +131,7 @@ class Rdf4jPropertiesTest {
             stmts.addAll(properties.get(a).stream().map(v -> vf
                             .createStatement(subject, property,
                                     Rdf4jUtils.createLiteral(v.getValue(), Constants.DEFAULT_LANG, vf)))
-                    .collect(Collectors.toList()));
+                    .toList());
         }
         return stmts;
     }

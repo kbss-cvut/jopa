@@ -64,13 +64,12 @@ public class MutableAddAxiom extends AddAxiom implements MutableAxiomChange {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof MutableAddAxiom)) {
+        if (!(o instanceof MutableAddAxiom that)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        MutableAddAxiom that = (MutableAddAxiom) o;
         return Objects.equals(ontology, that.ontology) && Objects.equals(getAxiom(), that.getAxiom());
     }
 

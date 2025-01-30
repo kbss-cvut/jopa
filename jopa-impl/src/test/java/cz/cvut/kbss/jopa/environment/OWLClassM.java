@@ -54,6 +54,9 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_dateAttribute)
     private Date dateAttribute;
 
+    @OWLDataProperty(iri = Vocabulary.p_m_characterAttribute)
+    private Character characterAttribute;
+
     @OWLDataProperty(iri = Vocabulary.p_m_enumAttribute)
     private Severity enumAttribute;
 
@@ -133,6 +136,14 @@ public class OWLClassM {
         this.dateAttribute = dateAttribute;
     }
 
+    public Character getCharacterAttribute() {
+        return characterAttribute;
+    }
+
+    public void setCharacterAttribute(Character characterAttribute) {
+        this.characterAttribute = characterAttribute;
+    }
+
     public Severity getEnumAttribute() {
         return enumAttribute;
     }
@@ -191,12 +202,14 @@ public class OWLClassM {
 
     @Override
     public String toString() {
-        return "OWLCLassM{" +
+        return "OWLClassM{" +
                 "key='" + key + '\'' +
                 ", booleanAttribute=" + booleanAttribute +
                 ", intAttribute=" + intAttribute +
                 ", longAttribute=" + longAttribute +
                 ", doubleAttribute=" + doubleAttribute +
+                ", dateAttribute=" + dateAttribute +
+                ", characterAttribute=" + characterAttribute +
                 ", enumAttribute=" + enumAttribute +
                 ", ordinalEnumAttribute=" + ordinalEnumAttribute +
                 ", integerSet=" + integerSet +
@@ -217,6 +230,7 @@ public class OWLClassM {
         this.longAttribute = 365L;
         this.doubleAttribute = 3.14D;
         this.dateAttribute = new Date();
+        this.characterAttribute = 'j';
         this.enumAttribute = Severity.MEDIUM;
         this.ordinalEnumAttribute = enumAttribute;
         this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());
@@ -261,6 +275,14 @@ public class OWLClassM {
 
     public static PropertyInfo getDateAttributeFieldPropertyInfo() throws Exception {
         return PropertyInfo.from(OWLClassM.getDateAttributeField());
+    }
+
+    public static Field getCharacterAttributeField() throws Exception {
+        return OWLClassM.class.getDeclaredField("characterAttribute");
+    }
+
+    public static PropertyInfo getCharacterAttributeFieldPropertyInfo() throws Exception {
+        return PropertyInfo.from(OWLClassM.getCharacterAttributeField());
     }
 
     public static Field getEnumAttributeField() throws Exception {

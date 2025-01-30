@@ -20,6 +20,8 @@ package cz.cvut.kbss.jopa.test.integration.owlapi;
 import cz.cvut.kbss.jopa.test.environment.OwlapiDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.RetrieveOperationsRunner;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,5 +38,26 @@ public class RetrieveOperationsTest extends RetrieveOperationsRunner {
     @Override
     protected void addFileStorageProperties(Map<String, String> properties) {
         // Do nothing
+    }
+
+    @Test
+    @Disabled
+    @Override
+    public void testRetrieveWithCollectionQueryAttribute() {
+        // disabled because OWL2Query does not support SPARQL VALUES keyword
+    }
+
+    @Test
+    @Disabled
+    @Override
+    public void testRetrieveWithSetQueryAttribute() {
+        // disabled because OWL2Query does not support SPARQL VALUES keyword
+    }
+
+    @Test
+    @Disabled
+    @Override
+    public void testRetrieveWithListQueryAttribute() {
+        // disabled because OWL2Query does not support SPARQL VALUES keyword
     }
 }

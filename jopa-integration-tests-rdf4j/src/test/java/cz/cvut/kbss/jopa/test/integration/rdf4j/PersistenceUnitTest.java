@@ -88,16 +88,13 @@ class PersistenceUnitTest extends PersistenceUnitTestRunner {
     private List<OWLClassA> generateTestData(List<EntityManagerFactory> emfs) {
         final List<OWLClassA> instances = new ArrayList<>();
         emfs.forEach(emf -> {
-            final EntityManager em = emf.createEntityManager();
-            try {
+            try (EntityManager em = emf.createEntityManager()) {
                 em.getTransaction().begin();
                 final OWLClassA a = new OWLClassA();
                 a.setUri(Generators.generateUri());
                 em.persist(a);
                 em.getTransaction().commit();
                 instances.add(a);
-            } finally {
-                em.close();
             }
         });
         return instances;
@@ -106,11 +103,8 @@ class PersistenceUnitTest extends PersistenceUnitTestRunner {
     private void verifyTestData(List<EntityManagerFactory> emfs, List<OWLClassA> instances) {
         emfs.forEach(emf -> {
             final OWLClassA a = instances.get(0);
-            final EntityManager em = emf.createEntityManager();
-            try {
+            try (EntityManager em = emf.createEntityManager()) {
                 assertNotNull(em.find(OWLClassA.class, a.getUri()));
-            } finally {
-                em.close();
             }
         });
     }
@@ -137,14 +131,12 @@ class PersistenceUnitTest extends PersistenceUnitTestRunner {
                                                                                 TestEnvironment.PERSISTENCE_LANGUAGE)));
         conn.close();
         final EntityManager newEm = em.getEntityManagerFactory().createEntityManager();
-        em.close();
-        newEm.getEntityManagerFactory().unwrap(Rdf4jDataSource.class).setRepository(repo);
-        try {
+        try (newEm) {
+            em.close();
+            newEm.getEntityManagerFactory().unwrap(Rdf4jDataSource.class).setRepository(repo);
             final OWLClassA result = newEm.find(OWLClassA.class, entityA.getUri());
             assertNotNull(result);
             assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
-        } finally {
-            newEm.close();
         }
     }
 }

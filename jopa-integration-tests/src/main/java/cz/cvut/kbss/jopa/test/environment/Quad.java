@@ -85,10 +85,9 @@ public class Quad {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Quad)) {
+        if (!(o instanceof Quad quad)) {
             return false;
         }
-        Quad quad = (Quad) o;
         return subject.equals(quad.subject) &&
                 property.equals(quad.property) &&
                 value.equals(quad.value) &&

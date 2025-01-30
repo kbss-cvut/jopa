@@ -17,7 +17,13 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.*;
+import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.Containers;
+import cz.cvut.kbss.ontodriver.Lists;
+import cz.cvut.kbss.ontodriver.PreparedStatement;
+import cz.cvut.kbss.ontodriver.Properties;
+import cz.cvut.kbss.ontodriver.Statement;
+import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -30,8 +36,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
 /**
  * Default implementation of the {@link Connection} interface for OWLAPI driver.
@@ -46,6 +50,7 @@ public class OwlapiConnection implements Connection {
     private OwlapiTypes types;
     private OwlapiProperties properties;
     private OwlapiLists lists;
+    private OwlapiContainers containers;
 
     private ConnectionListener listener;
 
@@ -75,6 +80,10 @@ public class OwlapiConnection implements Connection {
 
     void setLists(OwlapiLists lists) {
         this.lists = lists;
+    }
+
+    void setContainers(OwlapiContainers containers) {
+        this.containers = containers;
     }
 
     @Override
@@ -137,7 +146,7 @@ public class OwlapiConnection implements Connection {
     @Override
     public boolean contains(Axiom<?> axiom, Set<URI> contexts) {
         ensureOpen();
-        Objects.requireNonNull(axiom, getNPXMessageSupplier("axiom"));
+        Objects.requireNonNull(axiom);
         return adapter.containsAxiom(axiom, contexts);
     }
 
@@ -221,6 +230,13 @@ public class OwlapiConnection implements Connection {
         ensureOpen();
         assert properties != null;
         return properties;
+    }
+
+    @Override
+    public Containers containers() {
+        ensureOpen();
+        assert containers != null;
+        return containers;
     }
 
     @Override

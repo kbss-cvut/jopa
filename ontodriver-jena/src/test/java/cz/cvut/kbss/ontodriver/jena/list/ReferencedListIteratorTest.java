@@ -24,7 +24,7 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.ListProcessingException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -221,11 +221,11 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
                 createStatement(node, HAS_CONTENT, createLangLiteral("jedna", "cs"))
         );
         when(connectorMock.find(node, HAS_CONTENT, null, Collections.emptySet())).thenReturn(content);
-        final ReferencedListIterator<MultilingualString> sut = new ReferencedListIterator<>(descriptor(Assertion.AssertionType.DATA_PROPERTY, null), connectorMock);
+        final ReferencedListIterator<Translations> sut = new ReferencedListIterator<>(descriptor(Assertion.AssertionType.DATA_PROPERTY, null), connectorMock);
 
-        final Axiom<MultilingualString> result = sut.nextAxiom();
+        final Axiom<Translations> result = sut.nextAxiom();
         assertNotNull(result);
-        assertEquals(new MultilingualString(Map.of("en", "one", "cs", "jedna")), result.getValue().getValue());
+        assertEquals(new Translations(Map.of("en", "one", "cs", "jedna")), result.getValue().getValue());
     }
 
     @Test
@@ -238,9 +238,9 @@ public class ReferencedListIteratorTest extends ListIteratorTestBase<ReferencedL
                 createStatement(node, HAS_CONTENT, createLangLiteral("jedna", "cs"))
         );
         when(connectorMock.find(node, HAS_CONTENT, null, Collections.emptySet())).thenReturn(content);
-        final ReferencedListIterator<MultilingualString> sut = new ReferencedListIterator<>(descriptor(Assertion.AssertionType.DATA_PROPERTY, null), connectorMock);
+        final ReferencedListIterator<Translations> sut = new ReferencedListIterator<>(descriptor(Assertion.AssertionType.DATA_PROPERTY, null), connectorMock);
 
-        final MultilingualString newContent = new MultilingualString(Map.of(
+        final Translations newContent = new Translations(Map.of(
                 "en", "New",
                 "cs", "Nový"
         ));

@@ -1,5 +1,32 @@
 # JOPA - Change Log
 
+## 2.2.2 - 2025-01-18
+- Fix an issue with parsing SPARQL query parameters (Enhancement #294).
+- Fix an issue with passing a lazy loading proxy to `EntityManager.remove` (Bug #306).
+- Refactor test metamodel setup (GH #301).
+- Allow using primitive types as mapped attribute types.
+- Dependency updates: RDF4J 5.1.0.
+
+## 2.2.1 - 2024-12-12
+- Rename `MultilingualString` in OntoDriver to `Translations` to prevent confusion with `MultilingualString` from JOPA (GH #288).
+- Fix a SPARQL query parsing issue (Bug #294).
+
+## 2.2.0 - 2024-11-22
+- Treat any non-entity type as immutable w.r.t. to change tracking so that we do not have to explicitly list them in code (GH #278).
+- Allow projecting entity attributes from SOQL/Criteria API queries (Enhancement #277).
+- Allow using `Object` as data property field type, resolve actual type from data (GH #283).
+- Use lists for plural query attributes when field type is `Collection` (Enhancement #276).
+- Fix lazy loading of plural query attributes (Bug #285).
+- Ignore SPARQL comments when parsing native SPARQL queries (Bug #275).
+- Fix Jena file storage statement removal issue (Bug #274).
+- Dependency updates: RDF4J 5.0.3.
+
+## 2.1.0 - 2024-10-16
+- Add support for RDF containers (Task #52). 
+  [Wiki](https://github.com/kbss-cvut/jopa/wiki/Object-ontological-Mapping#collection-mapping) contains info on collection mapping in general.
+- Add support for Jena TDB2 storage.
+- Dependency updates: Jena 5.2.0, OWL API 5.5.1, SLF4J 2.0.16.
+
 ## 2.0.5 - 2024-09-03
 - Modify target ontology selection in queries (use only query hints) to prevent RDF4J driver from spanning application log.
 

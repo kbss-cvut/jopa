@@ -101,22 +101,24 @@ class AxiomDescriptorFactory {
             case OBJECT:
                 return createObjectPropertyAssertion(att.getIRI().toURI(), includeInferred(att, descriptor));
             case DATA:
-                if (isReferencedList(att)) {
-                    // If the attribute is a referenced list containing data property values, it is mapped as a data property
+                if (isRdfContainer(att) || isReferencedList(att)) {
+                    // If the attribute is a referenced list or an RDF container containing data property values,
+                    // it is mapped as a data property
                     // However, the referenced list nodes themselves are resources (individuals) and thus have to be
                     // referenced via an object property
+                    // Similarly, the RDF container is represented by a resource even when it contains literals
                     return createObjectPropertyAssertion(att.getIRI().toURI(), includeInferred(att, descriptor));
                 }
                 if (withLanguage(att, descriptor)) {
                     return createDataPropertyAssertion(att.getIRI().toURI(), language(att, descriptor),
-                                                       includeInferred(att, descriptor));
+                            includeInferred(att, descriptor));
                 } else {
                     return createDataPropertyAssertion(att.getIRI().toURI(), includeInferred(att, descriptor));
                 }
             case ANNOTATION:
                 if (withLanguage(att, descriptor)) {
                     return createAnnotationPropertyAssertion(att.getIRI().toURI(), language(att, descriptor),
-                                                             includeInferred(att, descriptor));
+                            includeInferred(att, descriptor));
                 } else {
                     return createAnnotationPropertyAssertion(att.getIRI().toURI(), includeInferred(att, descriptor));
                 }
@@ -129,6 +131,10 @@ class AxiomDescriptorFactory {
     private static boolean isReferencedList(Attribute<?, ?> att) {
         return att.isCollection() && ((PluralAttribute<?, ?, ?>) att).getCollectionType() == CollectionType.LIST &&
                 ((ListAttribute<?, ?>) att).getSequenceType() == SequenceType.referenced;
+    }
+
+    private static boolean isRdfContainer(Attribute<?, ?> att) {
+        return att.isCollection() && ((PluralAttribute<?, ?, ?>) att).isRdfContainer();
     }
 
     private static boolean withLanguage(Attribute<?, ?> att, Descriptor descriptor) {
@@ -154,7 +160,7 @@ class AxiomDescriptorFactory {
      */
     Axiom<NamedResource> createForReferenceLoading(URI identifier, EntityType<?> et) {
         return new AxiomImpl<>(NamedResource.create(identifier), Assertion.createClassAssertion(false),
-                               new Value<>(NamedResource.create(et.getIRI().toString())));
+                new Value<>(NamedResource.create(et.getIRI().toString())));
     }
 
     AxiomDescriptor createForFieldLoading(URI identifier, FieldSpecification<?, ?> fieldSpec,

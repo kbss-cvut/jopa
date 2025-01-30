@@ -19,7 +19,7 @@ package cz.cvut.kbss.ontodriver.jena.list;
 
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -118,10 +118,10 @@ public class ListTestUtil {
             final List<Statement> contentStatements;
             if (content instanceof URI) {
                 contentStatements = List.of(createStatement(node, hasContent, createResource(content.toString())));
-            } else if (content instanceof MultilingualString) {
-                contentStatements = ((MultilingualString) content).getValue().entrySet().stream()
-                                                                  .map(e -> createStatement(node, hasContent, createLangLiteral(e.getValue(), e.getKey())))
-                                                                  .collect(Collectors.toList());
+            } else if (content instanceof Translations) {
+                contentStatements = ((Translations) content).getValue().entrySet().stream()
+                                                            .map(e -> createStatement(node, hasContent, createLangLiteral(e.getValue(), e.getKey())))
+                                                            .collect(Collectors.toList());
             } else {
                 contentStatements = List.of(createStatement(node, hasContent, createTypedLiteral(content)));
             }

@@ -54,6 +54,8 @@ public class SparqlQueryParser implements QueryParser {
     private ParamType currentParamType;
     private StringBuilder currentWord;
     private boolean inProjection;
+    private boolean inComment;
+    private boolean inUri;
 
     public SparqlQueryParser(ParameterValueFactory parameterValueFactory) {
         this.parameterValueFactory = parameterValueFactory;
@@ -67,45 +69,49 @@ public class SparqlQueryParser implements QueryParser {
     @Override
     public SparqlQueryHolder parseQuery(String query) {
         this.query = query;
-        this.queryParts = new ArrayList<>();
-        this.uniqueParams = new HashMap<>();
-        this.positionalCounter = 1;
-        this.parameters = new ArrayList<>();
-        this.inSQString = false;
-        // In double-quoted string
-        this.inDQString = false;
-        this.inParam = false;
-        this.lastParamEndIndex = 0;
-        this.paramStartIndex = 0;
-        this.currentParamType = null;
-        this.currentWord = new StringBuilder();
+        resetParser();
         int i;
         for (i = 0; i < query.length(); i++) {
             final char c = query.charAt(i);
             switch (c) {
+                case '#':
+                    startComment(i, c);
+                    break;
                 case '\'':
-                    inSQString = !inSQString;
+                    this.inSQString = inComment == inSQString; // ~ inComment ? inSQString : !inSQString
                     break;
                 case '"':
-                    inDQString = !inDQString;
+                    this.inDQString = inComment == inDQString; // ~ inComment ? inDQString : !inDQString
                     break;
                 case '$':
-                    parameterStart(i, ParamType.POSITIONAL);
-                    break;
-                case '?':
-                    if (inParam) {
-                        parameterEnd(i);    // Property path zero or one
-                    } else {
-                        parameterStart(i, ParamType.NAMED);
+                    if (!inComment) {
+                        parameterStart(i, ParamType.POSITIONAL);
                     }
                     break;
-                case '{':
-                    this.inProjection = false;  // Intentional fall-through
+                case '?':
+                    queryVariableStart(i);
+                    break;
                 case '<':
+                    this.inUri = true;
+                    if (inParam) {
+                        parameterEnd(i);
+                    }
+                    wordEnd();
+                    break;
                 case '>':
-                case ',':
+                    this.inUri = false;
+                    if(inParam) {
+                        parameterEnd(i);
+                    }
+                    wordEnd();
+                    break;
                 case '\n':
+                    this.inComment = false; // Intentional fall-through
+                case '{':
+                    // ~ inComment ? inProjection : !inProjection
+                    this.inProjection = inComment && inProjection;  // Intentional fall-through
                 case '\r':
+                case ',':
                 case ')':
                 case ' ':
                 case '.':
@@ -135,11 +141,49 @@ public class SparqlQueryParser implements QueryParser {
         return new SparqlQueryHolder(query, queryParts, parameters);
     }
 
+    private void resetParser() {
+        this.queryParts = new ArrayList<>();
+        this.uniqueParams = new HashMap<>();
+        this.positionalCounter = 1;
+        this.parameters = new ArrayList<>();
+        this.inSQString = false;
+        // In double-quoted string
+        this.inDQString = false;
+        this.inParam = false;
+        this.inUri = false;
+        this.inComment = false;
+        this.lastParamEndIndex = 0;
+        this.paramStartIndex = 0;
+        this.currentParamType = null;
+        this.currentWord = new StringBuilder();
+    }
+
+    private void startComment(int index, char c) {
+        if (!inUri) {
+            if (inParam && !inComment) {
+                parameterEnd(index);
+            }
+            this.inComment = true;
+        } else {
+            currentWord.append(c);
+        }
+    }
+
+    private void queryVariableStart(int i) {
+        if (!inComment) {
+            if (inParam) {
+                parameterEnd(i);    // Property path zero or one
+            } else {
+                parameterStart(i, ParamType.NAMED);
+            }
+        }
+    }
+
     private void parameterStart(int index, ParamType paramType) {
         if (!inSQString && !inDQString) {
             queryParts.add(query.substring(lastParamEndIndex, index));
-            paramStartIndex = index + 1;
-            inParam = true;
+            this.paramStartIndex = index + 1;
+            this.inParam = true;
             this.currentParamType = paramType;
         }
     }
@@ -200,6 +244,6 @@ public class SparqlQueryParser implements QueryParser {
         } else if (inProjection && SparqlConstants.WHERE.equalsIgnoreCase(currentWord.toString())) {
             this.inProjection = false;
         }
-        currentWord = new StringBuilder();
+        this.currentWord = new StringBuilder();
     }
 }

@@ -26,11 +26,35 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class DatatypeTransformerTest {
+
+    @Test
+    void wrapperTypeToPrimitiveTypeReturnsNullForNullInput() {
+        assertEquals(Optional.empty(), DatatypeTransformer.wrapperTypeToPrimitiveType(null));
+    }
+
+    @ParameterizedTest
+    @MethodSource("wrapperTypeToPrimitiveTypeTestValues")
+    void wrapperTypeToPrimitiveType(Class<?> wrapper, Class<?> primitive) {
+        assertEquals(Optional.of(primitive), DatatypeTransformer.wrapperTypeToPrimitiveType(wrapper));
+    }
+
+    private static Stream<Arguments> wrapperTypeToPrimitiveTypeTestValues() {
+        return Stream.of(
+                Arguments.arguments(Integer.class, int.class),
+                Arguments.arguments(Boolean.class, boolean.class),
+                Arguments.arguments(Byte.class, byte.class),
+                Arguments.arguments(Short.class, short.class),
+                Arguments.arguments(Long.class, long.class),
+                Arguments.arguments(Float.class, float.class),
+                Arguments.arguments(Double.class, double.class)
+        );
+    }
 
     @Test
     void transformReturnsNullForNullInput() {

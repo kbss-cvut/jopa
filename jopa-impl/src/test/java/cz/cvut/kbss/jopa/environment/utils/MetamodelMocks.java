@@ -38,6 +38,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
+import cz.cvut.kbss.jopa.environment.OWLClassW;
 import cz.cvut.kbss.jopa.environment.OWLClassWithQueryAttr;
 import cz.cvut.kbss.jopa.environment.OneOfEnum;
 import cz.cvut.kbss.jopa.environment.Person;
@@ -57,6 +58,7 @@ import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.MappedSuperclassTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.RdfContainerAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SetAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttributeImpl;
@@ -70,9 +72,11 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -111,6 +115,8 @@ public class MetamodelMocks {
     private ListAttributeImpl<OWLClassC, OWLClassA> cReferencedList;
     @Mock
     private ListAttributeImpl<OWLClassC, OWLClassA> cSimpleList;
+    @Mock
+    private RdfContainerAttributeImpl<OWLClassC, List<OWLClassA>, OWLClassA> cRdfSeq;
 
     @Mock
     private IdentifiableEntityType<OWLClassD> etD;
@@ -199,6 +205,8 @@ public class MetamodelMocks {
     private SingularAttributeImpl<OWLClassM, Double> mDoubleAtt;
     @Mock
     private SingularAttributeImpl<OWLClassM, Date> mDateAtt;
+    @Mock
+    private SingularAttributeImpl<OWLClassM, Character> mCharacterAtt;
     @Mock
     private SingularAttributeImpl<OWLClassM, OWLClassM.Severity> mEnumAtt;
     @Mock
@@ -315,6 +323,21 @@ public class MetamodelMocks {
     private SingularAttributeImpl<OWLClassU, LocalDateTime> uModified;
 
     @Mock
+    private IdentifiableEntityType<OWLClassW> etW;
+    @Mock
+    private Identifier<OWLClassW, URI> idW;
+    @Mock
+    private AbstractPluralAttribute<OWLClassW, Set<String>, String> wSetStringAtt;
+    @Mock
+    private ListAttributeImpl<OWLClassW, String> wListStringAtt;
+    @Mock
+    private AbstractPluralAttribute<OWLClassW, Collection<String>, String> wCollectionStringAtt;
+    @Mock
+    private AbstractQueryAttribute<OWLClassW, Set<String>> wSetQueryStringAtt;
+    @Mock
+    private AbstractQueryAttribute<OWLClassW, List<String>> wListQueryStringAtt;
+
+    @Mock
     private IdentifiableEntityType<OWLClassWithQueryAttr> etQA;
     @Mock
     private Identifier<OWLClassWithQueryAttr, URI> idQA;
@@ -355,19 +378,19 @@ public class MetamodelMocks {
         MetamodelClassInitializer.initMetamodelClassOWLClassA(aStringAtt, aTypes, idA);
         MetamodelFactory.initOWLClassBMocks(etB, bStringAtt, bProperties, idB);
         MetamodelClassInitializer.initMetamodelClassOWLClassB(bStringAtt, bProperties, idB);
-        MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, idC);
-        MetamodelClassInitializer.initMetamodelClassOWLClassC(cSimpleList, cReferencedList, idC);
+        MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, cRdfSeq, etA, idC);
+        MetamodelClassInitializer.initMetamodelClassOWLClassC(cSimpleList, cReferencedList, cRdfSeq, idC);
         MetamodelFactory.initOWLClassDMocks(etD, dOwlClassAAtt, etA, idD);
         MetamodelClassInitializer.initMetamodelClassOWLClassD(dOwlClassAAtt, idD);
         MetamodelFactory.initOWLClassEMocks(etE, eStringAtt, idE);
-        MetamodelFactory.initOWLClassFMocks(etF, fSetAtt, fStringAtt, idF);
+        MetamodelFactory.initOWLClassFMocks(etF, fSetAtt, fStringAtt, etA, idF);
         MetamodelFactory.initOWLClassGMocks(etG, gOwlClassHAtt, etH, idG);
         MetamodelFactory.initOWLClassHMocks(etH, hOwlClassAAtt, hOwlClassGAtt, etA, etG, idH);
-        MetamodelFactory.initOWLClassIMocks(etI, iOwlClassAAtt, idI);
-        MetamodelFactory.initOWLClassJMocks(etJ, jSetAtt, idJ);
-        MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, idK);
-        MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
-        MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt,
+        MetamodelFactory.initOWLClassIMocks(etI, iOwlClassAAtt, etA, idI);
+        MetamodelFactory.initOWLClassJMocks(etJ, jSetAtt, etA, idJ);
+        MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, etE, idK);
+        MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, etA, idL);
+        MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mCharacterAtt, mEnumAtt,
                                            mOrdinalEnumAtt, mIntegerSetAtt, mLexicalFormAtt, mSimpleLiteralAtt,
                                            mExplicitDatatypeAtt, mWithConverterAtt, mObjectOneOfEnumAttribute, idM);
         MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nPluralAnnotationAtt,
@@ -383,10 +406,11 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassSListeners(etS, parentListenerMock);
         MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
         MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
-        MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, idT);
+        MetamodelFactory.initOwlClassTMock(etT, tLocalDateAtt, tLocalDateTimeAtt, tOwlClassSAtt, etS, idT);
         MetamodelFactory.initOwlClassUMocks(etU, uSingularStringAtt, uPluralStringAtt, uModified, idU);
+        MetamodelFactory.initOwlClassWMocks(etW, wSetStringAtt, wListStringAtt, wCollectionStringAtt, wSetQueryStringAtt, wListQueryStringAtt, idW);
         MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, qaEntityQueryAtt,
-                                                        qaEntityAtt, idQA);
+                                                        qaEntityAtt, etA, idQA);
         MetamodelFactory.initPhoneMocks(etPhone, phoneNumberAtt, idPhone);
         MetamodelFactory.initPersonMocks(etPerson, personUsernameAtt, personGenderAtt, personAgeAtt, personPhoneAtt,
                                          etPhone, personTypes, idPerson);
@@ -416,6 +440,7 @@ public class MetamodelMocks {
         etMap.put(OWLClassS.class, etS);
         etMap.put(OWLClassT.class, etT);
         etMap.put(OWLClassU.class, etU);
+        etMap.put(OWLClassW.class, etW);
         etMap.put(OWLClassWithQueryAttr.class, etQA);
         etMap.put(Person.class, etPerson);
         etMap.put(Phone.class, etPhone);
@@ -522,6 +547,10 @@ public class MetamodelMocks {
         return new OWLClassUMetamodel();
     }
 
+    public OWLClassWMetamodel forOWLClassW() {
+        return new OWLClassWMetamodel();
+    }
+
     public OWLClassWithQueryAttrMetamodel forOwlClassWithQueryAttr() {
         return new OWLClassWithQueryAttrMetamodel();
     }
@@ -577,6 +606,10 @@ public class MetamodelMocks {
 
         public ListAttributeImpl<OWLClassC, OWLClassA> simpleListAtt() {
             return MetamodelMocks.this.cSimpleList;
+        }
+
+        public RdfContainerAttributeImpl<OWLClassC, List<OWLClassA>, OWLClassA> rdfSeqAtt() {
+            return MetamodelMocks.this.cRdfSeq;
         }
     }
 
@@ -753,6 +786,10 @@ public class MetamodelMocks {
 
         public AbstractAttribute<OWLClassM, Date> dateAttribute() {
             return MetamodelMocks.this.mDateAtt;
+        }
+
+        public AbstractAttribute<OWLClassM, Character> characterAttribute() {
+            return MetamodelMocks.this.mCharacterAtt;
         }
 
         public AbstractAttribute<OWLClassM, OWLClassM.Severity> enumAttribute() {
@@ -978,6 +1015,36 @@ public class MetamodelMocks {
 
         public AbstractAttribute<OWLClassU, LocalDateTime> uModified() {
             return MetamodelMocks.this.uModified;
+        }
+    }
+
+    public class OWLClassWMetamodel {
+        public IdentifiableEntityType<OWLClassW> entityType() {
+            return MetamodelMocks.this.etW;
+        }
+
+        public Identifier<OWLClassW, URI> identifier() {
+            return MetamodelMocks.this.idW;
+        }
+
+        public AbstractPluralAttribute<OWLClassW, Set<String>, String> vSetStringAtt() {
+            return MetamodelMocks.this.wSetStringAtt;
+        }
+
+        public ListAttributeImpl<OWLClassW, String> vListStringAtt() {
+            return MetamodelMocks.this.wListStringAtt;
+        }
+
+        public AbstractPluralAttribute<OWLClassW, Collection<String>, String> vCollectionStringAtt() {
+            return MetamodelMocks.this.wCollectionStringAtt;
+        }
+
+        public AbstractQueryAttribute<OWLClassW, Set<String>> vSetQueryStringAtt() {
+            return MetamodelMocks.this.wSetQueryStringAtt;
+        }
+
+        public AbstractQueryAttribute<OWLClassW, List<String>> vListQueryStringAtt() {
+            return MetamodelMocks.this.wListQueryStringAtt;
         }
     }
 

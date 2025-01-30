@@ -90,6 +90,16 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
+    public void enterStart(SoqlParser.StartContext ctx) {
+
+    }
+
+    @Override
+    public void exitStart(SoqlParser.StartContext ctx) {
+
+    }
+
+    @Override
     public void enterQuerySentence(SoqlParser.QuerySentenceContext ctx) {
     }
 
@@ -101,33 +111,122 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterSelectStatement(SoqlParser.SelectStatementContext ctx) {
+
     }
 
     @Override
     public void exitSelectStatement(SoqlParser.SelectStatementContext ctx) {
+
     }
 
     @Override
-    public void enterParams(SoqlParser.ParamsContext ctx) {
+    public void enterSingleValuedObjectPathExpression(SoqlParser.SingleValuedObjectPathExpressionContext ctx) {
+
     }
 
     @Override
-    public void exitParams(SoqlParser.ParamsContext ctx) {
+    public void exitSingleValuedObjectPathExpression(SoqlParser.SingleValuedObjectPathExpressionContext ctx) {
+
     }
 
     @Override
-    public void enterParam(SoqlParser.ParamContext ctx) {
+    public void enterSimpleSubpath(SoqlParser.SimpleSubpathContext ctx) {
+        if(ctx.simpleSubpath() == null) {
+            return;
+        }
+
+        if(ctx.getChildCount() == 1) {
+            return;
+        }
+
+        // node was already processed by parent
+        if(ctx.getParent() instanceof SoqlParser.SimpleSubpathContext) {
+            return;
+        }
+
+        SoqlNode owner = linkSimpleSubpath(ctx);
+
+        // don't add top level references multiple times
+        if(!owner.hasChild() && objectTypes.containsKey(owner.getValue())) {
+            return;
+        }
+
+        SoqlAttribute newAttr = new SoqlAttribute(owner);
+        if (owner.hasChild() && isIdentifier(owner, owner.getChild())) {
+            this.isInObjectIdentifierExpression = true;
+            if (projectedVariable.equals(owner.getValue()) && currentPointerIsNotAttributeReference()) {
+                attrPointer.setProjected(true);
+            } else {
+                newAttr.setProjected(true);
+                pushNewAttribute(newAttr);
+            }
+        } else {
+            pushNewAttribute(newAttr);
+        }
+    }
+
+    private SoqlNode linkSimpleSubpath(ParserRuleContext ctx) {
+        AttributeNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
+        AttributeNode currentNode = firstNode;
+
+        while (ctx.getChildCount() == 3) {
+            ctx = (ParserRuleContext) ctx.getChild(2);
+            SoqlNode prevNode = currentNode;
+            currentNode = new AttributeNode(prevNode, ctx.getChild(0).getText());
+            prevNode.setChild(currentNode);
+        }
+        setIris(firstNode);
+        if (currentNode.getIri().isEmpty()) {
+            this.isInObjectIdentifierExpression = true;
+            if (projectedVariable != null && projectedVariable.equals(firstNode.getValue()) && currentPointerIsNotAttributeReference()) {
+                attrPointer.setProjected(true);
+            }
+        }
+        return firstNode;
     }
 
     @Override
-    public void exitParam(SoqlParser.ParamContext ctx) {
+    public void exitSimpleSubpath(SoqlParser.SimpleSubpathContext ctx) {
+
     }
 
     @Override
-    public void enterJoinedParams(SoqlParser.JoinedParamsContext ctx) {
-        SoqlNode firstNode = linkContextNodes(ctx);
-        SoqlAttribute myAttr = new SoqlAttribute(firstNode);
-        pushNewAttribute(myAttr);
+    public void enterSingleValuedObjectField(SoqlParser.SingleValuedObjectFieldContext ctx) {
+
+    }
+
+    @Override
+    public void exitSingleValuedObjectField(SoqlParser.SingleValuedObjectFieldContext ctx) {
+
+    }
+
+    @Override
+    public void enterSelectClause(SoqlParser.SelectClauseContext ctx) {
+        this.typeDef = SparqlConstants.SELECT;
+
+        if(ctx.DISTINCT() != null) {
+            this.isSelectedParamDistinct = true;
+        }
+    }
+
+    @Override
+    public void exitSelectClause(SoqlParser.SelectClauseContext ctx) {
+
+    }
+
+    @Override
+    public void enterSelectItem(SoqlParser.SelectItemContext ctx) {
+
+    }
+
+    @Override
+    public void exitSelectItem(SoqlParser.SelectItemContext ctx) {
+
+    }
+
+    @Override
+    public void enterSelectExpression(SoqlParser.SelectExpressionContext ctx) {
+
     }
 
     private void pushNewAttribute(SoqlAttribute myAttr) {
@@ -140,75 +239,29 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void exitJoinedParams(SoqlParser.JoinedParamsContext ctx) {
-    }
-
-    @Override
-    public void enterParamComma(SoqlParser.ParamCommaContext ctx) {
-    }
-
-    @Override
-    public void exitParamComma(SoqlParser.ParamCommaContext ctx) {
-    }
-
-    @Override
-    public void enterDistinctParam(SoqlParser.DistinctParamContext ctx) {
-    }
-
-    @Override
-    public void exitDistinctParam(SoqlParser.DistinctParamContext ctx) {
-    }
-
-    @Override
-    public void enterSelectedParam(SoqlParser.SelectedParamContext ctx) {
-    }
-
-    @Override
-    public void exitSelectedParam(SoqlParser.SelectedParamContext ctx) {
+    public void exitSelectExpression(SoqlParser.SelectExpressionContext ctx) {
         if (!isSelectedParamCount) {
             this.projectedVariable = ctx.getText();
         }
     }
 
     @Override
-    public void enterCount(SoqlParser.CountContext ctx) {
-        isSelectedParamCount = true;
-    }
-
-    @Override
-    public void exitCount(SoqlParser.CountContext ctx) {
-        this.projectedVariable = ctx.getChild(2).getText();
-    }
-
-    @Override
-    public void enterObject(SoqlParser.ObjectContext ctx) {
-    }
-
-    @Override
-    public void exitObject(SoqlParser.ObjectContext ctx) {
-    }
-
-    @Override
-    public void enterObjWithAttr(SoqlParser.ObjWithAttrContext ctx) {
-        String owner = getOwnerFromParam(ctx);
-        String attribute = getAttributeFromParam(ctx);
-        // objectNode.attributeNode
-        SoqlNode objectNode = new AttributeNode(owner);
-        SoqlNode attributeNode = new AttributeNode(objectNode, attribute);
-        objectNode.setChild(attributeNode);
-        setIris(objectNode);
-        SoqlAttribute newAttr = new SoqlAttribute(objectNode);
-        if (isIdentifier(objectNode, attributeNode)) {
-            this.isInObjectIdentifierExpression = true;
-            if (projectedVariable.equals(objectNode.getValue()) && currentPointerIsNotAttributeReference()) {
-                attrPointer.setProjected(true);
-            } else {
-                newAttr.setProjected(true);
-                pushNewAttribute(newAttr);
+    public void enterAggregateExpression(SoqlParser.AggregateExpressionContext ctx) {
+        if(ctx.COUNT() != null) {
+            isSelectedParamCount = true;
+            if(ctx.DISTINCT() != null) {
+                isSelectedParamDistinct = true;
             }
-        } else {
-            pushNewAttribute(newAttr);
+
+            if(ctx.simpleSubpath() != null) {
+                this.projectedVariable = ctx.simpleSubpath().getText();
+            }
         }
+    }
+
+    @Override
+    public void exitAggregateExpression(SoqlParser.AggregateExpressionContext ctx) {
+
     }
 
     private boolean isIdentifier(SoqlNode objectNode, SoqlNode attributeNode) {
@@ -225,54 +278,6 @@ public class SoqlQueryListener implements SoqlListener {
 
     private boolean currentPointerIsNotAttributeReference() {
         return !attrPointer.getFirstNode().hasChild();
-    }
-
-    @Override
-    public void exitObjWithAttr(SoqlParser.ObjWithAttrContext ctx) {
-    }
-
-    @Override
-    public void enterObjWithOutAttr(SoqlParser.ObjWithOutAttrContext ctx) {
-    }
-
-    @Override
-    public void exitObjWithOutAttr(SoqlParser.ObjWithOutAttrContext ctx) {
-    }
-
-    @Override
-    public void enterAttribute(SoqlParser.AttributeContext ctx) {
-    }
-
-    @Override
-    public void exitAttribute(SoqlParser.AttributeContext ctx) {
-    }
-
-    @Override
-    public void enterTypeDef(SoqlParser.TypeDefContext ctx) {
-        typeDef = ctx.getChild(0).getText();
-    }
-
-    @Override
-    public void exitTypeDef(SoqlParser.TypeDefContext ctx) {
-    }
-
-    @Override
-    public void enterDistinct(SoqlParser.DistinctContext ctx) {
-        if (SoqlConstants.DISTINCT.equals(ctx.getChild(0).getText())) {
-            isSelectedParamDistinct = true;
-        }
-    }
-
-    @Override
-    public void exitDistinct(SoqlParser.DistinctContext ctx) {
-    }
-
-    @Override
-    public void enterWhereClauseWrapper(SoqlParser.WhereClauseWrapperContext ctx) {
-    }
-
-    @Override
-    public void exitWhereClauseWrapper(SoqlParser.WhereClauseWrapperContext ctx) {
     }
 
     @Override
@@ -325,7 +330,7 @@ public class SoqlQueryListener implements SoqlListener {
             pushNewAttribute(createSyntheticAttributeForEntityId());
         }
         final ParseTree value = resolveInExpressionValue(ctx);
-        if (ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
+        if (ctx.NOT() != null) {
             attrPointer.setOperator(InOperator.notIn());
         } else {
             attrPointer.setOperator(InOperator.in());
@@ -335,17 +340,16 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private SoqlAttribute createSyntheticAttributeForEntityId() {
-        return new SoqlAttribute(
-                attrPointer.getFirstNode().hasChild() ? attrPointer.getFirstNode().getChild() :
-                        new AttributeNode(rootVariable.substring(1)));
+        if(attrPointer.getFirstNode().hasChild()) {
+            attrPointer.getFirstNode().getChild().setChild(null);
+            return new SoqlAttribute(attrPointer.getFirstNode().getChild());
+        }
+
+        return new SoqlAttribute(new AttributeNode(rootVariable.substring(1)));
     }
 
     private ParseTree resolveInExpressionValue(SoqlParser.InExpressionContext ctx) {
-        final ParseTree lastToken = ctx.getChild(ctx.getChildCount() - 1);
-        if (")".equals(lastToken.getText())) {
-            return ctx.getChild(ctx.getChildCount() - 2);
-        }
-        return lastToken;
+        return ctx.inItem().get(ctx.inItem().size() - 1);
     }
 
     @Override
@@ -399,6 +403,16 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
+    public void enterEntityExpression(SoqlParser.EntityExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void exitEntityExpression(SoqlParser.EntityExpressionContext ctx) {
+
+    }
+
+    @Override
     public void enterComparisonExpression(SoqlParser.ComparisonExpressionContext ctx) {
     }
 
@@ -437,58 +451,39 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterTables(SoqlParser.TablesContext ctx) {
-    }
-
-    @Override
-    public void exitTables(SoqlParser.TablesContext ctx) {
-    }
-
-    @Override
-    public void enterTable(SoqlParser.TableContext ctx) {
-    }
-
-    @Override
-    public void exitTable(SoqlParser.TableContext ctx) {
-    }
-
-    @Override
-    public void enterTableName(SoqlParser.TableNameContext ctx) {
-    }
-
-    @Override
-    public void exitTableName(SoqlParser.TableNameContext ctx) {
-    }
-
-    @Override
-    public void enterTableWithName(SoqlParser.TableWithNameContext ctx) {
-        String table = ctx.getChild(0).getChild(0).getText();
-        String objectName = ctx.getChild(1).getChild(0).getText();
-        objectTypes.put(objectName, table);
-        SoqlNode node = new AttributeNode(table);
+    public void enterFromClause(SoqlParser.FromClauseContext ctx) {
+        String entityName = ctx.entityName().getText();
+        String identificationVariable = ctx.IDENTIFICATION_VARIABLE().getText();
+                objectTypes.put(identificationVariable, entityName);
+        SoqlNode node = new AttributeNode(entityName);
         setObjectIri(node);
         SoqlAttribute myAttr = new SoqlAttribute(node);
         pushNewAttribute(myAttr);
     }
 
     @Override
-    public void exitTableWithName(SoqlParser.TableWithNameContext ctx) {
+    public void exitFromClause(SoqlParser.FromClauseContext ctx) {
+
     }
 
     @Override
-    public void enterWhereClauseValue(SoqlParser.WhereClauseValueContext ctx) {
+    public void enterEntityName(SoqlParser.EntityNameContext ctx) {
+
     }
 
     @Override
-    public void exitWhereClauseValue(SoqlParser.WhereClauseValueContext ctx) {
+    public void exitEntityName(SoqlParser.EntityNameContext ctx) {
+
     }
 
     @Override
-    public void enterWhereClauseParam(SoqlParser.WhereClauseParamContext ctx) {
+    public void enterWhereClause(SoqlParser.WhereClauseContext ctx) {
+
     }
 
     @Override
-    public void exitWhereClauseParam(SoqlParser.WhereClauseParamContext ctx) {
+    public void exitWhereClause(SoqlParser.WhereClauseContext ctx) {
+
     }
 
     @Override
@@ -573,24 +568,8 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterOrderByFullFormComma(SoqlParser.OrderByFullFormCommaContext ctx) {
-    }
-
-    @Override
-    public void exitOrderByFullFormComma(SoqlParser.OrderByFullFormCommaContext ctx) {
-    }
-
-    @Override
-    public void enterOrderByFullForm(SoqlParser.OrderByFullFormContext ctx) {
-    }
-
-    @Override
-    public void exitOrderByFullForm(SoqlParser.OrderByFullFormContext ctx) {
-    }
-
-    @Override
-    public void enterOrderByParam(SoqlParser.OrderByParamContext ctx) {
-        SoqlNode firstNode = linkContextNodes(ctx);
+    public void enterOrderByItem(SoqlParser.OrderByItemContext ctx) {
+        SoqlNode firstNode = linkObjectPathExpression(ctx);
         String orderingBy = getOrderingBy(ctx.getParent());
         SoqlOrderParameter orderParam = new SoqlOrderParameter(firstNode, orderingBy);
         boolean attrSet = false;
@@ -611,11 +590,12 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void exitOrderByParam(SoqlParser.OrderByParamContext ctx) {
+    public void exitOrderByItem(SoqlParser.OrderByItemContext ctx) {
     }
 
     @Override
     public void enterGroupByClause(SoqlParser.GroupByClauseContext ctx) {
+
     }
 
     @Override
@@ -623,16 +603,8 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterGroupByParamComma(SoqlParser.GroupByParamCommaContext ctx) {
-    }
-
-    @Override
-    public void exitGroupByParamComma(SoqlParser.GroupByParamCommaContext ctx) {
-    }
-
-    @Override
-    public void enterGroupByParam(SoqlParser.GroupByParamContext ctx) {
-        SoqlNode firstNode = linkContextNodes(ctx);
+    public void enterGroupByItem(SoqlParser.GroupByItemContext ctx) {
+        SoqlNode firstNode = linkObjectPathExpression(ctx);
         SoqlGroupParameter groupParam = new SoqlGroupParameter(firstNode);
         boolean attrSet = false;
         for (SoqlAttribute attr : attributes) {
@@ -651,6 +623,11 @@ public class SoqlQueryListener implements SoqlListener {
         groupAttributes.add(groupParam);
     }
 
+    @Override
+    public void exitGroupByItem(SoqlParser.GroupByItemContext ctx) {
+
+    }
+
     private SoqlNode linkContextNodes(ParserRuleContext ctx) {
         SoqlNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
         SoqlNode currentNode = firstNode;
@@ -667,8 +644,20 @@ public class SoqlQueryListener implements SoqlListener {
         return firstNode;
     }
 
-    @Override
-    public void exitGroupByParam(SoqlParser.GroupByParamContext ctx) {
+    private SoqlNode linkObjectPathExpression(ParserRuleContext ctx) {
+        SoqlNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
+        SoqlNode currentNode = firstNode;
+        for (int i = 2; i < ctx.getChild(0).getChildCount(); i += 2) {
+            SoqlNode prevNode = currentNode;
+            currentNode = new AttributeNode(prevNode, ctx.getChild(0).getChild(i).getText());
+            prevNode.setChild(currentNode);
+        }
+        setIris(firstNode);
+        if (currentNode.getIri().isEmpty()) {
+            currentNode.getParent().setChild(null);
+            this.isInObjectIdentifierExpression = true;
+        }
+        return firstNode;
     }
 
     @Override
@@ -678,6 +667,16 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void exitInputParameter(SoqlParser.InputParameterContext ctx) {
+
+    }
+
+    @Override
+    public void enterComparisonOperator(SoqlParser.ComparisonOperatorContext ctx) {
+
+    }
+
+    @Override
+    public void exitComparisonOperator(SoqlParser.ComparisonOperatorContext ctx) {
 
     }
 
@@ -784,19 +783,33 @@ public class SoqlQueryListener implements SoqlListener {
         return sparql;
     }
 
+    private String getSelectParameter(SoqlAttribute attribute) {
+        SoqlNode firstNode = attribute.getFirstNode();
+        if(!firstNode.hasChild()) {
+            return rootVariable;
+        }
+
+        setIris(firstNode); // we have to reassign the iris, because the table was not initialized when the first attribute was set
+        return attribute.getAsValue(rootVariable);
+    }
+
     //Methods to build new Query
     private void buildSparqlQueryString() {
         if (attributes.isEmpty()) {
             return;
         }
+
+        // the first attribute is either a projected parameter or a type attribute
+        String selectParameter = getSelectParameter(attributes.get(0));
+
         StringBuilder newQueryBuilder = new StringBuilder(typeDef);
         if (isSelectedParamCount) {
-            newQueryBuilder.append(getCountPart());
+            newQueryBuilder.append(getCountPart(selectParameter));
         } else {
             if (isSelectedParamDistinct) {
                 newQueryBuilder.append(' ').append(SoqlConstants.DISTINCT);
             }
-            newQueryBuilder.append(' ').append(rootVariable).append(' ');
+            newQueryBuilder.append(' ').append(selectParameter).append(' ');
         }
         newQueryBuilder.append("WHERE { ");
         newQueryBuilder.append(processSupremeAttributes());
@@ -818,12 +831,12 @@ public class SoqlQueryListener implements SoqlListener {
         LOG.trace("Translated SOQL query '{}' to SPARQL '{}'.", soql, sparql);
     }
 
-    private StringBuilder getCountPart() {
+    private StringBuilder getCountPart(String selectParameter) {
         StringBuilder countPart = new StringBuilder(" (COUNT(");
         if (isSelectedParamDistinct) {
             countPart.append(SoqlConstants.DISTINCT).append(' ');
         }
-        countPart.append(rootVariable).append(") AS ?count) ");
+        countPart.append(selectParameter).append(") AS ?count) ");
         return countPart;
     }
 

@@ -29,6 +29,7 @@ import cz.cvut.kbss.jopa.oom.converter.ToShortConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToStringConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToURIConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToURLConverter;
+import cz.cvut.kbss.jopa.oom.converter.CharacterConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.DateConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.InstantConverter;
 import cz.cvut.kbss.jopa.oom.converter.datetime.LocalDateTimeConverter;
@@ -91,7 +92,9 @@ public class Converters {
                 Map.entry(String.class, new ToStringConverter()),
                 Map.entry(LangString.class, new ToLangStringConverter()),
                 Map.entry(URI.class, new ToURIConverter()),
-                Map.entry(URL.class, new ToURLConverter()));
+                Map.entry(URL.class, new ToURLConverter()),
+                Map.entry(Character.class, new CharacterConverter()),
+                Map.entry(char.class, new CharacterConverter()));
     }
 
     /**

@@ -32,15 +32,15 @@ import java.util.Objects;
  * string need to be treated as a single value. Its main purpose is to allow support for multilingual strings in
  * referenced lists (e.g., {@link cz.cvut.kbss.ontodriver.Lists#loadReferencedList(ReferencedListDescriptor)}).
  */
-public final class MultilingualString implements Serializable {
+public final class Translations implements Serializable {
 
     private final Map<String, String> value;
 
-    public MultilingualString() {
+    public Translations() {
         this.value = new HashMap<>();
     }
 
-    public MultilingualString(Map<String, String> value) {
+    public Translations(Map<String, String> value) {
         this.value = new HashMap<>(Objects.requireNonNull(value));
     }
 
@@ -79,10 +79,9 @@ public final class MultilingualString implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof MultilingualString)) {
+        if (!(o instanceof Translations that)) {
             return false;
         }
-        MultilingualString that = (MultilingualString) o;
         return value.equals(that.value);
     }
 

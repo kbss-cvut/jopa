@@ -40,7 +40,7 @@ public class TDBStorageTest {
     private File storageDir;
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws Exception {
         if (storageDir != null) {
             StorageTestUtil.deleteStorageDir(storageDir);
         }
@@ -96,6 +96,7 @@ public class TDBStorageTest {
         generateTestData(storage.getDataset());
         storage.commit();
         storage.writeChanges();
+        storage.close();
 
         final Dataset result = TDBFactory.createDataset(storageDir.getAbsolutePath());
         result.begin(ReadWrite.READ);

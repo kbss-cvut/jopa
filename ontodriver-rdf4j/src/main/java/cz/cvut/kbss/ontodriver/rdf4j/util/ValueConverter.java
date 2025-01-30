@@ -42,27 +42,27 @@ public class ValueConverter {
 
     public static Optional<Object> fromRdf4jValue(Assertion assertion, Value value) {
         final Assertion.AssertionType assertionType = assertion.getType();
-        switch (assertionType) {
-            case DATA_PROPERTY:
+        return switch (assertionType) {
+            case DATA_PROPERTY -> {
                 if (!(value instanceof Literal) || !Rdf4jUtils.doesLanguageMatch((Literal) value, assertion)) {
-                    return Optional.empty();
+                    yield Optional.empty();
                 }
-                return Optional.of(Rdf4jUtils.getLiteralValue((Literal) value));
-            case CLASS:
+                yield Optional.of(Rdf4jUtils.getLiteralValue((Literal) value));
+            }
+            case CLASS -> {
                 if (!(value instanceof Resource)) {
-                    return Optional.empty();
+                    yield Optional.empty();
                 }
-                return Optional.ofNullable(Rdf4jUtils.toJavaUri((Resource) value));
-            case OBJECT_PROPERTY:
+                yield Optional.ofNullable(Rdf4jUtils.toJavaUri((Resource) value));
+            }
+            case OBJECT_PROPERTY -> {
                 if (!(value instanceof Resource)) {
-                    return Optional.empty();
+                    yield Optional.empty();
                 }
-                return Optional.of(NamedResource.create(value.stringValue()));
-            case ANNOTATION_PROPERTY:   // Intentional fall-through
-            case PROPERTY:
-                return resolveUnknownPropertyTypeValue(assertion, value);
-        }
-        return Optional.empty();
+                yield Optional.of(NamedResource.create(value.stringValue()));
+            }   // Intentional fall-through
+            case ANNOTATION_PROPERTY, PROPERTY -> resolveUnknownPropertyTypeValue(assertion, value);
+        };
     }
 
     private static Optional<Object> resolveUnknownPropertyTypeValue(Assertion assertion, Value value) {
@@ -81,19 +81,11 @@ public class ValueConverter {
     }
 
     public Value toRdf4jValue(Assertion assertion, Object val) throws Rdf4jDriverException {
-        switch (assertion.getType()) {
-            case DATA_PROPERTY:
-                return Rdf4jUtils.createLiteral(val, language(assertion), vf);
-            case CLASS:
-            case OBJECT_PROPERTY:
-                return getValueAsIri(val);
-            case ANNOTATION_PROPERTY:   // Intentional fall-through
-            case PROPERTY:
-                return resolvePropertyValue(assertion, val);
-            default:
-                // Failsafe
-                throw new IllegalArgumentException("Unsupported assertion type " + assertion.getType());
-        }
+        return switch (assertion.getType()) {
+            case DATA_PROPERTY -> Rdf4jUtils.createLiteral(val, language(assertion), vf);
+            case CLASS, OBJECT_PROPERTY -> getValueAsIri(val);   // Intentional fall-through
+            case ANNOTATION_PROPERTY, PROPERTY -> resolvePropertyValue(assertion, val);
+        };
     }
 
     private static String language(Assertion assertion) {

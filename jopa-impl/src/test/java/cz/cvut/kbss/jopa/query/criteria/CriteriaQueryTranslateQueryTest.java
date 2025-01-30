@@ -145,6 +145,51 @@ public class CriteriaQueryTranslateQueryTest {
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
+    @Test
+    void testTranslateQueryCountProperty() {
+        CriteriaQueryImpl<Integer> query = cb.createQuery(Integer.class);
+        Root<OWLClassD> root = query.from(OWLClassD.class);
+        query.select(cb.count(root.getAttr("owlClassA")));
+
+        final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+        final String expectedSoqlQuery = "SELECT COUNT(owlclassd.owlClassA) FROM OWLClassD owlclassd";
+        assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+    }
+
+        @Test
+        void testTranslateQueryDistinctCountProperty() {
+            CriteriaQueryImpl<Integer> query = cb.createQuery(Integer.class);
+            Root<OWLClassD> root = query.from(OWLClassD.class);
+            query.select(cb.count(root.getAttr("owlClassA"))).distinct();
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "SELECT DISTINCT COUNT(owlclassd.owlClassA) FROM OWLClassD owlclassd";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        void parseQuerySupportsCountWithProjectedAttribute() {
+            CriteriaQueryImpl<Integer> query = cb.createQuery(Integer.class);
+            Root<OWLClassD> root = query.from(OWLClassD.class);
+            query.select(cb.count(root.getAttr("owlClassA"))).distinct();
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "SELECT DISTINCT COUNT(owlclassd.owlClassA) FROM OWLClassD owlclassd";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        void parseQuerySupportsCountWithProjectedAttributeAndRelatedAttribute() {
+            CriteriaQueryImpl<Integer> query = cb.createQuery(Integer.class);
+            Root<OWLClassD> root = query.from(OWLClassD.class);
+            query.select(cb.count(root.getAttr("owlClassA"))).distinct()
+                    .where(cb.equal(root.getAttr("owlClassA").getAttr("stringAttribute"), ""));
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "SELECT DISTINCT COUNT(owlclassd.owlClassA) FROM OWLClassD owlclassd WHERE owlclassd.owlClassA.stringAttribute = :generatedName0";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
         @Test
         public void testTranslateQuerySelectPropertyPath() {
             CriteriaQueryImpl<String> query = cb.createQuery(String.class);

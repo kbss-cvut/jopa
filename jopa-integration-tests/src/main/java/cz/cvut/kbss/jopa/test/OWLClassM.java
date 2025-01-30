@@ -58,6 +58,9 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_dateAttribute)
     private Date dateAttribute;
 
+    @OWLDataProperty(iri = Vocabulary.p_m_characterAttribute)
+    private Character characterAttribute;
+
     @OWLDataProperty(iri = Vocabulary.p_m_enumAttribute)
     private Severity enumAttribute;
 
@@ -162,6 +165,14 @@ public class OWLClassM {
 
     public void setDateAttribute(Date dateAttribute) {
         this.dateAttribute = dateAttribute;
+    }
+
+    public Character getCharacterAttribute() {
+        return characterAttribute;
+    }
+
+    public void setCharacterAttribute(Character characterAttribute) {
+        this.characterAttribute = characterAttribute;
     }
 
     public Severity getEnumAttribute() {
@@ -286,6 +297,8 @@ public class OWLClassM {
                 ", longAttribute=" + longAttribute +
                 ", floatAttribute=" + floatAttribute +
                 ", doubleAttribute=" + doubleAttribute +
+                ", dateAttribute=" + dateAttribute +
+                ", characterAttribute" + characterAttribute +
                 ", enumAttribute=" + enumAttribute +
                 ", ordinalEnumAttribute=" + ordinalEnumAttribute +
                 ", integerSet=" + integerSet +
@@ -313,6 +326,7 @@ public class OWLClassM {
         this.floatAttribute = 3.14F;
         this.doubleAttribute = 3.14D;
         this.dateAttribute = new Date();
+        this.characterAttribute = 'j';
         this.enumAttribute = Severity.MEDIUM;
         this.ordinalEnumAttribute = enumAttribute;
         this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());

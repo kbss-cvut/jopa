@@ -110,6 +110,7 @@ class LoadStateDescriptorTest {
         final LoadStateDescriptor<OWLClassC> sut = new LoadStateDescriptor<>(instance,
                 metamodelMocks.forOwlClassC().entityType(), LoadState.UNKNOWN);
         sut.setLoaded(metamodelMocks.forOwlClassC().referencedListAtt(), LoadState.LOADED);
+        sut.setLoaded(metamodelMocks.forOwlClassC().rdfSeqAtt(), LoadState.LOADED);
 
         assertEquals(LoadState.LOADED, sut.isLoaded());
     }

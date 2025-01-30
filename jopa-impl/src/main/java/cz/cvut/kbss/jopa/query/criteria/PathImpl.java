@@ -27,8 +27,8 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public class PathImpl<X> extends AbstractPathExpression<X> implements Path<X> {
 
-    protected String attributeName;
-    protected FieldSpecification<?, ?> attribute;
+    protected final String attributeName;
+    protected final FieldSpecification<?, ?> attribute;
 
     public PathImpl(Metamodel metamodel, AbstractPathExpression pathSource, FieldSpecification<?, ?> attribute,
                     CriteriaBuilder cb) {

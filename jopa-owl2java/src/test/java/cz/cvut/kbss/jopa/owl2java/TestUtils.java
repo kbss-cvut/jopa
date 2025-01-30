@@ -22,7 +22,6 @@ import org.semanticweb.owlapi.model.OWLAxiom;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -48,9 +47,9 @@ public class TestUtils {
         throw new AssertionError();
     }
 
-    public static String resolveTestResourcesFilePath(String fileName) throws UnsupportedEncodingException {
+    public static String resolveTestResourcesFilePath(String fileName) {
         final URL resource = TestUtils.class.getClassLoader().getResource(fileName);
-        final String decodedPath = URLDecoder.decode(resource.getFile(), StandardCharsets.UTF_8.toString());
+        final String decodedPath = URLDecoder.decode(resource.getFile(), StandardCharsets.UTF_8);
         final File mf = new File(decodedPath);
         return mf.getAbsolutePath();
     }

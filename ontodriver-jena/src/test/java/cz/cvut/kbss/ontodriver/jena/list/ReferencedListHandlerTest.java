@@ -25,7 +25,7 @@ import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.LangString;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
@@ -330,12 +330,12 @@ public class ReferencedListHandlerTest extends ListHandlerTestHelper {
 
     @Test
     void persistListSavesMultilingualStringTranslationsAsContentOfSingleNode() {
-        final ReferencedListValueDescriptor<MultilingualString> desc = new ReferencedListValueDescriptor<>(OWNER,
-                HAS_LIST,
-                HAS_NEXT, Assertion.createDataPropertyAssertion(HAS_CONTENT.getIdentifier(), false));
-        final List<MultilingualString> refList = List.of(
-                new MultilingualString(Map.of("en", "one", "cs", "jedna")),
-                new MultilingualString(Map.of("en", "two", "cs", "dva"))
+        final ReferencedListValueDescriptor<Translations> desc = new ReferencedListValueDescriptor<>(OWNER,
+                                                                                                     HAS_LIST,
+                                                                                                     HAS_NEXT, Assertion.createDataPropertyAssertion(HAS_CONTENT.getIdentifier(), false));
+        final List<Translations> refList = List.of(
+                new Translations(Map.of("en", "one", "cs", "jedna")),
+                new Translations(Map.of("en", "two", "cs", "dva"))
         );
         refList.forEach(desc::addValue);
 

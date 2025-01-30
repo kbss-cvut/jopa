@@ -143,11 +143,9 @@ public abstract class AbstractDescriptor implements Descriptor {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof AbstractDescriptor)) {
+        if (!(o instanceof AbstractDescriptor that)) {
             return false;
         }
-
-        AbstractDescriptor that = (AbstractDescriptor) o;
 
         if (hasLanguage != that.hasLanguage) {
             return false;

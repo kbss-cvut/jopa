@@ -125,7 +125,7 @@ class SnapshotStorageWithInference extends SnapshotStorage {
             try {
                 reasoner.setParameter(prop, value);
             } catch (IllegalParameterException ex) {
-                LOG.error("Failed to set property " + prop + " on reasoner.", ex);
+                LOG.error("Failed to set property {} on reasoner.", prop, ex);
             }
         });
         return reasoner;

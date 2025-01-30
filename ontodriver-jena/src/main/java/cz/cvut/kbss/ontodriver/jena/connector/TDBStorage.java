@@ -24,8 +24,6 @@ import org.apache.jena.tdb.TDBFactory;
 
 class TDBStorage extends LocalStorage {
 
-    private static final String FILE_PREFIX = "file:";
-
     TDBStorage(DriverConfiguration configuration) {
         super(configuration);
         String location = configuration.getStorageProperties().getPhysicalURI().toString();

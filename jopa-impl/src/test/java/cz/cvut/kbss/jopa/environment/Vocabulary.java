@@ -39,6 +39,8 @@ public class Vocabulary {
     public static final String c_OwlClassS = CLASS_BASE + "OWLClassS";
     public static final String c_OwlClassT = CLASS_BASE + "OWLClassT";
     public static final String c_OwlClassU = CLASS_BASE + "OWLClassU";
+    public static final String c_OwlClassV = CLASS_BASE + "OWLClassV";
+    public static final String c_OwlClassW = CLASS_BASE + "OWLClassW";
     public static final String c_OwlClassWithQueryAttr = CLASS_BASE + "OWLClassWithQueryAttr";
     public static final String c_Person = CLASS_BASE + "Person";
     public static final String c_Phone = CLASS_BASE + "Phone";
@@ -59,6 +61,7 @@ public class Vocabulary {
     public static final String p_m_longAttribute = ATTRIBUTE_BASE + "m-longAttribute";
     public static final String p_m_doubleAttribute = ATTRIBUTE_BASE + "m-doubleAttribute";
     public static final String p_m_dateAttribute = ATTRIBUTE_BASE + "m-dateAttribute";
+    public static final String p_m_characterAttribute = ATTRIBUTE_BASE + "m-characterAttribute";
     public static final String p_m_enumAttribute = ATTRIBUTE_BASE + "m-enumAttribute";
     public static final String p_m_ordinalEnumAttribute = ATTRIBUTE_BASE + "m-ordinalEnumAttribute";
     public static final String p_m_IntegerSet = ATTRIBUTE_BASE + "m-pluralIntAttribute";
@@ -73,6 +76,7 @@ public class Vocabulary {
 
     public static final String P_HAS_SIMPLE_LIST = ATTRIBUTE_BASE + "C-hasSimpleSequence";
     public static final String P_HAS_REFERENCED_LIST = ATTRIBUTE_BASE + "C-hasReferencedSequence";
+    public static final String P_HAS_RDF_SEQ = ATTRIBUTE_BASE + "C-hasRDFSeq";
 
     public static final String P_T_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDate";
     public static final String P_T_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_BASE + "tLocalDateTime";
@@ -80,6 +84,13 @@ public class Vocabulary {
 
     public static final String P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_BASE + "singularMultilingualAttribute";
     public static final String P_U_PLURAL_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_BASE + "pluralMultilingualAttribute";
+
+    public static final String P_V_SINGULAR_DYNAMIC_ATTRIBUTE = ATTRIBUTE_BASE + "singularDynamicAttribute";
+    public static final String P_V_PLURAL_DYNAMIC_ATTRIBUTE = ATTRIBUTE_BASE + "pluralDynamicAttribute";
+
+    public static final String P_W_SET_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "setStringAttribute";
+    public static final String P_W_LIST_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "listStringAttribute";
+    public static final String P_W_COLLECTION_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "collectionStringAttribute";
 
     public static final String p_p_username = ATTRIBUTE_BASE + "username";
     public static final String p_p_age = ATTRIBUTE_BASE + "age";

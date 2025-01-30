@@ -59,7 +59,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -537,6 +536,9 @@ public class CloneBuilderTest {
         m.setDateAttribute(new Date(System.currentTimeMillis() + 10000L));
         changeSet.addChangeRecord(
                 new ChangeRecord(metamodelMocks.forOwlClassM().dateAttribute(), m.getDateAttribute()));
+        m.setCharacterAttribute('w');
+        changeSet.addChangeRecord(
+                new ChangeRecord(metamodelMocks.forOwlClassM().characterAttribute(), m.getCharacterAttribute()));
 
         builder.mergeChanges(changeSet);
         assertEquals(m.getBooleanAttribute(), entityM.getBooleanAttribute());
@@ -544,6 +546,7 @@ public class CloneBuilderTest {
         assertEquals(m.getLongAttribute(), entityM.getLongAttribute());
         assertEquals(m.getDoubleAttribute(), entityM.getDoubleAttribute());
         assertEquals(m.getDateAttribute(), entityM.getDateAttribute());
+        assertEquals(m.getCharacterAttribute(), entityM.getCharacterAttribute());
     }
 
     @Test

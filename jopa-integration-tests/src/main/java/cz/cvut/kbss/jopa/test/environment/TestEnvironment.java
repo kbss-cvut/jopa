@@ -23,7 +23,11 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProvider;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class TestEnvironment {
 
@@ -109,7 +113,7 @@ public class TestEnvironment {
                 assert file.delete();
             } else {
                 if (!file.delete()) {
-                    throw new RuntimeException("Unable to delete file " + file);
+                    throw new IllegalStateException("Unable to delete file " + file);
                 }
             }
         }

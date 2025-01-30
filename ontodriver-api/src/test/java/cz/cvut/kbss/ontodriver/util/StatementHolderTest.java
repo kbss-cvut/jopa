@@ -78,14 +78,20 @@ class StatementHolderTest {
 
     @Test
     void testQueryWithNewlines() {
-        final String query = "WITH <urn:sparql:tests:update:insert:delete:with>"
-                + "DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> ?name }"
-                + "INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> 'William' } WHERE\n"
-                + "{\n?person <http://xmlns.com/foaf/0.1/givenName> ?name\n}";
-        final String expected = "WITH <urn:sparql:tests:update:insert:delete:with>"
-                + "DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> 'Bill' }"
-                + "INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> 'William' } WHERE\n"
-                + "{\n?person <http://xmlns.com/foaf/0.1/givenName> 'Bill'\n}";
+        final String query = """
+                WITH <urn:sparql:tests:update:insert:delete:with>\
+                DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> ?name }\
+                INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> 'William' } WHERE
+                {
+                ?person <http://xmlns.com/foaf/0.1/givenName> ?name
+                }""";
+        final String expected = """
+                WITH <urn:sparql:tests:update:insert:delete:with>\
+                DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> 'Bill' }\
+                INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> 'William' } WHERE
+                {
+                ?person <http://xmlns.com/foaf/0.1/givenName> 'Bill'
+                }""";
         final StatementHolder holder = new StatementHolder(query);
         holder.analyzeStatement();
         holder.setParameter("name", "'Bill'");
@@ -94,14 +100,20 @@ class StatementHolderTest {
 
     @Test
     void testQueryWithDoubleQuotes() {
-        final String query = "WITH <urn:sparql:tests:update:insert:delete:with>"
-                + "DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> ?name }"
-                + "INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> \"William\" } WHERE\n"
-                + "{\n?person <http://xmlns.com/foaf/0.1/givenName> ?name\n}";
-        final String expected = "WITH <urn:sparql:tests:update:insert:delete:with>"
-                + "DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> \"Bill\" }"
-                + "INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> \"William\" } WHERE\n"
-                + "{\n?person <http://xmlns.com/foaf/0.1/givenName> \"Bill\"\n}";
+        final String query = """
+                WITH <urn:sparql:tests:update:insert:delete:with>\
+                DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> ?name }\
+                INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> "William" } WHERE
+                {
+                ?person <http://xmlns.com/foaf/0.1/givenName> ?name
+                }""";
+        final String expected = """
+                WITH <urn:sparql:tests:update:insert:delete:with>\
+                DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> "Bill" }\
+                INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> "William" } WHERE
+                {
+                ?person <http://xmlns.com/foaf/0.1/givenName> "Bill"
+                }""";
         final StatementHolder holder = new StatementHolder(query);
         holder.analyzeStatement();
         holder.setParameter("name", "\"Bill\"");

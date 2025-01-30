@@ -227,4 +227,11 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @return Properties handler
      */
     Properties properties();
+
+    /**
+     * Gets handler for RDF containers.
+     *
+     * @return Containers handler
+     */
+    Containers containers();
 }

@@ -24,7 +24,7 @@ import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.Literal;
@@ -79,7 +79,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
             return (T) (value.isResource() ? NamedResource.create(value.asResource()
                                                                        .getURI()) : JenaUtils.literalToValue(value.asLiteral()));
         } else {
-            final MultilingualString mls = new MultilingualString();
+            final Translations mls = new Translations();
             content.forEach(n -> {
                 assert n.isLiteral();
                 final Literal lit = n.asLiteral();

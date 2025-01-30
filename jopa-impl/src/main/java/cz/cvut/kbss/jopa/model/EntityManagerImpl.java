@@ -28,6 +28,8 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
+import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
+import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxy;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
@@ -245,27 +247,30 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     @Override
-    public void remove(Object object) {
+    public void remove(Object entity) {
         try {
             ensureOpen();
-            Objects.requireNonNull(object);
-            checkClassIsValidEntity(object.getClass());
-            if (isCascadingCycle(object)) {
-                LOG.warn("Remove cascading cycle detected in instance {}.", object);
+
+            final Object loadedEntity = getLoadedEntity(entity);
+            Objects.requireNonNull(loadedEntity);
+
+            checkClassIsValidEntity(loadedEntity.getClass());
+            if (isCascadingCycle(loadedEntity)) {
+                LOG.warn("Remove cascading cycle detected in instance {}.", loadedEntity);
                 return;
             }
 
-            switch (getState(object)) {
+            switch (getState(loadedEntity)) {
                 case MANAGED_NEW:
                 case MANAGED:
-                    getCurrentPersistenceContext().removeObject(object);
-                    registerProcessedInstance(object);
+                    getCurrentPersistenceContext().removeObject(loadedEntity);
+                    registerProcessedInstance(loadedEntity);
                     // Intentional fall-through
                 case REMOVED:
-                    new OneLevelRemoveCascadeExplorer(this::remove).start(this, object, CascadeType.REMOVE);
+                    new OneLevelRemoveCascadeExplorer(this::remove).start(this, loadedEntity, CascadeType.REMOVE);
                     break;
                 default:
-                    throw new IllegalArgumentException("Entity " + object + " is not managed and cannot be removed.");
+                    throw new IllegalArgumentException("Entity " + loadedEntity + " is not managed and cannot be removed.");
             }
         } catch (RuntimeException e) {
             markTransactionForRollback();
@@ -396,13 +401,29 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     public boolean contains(Object entity) {
         try {
             ensureOpen();
-            Objects.requireNonNull(entity);
-            checkClassIsValidEntity(entity.getClass());
-            return getCurrentPersistenceContext().contains(entity);
+
+            final Object loadedEntity = getLoadedEntity(entity);
+
+            Objects.requireNonNull(loadedEntity);
+            checkClassIsValidEntity(loadedEntity.getClass());
+            return getCurrentPersistenceContext().contains(loadedEntity);
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
         }
+    }
+
+    /**
+     * This method loads the entity if it is lazy loaded.
+     * If the entity is not a {@link LazyLoadingProxy}, nothing happens
+     *
+     * @param entity - the entity to check and load
+     * @return the lazy loaded entity or the original
+     */
+    private Object getLoadedEntity(Object entity) {
+        return entity instanceof LazyLoadingProxy<?> proxy
+                ? proxy.triggerLazyLoading()
+                : entity;
     }
 
     @Override
@@ -461,7 +482,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         CriteriaQueryImpl<T> query = (CriteriaQueryImpl<T>) criteriaQuery;
         CriteriaParameterFiller parameterFiller = new CriteriaParameterFiller();
         String soqlQuery = query.translateQuery(parameterFiller);
-        LOG.debug("CriteriaQuery translate to SOQL query: " + soqlQuery);
+        LOG.debug("CriteriaQuery translate to SOQL query: {}", soqlQuery);
         final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(soqlQuery, query.getResultType());
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);

@@ -24,7 +24,7 @@ import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.LangString;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
@@ -390,11 +390,11 @@ public class ReferencedListHandlerTest {
 
     @Test
     void persistListSavesMultilingualStringTranslationsAsContentOfSingleNode() throws Exception {
-        final List<MultilingualString> refList = List.of(
-                new MultilingualString(Map.of("en", "one", "cs", "jedna")),
-                new MultilingualString(Map.of("en", "two", "cs", "dva"))
+        final List<Translations> refList = List.of(
+                new Translations(Map.of("en", "one", "cs", "jedna")),
+                new Translations(Map.of("en", "two", "cs", "dva"))
         );
-        final ReferencedListValueDescriptor<MultilingualString> desc = createValueDescriptor(Assertion.AssertionType.DATA_PROPERTY, false);
+        final ReferencedListValueDescriptor<Translations> desc = createValueDescriptor(Assertion.AssertionType.DATA_PROPERTY, false);
         refList.forEach(desc::addValue);
 
         sut.persistList(desc);

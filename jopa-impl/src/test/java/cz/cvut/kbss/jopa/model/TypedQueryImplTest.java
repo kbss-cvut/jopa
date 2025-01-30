@@ -400,9 +400,9 @@ class TypedQueryImplTest extends QueryTestBase {
                 .thenReturn(new OWLClassA(URI.create(uris.get(1))));
         final TypedQuery<OWLClassA> sut = create(SELECT_QUERY, OWLClassA.class);
         final Stream<OWLClassA> result = sut.getResultStream();
-        final List<OWLClassA> asList = result.collect(Collectors.toList());
+        final List<OWLClassA> asList = result.toList();
         assertEquals(uris.size(), asList.size());
-        assertTrue(uris.containsAll(asList.stream().map(a -> a.getUri().toString()).collect(Collectors.toList())));
+        assertTrue(uris.containsAll(asList.stream().map(a -> a.getUri().toString()).toList()));
     }
 
     @Test

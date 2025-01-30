@@ -21,7 +21,7 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.MultilingualString;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
@@ -84,15 +84,13 @@ class ReferencedListIterator<T> extends OwlapiListIterator<T> {
     }
 
     private OWLProperty assertionToOwlProperty(Assertion a) {
-        switch (a.getType()) {
-            case OBJECT_PROPERTY:
-                return dataFactory
-                        .getOWLObjectProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
-            case DATA_PROPERTY:
-                return dataFactory.getOWLDataProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
-            default:
-                throw new IllegalArgumentException("Node content property cannot be type " + a.getType());
-        }
+        return switch (a.getType()) {
+            case OBJECT_PROPERTY -> dataFactory
+                    .getOWLObjectProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
+            case DATA_PROPERTY ->
+                    dataFactory.getOWLDataProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
+            default -> throw new IllegalArgumentException("Node content property cannot be type " + a.getType());
+        };
     }
 
     @Override
@@ -160,14 +158,14 @@ class ReferencedListIterator<T> extends OwlapiListIterator<T> {
                 return (T) OwlapiUtils.owlLiteralToValue(literal);
             }
         } else {
-            final MultilingualString mls = new MultilingualString();
+            final Translations translations = new Translations();
             nextItem.forEach(n -> {
                 assert n instanceof OWLLiteral;
                 final OWLLiteral lit = (OWLLiteral) n;
                 assert lit.getLang() != null;
-                mls.set(lit.getLang(), lit.getLiteral());
+                translations.set(lit.getLang(), lit.getLiteral());
             });
-            return (T) mls;
+            return (T) translations;
         }
     }
 
@@ -175,10 +173,10 @@ class ReferencedListIterator<T> extends OwlapiListIterator<T> {
         if (values.isEmpty()) {
             throw icViolatedException(currentNode.toStringID(), 0);
         }
-        final Set<String> langs = new HashSet<>();
         if (values.size() == 1) {
             return;
         }
+        final Set<String> langs = new HashSet<>();
         for (OWLObject s : values) {
             if (s.isIndividual()) {
                 throw icViolatedException(currentNode.toStringID(), values.size());
@@ -204,15 +202,14 @@ class ReferencedListIterator<T> extends OwlapiListIterator<T> {
 
     @Override
     List<TransactionalChange> removeWithoutReconnect() {
-        final List<TransactionalChange> changes = new ArrayList<>(2);
-        changes.add(new MutableRemoveAxiom(ontology,
-                dataFactory.getOWLObjectPropertyAssertionAxiom(previousNextNodeProperty, previousNode, currentNode)));
+        final MutableRemoveAxiom removeFromPrevious = new MutableRemoveAxiom(ontology,
+                dataFactory.getOWLObjectPropertyAssertionAxiom(previousNextNodeProperty, previousNode, currentNode));
         final OWLIndividual nextNode = getNextNode();
         if (nextNode != null) {
-            changes.add(new MutableRemoveAxiom(ontology,
+            return List.of(removeFromPrevious, new MutableRemoveAxiom(ontology,
                     dataFactory.getOWLObjectPropertyAssertionAxiom(currentNextNodeProperty, currentNode, nextNode)));
         }
-        return changes;
+        return List.of(removeFromPrevious);
     }
 
     private OWLIndividual getNextNode() {

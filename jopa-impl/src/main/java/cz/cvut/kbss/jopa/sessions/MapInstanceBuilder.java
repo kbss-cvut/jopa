@@ -107,10 +107,8 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
     private Map<?, ?> buildSingletonClone(Object cloneOwner, Field field, Map<?, ?> orig,
                                           CloneConfiguration configuration) {
         Entry<?, ?> e = orig.entrySet().iterator().next();
-        Object key = CloneBuilder.isImmutable(e.getKey()) ? e.getKey() :
-                cloneObject(cloneOwner, field, e.getKey(), configuration);
-        Object value = CloneBuilder.isImmutable(e.getValue()) ? e.getValue() :
-                cloneObject(cloneOwner, field, e.getValue(), configuration);
+        Object key = cloneObject(cloneOwner, field, e.getKey(), configuration);
+        Object value = cloneObject(cloneOwner, field, e.getValue(), configuration);
         if ((value instanceof Collection || value instanceof Map) && !(value instanceof ChangeTrackingIndirectCollection)) {
             value = uow.createIndirectCollection(value, cloneOwner, field);
         }
@@ -123,24 +121,9 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
             return;
         }
         final Map<Object, Object> m = (Map<Object, Object>) target;
-        final Entry<?, ?> tmp = source.entrySet().iterator().next();
-        // Note: If we encounter null -> null mapping first, the whole map will be treated as immutable type map, which can be incorrect
-        final boolean keyPrimitive = CloneBuilder.isImmutable(tmp.getKey());
-        final boolean valuePrimitive = CloneBuilder.isImmutable(tmp.getValue());
         for (Entry<?, ?> e : source.entrySet()) {
-            Object key;
-            Object value;
-            if (keyPrimitive) {
-                if (valuePrimitive) {
-                    m.putAll(source);
-                    break;
-                }
-                key = e.getKey();
-                value = cloneObject(cloneOwner, field, e.getValue(), configuration);
-            } else {
-                key = cloneObject(cloneOwner, field, e.getKey(), configuration);
-                value = valuePrimitive ? e.getValue() : cloneObject(cloneOwner, field, e.getValue(), configuration);
-            }
+            Object key = cloneObject(cloneOwner, field, e.getKey(), configuration);
+            Object value = cloneObject(cloneOwner, field, e.getValue(), configuration);
             m.put(key, value);
         }
     }
@@ -151,8 +134,10 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
             clone = null;
         } else if (builder.isTypeManaged(obj.getClass())) {
             clone = uow.registerExistingObject(obj, new CloneRegistrationDescriptor(configuration.getDescriptor()).postCloneHandlers(configuration.getPostRegister()));
-        } else {
+        } else if (builder.instanceHasBuilder(obj)) {
             clone = builder.buildClone(owner, field, obj, configuration.getDescriptor());
+        } else {
+            return obj; // assume it is immutable
         }
         return clone;
     }
