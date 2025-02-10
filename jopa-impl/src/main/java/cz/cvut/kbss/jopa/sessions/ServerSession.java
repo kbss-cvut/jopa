@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.accessors.DefaultStorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
@@ -94,6 +95,12 @@ public class ServerSession extends AbstractSession implements Wrapper {
      * @return UnitOfWork instance
      */
     public UnitOfWork acquireUnitOfWork(Configuration configuration) {
+        final String enabledStr = configuration.get(JOPAPersistenceProperties.TRANSACTION_MODE);
+        if (enabledStr != null && enabledStr.equals("read_only")) {
+            LOG.trace("Acquiring read-only UnitOfWork.");
+            return new ReadOnlyUnitOfWork(this, configuration);
+        }
+
         final ChangeTrackingMode mode = ChangeTrackingMode.resolve(configuration);
         return switch (mode) {
             case IMMEDIATE -> {
@@ -103,10 +110,6 @@ public class ServerSession extends AbstractSession implements Wrapper {
             case ON_COMMIT -> {
                 LOG.trace("Acquiring on commit change calculating UnitOfWork.");
                 yield new OnCommitChangePropagatingUnitOfWork(this, configuration);
-            }
-            case READ_ONLY -> {
-                LOG.trace("Acquiring read-only UnitOfWork.");
-                yield new ReadOnlyUnitOfWork(this, configuration);
             }
         };
     }
