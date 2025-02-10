@@ -114,6 +114,11 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
      */
     public static final String CHANGE_TRACKING_MODE = "cz.cvut.kbss.jopa.changeTrackingMode";
 
+    /**
+     * Configures transaction mode. (read_only, read_write[default])
+     */
+    public static final String TRANSACTION_MODE = "cz.cvut.kbss.jopa.transactionMode";
+
     private JOPAPersistenceProperties() {
         throw new AssertionError();
     }
