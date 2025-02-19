@@ -144,7 +144,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
     @Override
     public void clear() {
-        detachAllManagedInstances();
+        bbdetachAllManagedInstances();
         cloneToOriginals.clear();
         keysToClones.clear();
         deletedObjects.clear();
