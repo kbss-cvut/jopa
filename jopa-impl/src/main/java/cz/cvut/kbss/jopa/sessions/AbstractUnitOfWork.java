@@ -856,7 +856,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
                 object.toString();
     }
 
-    private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
+    protected <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
         final EntityType<?> et = entityType(entity.getClass());
         final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(field.getName());
         return entityDescriptor.getAttributeDescriptor(fieldSpec);
