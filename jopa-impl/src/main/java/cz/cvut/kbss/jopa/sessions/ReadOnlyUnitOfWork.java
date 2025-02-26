@@ -481,7 +481,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         throw new UnsupportedOperationException("isInferred: Method not implemented.");
     }
 
-
     @Override
     public Object createIndirectCollection(Object collection, Object owner, Field field) {
         throw new UnsupportedOperationException("createIndirectCollection: Method not implemented.");
@@ -496,8 +495,17 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     public LoadState isLoaded(Object entity) {
         throw new UnsupportedOperationException("isLoaded: Method not implemented.");
     }
+    ////////////////////////////////////////REFERENCES//////////////////////////////////////////////////////////////////
+    @Override
+    public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
+        return this.readObject(cls, identifier, descriptor);
+    }
 
-
+    // private method, used in 'isObjectManaged'. The isObjectManaged should be implemented here
+//    @Override
+//    private boolean isManagedReference(Object entity) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
     //////////////////////////////////////PARENT CLASS METHODS//////////////////////////////////////////////////////////
     @Override
     public <T> T readObjectWithoutRegistration(Class<T> cls, Object identifier, Descriptor descriptor) {
@@ -514,24 +522,17 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 //        throw new UnsupportedOperationException("isInTransaction: Method not implemented.");
 //    }
 
-//    @Override
-//    private boolean isManagedReference(Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    @Override
-//    public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
+      // replaces LazyLoadingProxy in entity field by null or by empty collection
 //    void removeLazyLoadingProxies(Object entity) {
 //        throw new UnsupportedOperationException("Method not implemented.");
 //    }
 
+      // returns entityType from metaModel
 //    protected <T> IdentifiableEntityType<T> entityType(Class<T> cls) {
 //        throw new UnsupportedOperationException("Method not implemented.");
 //    }
 
+      // checks if cls is in metaModel
 //    @Override
 //    public boolean isEntityType(Class<?> cls) {
 //        throw new UnsupportedOperationException("Method not implemented.");
@@ -545,16 +546,17 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 //        throw new UnsupportedOperationException("getFieldDescriptor: Method not implemented.");
 //    }
 
-//    Descriptor getDescriptor(Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
 //    @Override
 //    public <T> T unwrap(Class<T> cls) {
 //        throw new UnsupportedOperationException("unwrap: Method not implemented.");
 //    }
 
+      //////////////////////////////////////////////REPO_MAP METHODS////////////////////////////////////////////////////
 //    void registerEntityWithOntologyContext(Object entity, Descriptor descriptor) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
+
+//    Descriptor getDescriptor(Object entity) {
 //        throw new UnsupportedOperationException("Method not implemented.");
 //    }
 
