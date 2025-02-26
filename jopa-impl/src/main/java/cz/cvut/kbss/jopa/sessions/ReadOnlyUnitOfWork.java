@@ -119,23 +119,19 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         originalMapping.clear();
     }
 
-    /**
-     * Detaches all managed entities from this persistence context.
-     */
-    public void detachAllManagedInstances() {
-//        throw new UnsupportedOperationException("Method not implemented.");
+    @Override
+    void detachAllManagedInstances() {
+        originalMapping.forEach(super::removeLazyLoadingProxies);
     }
 
     @Override
     public void commit() {
-        LOG.trace("Committing UOW - ReadOnlyUnitOfWork does nothing.");
-    }
-
-    /**
-     * Cleans up after the commit.
-     */
-    private void postCommit() {
-        throw new UnsupportedOperationException("Method not implemented.");
+        LOG.trace("UnitOfWork commit started.");
+        if (!isActive()) {
+            throw new IllegalStateException("Cannot commit inactive Unit of Work!");
+        }
+        this.clear();
+        LOG.trace("UnitOfWork commit finished.");
     }
 
     @Override
@@ -143,10 +139,10 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
-    @Override
-    public boolean contains(Object entity) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
+//    @Override
+//    public boolean contains(Object entity) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
 
     protected <T> T readObjectInternal(Class<T> cls, Object identifier, Descriptor descriptor) {
         assert cls != null;
@@ -183,36 +179,13 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return disabledCache;
     }
 
-    private boolean isInRepository(Descriptor descriptor, Object entity) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
+//    private boolean isInRepository(Descriptor descriptor, Object entity) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
 
     private <T> T getManagedClone(Class<T> cls, Object identifier, Descriptor descriptor) {
         throw new UnsupportedOperationException("Method not implemented.");
     }
-
-
-
-    @Override
-    public EntityState getState(Object entity) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    @Override
-    public EntityState getState(Object entity, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    @Override
-    public boolean isObjectNew(Object entity) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    @Override
-    public boolean isObjectManaged(Object entity) {
-        return this.originalMapping.contains(entity);
-    }
-
 
     @Override
     public <T> T mergeDetached(T entity, Descriptor descriptor) {
@@ -244,6 +217,16 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return registerExistingObject(entity, new CloneRegistrationDescriptor(descriptor));
     }
 
+    @Override
+    public void unregisterObject(Object object) {
+        System.out.println("unregistering " + object);
+        if (object == null) { return; }
+
+        originalMapping.remove(object);
+        keysToOriginals.remove(EntityPropertiesUtils.getIdentifier(object, getMetamodel()));
+
+        super.unregisterEntityFromOntologyContext(object);
+    }
 
     @Override
     public Object registerExistingObject(Object entity, CloneRegistrationDescriptor registrationDescriptor) {
@@ -495,6 +478,36 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     public LoadState isLoaded(Object entity) {
         throw new UnsupportedOperationException("isLoaded: Method not implemented.");
     }
+
+    ////////////////////////////////////////STATE HANDLING//////////////////////////////////////////////////////////////
+    @Override
+    public boolean isObjectManaged(Object entity) {
+        Objects.requireNonNull(entity);
+        return this.originalMapping.contains(entity);
+    }
+
+    @Override
+    public boolean isObjectNew(Object entity) {
+        throw new UnsupportedOperationException("Method not implemented.");
+    }
+
+    // either simplify these methods or use abstract implementation
+    @Override
+    public EntityState getState(Object entity) {
+        Objects.requireNonNull(entity);
+        return originalMapping.contains(entity) ? EntityState.MANAGED : EntityState.NOT_MANAGED;
+    }
+
+    @Override
+    public EntityState getState(Object entity, Descriptor descriptor) {
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(descriptor);
+
+         return originalMapping.contains(entity) && super.isInRepository(descriptor, entity)
+                 ? EntityState.MANAGED
+                 : EntityState.NOT_MANAGED;
+    }
+
     ////////////////////////////////////////REFERENCES//////////////////////////////////////////////////////////////////
     @Override
     public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
@@ -622,11 +635,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     @Override
     public void restoreRemovedObject(Object entity) {
         throw new UnsupportedOperationException("restoreRemovedObject: Method not implemented.");
-    }
-
-    @Override
-    public void unregisterObject(Object object) {
-        throw new UnsupportedOperationException("unregisterObject: Method not implemented.");
     }
 
     @Override

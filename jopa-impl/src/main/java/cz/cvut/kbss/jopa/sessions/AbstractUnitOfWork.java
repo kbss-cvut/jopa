@@ -300,7 +300,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         return getManagedClone(cls, identifier, descriptor);
     }
 
-    private boolean isInRepository(Descriptor descriptor, Object entity) {
+    protected boolean isInRepository(Descriptor descriptor, Object entity) {
         assert descriptor != null;
         assert entity != null;
 
@@ -775,7 +775,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         unregisterEntityFromOntologyContext(object);
     }
 
-    private void unregisterEntityFromOntologyContext(Object entity) {
+    protected void unregisterEntityFromOntologyContext(Object entity) {
         assert entity != null;
 
         final Descriptor descriptor = repoMap.getEntityDescriptor(entity);
