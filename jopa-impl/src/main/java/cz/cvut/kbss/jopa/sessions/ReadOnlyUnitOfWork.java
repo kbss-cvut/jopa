@@ -550,20 +550,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         throw new UnsupportedOperationException("copyChangeSet: Method not implemented.");
     }
 
-    private <T> void revertTransactionalChanges(T object, Descriptor descriptor, ObjectChangeSet chSet) {
-        throw new UnsupportedOperationException("revertTransactionalChanges: Method not implemented.");
-    }
-
-    // used only for new objects (in registerNewObject)
-    private Object initEntityIdentifier(Object entity, EntityType<Object> et) {
-        throw new UnsupportedOperationException("initEntityIdentifier: Method not implemented.");
-    }
-
-    // used only for new objects (in registerNewObject)
-    private void verifyCanPersist(Object id, Object instance, EntityType<?> et, Descriptor descriptor) {
-        throw new UnsupportedOperationException("verifyCanPersist: Method not implemented.");
-    }
-
     protected ObjectChangeSet processInferredValueChanges(ObjectChangeSet changeSet) {
         throw new UnsupportedOperationException("Method not implemented.");
     }
@@ -573,19 +559,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     void calculateChanges() {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    private void calculateNewObjects(UnitOfWorkChangeSet changeSet) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    private void calculateDeletedObjects(final UnitOfWorkChangeSet changeSet) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    // should be deleted
-    private <T> T getManagedClone(Class<T> cls, Object identifier, Descriptor descriptor) {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
@@ -637,11 +610,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     @Override
     public boolean isFlushingChanges() {
         throw new UnsupportedOperationException("isFlushingChanges: Method not implemented.");
-    }
-
-    private <T> Object cloneLoadedFieldValue(T entity, Field field, final Descriptor fieldDescriptor,
-                                             final Object fieldValueOrig) {
-        throw new UnsupportedOperationException("cloneLoadedFieldValue: Method not implemented.");
     }
 
     @Override
