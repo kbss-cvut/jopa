@@ -4,6 +4,9 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
+import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingListProxy;
@@ -16,6 +19,7 @@ import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -28,12 +32,19 @@ import org.mockito.quality.Strictness;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
