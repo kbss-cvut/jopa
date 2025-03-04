@@ -440,8 +440,66 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     @Override
     void testGetState() {
-        fail("Not implemented yet");
+        assertEquals(EntityState.NOT_MANAGED, uow.getState(entityA));
+        defaultLoadStateDescriptor(entityA);
+        OWLClassA result = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        assertEquals(EntityState.MANAGED, uow.getState(result));
     }
+
+    @Test
+    @Override
+    void testGetStateWithDescriptor() {
+        assertEquals(EntityState.NOT_MANAGED, uow.getState(entityA, descriptor));
+        defaultLoadStateDescriptor(entityA);
+        OWLClassA result = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        assertEquals(EntityState.MANAGED, uow.getState(result, descriptor));
+    }
+
+    @Test
+    @Override
+    void rollbackDetachesAllManagedEntities() {
+        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false)))
+                .thenReturn(entityA);
+        defaultLoadStateDescriptor(entityA, entityB);
+        final OWLClassA result = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+        entityB.setProperties(new HashMap<>());
+        uow.registerExistingObject(entityB, descriptor);
+        uow.rollback();
+        assertFalse(uow.contains(result));
+        assertFalse(uow.contains(entityB));
+    }
+
+    @Test
+    @Override
+    void loadFieldLoadsManagedTypeAttribute() {
+        final OWLClassL original = new OWLClassL(Generators.createIndividualIdentifier());
+        final LoadStateDescriptor<OWLClassL> loadStateDescriptor = LoadStateDescriptorFactory.createNotLoaded(original, metamodelMocks.forOwlClassL()
+                                                                                                                                      .entityType());
+        uow.getLoadStateRegistry().put(original, loadStateDescriptor);
+        when(metamodelMock.getLazyLoadingProxy(OWLClassA.class)).thenReturn((Class) new LazyLoadingEntityProxyGenerator().generate(OWLClassA.class));
+        final OWLClassL result = (OWLClassL) uow.registerExistingObject(original, descriptor);
+        doAnswer(invocation -> {
+            final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
+            EntityPropertiesUtils.setFieldValue(f.getJavaField(), invocation.getArguments()[0], Collections.singleton(entityA));
+            return null;
+        }).when(storageMock)
+          .loadFieldValue(eq(result), eq(metamodelMocks.forOwlClassL().setAttribute()), eq(descriptor));
+        defaultLoadStateDescriptor(entityA);
+
+        uow.loadEntityField(result, metamodelMocks.forOwlClassL().setAttribute());
+        verify(storageMock).loadFieldValue(result, metamodelMocks.forOwlClassL().setAttribute(), descriptor);
+        assertNotNull(result.getSet());
+        assertEquals(1, result.getSet().size());
+
+        // Verify that the loaded value was cloned
+        assertSame(entityA, result.getSet().iterator().next());
+        assertTrue(uow.contains(result.getSet().iterator().next()));
+    }
+
+    @Test
+    @Disabled("Change calculation is not supported in read-only UOW")
+    @Override
+    void throwsCardinalityViolationWhenMaximumCardinalityIsViolatedOnCommit() {}
 
     @Test
     @Disabled("Requires unsupported operation")
@@ -577,4 +635,9 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Disabled("Requires unsupported operation")
     @Override
     void restoreDeletedRegistersObjectAgain() {}
+
+    @Test
+    @Disabled("Post clone listeners are disabled")
+    @Override
+    void registerExistingObjectInvokesPostCloneListeners() {}
 }
