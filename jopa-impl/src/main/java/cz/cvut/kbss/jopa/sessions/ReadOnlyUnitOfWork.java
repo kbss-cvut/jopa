@@ -230,6 +230,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         keysToOriginals.remove(super.getIdentifier(object));
 
         // TODO: should proxies be removed here?
+        super.removeLazyLoadingProxies(object);
 
         super.unregisterEntityFromOntologyContext(object);
     }
