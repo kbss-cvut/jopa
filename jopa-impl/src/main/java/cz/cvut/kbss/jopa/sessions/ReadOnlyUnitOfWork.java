@@ -270,7 +270,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         // inject lazy loading proxies and process relationships
         final Class<?> originalClass = original.getClass();
         final EntityType<?> et = getMetamodel().entity(originalClass);
-        final LoadStateDescriptor<Object> loadState = getLoadStateRegistry().get(original);
+        final LoadStateDescriptor<Object> loadState = super.getLoadStateRegistry().get(original);
 
         for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
             if (fs == et.getIdentifier()) { continue; }   // Already cloned
@@ -352,6 +352,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             registerExistingObject(orig, fieldDescriptor);
         } else {
             // Collection or Map
+            // TODO: Collection, map or multilingual string,
+            // check if the type is entityType
+            // this functionality will basically be the same as in processEntityFields
             for (Object o : (Iterable<?>) orig) {
                 registerExistingObject(o, fieldDescriptor);
             }
