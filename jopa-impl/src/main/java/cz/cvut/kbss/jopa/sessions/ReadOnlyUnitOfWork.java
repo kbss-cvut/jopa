@@ -29,6 +29,7 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -255,6 +256,12 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         keysToOriginals.put(identifier, original);
 
         super.registerEntityWithOntologyContext(original, descriptor);
+        // TODO: why does this work:
+        if (isEntityType(original.getClass()) && !super.getLoadStateRegistry().contains(original)) {
+            super.getLoadStateRegistry().put(
+                original,
+                LoadStateDescriptorFactory.createAllUnknown(original, (EntityType<? super Object>) getMetamodel().entity(original.getClass())));
+        }
         processEntityFields(original);
     }
 
