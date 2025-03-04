@@ -160,14 +160,13 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
     @Override
     <T> T readManagedObject(Class<T> cls, Object identifier, Descriptor descriptor) {
+        // simply return the managed object or null
         return getManagedOriginal(cls, identifier, descriptor);
     }
 
     @Override
-    public CacheManager getLiveObjectCache() {
-        // either return new instance of disabled cache or
-        // return static instance
-        return disabledCache;
+    public <T> T getManagedOriginal(Class<T> cls, Object identifier, Descriptor descriptor) {
+        return this.keysToOriginals.containsKey(identifier) ? cls.cast(keysToOriginals.get(identifier)) : null;
     }
 
 
@@ -213,12 +212,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 //        return collection;
     }
     //////////////////////////////////////////// END
-
-    @Override
-    public Object registerExistingObject(Object entity, Descriptor descriptor) {
-        return registerExistingObject(entity, new CloneRegistrationDescriptor(descriptor));
-    }
-
     @Override
     public void unregisterObject(Object object) {
         if (object == null) { return; }
@@ -226,11 +219,13 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         originalMapping.remove(object);
         keysToOriginals.remove(super.getIdentifier(object));
 
+        // TODO: should proxies be removed here?
+
         super.unregisterEntityFromOntologyContext(object);
     }
 
     @Override
-    public Object registerExistingObject(Object entity, CloneRegistrationDescriptor registrationDescriptor) {
+    public Object registerExistingObject(Object entity, Descriptor descriptor) {
         LOG.trace("Registering object {}", entity);
         if (entity == null) { return null; }
 
@@ -238,7 +233,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             LOG.trace("Original object {} already registered", entity);
             return entity;
         }
-        registerOriginal(entity, registrationDescriptor.getDescriptor());
+        registerOriginal(entity, descriptor);
         return entity;
     }
 
@@ -253,14 +248,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
     private void processEntityFields(Object original) {
         // inject lazy loading proxies and process relationships
-//        System.out.println("---ORIGINAL---");
-//        System.out.println(original);
         final Class<?> originalClass = original.getClass();
         final EntityType<?> et = getMetamodel().entity(originalClass);
         final LoadStateDescriptor<Object> loadState = getLoadStateRegistry().get(original);
-        // Ensure the identifier is cloned before any other attributes
-        // This prevents problems where circular references between entities lead to clones being registered with null identifier
-//        cloneIdentifier(original, clone, et);
 
         for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
             if (fs == et.getIdentifier()) { continue; }   // Already cloned
@@ -268,45 +258,30 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             final Field f = fs.getJavaField();
             final Object fieldValue = EntityPropertiesUtils.getFieldValue(f, original);
             Object newValue = null;
-//            System.out.println("fs: " + fs + " " + loadState.isLoaded(fs) + "with fieldVal: " + fieldValue);
 
             if (loadState.isLoaded(fs) == LoadState.NOT_LOADED) {
                 newValue = lazyLoaderFactory.createProxy(original, (FieldSpecification<? super Object, ?>) fs);
             } else if (fieldValue == null) {
-                // intentionally left empty
-                // newValue = fieldValue;
-//                System.out.println("fieldVal == null");
                 continue;
             } else {
                 final Class<?> fieldValueClass = fieldValue.getClass();
 
                 if (IndirectWrapperHelper.requiresIndirectWrapper(fieldValue)) {
-                    // put all objects to L1 cache
-//                    final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, configuration.getDescriptor());
-//                    final Descriptor fieldDescriptor = getFieldDescriptor(original, f, entityDescriptor);
-                    // Collection or Map
                     // register objects if possible
+                    // TODO: process field correctly (Collection, MultilingualString, Map)
                     if (fieldValue instanceof Iterable) {
                         ((Iterable<?>) fieldValue).forEach(obj -> {
                             if (!isEntityType(obj.getClass())) { return; }
-                            final Descriptor objectDescriptor = getDescriptor(obj);
-                            // checks if exists in the cache or register it
-                            registerExistingObject(obj, objectDescriptor);
+
+                            final Descriptor entityDescriptor = super.getDescriptor(original);
+                            final Descriptor fieldDescriptor = super.getFieldDescriptor(original, f, entityDescriptor);
+                            registerExistingObject(obj, fieldDescriptor);
                         });
                     }
                     newValue = fieldValue;
                 } else if (isEntityType(fieldValueClass)) {
-                    // it is entity
-//                    System.out.println("isEntityType");
-//                    System.out.println(fieldValue);
-
-                    final Descriptor entityDescriptor = getDescriptor(original);
-//                    System.out.println(entityDescriptor);
-
-                    final Descriptor fieldDescriptor = getFieldDescriptor(original, f, entityDescriptor);
-//                    System.out.println("entityDescriptor: " + entityDescriptor);
-//                    System.out.println("fieldDescriptor: " + fieldDescriptor);
-                    // checks if exists in the cache or register it
+                    final Descriptor entityDescriptor = super.getDescriptor(original);
+                    final Descriptor fieldDescriptor = super.getFieldDescriptor(original, f, entityDescriptor);
                     newValue = registerExistingObject(fieldValue, fieldDescriptor);
                 } else {
                     // We assume that the value is immutable
@@ -326,11 +301,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     @Override
-    public <T> T getManagedOriginal(Class<T> cls, Object identifier, Descriptor descriptor) {
-        return this.keysToOriginals.containsKey(identifier) ? cls.cast(keysToOriginals.get(identifier)) : null;
-    }
-
-    @Override
     boolean containsOriginal(Object entity) {
         assert entity != null;
         return originalMapping.contains(entity);
@@ -343,7 +313,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         final Field field = fieldSpec.getJavaField();
         assert field.getDeclaringClass().isAssignableFrom(entity.getClass());
 
-        final Descriptor entityDescriptor = getDescriptor(entity);
+        final Descriptor entityDescriptor = super.getDescriptor(entity);
         final LoadStateDescriptor<?> loadStateDescriptor = loadStateRegistry.get(entity);
         if (loadStateDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
             return EntityPropertiesUtils.getFieldValue(field, entity);
@@ -355,7 +325,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         if (entityOriginal != null) {
             EntityPropertiesUtils.setFieldValue(field, entityOriginal, orig);
         }
-        final Descriptor fieldDescriptor = getFieldDescriptor(entity, field, entityDescriptor);
+        final Descriptor fieldDescriptor = super.getFieldDescriptor(entity, field, entityDescriptor);
 
         if (isEntityType(field.getType())) {
             // Single entity
@@ -403,7 +373,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     ////////////////////////////////////////REFERENCES//////////////////////////////////////////////////////////////////
     @Override
     public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
-        return this.readObject(cls, identifier, descriptor);
+        return super.readObject(cls, identifier, descriptor);
     }
 
     // private method, used in 'isObjectManaged'. The isObjectManaged should be implemented here
@@ -415,34 +385,34 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     ///// use 'super' for better understanding in this code if method is used
 
     // parent
-    @Override
-    public LoadState isLoaded(Object entity, String attributeName) {
-        throw new UnsupportedOperationException("isLoaded: Method not implemented.");
-    }
+//    @Override
+//    public LoadState isLoaded(Object entity, String attributeName) {
+//        throw new UnsupportedOperationException("isLoaded: Method not implemented.");
+//    }
 
     // parent
-    @Override
-    public LoadState isLoaded(Object entity) {
-        throw new UnsupportedOperationException("isLoaded: Method not implemented.");
-    }
+//    @Override
+//    public LoadState isLoaded(Object entity) {
+//        throw new UnsupportedOperationException("isLoaded: Method not implemented.");
+//    }
 
     // parent
-    @Override
-    public boolean isConsistent(URI context) {
-        throw new UnsupportedOperationException("isConsistent: Method not implemented.");
-    }
+//    @Override
+//    public boolean isConsistent(URI context) {
+//        throw new UnsupportedOperationException("isConsistent: Method not implemented.");
+//    }
 
     // parent
-    @Override
-    public List<URI> getContexts() {
-        throw new UnsupportedOperationException("getContexts: Method not implemented.");
-    }
+//    @Override
+//    public List<URI> getContexts() {
+//        throw new UnsupportedOperationException("getContexts: Method not implemented.");
+//    }
 
     // parent
-    @Override
-    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value) {
-        throw new UnsupportedOperationException("isInferred: Method not implemented.");
-    }
+//    @Override
+//    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value) {
+//        throw new UnsupportedOperationException("isInferred: Method not implemented.");
+//    }
 
 //    // could be used from parent
 //    <T> void ensureManaged(T object) {
@@ -524,6 +494,13 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 //        throw new UnsupportedOperationException("unregisterEntityFromOntologyContext: Method not implemented.");
 //    }
     ////////////////////////////////////////////////CACHE METHODS///////////////////////////////////////////////////////
+    @Override
+    public CacheManager getLiveObjectCache() {
+        // either return new instance of disabled cache or
+        // return static instance
+        return disabledCache;
+    }
+
     private void evictPossiblyUpdatedReferencesFromCache() {
         throw new UnsupportedOperationException("Method not implemented.");
     }
@@ -545,19 +522,27 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     //////////////////////////////////////THESE METHODS SHOULD NOT BE SUPPORTED/////////////////////////////////////////
+    @Override
+    public Object registerExistingObject(Object entity, CloneRegistrationDescriptor registrationDescriptor) {
+        throw new UnsupportedOperationException("registerExistingObject: Method not implemented.");
+    }
+
     protected static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
                                                    Descriptor descriptor) {
         throw new UnsupportedOperationException("copyChangeSet: Method not implemented.");
     }
 
+    @Override
     protected ObjectChangeSet processInferredValueChanges(ObjectChangeSet changeSet) {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
+    @Override
     void validateIntegrityConstraints() {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
+    @Override
     void calculateChanges() {
         throw new UnsupportedOperationException("Method not implemented.");
     }
