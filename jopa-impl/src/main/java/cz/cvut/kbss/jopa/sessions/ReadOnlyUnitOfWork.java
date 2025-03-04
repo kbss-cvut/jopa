@@ -46,6 +46,7 @@ import java.util.Objects;
 import java.util.Set;
 
 //import static cz.cvut.kbss.jopa.sessions.CloneBuilder.isImmutable;
+import static cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException.individualAlreadyManaged;
 import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
 
@@ -167,7 +168,14 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
     @Override
     public <T> T getManagedOriginal(Class<T> cls, Object identifier, Descriptor descriptor) {
-        return this.keysToOriginals.containsKey(identifier) ? cls.cast(keysToOriginals.get(identifier)) : null;
+        if (!this.keysToOriginals.containsKey(identifier)) { return null; }
+
+        final Object original = keysToOriginals.get(identifier);
+        if (!cls.isAssignableFrom(original.getClass())) {
+            throw individualAlreadyManaged(identifier);
+        }
+
+        return isInRepository(descriptor, original) ? cls.cast(original) : null;
     }
 
 
