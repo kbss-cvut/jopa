@@ -242,7 +242,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         final Object identifier = super.getIdentifier(original);
         keysToOriginals.put(identifier, original);
 
-        registerEntityWithOntologyContext(original, descriptor);
+        super.registerEntityWithOntologyContext(original, descriptor);
         processEntityFields(original);
     }
 
@@ -271,7 +271,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
                     // TODO: process field correctly (Collection, MultilingualString, Map)
                     if (fieldValue instanceof Iterable) {
                         ((Iterable<?>) fieldValue).forEach(obj -> {
-                            if (!isEntityType(obj.getClass())) { return; }
+                            if (!super.isEntityType(obj.getClass())) { return; }
 
                             final Descriptor entityDescriptor = super.getDescriptor(original);
                             final Descriptor fieldDescriptor = super.getFieldDescriptor(original, f, entityDescriptor);
@@ -279,7 +279,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
                         });
                     }
                     newValue = fieldValue;
-                } else if (isEntityType(fieldValueClass)) {
+                } else if (super.isEntityType(fieldValueClass)) {
                     final Descriptor entityDescriptor = super.getDescriptor(original);
                     final Descriptor fieldDescriptor = super.getFieldDescriptor(original, f, entityDescriptor);
                     newValue = registerExistingObject(fieldValue, fieldDescriptor);
@@ -327,7 +327,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         }
         final Descriptor fieldDescriptor = super.getFieldDescriptor(entity, field, entityDescriptor);
 
-        if (isEntityType(field.getType())) {
+        if (super.isEntityType(field.getType())) {
             // Single entity
             registerExistingObject(orig, fieldDescriptor);
         } else {
@@ -380,118 +380,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 //    @Override
 //    private boolean isManagedReference(Object entity) {
 //        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-    //////////////////////////////////////PARENT CLASS METHODS//////////////////////////////////////////////////////////
-    ///// use 'super' for better understanding in this code if method is used
-
-    // parent
-//    @Override
-//    public LoadState isLoaded(Object entity, String attributeName) {
-//        throw new UnsupportedOperationException("isLoaded: Method not implemented.");
-//    }
-
-    // parent
-//    @Override
-//    public LoadState isLoaded(Object entity) {
-//        throw new UnsupportedOperationException("isLoaded: Method not implemented.");
-//    }
-
-    // parent
-//    @Override
-//    public boolean isConsistent(URI context) {
-//        throw new UnsupportedOperationException("isConsistent: Method not implemented.");
-//    }
-
-    // parent
-//    @Override
-//    public List<URI> getContexts() {
-//        throw new UnsupportedOperationException("getContexts: Method not implemented.");
-//    }
-
-    // parent
-//    @Override
-//    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value) {
-//        throw new UnsupportedOperationException("isInferred: Method not implemented.");
-//    }
-
-//    // could be used from parent
-//    <T> void ensureManaged(T object) {
-//        throw new UnsupportedOperationException("ensureManaged: Method not implemented.");
-//    }
-
-//    Object getIdentifier(Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    private boolean isInRepository(Descriptor descriptor, Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    @Override
-//    public <T> T readObjectWithoutRegistration(Class<T> cls, Object identifier, Descriptor descriptor) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    @Override
-//    public void rollback() {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    @Override
-//    public boolean contains(Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    @Override
-//    public void begin() {
-//        throw new UnsupportedOperationException("begin: Method not implemented.");
-//    }
-
-//    @Override
-//    public boolean isInTransaction() {
-//        throw new UnsupportedOperationException("isInTransaction: Method not implemented.");
-//    }
-
-      // replaces LazyLoadingProxy in entity field by null or by empty collection
-//    void removeLazyLoadingProxies(Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-      // returns entityType from metaModel
-//    protected <T> IdentifiableEntityType<T> entityType(Class<T> cls) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-      // checks if cls is in metaModel
-//    @Override
-//    public boolean isEntityType(Class<?> cls) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    public String stringify(Object object) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
-//        throw new UnsupportedOperationException("getFieldDescriptor: Method not implemented.");
-//    }
-
-//    @Override
-//    public <T> T unwrap(Class<T> cls) {
-//        throw new UnsupportedOperationException("unwrap: Method not implemented.");
-//    }
-
-      //////////////////////////////////////////////REPO_MAP METHODS////////////////////////////////////////////////////
-//    void registerEntityWithOntologyContext(Object entity, Descriptor descriptor) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    Descriptor getDescriptor(Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    private void unregisterEntityFromOntologyContext(Object entity) {
-//        throw new UnsupportedOperationException("unregisterEntityFromOntologyContext: Method not implemented.");
 //    }
     ////////////////////////////////////////////////CACHE METHODS///////////////////////////////////////////////////////
     @Override
@@ -621,4 +509,120 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     public void removeObject(Object object) {
         throw new UnsupportedOperationException("removeObject: Method not implemented.");
     }
+
+
+
+
+    //////////////////////////////////////PARENT CLASS METHODS//////////////////////////////////////////////////////////
+    ///// use 'super' for better understanding in this code if method is used
+
+    // parent
+//    @Override
+//    public LoadState isLoaded(Object entity, String attributeName) {
+//        throw new UnsupportedOperationException("isLoaded: Method not implemented.");
+//    }
+
+    // parent
+//    @Override
+//    public LoadState isLoaded(Object entity) {
+//        throw new UnsupportedOperationException("isLoaded: Method not implemented.");
+//    }
+
+    // parent
+//    @Override
+//    public boolean isConsistent(URI context) {
+//        throw new UnsupportedOperationException("isConsistent: Method not implemented.");
+//    }
+
+    // parent
+//    @Override
+//    public List<URI> getContexts() {
+//        throw new UnsupportedOperationException("getContexts: Method not implemented.");
+//    }
+
+    // parent
+//    @Override
+//    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value) {
+//        throw new UnsupportedOperationException("isInferred: Method not implemented.");
+//    }
+
+//    // could be used from parent
+//    <T> void ensureManaged(T object) {
+//        throw new UnsupportedOperationException("ensureManaged: Method not implemented.");
+//    }
+
+//    Object getIdentifier(Object entity) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
+
+//    private boolean isInRepository(Descriptor descriptor, Object entity) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
+
+//    @Override
+//    public <T> T readObjectWithoutRegistration(Class<T> cls, Object identifier, Descriptor descriptor) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
+
+//    @Override
+//    public void rollback() {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
+
+//    @Override
+//    public boolean contains(Object entity) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
+
+//    @Override
+//    public void begin() {
+//        throw new UnsupportedOperationException("begin: Method not implemented.");
+//    }
+
+//    @Override
+//    public boolean isInTransaction() {
+//        throw new UnsupportedOperationException("isInTransaction: Method not implemented.");
+//    }
+
+    // replaces LazyLoadingProxy in entity field by null or by empty collection
+//    void removeLazyLoadingProxies(Object entity) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
+
+    // returns entityType from metaModel
+//    protected <T> IdentifiableEntityType<T> entityType(Class<T> cls) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
+
+    // checks if cls is in metaModel
+//    @Override
+//    public boolean isEntityType(Class<?> cls) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
+
+//    public String stringify(Object object) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
+
+//    private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
+//        throw new UnsupportedOperationException("getFieldDescriptor: Method not implemented.");
+//    }
+
+//    @Override
+//    public <T> T unwrap(Class<T> cls) {
+//        throw new UnsupportedOperationException("unwrap: Method not implemented.");
+//    }
+
+    //////////////////////////////////////////////REPO_MAP METHODS////////////////////////////////////////////////////
+//    void registerEntityWithOntologyContext(Object entity, Descriptor descriptor) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
+
+//    Descriptor getDescriptor(Object entity) {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
+
+//    private void unregisterEntityFromOntologyContext(Object entity) {
+//        throw new UnsupportedOperationException("unregisterEntityFromOntologyContext: Method not implemented.");
+//    }
 }
