@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxyFactory;
@@ -234,6 +235,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             return entity;
         }
         registerOriginal(entity, descriptor);
+
+        // TODO: post load listeners are triggered after registration?
+        List.of(new PostLoadInvoker(getMetamodel())).forEach(c -> c.accept(entity));
         return entity;
     }
 
