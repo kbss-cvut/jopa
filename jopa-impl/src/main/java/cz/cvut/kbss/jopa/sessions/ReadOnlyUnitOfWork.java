@@ -119,7 +119,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
     @Override
     public void commit() {
-        LOG.trace("UnitOfWork commit started.");
+        LOG.trace("Read-only UnitOfWork commit started.");
         if (!isActive()) {
             throw new IllegalStateException("Cannot commit inactive Unit of Work!");
         }
@@ -127,7 +127,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         LOG.trace("UnitOfWork commit finished.");
     }
 
-
+    @Override
     protected <T> T readObjectInternal(Class<T> cls, Object identifier, Descriptor descriptor) {
         assert cls != null;
         assert identifier != null;
