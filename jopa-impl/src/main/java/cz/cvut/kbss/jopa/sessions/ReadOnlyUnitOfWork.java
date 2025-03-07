@@ -25,9 +25,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxyFactory;
 import cz.cvut.kbss.jopa.sessions.cache.DisabledCacheManager;
-import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
@@ -46,33 +44,24 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-//import static cz.cvut.kbss.jopa.sessions.CloneBuilder.isImmutable;
 import static cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException.individualAlreadyManaged;
 import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
-
 public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
-//    final Set<Object> cloneMapping;                             // <clone(entity)> set of clones
-//    final Map<Object, Object> cloneToOriginals;                 // <clone(entity), original(entity)> map of clones to originals
-//    final Map<Object, Object> keysToClones = new HashMap<>();   // <uri, clone(entity)> map of keys to clones
-//    final Map<Object, Object> deletedObjects;                   // <clone(entity), clone(entity)> map of deleted objects
-//    final Map<Object, Object> newObjectsCloneToOriginal;        // <
-//    final Map<Object, Object> newObjectsKeyToClone = new HashMap<>();
-//    protected final Map<Object, Object> referenceProxies;
 
     final Map<Object, Object> keysToOriginals = new HashMap<>();
     final Set<Object> originalMapping = new HashSet<>();
 
-    LazyLoadingProxyFactory lazyLoaderFactory;
+    private final LazyLoadingProxyFactory lazyLoaderFactory;
 
     private static final CacheManager disabledCache = new DisabledCacheManager();
 
     ReadOnlyUnitOfWork(AbstractSession parent, Configuration configuration) {
         super(parent, configuration);
-
         this.lazyLoaderFactory = new LazyLoadingProxyFactory(this);
     }
 
+    // TODO: remove
     private void debugPrint() {
         final String ANSI_RESET =  "\u001B[0m";
         final String ANSI_YELLOW = "\u001B[33m";
@@ -117,6 +106,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         debugPrint();
         LOG.trace("Clearing read-only UOW.");
 
+        // TODO: try not to call super.clear() (there are unnecessary clears on hash sets for clones
         super.clear();
         keysToOriginals.clear();
         originalMapping.clear();
@@ -152,8 +142,8 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
         // check repository
         LoadingParameters<T> params = new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor);
-//        params.bypassCache();
         result = storage.find(params);
+        // TODO: Post load here? yes
 
         LOG.trace("Read object {} with identifier {}.", result, identifier);
 
@@ -179,49 +169,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return isInRepository(descriptor, original) ? cls.cast(original) : null;
     }
 
-
-    /////////////////////////////////TODO: (merging, refreshing)
-    @Override
-    public <T> T mergeDetached(T entity, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    // used in mergeDetached
-    private boolean isSameType(Object id, Object entity) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    public <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    // used in verifyCanPersist and mergeDetached
-    private boolean isIndividualManaged(Object identifier, Object entity) {
-        throw new UnsupportedOperationException("isIndividualManaged: Method not implemented.");
-    }
-
-    // used in merge detached internal
-    protected <T> T getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    // used in merge detached internal
-    protected void evictAfterMerge(EntityType<?> et, URI identifier, Descriptor descriptor) {
-        throw new UnsupportedOperationException("evictAfterMerge: Method not implemented.");
-    }
-
-    @Override
-    public <T> void refreshObject(T object) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    // this will not be needed -> either throw exception or simpy: return collection;
-    @Override
-    public Object createIndirectCollection(Object collection, Object owner, Field field) {
-        throw new UnsupportedOperationException("createIndirectCollection: Method not implemented.");
-//        return collection;
-    }
-    //////////////////////////////////////////// END
     @Override
     public void unregisterObject(Object object) {
         if (object == null) { return; }
@@ -229,9 +176,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         originalMapping.remove(object);
         keysToOriginals.remove(super.getIdentifier(object));
 
-        // TODO: should proxies be removed here?
         super.removeLazyLoadingProxies(object);
-
         super.unregisterEntityFromOntologyContext(object);
     }
 
@@ -251,13 +196,13 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return entity;
     }
 
-    void registerOriginal(Object original, Descriptor descriptor) {
+    private void registerOriginal(Object original, Descriptor descriptor) {
         originalMapping.add(original);
         final Object identifier = super.getIdentifier(original);
         keysToOriginals.put(identifier, original);
 
         super.registerEntityWithOntologyContext(original, descriptor);
-        // TODO: why does this work:
+        // TODO: why does this work: (maybe this should not be handled) vzdy bude nastaven
         if (isEntityType(original.getClass()) && !super.getLoadStateRegistry().contains(original)) {
             super.getLoadStateRegistry().put(
                 original,
@@ -364,19 +309,12 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return orig;
     }
 
-    ////////////////////////////////////////STATE HANDLING//////////////////////////////////////////////////////////////
     @Override
     public boolean isObjectManaged(Object entity) {
         Objects.requireNonNull(entity);
         return this.originalMapping.contains(entity);
     }
 
-    @Override
-    public boolean isObjectNew(Object entity) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
-    // either simplify these methods or use abstract implementation
     @Override
     public EntityState getState(Object entity) {
         Objects.requireNonNull(entity);
@@ -393,17 +331,11 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
                  : EntityState.NOT_MANAGED;
     }
 
-    ////////////////////////////////////////REFERENCES//////////////////////////////////////////////////////////////////
     @Override
     public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
         return super.readObject(cls, identifier, descriptor);
     }
 
-    // private method, used in 'isObjectManaged'. The isObjectManaged should be implemented here
-//    @Override
-//    private boolean isManagedReference(Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
     ////////////////////////////////////////////////CACHE METHODS///////////////////////////////////////////////////////
     @Override
     public CacheManager getLiveObjectCache() {
@@ -433,6 +365,41 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     //////////////////////////////////////THESE METHODS SHOULD NOT BE SUPPORTED/////////////////////////////////////////
+    @Override
+    public boolean isObjectNew(Object entity) {
+        throw new UnsupportedOperationException("Method not implemented.");
+    }
+
+    @Override
+    public <T> T mergeDetached(T entity, Descriptor descriptor) {
+        throw new UnsupportedOperationException("Method not implemented.");
+    }
+
+    @Override
+    public <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
+        throw new UnsupportedOperationException("Method not implemented.");
+    }
+
+    @Override
+    protected <T> T getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
+        throw new UnsupportedOperationException("Method not implemented.");
+    }
+
+    @Override
+    protected void evictAfterMerge(EntityType<?> et, URI identifier, Descriptor descriptor) {
+        throw new UnsupportedOperationException("evictAfterMerge: Method not implemented.");
+    }
+
+    @Override
+    public <T> void refreshObject(T object) {
+        throw new UnsupportedOperationException("Method not implemented.");
+    }
+
+    @Override
+    public Object createIndirectCollection(Object collection, Object owner, Field field) {
+        throw new UnsupportedOperationException("createIndirectCollection: Method not implemented.");
+    }
+
     @Override
     public Object registerExistingObject(Object entity, CloneRegistrationDescriptor registrationDescriptor) {
         throw new UnsupportedOperationException("registerExistingObject: Method not implemented.");
@@ -532,120 +499,4 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     public void removeObject(Object object) {
         throw new UnsupportedOperationException("removeObject: Method not implemented.");
     }
-
-
-
-
-    //////////////////////////////////////PARENT CLASS METHODS//////////////////////////////////////////////////////////
-    ///// use 'super' for better understanding in this code if method is used
-
-    // parent
-//    @Override
-//    public LoadState isLoaded(Object entity, String attributeName) {
-//        throw new UnsupportedOperationException("isLoaded: Method not implemented.");
-//    }
-
-    // parent
-//    @Override
-//    public LoadState isLoaded(Object entity) {
-//        throw new UnsupportedOperationException("isLoaded: Method not implemented.");
-//    }
-
-    // parent
-//    @Override
-//    public boolean isConsistent(URI context) {
-//        throw new UnsupportedOperationException("isConsistent: Method not implemented.");
-//    }
-
-    // parent
-//    @Override
-//    public List<URI> getContexts() {
-//        throw new UnsupportedOperationException("getContexts: Method not implemented.");
-//    }
-
-    // parent
-//    @Override
-//    public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> attribute, Object value) {
-//        throw new UnsupportedOperationException("isInferred: Method not implemented.");
-//    }
-
-//    // could be used from parent
-//    <T> void ensureManaged(T object) {
-//        throw new UnsupportedOperationException("ensureManaged: Method not implemented.");
-//    }
-
-//    Object getIdentifier(Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    private boolean isInRepository(Descriptor descriptor, Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    @Override
-//    public <T> T readObjectWithoutRegistration(Class<T> cls, Object identifier, Descriptor descriptor) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    @Override
-//    public void rollback() {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    @Override
-//    public boolean contains(Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    @Override
-//    public void begin() {
-//        throw new UnsupportedOperationException("begin: Method not implemented.");
-//    }
-
-//    @Override
-//    public boolean isInTransaction() {
-//        throw new UnsupportedOperationException("isInTransaction: Method not implemented.");
-//    }
-
-    // replaces LazyLoadingProxy in entity field by null or by empty collection
-//    void removeLazyLoadingProxies(Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-    // returns entityType from metaModel
-//    protected <T> IdentifiableEntityType<T> entityType(Class<T> cls) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-    // checks if cls is in metaModel
-//    @Override
-//    public boolean isEntityType(Class<?> cls) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    public String stringify(Object object) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
-//        throw new UnsupportedOperationException("getFieldDescriptor: Method not implemented.");
-//    }
-
-//    @Override
-//    public <T> T unwrap(Class<T> cls) {
-//        throw new UnsupportedOperationException("unwrap: Method not implemented.");
-//    }
-
-    //////////////////////////////////////////////REPO_MAP METHODS////////////////////////////////////////////////////
-//    void registerEntityWithOntologyContext(Object entity, Descriptor descriptor) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    Descriptor getDescriptor(Object entity) {
-//        throw new UnsupportedOperationException("Method not implemented.");
-//    }
-
-//    private void unregisterEntityFromOntologyContext(Object entity) {
-//        throw new UnsupportedOperationException("unregisterEntityFromOntologyContext: Method not implemented.");
-//    }
 }
