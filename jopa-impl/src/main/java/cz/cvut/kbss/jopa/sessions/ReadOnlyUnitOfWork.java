@@ -257,9 +257,12 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         }
     }
 
+    private void registerExistingObjectsInCollection() {
+        // TODO: implement
+    }
+
     @Override
     public Object getOriginal(Object original) {
-        // this method does not make sense in this context, this uow does not handle clones
         // simply return the original object
         // TODO: change javadoc
         return original;
