@@ -48,7 +48,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class OnCommitChangePropagatingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
+class OnCommitChangePropagatingUnitOfWorkTest extends ReadWriteUnitOfWorkTest {
 
     @BeforeAll
     static void setUpBeforeAll() {

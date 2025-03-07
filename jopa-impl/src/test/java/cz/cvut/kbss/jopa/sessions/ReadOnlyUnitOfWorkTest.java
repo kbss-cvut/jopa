@@ -5,7 +5,6 @@ import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
-import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
@@ -22,7 +21,6 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -32,7 +30,6 @@ import org.mockito.quality.Strictness;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +40,6 @@ import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -495,149 +491,4 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         assertSame(entityA, result.getSet().iterator().next());
         assertTrue(uow.contains(result.getSet().iterator().next()));
     }
-
-    @Test
-    @Disabled("Change calculation is not supported in read-only UOW")
-    @Override
-    void throwsCardinalityViolationWhenMaximumCardinalityIsViolatedOnCommit() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void commitRemovesRemovedObjectsFromStorage() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void registerExistingObjectPassesPostCloneListenersToCloneBuilder() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void isObjectNewReturnsFalseForRegisteredExistingObject() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void registerNewObjectThrowsIdentifierNotSetExceptionWhenIdentifierIsNullAndNotGenerated() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void rollbackRollsBackStorageChangesAndRemovesObjectsFromPersistenceContext() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void commitPersistsAllNewlyRegisteredObjects() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void registerNewObjectGeneratesIdentifierWhenInstancesDoesNotHaveOne() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void commitAddsNewlyAddedReferenceToObjectToCache() throws Exception {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void readNewlyRegisteredObjectReturnsIt() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void registerNewObjectAddsArgumentToPersistenceContext() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void registerNewObjectThrowsNullPointerExceptionForNullDescriptor() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void removeObjectFromCacheEvictsObjectFromCacheManager() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void registerNewObjectThrowsNullPointerExceptionForNullArgument() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void unregisterObjectRemovesItFromCloneBuilderCache() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void persistSkipsCardinalityConstraintValidationOfInferredAttributes() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void commitAddsNewObjectsToCache() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void commitEvictsRemovedObjectsFromCache() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void isObjectNewReturnsFalseForNullArgument() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void isObjectNewReturnsTrueForNewlyRegisteredObject() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void isLoadedByAttributeReturnsLoadedForAttributesOfNewlyRegisteredInstance() throws Exception {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void getManagedOriginalReturnsNullWhenObjectIsManagedButAmongDeletedObjects() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void isLoadedReturnsLoadedForNewlyRegisteredInstance() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void removeNotRegisteredObjectThrowsIllegalArgumentException() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void restoreDeletedReinsertsObjectIntoRepository() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void commitDetachesPersistedInstance() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void removeObjectRemovesNewlyRegisteredObjectFromPersistenceContext() {}
-
-    @Test
-    @Disabled("Requires unsupported operation")
-    @Override
-    void restoreDeletedRegistersObjectAgain() {}
-
-    @Test
-    @Disabled("Post clone listeners are disabled")
-    @Override
-    void registerExistingObjectInvokesPostCloneListeners() {}
 }
