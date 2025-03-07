@@ -514,4 +514,11 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         uow.commit();
         verify(storageMock).commit();
     }
+
+    @Test
+    void isObjectNewReturnsFalseForRegisteredExistingObject() {
+        defaultLoadStateDescriptor(entityA);
+        OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        assertFalse(uow.isObjectNew(managed));
+    }
 }

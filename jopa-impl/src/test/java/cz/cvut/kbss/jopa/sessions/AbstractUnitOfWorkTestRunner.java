@@ -215,13 +215,6 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     }
 
     @Test
-    void isObjectNewReturnsFalseForRegisteredExistingObject() {
-        defaultLoadStateDescriptor(entityA);
-        OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
-        assertFalse(uow.isObjectNew(managed));
-    }
-
-    @Test
     void isObjectManagedReturnsTrueForRegisteredExistingObject() {
         defaultLoadStateDescriptor(entityA);
         OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
