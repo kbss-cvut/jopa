@@ -26,7 +26,7 @@ public class StringParameterValueTest {
     @Test
     public void getQueryStringEscapesNewlinesInQueryParameter() {
         final String value = "fdjsakfsa;f\n        fdjsajsfd";
-        final String expected = "\"fdjsakfsa;f\\n        fdjsajsfd\"";
+        final String expected = "\"fdjsakfsa;f\\n        fdjsajsfd\"^^<http://www.w3.org/2001/XMLSchema#string>";
         final StringParameterValue sut = new StringParameterValue(value);
         assertEquals(expected, sut.getQueryString());
     }
@@ -34,7 +34,7 @@ public class StringParameterValueTest {
     @Test
     public void getQueryStringEscapesEscapeSequencesInValue() {
         final String value = "aaa\nbbb\tccc\bdddd\reee\feee'fff'ggg\"hhh\"iii\\jjj";
-        final String expected = "\"aaa\\nbbb\\tccc\\bdddd\\reee\\feee\\'fff\\'ggg\\\"hhh\\\"iii\\\\jjj\"";
+        final String expected = "\"aaa\\nbbb\\tccc\\bdddd\\reee\\feee\\'fff\\'ggg\\\"hhh\\\"iii\\\\jjj\"^^<http://www.w3.org/2001/XMLSchema#string>";
 
         final StringParameterValue sut = new StringParameterValue(value);
         assertEquals(expected, sut.getQueryString());
