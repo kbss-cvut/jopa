@@ -28,6 +28,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * {@link DataSource} implementation representing the RDF4J OntoDriver.
+ */
 public class Rdf4jDataSource implements DataSource {
 
     private Rdf4jDriver driver;

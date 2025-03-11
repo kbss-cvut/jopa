@@ -8,14 +8,14 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.util.Collection;
 
-class Rdf4jContainers implements Containers {
+public class Rdf4jContainers implements Containers {
 
     private final Rdf4jAdapter adapter;
 
     private final Procedure beforeCallback;
     private final Procedure afterChangeCallback;
 
-    Rdf4jContainers(Rdf4jAdapter adapter, Procedure beforeCallback, Procedure afterChangeCallback) {
+    public Rdf4jContainers(Rdf4jAdapter adapter, Procedure beforeCallback, Procedure afterChangeCallback) {
         this.adapter = adapter;
         this.beforeCallback = beforeCallback;
         this.afterChangeCallback = afterChangeCallback;

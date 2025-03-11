@@ -25,7 +25,7 @@ import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
  * Executes a method which takes no arguments and returns no result.
  */
 @FunctionalInterface
-interface Procedure {
+public interface Procedure {
     /**
      * Executes the procedure.
      *

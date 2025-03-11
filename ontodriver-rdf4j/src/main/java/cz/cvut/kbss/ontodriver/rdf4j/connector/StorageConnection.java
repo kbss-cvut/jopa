@@ -45,12 +45,12 @@ public class StorageConnection implements RepoConnection {
 
     private boolean open;
 
-    final StorageConnector storageConnector;
+    final Rdf4jConnectionProvider connectionProvider;
     private final IsolationLevel isolationLevel;
     private RepositoryConnection connection;
 
-    public StorageConnection(StorageConnector storageConnector, IsolationLevel isolationLevel) {
-        this.storageConnector = storageConnector;
+    public StorageConnection(Rdf4jConnectionProvider connectionProvider, IsolationLevel isolationLevel) {
+        this.connectionProvider = connectionProvider;
         this.isolationLevel = isolationLevel;
         this.open = true;
     }
@@ -83,7 +83,7 @@ public class StorageConnection implements RepoConnection {
     @Override
     public TupleQueryResult executeSelectQuery(QuerySpecification query) throws Rdf4jDriverException {
         // Always create a separate connection, it is released by the result set once it is closed
-        return new ConnectionStatementExecutor(storageConnector.acquireConnection()).executeSelectQuery(query);
+        return new ConnectionStatementExecutor(connectionProvider.acquireConnection()).executeSelectQuery(query);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class StorageConnection implements RepoConnection {
         if (connection != null) {
             return call.apply(connection);
         } else {
-            try (final RepositoryConnection conn = storageConnector.acquireConnection()) {
+            try (final RepositoryConnection conn = connectionProvider.acquireConnection()) {
                 return call.apply(conn);
             }
         }
@@ -106,7 +106,7 @@ public class StorageConnection implements RepoConnection {
         if (connection != null) {
             new ConnectionStatementExecutor(connection).executeUpdate(query);
         } else {
-            try (final RepositoryConnection conn = storageConnector.acquireConnection()) {
+            try (final RepositoryConnection conn = connectionProvider.acquireConnection()) {
                 new ConnectionStatementExecutor(conn).executeUpdate(query);
             }
         }
@@ -125,12 +125,12 @@ public class StorageConnection implements RepoConnection {
 
     @Override
     public ValueFactory getValueFactory() {
-        return storageConnector.getValueFactory();
+        return connectionProvider.getValueFactory();
     }
 
     @Override
     public void begin() throws Rdf4jDriverException {
-        this.connection = storageConnector.acquireConnection();
+        this.connection = connectionProvider.acquireConnection();
         try {
             connection.begin(isolationLevel);
         } catch (RepositoryException e) {
@@ -261,6 +261,6 @@ public class StorageConnection implements RepoConnection {
         if (cls.isAssignableFrom(RepositoryConnection.class)) {
             return cls.cast(connection);
         }
-        return storageConnector.unwrap(cls);
+        return connectionProvider.unwrap(cls);
     }
 }

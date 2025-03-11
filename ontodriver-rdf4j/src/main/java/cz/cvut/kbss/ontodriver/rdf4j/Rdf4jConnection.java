@@ -40,7 +40,7 @@ import java.util.Objects;
 import java.util.Set;
 
 
-class Rdf4jConnection implements Connection {
+public class Rdf4jConnection implements Connection {
 
     private final Rdf4jAdapter adapter;
     private boolean open;
@@ -53,17 +53,17 @@ class Rdf4jConnection implements Connection {
 
     private ConnectionListener<Rdf4jConnection> listener;
 
-    Rdf4jConnection(Rdf4jAdapter adapter) {
+    public Rdf4jConnection(Rdf4jAdapter adapter) {
         assert adapter != null;
         this.adapter = adapter;
         this.open = true;
     }
 
-    void setLists(Rdf4jLists lists) {
+    public void setLists(Rdf4jLists lists) {
         this.lists = lists;
     }
 
-    void setTypes(Rdf4jTypes types) {
+    public void setTypes(Rdf4jTypes types) {
         this.types = types;
     }
 
@@ -71,17 +71,16 @@ class Rdf4jConnection implements Connection {
         this.properties = properties;
     }
 
-    void setContainers(Rdf4jContainers containers) {
+    public void setContainers(Rdf4jContainers containers) {
         this.containers = containers;
     }
 
-    void setListener(ConnectionListener<Rdf4jConnection> listener) {
+    public void setListener(ConnectionListener<Rdf4jConnection> listener) {
         ensureOpen();
-        assert listener != null;
         this.listener = listener;
     }
 
-    void removeListener() {
+    public void removeListener() {
         this.listener = null;
     }
 
@@ -265,13 +264,13 @@ class Rdf4jConnection implements Connection {
         return containers;
     }
 
-    void ensureOpen() {
+    public void ensureOpen() {
         if (!open) {
             throw new IllegalStateException("This connection is closed.");
         }
     }
 
-    void commitIfAuto() throws Rdf4jDriverException {
+    public void commitIfAuto() throws Rdf4jDriverException {
         if (autoCommit) {
             adapter.commit();
         }

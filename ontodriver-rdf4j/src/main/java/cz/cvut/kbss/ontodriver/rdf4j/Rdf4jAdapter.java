@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class Rdf4jAdapter implements Closeable, Wrapper {
+public class Rdf4jAdapter implements Closeable, Wrapper {
 
     /**
      * Maximum number of attempts to generate a unique identifier
