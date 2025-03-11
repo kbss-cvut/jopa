@@ -85,27 +85,17 @@ public class StorageConnector implements Closeable, Rdf4jConnectionProvider {
 
     public StorageConnector(DriverConfiguration configuration) throws Rdf4jDriverException {
         this.configuration = configuration;
-        this.maxReconnectAttempts = resolveMaxReconnectAttempts();
+        this.maxReconnectAttempts = resolveMaxReconnectAttempts(configuration);
     }
 
-    private int resolveMaxReconnectAttempts() throws Rdf4jDriverException {
-        try {
-            final int attempts = configuration.isSet(Rdf4jConfigParam.RECONNECT_ATTEMPTS) ? Integer.parseInt(
-                    configuration.getProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS)) :
-                    Constants.DEFAULT_RECONNECT_ATTEMPTS_COUNT;
-            if (attempts < 0) {
-                throw invalidReconnectAttemptsConfig();
-            }
-            return attempts;
-        } catch (NumberFormatException e) {
-            throw invalidReconnectAttemptsConfig();
+    private static int resolveMaxReconnectAttempts(DriverConfiguration config) throws Rdf4jDriverException {
+        final int attempts = config.getProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS, Constants.DEFAULT_RECONNECT_ATTEMPTS_COUNT);
+        if (attempts < 0) {
+            throw new Rdf4jDriverException(
+                    "Invalid value of configuration parameter " + Rdf4jOntoDriverProperties.RECONNECT_ATTEMPTS +
+                            ". Must be a non-negative integer.");
         }
-    }
-
-    private static Rdf4jDriverException invalidReconnectAttemptsConfig() {
-        return new Rdf4jDriverException(
-                "Invalid value of configuration parameter " + Rdf4jOntoDriverProperties.RECONNECT_ATTEMPTS +
-                        ". Must be a non-negative integer.");
+        return attempts;
     }
 
     public void initializeRepository() throws Rdf4jDriverException {
