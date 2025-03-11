@@ -20,7 +20,7 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 import cz.cvut.kbss.ontodriver.Connection;
 
 @FunctionalInterface
-interface ConnectionListener<C extends Connection> {
+public interface ConnectionListener<C extends Connection> {
 
     /**
      * Notification that the specified connection has been closed.

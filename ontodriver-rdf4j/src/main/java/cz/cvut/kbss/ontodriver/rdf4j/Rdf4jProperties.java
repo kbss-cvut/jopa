@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-class Rdf4jProperties implements Properties {
+public class Rdf4jProperties implements Properties {
 
     private final RepoConnection connector;
     private final RuntimeConfiguration config;

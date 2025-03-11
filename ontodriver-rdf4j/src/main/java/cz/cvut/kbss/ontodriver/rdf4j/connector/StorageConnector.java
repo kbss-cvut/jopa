@@ -66,7 +66,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-public class StorageConnector implements Closeable, Wrapper {
+public class StorageConnector implements Closeable, Rdf4jConnectionProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(StorageConnector.class);
 
@@ -330,11 +330,13 @@ public class StorageConnector implements Closeable, Wrapper {
         return sail instanceof MemoryStore;
     }
 
+    @Override
     public ValueFactory getValueFactory() {
         verifyOpen();
         return repository.getValueFactory();
     }
 
+    @Override
     public RepositoryConnection acquireConnection() throws Rdf4jDriverException {
         verifyOpen();
         // Workaround for local native storage being reset when multiple drivers access it
