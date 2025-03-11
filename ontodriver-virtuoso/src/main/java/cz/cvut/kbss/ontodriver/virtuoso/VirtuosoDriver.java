@@ -28,8 +28,7 @@ class VirtuosoDriver implements AutoCloseable, ConnectionListener<Rdf4jConnectio
 
     private static final List<ConfigurationParameter> CONFIGS = List
             .of(DriverConfigParam.AUTO_COMMIT, Rdf4jConfigParam.LOAD_ALL_THRESHOLD,
-                    Rdf4jConfigParam.RECONNECT_ATTEMPTS,
-                    Rdf4jConfigParam.CONNECTION_REQUEST_TIMEOUT);
+                    Rdf4jConfigParam.RECONNECT_ATTEMPTS);
 
     private final DriverConfiguration configuration;
     private boolean open;

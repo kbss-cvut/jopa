@@ -654,17 +654,17 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     void testPersistEntityWithASKQueryAttr() {
         this.em = getEntityManager("PersistWithASKQueryAttr", false);
 
-        em.getTransaction().begin();
-        em.persist(entityWithQueryAttr4);
-        assertTrue(em.contains(entityWithQueryAttr4));
-        em.getTransaction().commit();
+        transactional(() -> {
+            em.persist(entityWithQueryAttr4);
+            assertTrue(em.contains(entityWithQueryAttr4));
+        });
         em.clear();
 
         final OWLClassWithQueryAttr4 resultEntity =
                 findRequired(OWLClassWithQueryAttr4.class, entityWithQueryAttr4.getUri());
         assertEquals(entityWithQueryAttr4.getUri(), resultEntity.getUri());
         assertEquals(entityWithQueryAttr4.getStringAttribute(), resultEntity.getStringAttribute());
-        assertEquals(true, resultEntity.getAskQueryAttribute());
+        assertTrue(resultEntity.getAskQueryAttribute());
     }
 
     @Test

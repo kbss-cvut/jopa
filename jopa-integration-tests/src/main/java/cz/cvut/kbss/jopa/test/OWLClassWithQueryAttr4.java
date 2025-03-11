@@ -27,8 +27,7 @@ import java.net.URI;
 @OWLClass(iri = Vocabulary.C_OwlClassWithQueryAttr4)
 public class OWLClassWithQueryAttr4 implements HasUri {
 
-    private static final String QUERY = "ASK" +
-                                        "WHERE {?this <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> ?stringAttribute}";
+    private static final String QUERY = "ASK WHERE { ?this <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> ?stringAttribute }";
 
     @Id
     private URI uri;

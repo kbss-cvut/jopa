@@ -43,8 +43,7 @@ public abstract class StorageConfig {
      * This method performs any necessary tasks before creating the storage properties (typically deleting the old
      * data).
      *
-     * @param index Index appended to file/folder name, used when multiple storages of the same type can occur
      * @return OntologyStorageProperties
      */
-    public abstract Map<String, String> createStorageConfiguration(int index);
+    public abstract Map<String, String> createStorageConfiguration();
 }
