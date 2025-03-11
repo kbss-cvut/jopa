@@ -95,7 +95,7 @@ public class VirtuosoDataAccessor implements DataAccessor {
         }
     }
 
-    public void clearRepository(EntityManager em) {
+    public static void clearRepository(EntityManager em) {
         final Repository repository = em.unwrap(Repository.class);
         try (final RepositoryConnection connection = repository.getConnection()) {
             connection.begin();

@@ -98,8 +98,8 @@ public class OrdinalParameterSparqlQueryHolderTest {
                 "SELECT ?craft\n" +
                 "{\n" +
                 "?craft foaf:name \"Apollo 7\" .\n" +
-                "?craft foaf:homepage \"" + homepage + "\" .\n" +
-                "?craft foaf:fundedBy \"" + fundedBy + "\" .\n" +
+                "?craft foaf:homepage \"" + homepage + "\"^^<http://www.w3.org/2001/XMLSchema#string> .\n" +
+                "?craft foaf:fundedBy \"" + fundedBy + "\"^^<http://www.w3.org/2001/XMLSchema#string> .\n" +
                 "}";
         holder.setParameter(new QueryParameter<>(1, paramValueFactory), homepage);
         holder.setParameter(new QueryParameter<>(2, paramValueFactory), fundedBy);
@@ -114,7 +114,7 @@ public class OrdinalParameterSparqlQueryHolderTest {
                 "{\n" +
                 "?craft foaf:name \"Apollo 7\" .\n" +
                 "?craft foaf:homepage $1 .\n" +
-                "?craft foaf:fundedBy \"" + fundedBy + "\" .\n" +
+                "?craft foaf:fundedBy \"" + fundedBy + "\"^^<http://www.w3.org/2001/XMLSchema#string> .\n" +
                 "}";
         holder.setParameter(new QueryParameter<>(2, paramValueFactory), fundedBy);
         assertEquals(query, holder.assembleQuery());

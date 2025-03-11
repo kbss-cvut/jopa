@@ -40,6 +40,7 @@ class UriParameterValue extends AbstractParameterValue {
 
     @Override
     public String getQueryString() {
+        // TODO Allow prefixed URIs - they should not be wrapped in <>
         return IdentifierTransformer.stringifyIri(uri);
     }
 
