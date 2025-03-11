@@ -160,7 +160,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         // if primitives are not set, they should fall back to their default values
         assertEquals(entityBB.getUri(), res.getUri());
         assertEquals(0, res.getIntAttribute());
-        assertEquals(false, res.getBooleanAttribute());
+        assertFalse(res.getBooleanAttribute());
         assertEquals(0, res.getByteAttribute());
         assertEquals((short) 0, res.getShortAttribute());
         assertEquals(0L, res.getLongAttribute());

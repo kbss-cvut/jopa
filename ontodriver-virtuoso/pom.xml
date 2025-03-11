@@ -10,6 +10,8 @@
     </parent>
 
     <artifactId>ontodriver-virtuoso</artifactId>
+    <name>OntoDriver - Virtuoso</name>
+    <description>Virtuoso implementation of the OntoDriver API</description>
 
     <properties>
         <com.openlinksw.rdf4jdriver.version>1.18</com.openlinksw.rdf4jdriver.version>

@@ -30,11 +30,10 @@ public class Rdf4jMemoryStorageConfig extends StorageConfig {
     private static final OntologyConnectorType TYPE = OntologyConnectorType.RDF4J;
 
     @Override
-    public Map<String, String> createStorageConfiguration(int index) {
-        assert index >= 0;
+    public Map<String, String> createStorageConfiguration() {
         assert name != null;
 
-        final String base = name + TYPE + index;
+        final String base = name + TYPE;
 
         final Map<String, String> config = new HashMap<>();
         config.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, TYPE.getDriverClass());
