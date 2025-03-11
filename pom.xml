@@ -24,6 +24,7 @@
         <module>ontodriver-jena</module>
         <module>ontodriver-owlapi</module>
         <module>ontodriver-rdf4j</module>
+        <module>ontodriver-virtuoso</module>
         <module>jopa-impl</module>
         <module>jopa-integration-tests</module>
         <module>jopa-integration-tests-jena</module>
