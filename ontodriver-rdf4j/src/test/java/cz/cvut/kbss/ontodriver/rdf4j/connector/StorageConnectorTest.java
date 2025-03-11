@@ -274,11 +274,11 @@ class StorageConnectorTest {
     }
 
     @Test
-    void initializationThrowsRdf4jDriverExceptionWhenReconnectAttemptsIsNotANumber() {
+    void initializationThrowsIllegalArgumentDriverExceptionWhenReconnectAttemptsIsNotANumber() {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS, "not-a-number");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        assertThrows(Rdf4jDriverException.class, () -> createSut(conf));
+        assertThrows(IllegalArgumentException.class, () -> createSut(conf));
     }
 
     @Test
