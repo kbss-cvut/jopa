@@ -68,6 +68,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -295,7 +297,12 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.clear();
 
         final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
-        assertEquals(entityP.getProperties(), res.getProperties());
+        assertEquals(entityP.getProperties().keySet(), res.getProperties().keySet());
+        for (URI property : entityP.getProperties().keySet()) {
+            final Set<Object> expected = entityP.getProperties().get(property);
+            final Set<Object> actual = res.getProperties().get(property);
+            assertEquals(expected, actual);
+        }
         final List<Quad> expectedStatements = new ArrayList<>();
         entityP.getProperties()
                .forEach((k, vs) -> vs.forEach(v -> expectedStatements.add(new Quad(entityP.getUri(), k, v, (String) null))));
