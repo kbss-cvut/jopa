@@ -70,7 +70,7 @@ class ParameterValueFactoryTest {
     void createStringValueWithoutLanguageTag() {
         final ParameterValue value = sut.create("test");
         assertEquals("test", value.getValue());
-        assertEquals("\"test\"", value.getQueryString());
+        assertEquals("\"test\"^^<http://www.w3.org/2001/XMLSchema#string>", value.getQueryString());
     }
 
     @Test
