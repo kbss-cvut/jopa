@@ -20,6 +20,7 @@ public class VirtuosoConnectionFactory implements ConnectionFactory {
                                      IsolationLevel txIsolationLevel) throws VirtuosoDriverException {
         this.txIsolationLevel = txIsolationLevel;
         this.storageConnector = new VirtuosoStorageConnector(config);
+        storageConnector.initializeRepository();
     }
 
 
