@@ -658,7 +658,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistEntityWithASKQueryAttr() {
+    public void testPersistEntityWithASKQueryAttr() {
         this.em = getEntityManager("PersistWithASKQueryAttr", false);
 
         transactional(() -> {

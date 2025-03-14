@@ -31,6 +31,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
 import java.util.Map;
 
 @EnabledIfSystemProperty(named = "virtuoso.host", matches = ".+")
@@ -76,5 +77,14 @@ public class TypedQueryTest extends TypedQueryRunner {
     @Override
     public void askQueryAgainstTransactionalOntologyContainsUncommittedChangesAsWell() {
         // RDF4J does not support queries against transactional snapshot because it does not use it
+    }
+
+    @Override
+    protected void cleanupTestData(String type) {
+        // Virtuoso requires a graph to be always specified
+        getEntityManager().getTransaction().begin();
+        getEntityManager().createNativeQuery("DELETE WHERE { GRAPH ?g { ?x a ?type . ?x ?y ?z . } }")
+                          .setParameter("type", URI.create(type)).executeUpdate();
+        getEntityManager().getTransaction().commit();
     }
 }

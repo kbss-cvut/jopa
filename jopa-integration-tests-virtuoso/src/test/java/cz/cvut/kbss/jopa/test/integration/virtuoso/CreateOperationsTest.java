@@ -21,6 +21,8 @@ import cz.cvut.kbss.jopa.test.environment.VirtuosoDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.VirtuosoPersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.CreateOperationsRunner;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,5 +41,12 @@ public class CreateOperationsTest extends CreateOperationsRunner {
     public void tearDown() {
         VirtuosoDataAccessor.clearRepository(em);
         super.tearDown();
+    }
+
+    @Disabled
+    @Test
+    @Override
+    public void testPersistEntityWithASKQueryAttr() {
+        // TODO Enable once we resolve problems with simple literals in SPARQL in Virtuoso (they require explicit xsd:string datatype)
     }
 }
