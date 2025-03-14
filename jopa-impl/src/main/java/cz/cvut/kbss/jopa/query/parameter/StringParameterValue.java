@@ -17,8 +17,6 @@
  */
 package cz.cvut.kbss.jopa.query.parameter;
 
-import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
-import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
 import java.util.Objects;
@@ -55,7 +53,7 @@ class StringParameterValue extends AbstractParameterValue {
 
     @Override
     public String getQueryString() {
-        return "\"" + getEscapedValue() + "\"" + (language != null ? ("@" + language) : "^^" + IdentifierTransformer.stringifyIri(XSD.STRING));
+        return "\"" + getEscapedValue() + "\"" + (language != null ? ("@" + language) : "");
     }
 
     /**

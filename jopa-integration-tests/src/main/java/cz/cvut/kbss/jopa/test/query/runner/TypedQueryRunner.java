@@ -372,7 +372,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         }
     }
 
-    private void cleanupTestData(String type) {
+    protected void cleanupTestData(String type) {
         getEntityManager().getTransaction().begin();
         getEntityManager().createNativeQuery("DELETE WHERE { ?x a ?type . ?x ?y ?z . }")
                           .setParameter("type", URI.create(type)).executeUpdate();
