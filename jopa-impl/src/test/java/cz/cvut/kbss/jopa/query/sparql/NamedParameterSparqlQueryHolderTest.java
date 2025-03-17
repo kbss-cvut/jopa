@@ -179,7 +179,7 @@ public class NamedParameterSparqlQueryHolderTest {
                 SELECT ?craft
                 {
                   ?craft foaf:name "Apollo 7" .
-                  ?craft foaf:homepage "https://kbss.felk.cvut.cz"^^<http://www.w3.org/2001/XMLSchema#string> .
+                  ?craft foaf:homepage "https://kbss.felk.cvut.cz" .
                 }""";
         assertEquals(expected, holder.assembleQuery());
     }
