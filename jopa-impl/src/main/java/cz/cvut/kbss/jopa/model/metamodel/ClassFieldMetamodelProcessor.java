@@ -46,6 +46,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
@@ -83,7 +84,16 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
 
-        final Class<?> fieldValueCls = getFieldValueType(field);
+        final Optional<Class<?>> fieldValueClassOpt = getFieldValueType(field);
+        if (fieldValueClassOpt.isEmpty()) {
+            // Defer generic field initialization
+            metamodelBuilder.registerDeferredFieldInitialization(field, context);
+            return;
+        }
+        processFieldWithValueType(field, fieldValueClassOpt.get());
+    }
+
+    private void processFieldWithValueType(Field field, Class<?> fieldValueCls) {
         field.setAccessible(true);
         final InferenceInfo inference = processInferenceInfo(field);
 
@@ -126,6 +136,7 @@ class ClassFieldMetamodelProcessor<X> {
 
         throw new MetamodelInitializationException("Unable to process field " + field + ". It is not transient but has no mapping information.");
     }
+
 
     /**
      * Do a bottom top search of hierarchy in order to find annotated accessor belonging to given field. This is used
@@ -207,17 +218,18 @@ class ClassFieldMetamodelProcessor<X> {
         return true;
     }
 
-    private static Class<?> getFieldValueType(Field field) {
+    private static Optional<Class<?>> getFieldValueType(Field field) {
         if (Collection.class.isAssignableFrom(field.getType())) {
             return getSetOrListErasureType((ParameterizedType) field.getGenericType());
         } else if (field.getType().isArray()) {
             throw new MetamodelInitializationException("Array persistent attributes are not supported.");
         } else {
-            return field.getType();
+            // If the type is generic, defer its resolution until the metamodel is built
+            return field.getGenericType() instanceof TypeVariable<?> ? Optional.empty() : Optional.of(field.getType());
         }
     }
 
-    private static Class<?> getSetOrListErasureType(final ParameterizedType cls) {
+    private static Optional<Class<?>> getSetOrListErasureType(final ParameterizedType cls) {
         final Type[] t = cls.getActualTypeArguments();
 
         if (t.length != 1) {
@@ -225,10 +237,12 @@ class ClassFieldMetamodelProcessor<X> {
         }
         Type type = t[0];
         if (type instanceof Class<?>) {
-            return (Class<?>) type;
+            return Optional.of((Class<?>) type);
         } else if (type instanceof ParameterizedType) {
             final Type rawType = ((ParameterizedType) type).getRawType();
-            return (Class<?>) rawType;
+            return Optional.of((Class<?>) rawType);
+        } else if (type instanceof TypeVariable) {
+            return Optional.empty();
         }
         throw new OWLPersistenceException("Unsupported collection element type " + type);
     }
@@ -417,6 +431,19 @@ class ClassFieldMetamodelProcessor<X> {
 
     private static boolean isIdentifierField(Field field) {
         return field.getAnnotation(Id.class) != null;
+    }
+
+    void processDeferredField(Field field) {
+        if (field.getGenericType() instanceof TypeVariable<?> || Collection.class.isAssignableFrom(field.getType())) {
+            for (AbstractIdentifiableType<?> st : et.getSubtypes()) {
+                if (!st.isAbstract()) {
+                    assert st.getJavaType().getGenericSuperclass() instanceof ParameterizedType;
+                    final ParameterizedType t = (ParameterizedType) st.getJavaType().getGenericSuperclass();
+                    final Type actualType = t.getActualTypeArguments()[0];
+                    processFieldWithValueType(field, (Class<?>) actualType);
+                }
+            }
+        }
     }
 
     private static class InferenceInfo {
