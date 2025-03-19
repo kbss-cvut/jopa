@@ -43,10 +43,14 @@ public class CreateOperationsTest extends CreateOperationsRunner {
         super.tearDown();
     }
 
+    /**
+     * Caused by Virtuoso not treating simple literals and xsd:string literals as the same (as per RDF1.1, SPARQL 1.1)
+     * See <a href="https://github.com/openlink/virtuoso-opensource/issues/728">...</a>
+     */
     @Disabled
     @Test
     @Override
     public void testPersistEntityWithASKQueryAttr() {
-        // TODO Enable once we resolve problems with simple literals in SPARQL in Virtuoso (they require explicit xsd:string datatype)
+        super.testPersistEntityWithASKQueryAttr();
     }
 }
