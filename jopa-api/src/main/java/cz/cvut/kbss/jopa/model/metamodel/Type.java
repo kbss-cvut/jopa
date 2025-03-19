@@ -20,7 +20,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.UnusedJPA;
 
 /**
- * Instances of the type Type represent persistent object or attribute types.
+ * Instances of the type {@code Type} represent persistent object or attribute types.
  *
  * @param <X> The type of the represented object or attribute
  */
