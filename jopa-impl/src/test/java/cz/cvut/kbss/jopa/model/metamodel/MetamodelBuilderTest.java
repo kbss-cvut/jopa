@@ -24,10 +24,12 @@ import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.OWLClassV;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
@@ -601,5 +603,34 @@ class MetamodelBuilderTest {
         @RDFContainer(type = RDFContainerType.ALT)
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "rdf-alt")
         private Set<Integer> rdfAlt;
+    }
+
+    @Test
+    void buildMetamodelSupportsGenericsInAbstractSuperclass() {
+        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class, ClassWithGenericType.class, ConcreteClassWithGenericType.class));
+        builder.buildMetamodel(finderMock);
+        final EntityType<ConcreteClassWithGenericType> et = (EntityType<ConcreteClassWithGenericType>) builder.getEntityClass(ConcreteClassWithGenericType.class);
+        final Attribute<ConcreteClassWithGenericType, ?> att = (Attribute<ConcreteClassWithGenericType, ?>) et.getAttribute("boss");
+        final SetAttribute<ConcreteClassWithGenericType, ?> setAtt = (SetAttribute<ConcreteClassWithGenericType, ?>) et.getAttribute("values");
+        assertEquals(OWLClassA.class, att.getJavaType());
+        assertEquals(builder.getEntityClass(OWLClassA.class), setAtt.getElementType());
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithGenericType")
+    public static abstract class ClassWithGenericType<T extends HasUri> {
+        @Id
+        private URI uri;
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "generic-value")
+        private T boss;
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "generic-values")
+        private Set<T> values;
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithGenericType")
+    public static class ConcreteClassWithGenericType extends ClassWithGenericType<OWLClassA> {
     }
 }
