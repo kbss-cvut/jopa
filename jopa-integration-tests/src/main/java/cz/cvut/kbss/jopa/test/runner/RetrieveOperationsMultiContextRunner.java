@@ -41,8 +41,11 @@ import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -259,5 +262,19 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getBooleanAttribute(), result.getBooleanAttribute());
         assertEquals(entityM.getDateAttribute(), result.getDateAttribute());
+    }
+
+    @Test
+    void getContextIdsSupportsContextIdRetrieval() {
+        this.em = getEntityManager("getContextIdsSupportsContextIdRetrieval", false);
+        final OWLClassA entityATwo = new OWLClassA();
+        entityATwo.setUri(entityA.getUri());
+        entityATwo.setStringAttribute("SomeCompletelyDifferentStringAttribute");
+        transactional(() -> em.persist(entityA, cOneDescriptor));
+        transactional(() -> em.persist(entityATwo, cTwoDescriptor));
+
+        final List<URI> result = em.getContexts();
+        assertEquals(2, result.size());
+        assertThat(result, hasItems(CONTEXT_ONE, CONTEXT_TWO));
     }
 }
