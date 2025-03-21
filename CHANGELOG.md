@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+## 2.2.3 - 2025-03-21
+- Fix a NPX when calling `getContexts` on RDF4J driver (Bug #311).
+- Dependency updates: Jena 5.3.0.
+
 ## 2.2.2 - 2025-01-18
 - Fix an issue with parsing SPARQL query parameters (Enhancement #294).
 - Fix an issue with passing a lazy loading proxy to `EntityManager.remove` (Bug #306).
