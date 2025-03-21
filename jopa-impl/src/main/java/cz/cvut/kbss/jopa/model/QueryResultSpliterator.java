@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.utils.Procedure;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.util.Optional;
@@ -27,11 +26,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Spliterator for processing {@link cz.cvut.kbss.ontodriver.ResultSet} from {@link cz.cvut.kbss.jopa.model.query.Query} or
- * {@link cz.cvut.kbss.jopa.model.query.TypedQuery} stream support.
+ * Spliterator for processing {@link cz.cvut.kbss.ontodriver.ResultSet} from {@link cz.cvut.kbss.jopa.model.query.Query}
+ * or {@link cz.cvut.kbss.jopa.model.query.TypedQuery} stream support.
  * <p>
- * The main responsibilities of this spliterator are extracting result rows using the specified mapper,
- * passing the extraction result to the specified consumer and invoking the {@code onClose} handler once the iteration is finished.
+ * The main responsibilities of this spliterator are extracting result rows using the specified mapper, passing the
+ * extraction result to the specified consumer and invoking the {@code onClose} handler once the iteration is finished.
  * This handler releases the underlying statement and result set.
  *
  * @param <X> The type of the extracted item
@@ -40,10 +39,10 @@ class QueryResultSpliterator<X> extends Spliterators.AbstractSpliterator<X> {
 
     private final Spliterator<ResultRow> resultSetSpliterator;
     private final Function<ResultRow, Optional<X>> mapper;
-    private final Procedure onClose;
+    private final Runnable onClose;
 
     QueryResultSpliterator(Spliterator<ResultRow> resultSetSpliterator, Function<ResultRow, Optional<X>> mapper,
-                           Procedure onClose) {
+                           Runnable onClose) {
         super(Long.MAX_VALUE, Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.NONNULL);
         this.resultSetSpliterator = resultSetSpliterator;
         this.mapper = mapper;
@@ -59,11 +58,11 @@ class QueryResultSpliterator<X> extends Spliterators.AbstractSpliterator<X> {
         try {
             final boolean result = resultSetSpliterator.tryAdvance(row -> mapAndApply(row, action));
             if (!result) {
-                onClose.execute();
+                onClose.run();
             }
             return result;
         } catch (RuntimeException e) {
-            onClose.execute();
+            onClose.run();
             throw e;
         }
     }
@@ -73,7 +72,7 @@ class QueryResultSpliterator<X> extends Spliterators.AbstractSpliterator<X> {
         try {
             resultSetSpliterator.forEachRemaining(row -> mapAndApply(row, action));
         } finally {
-            onClose.execute();
+            onClose.run();
         }
     }
 }

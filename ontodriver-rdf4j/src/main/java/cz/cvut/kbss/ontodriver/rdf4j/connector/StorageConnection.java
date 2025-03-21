@@ -91,7 +91,7 @@ public class StorageConnection implements RepoConnection {
         return withConnection(conn -> new ConnectionStatementExecutor(conn).executeBooleanQuery(query));
     }
 
-    private <R> R withConnection(ThrowingFunction<RepositoryConnection, R> call) throws Rdf4jDriverException {
+    protected  <R> R withConnection(ThrowingFunction<RepositoryConnection, R> call) throws Rdf4jDriverException {
         if (connection != null) {
             return call.apply(connection);
         } else {

@@ -119,6 +119,7 @@ class Rdf4jAdapter implements Closeable, Wrapper {
     }
 
     List<URI> getContexts() throws Rdf4jDriverException {
+        startTransactionIfNotActive();
         final List<Resource> contextIds = connector.getContexts();
         final List<URI> contexts = new ArrayList<>(contextIds.size());
         for (Resource res : contextIds) {

@@ -18,7 +18,6 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.utils.Procedure;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,8 +30,16 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings("unchecked")
@@ -48,7 +55,7 @@ class QueryResultSpliteratorTest {
     private Function<ResultRow, Optional<String>> mapper;
 
     @Mock
-    private Procedure closer;
+    private Runnable closer;
 
     @Mock
     private Consumer<String> consumer;
@@ -108,7 +115,7 @@ class QueryResultSpliteratorTest {
         });
         when(mapper.apply(any())).thenReturn(Optional.of("test"));
         sut.tryAdvance(consumer);
-        verify(closer).execute();
+        verify(closer).run();
     }
 
     @Test
@@ -120,7 +127,7 @@ class QueryResultSpliteratorTest {
         when(mapper.apply(any())).thenReturn(Optional.of("test"));
         doThrow(OWLPersistenceException.class).when(consumer).accept(anyString());
         assertThrows(OWLPersistenceException.class, () -> sut.tryAdvance(consumer));
-        verify(closer).execute();
+        verify(closer).run();
     }
 
     @Test
@@ -154,7 +161,7 @@ class QueryResultSpliteratorTest {
         }).when(resultSetSpliterator).forEachRemaining(any());
         when(mapper.apply(any())).thenReturn(Optional.of("test"));
         sut.forEachRemaining(consumer);
-        verify(closer).execute();
+        verify(closer).run();
     }
 
     @Test
@@ -166,6 +173,6 @@ class QueryResultSpliteratorTest {
         when(mapper.apply(any())).thenReturn(Optional.of("test"));
         doThrow(OWLPersistenceException.class).when(consumer).accept(anyString());
         assertThrows(OWLPersistenceException.class, () -> sut.forEachRemaining(consumer));
-        verify(closer).execute();
+        verify(closer).run();
     }
 }
