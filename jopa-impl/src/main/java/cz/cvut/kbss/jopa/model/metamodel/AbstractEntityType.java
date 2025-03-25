@@ -20,11 +20,10 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.model.IRI;
 
 /**
- * Instances of this type represent entity types which are abstract - represented entity type cannot
- * be instantiated.
- *
- * Instead, some child class represented by a {@link ConcreteEntityType} will be instantiated when
- * loading class from storage.
+ * Instances of this type represent entity types which are abstract - represented entity type cannot be instantiated.
+ * <p>
+ * Instead, some child class represented by a {@link ConcreteEntityType} will be instantiated when loading class from
+ * storage.
  * <p>
  * These entity types are either abstract classes or interfaces.
  *

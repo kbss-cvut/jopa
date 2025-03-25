@@ -80,6 +80,7 @@ public class MetamodelBuilder {
         classFinder.getAttributeConverters().forEach(converterResolver::registerConverter);
         classFinder.getEntities().forEach(this::processOWLClass);
         processDeferredFields();
+        typeMap.values().forEach(AbstractIdentifiableType::finish);
         classFinder.getResultSetMappings().forEach(mappingProcessor::buildMapper);
     }
 

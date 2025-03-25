@@ -730,4 +730,13 @@ class MetamodelBuilderTest {
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithQueryAttributeII")
     public static class ConcreteClassWithQueryAttributeII extends ClassWithGenericTypeAndQueryAttribute<OWLClassB> {
     }
+
+    @Test
+    void buildMetamodelFinishesBuildingEntityTypes() {
+        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class));
+        builder.buildMetamodel(finderMock);
+        final AbstractIdentifiableType<OWLClassA> a = (AbstractIdentifiableType<OWLClassA>) builder.getEntityClass(OWLClassA.class);
+        assertNotNull(a.getSubtypes());
+        assertTrue(a.getSubtypes().isEmpty());
+    }
 }

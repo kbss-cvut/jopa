@@ -34,7 +34,6 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -78,6 +77,8 @@ class AbstractIdentifiableTypeTest {
     void getAttributesReturnsDeclaredAttributesPlusInheritedAttributes() {
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertypes(Collections.singleton(supertype));
+        et.finish();
+        supertype.finish();
         et.getAttributes();
         verify(supertype).getAttributes(cls);
     }
@@ -86,6 +87,7 @@ class AbstractIdentifiableTypeTest {
     void getAttributesReturnsDeclaredAttributesWhenThereIsNoSupertype() {
         final AbstractAttribute<OWLClassA, ?> att = mock(AbstractAttribute.class);
         et.addDeclaredAttribute("test", att);
+        et.finish();
         final Set<Attribute<? super OWLClassA, ?>> result = et.getAttributes();
         assertEquals(1, result.size());
         assertTrue(result.contains(att));
@@ -98,12 +100,14 @@ class AbstractIdentifiableTypeTest {
         final String attName = "test";
         final AbstractAttribute att = mock(AbstractAttribute.class);
         doReturn(att).when(supertype).getAttribute(attName, cls);
+        et.finish();
         assertEquals(att, et.getAttribute(attName));
         verify(supertype).getAttribute(attName, cls);
     }
 
     @Test
     void getAttributeThrowsIllegalArgumentWhenAttributeIsNotFoundInDeclaredAndInheritedAttributes() {
+        et.finish();
         final String attName = "unknownAttribute";
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> et.getAttribute(attName));
@@ -153,6 +157,8 @@ class AbstractIdentifiableTypeTest {
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertypes(Collections.singleton(supertype));
         et.addDeclaredAttribute("test", listAtt);
+        et.finish();
+        supertype.finish();
         when(supertype.getPluralAttributes()).thenReturn(Collections.singleton(att));
         final Set<PluralAttribute<? super OWLClassA, ?, ?>> result = et.getPluralAttributes();
         assertTrue(result.contains(att));
@@ -168,6 +174,8 @@ class AbstractIdentifiableTypeTest {
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertypes(Collections.singleton(supertype));
         et.addDeclaredAttribute("test", attTwo);
+        et.finish();
+        supertype.finish();
         when(supertype.getSingularAttributes()).thenReturn(Collections.singleton(attOne));
         final Set<SingularAttribute<? super OWLClassA, ?>> result = et.getSingularAttributes();
         assertTrue(result.contains(attOne));
@@ -276,6 +284,7 @@ class AbstractIdentifiableTypeTest {
         final SingularAttribute supertypeAtt = mock(SingularAttribute.class);
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertypes(Collections.singleton(supertype));
+        supertype.finish();
         when(supertype.getAttributes(any())).thenReturn(Collections.singleton(supertypeAtt));
         final ListAttributeImpl listAtt = mock(ListAttributeImpl.class);
         et.addDeclaredAttribute("list", listAtt);
@@ -283,6 +292,7 @@ class AbstractIdentifiableTypeTest {
         et.addDirectTypes(types);
         final PropertiesSpecification properties = mock(PropertiesSpecification.class);
         et.addOtherProperties(properties);
+        et.finish();
 
         final Set<FieldSpecification<? super OWLClassA, ?>> result = et.getFieldSpecifications();
         assertTrue(result.contains(supertypeAtt));
@@ -293,6 +303,7 @@ class AbstractIdentifiableTypeTest {
 
     @Test
     void getFieldSpecificationsReturnsAlsoIdentifier() {
+        et.finish();
         final Set<FieldSpecification<? super OWLClassA, ?>> result = et.getFieldSpecifications();
         final Optional<FieldSpecification<? super OWLClassA, ?>> id = result.stream()
                                                                             .filter(fs -> fs.equals(et.getIdentifier()))
@@ -325,6 +336,8 @@ class AbstractIdentifiableTypeTest {
         final SingularAttribute supertypeAtt = mock(SingularAttribute.class);
         final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertypes(Collections.singleton(supertype));
+        et.finish();
+        supertype.finish();
         final String attName = "test";
         doReturn(supertypeAtt).when(supertype).getFieldSpecification(attName, cls);
         final FieldSpecification<? super OWLClassA, ?> result = et.getFieldSpecification(attName);
@@ -337,6 +350,7 @@ class AbstractIdentifiableTypeTest {
         final String attName = "types";
         when(types.getName()).thenReturn(attName);
         et.addDirectTypes(types);
+        et.finish();
         final FieldSpecification<? super OWLClassA, ?> result = et.getFieldSpecification(attName);
         assertEquals(types, result);
     }
@@ -352,6 +366,7 @@ class AbstractIdentifiableTypeTest {
 
     @Test
     void getFieldSpecificationThrowsIllegalArgumentWhenFieldIsNotFound() {
+        et.finish();
         final String attName = "unknownAttribute";
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> et.getFieldSpecification(attName));
@@ -370,6 +385,7 @@ class AbstractIdentifiableTypeTest {
 
     @Test
     void getFieldSpecificationReturnsIdentifier() {
+        et.finish();
         final FieldSpecification<? super OWLClassA, ?> idSpec = et.getFieldSpecification("uri");
         assertInstanceOf(Identifier.class, idSpec);
     }
@@ -385,6 +401,8 @@ class AbstractIdentifiableTypeTest {
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericTypeII.class, attII);
+        parent.finish();
+        child.finish();
 
         final Attribute<?, ?> result = child.getAttribute("boss");
         assertEquals(att, result);
@@ -401,6 +419,8 @@ class AbstractIdentifiableTypeTest {
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericTypeII.class, attII);
+        parent.finish();
+        child.finish();
 
         final Set<Attribute<? super MetamodelBuilderTest.ConcreteClassWithGenericType, ?>> result = child.getAttributes();
         assertThat(result, hasItem(att));
@@ -417,6 +437,8 @@ class AbstractIdentifiableTypeTest {
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericTypeII.class, attII);
+        parent.finish();
+        child.finish();
 
         final Attribute<?, ?> result = parent.getAttribute("boss");
         assertThat(Set.of(att, attII), hasItem(result));
@@ -435,6 +457,8 @@ class AbstractIdentifiableTypeTest {
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericTypeII.class, attII);
+        parent.finish();
+        child.finish();
 
         final Set<Attribute<? super MetamodelBuilderTest.ClassWithGenericType, ?>> result = parent.getAttributes();
         assertEquals(1, result.size());
@@ -455,6 +479,8 @@ class AbstractIdentifiableTypeTest {
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericTypeII.class, attII);
+        parent.finish();
+        child.finish();
 
         final FieldSpecification<?, ?> result = child.getFieldSpecification("boss");
         assertEquals(att, result);
@@ -471,6 +497,8 @@ class AbstractIdentifiableTypeTest {
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericTypeII.class, attII);
+        parent.finish();
+        child.finish();
 
         final FieldSpecification<?, ?> result = parent.getFieldSpecification("boss");
         assertThat(Set.of(att, attII), hasItem(result));
@@ -489,6 +517,8 @@ class AbstractIdentifiableTypeTest {
         parent.setIdentifier(identifier);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericTypeII.class, attII);
+        parent.finish();
+        child.finish();
 
         final Set<FieldSpecification<? super MetamodelBuilderTest.ConcreteClassWithGenericType, ?>> result = child.getFieldSpecifications();
         assertThat(result, hasItem(att));
@@ -507,6 +537,8 @@ class AbstractIdentifiableTypeTest {
         parent.setIdentifier(identifier);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericTypeII.class, attII);
+        parent.finish();
+        child.finish();
 
         final Set<FieldSpecification<? super MetamodelBuilderTest.ClassWithGenericType, ?>> result = parent.getFieldSpecifications();
         assertThat(result, anyOf((Matcher<? super Set<FieldSpecification<? super MetamodelBuilderTest.ClassWithGenericType, ?>>>) hasItem(att), hasItem(attII)));
@@ -522,6 +554,8 @@ class AbstractIdentifiableTypeTest {
         final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassB> attII = mock(AbstractQueryAttribute.class);
         parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, att);
         parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttributeII.class, attII);
+        parent.finish();
+        child.finish();
 
         final QueryAttribute<?, ?> result = child.getQueryAttribute("related");
         assertEquals(att, result);
@@ -538,6 +572,8 @@ class AbstractIdentifiableTypeTest {
         final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassB> attII = mock(AbstractQueryAttribute.class);
         parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, att);
         parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttributeII.class, attII);
+        parent.finish();
+        child.finish();
 
         final QueryAttribute<?, ?> result = parent.getQueryAttribute("related");
         assertThat(Set.of(att, attII), hasItem(result));
@@ -554,6 +590,8 @@ class AbstractIdentifiableTypeTest {
         final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassB> attII = mock(AbstractQueryAttribute.class);
         parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, att);
         parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttributeII.class, attII);
+        parent.finish();
+        child.finish();
 
         final Set<QueryAttribute<? super MetamodelBuilderTest.ConcreteClassWithQueryAttribute, ?>> result = child.getQueryAttributes();
         assertThat(result, hasItem(att));
@@ -569,6 +607,8 @@ class AbstractIdentifiableTypeTest {
         final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassB> attII = mock(AbstractQueryAttribute.class);
         parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, att);
         parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttributeII.class, attII);
+        parent.finish();
+        child.finish();
 
         final Set<QueryAttribute<? super MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, ?>> result = parent.getQueryAttributes();
         assertThat(result, anyOf((Matcher<? super Set<QueryAttribute<? super MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, ?>>>) hasItem(att), hasItem(attII)));

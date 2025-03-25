@@ -37,29 +37,33 @@ class IdentifiableEntityTypeTest {
 
     @Test
     void getAttributeThrowsIAEWhenAttributeIsNotPresent() {
-        final EntityType<OWLClassA> et = new ConcreteEntityType<>(cls, cls, classIri);
+        final IdentifiableEntityType<OWLClassA> et = new ConcreteEntityType<>(cls, cls, classIri);
+        et.finish();
         assertThrows(IllegalArgumentException.class, () -> et.getAttribute("someUnknownAttribute"));
     }
 
     @Test
     void getDeclaredAttributeThrowsIAEWhenAttributeIsNotPresent() {
-        final EntityType<OWLClassA> et = new ConcreteEntityType<>(cls, cls, classIri);
+        final IdentifiableEntityType<OWLClassA> et = new ConcreteEntityType<>(cls, cls, classIri);
+        et.finish();
         assertThrows(IllegalArgumentException.class, () -> et.getDeclaredAttribute("someUnknownAttribute"));
     }
 
     @Test
     void getFieldSpecificationThrowsIAEWhenAttributeIsNotPresent() {
-        final EntityType<OWLClassA> et = new ConcreteEntityType<>(cls, cls, classIri);
+        final IdentifiableEntityType<OWLClassA> et = new ConcreteEntityType<>(cls, cls, classIri);
+        et.finish();
         assertThrows(IllegalArgumentException.class, () -> et.getFieldSpecification("someUnknownAttribute"));
     }
 
     @Test
     void getFieldSpecificationReturnsTypesIfNameMatches() throws Exception {
         final IdentifiableEntityType<OWLClassA> et = new ConcreteEntityType<>(cls, cls, classIri);
-        final TypesSpecification typesSpec = mock(TypesSpecification.class);
+        final TypesSpecification<OWLClassA, String> typesSpec = mock(TypesSpecification.class);
         when(typesSpec.getName()).thenReturn(OWLClassA.getTypesField().getName());
         when(typesSpec.getJavaField()).thenReturn(OWLClassA.getTypesField());
         et.addDirectTypes(typesSpec);
+        et.finish();
 
         assertEquals(typesSpec, et.getFieldSpecification(typesSpec.getName()));
     }

@@ -31,20 +31,20 @@ import java.util.stream.Collectors;
 /**
  * Instances of the type AbstractIdentifiableType represent entity or mapped superclass types which can be queried for
  * attributes, subtypes and so on.
+ * <p>
+ * After all attributes and fields are initialized, {@link #finish()} should be invoked to ensure consistent behavior
+ * and initialization of default values of attributes that were not provided during building.
  *
  * @param <X> Entity type being represented by this instance
  */
 
 public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X> {
 
-    // TODO Lazily initialize collections (supertypes, subtypes, genericAttributes), add a "complete" method
-    // That will ensure these collections are initialized with empty if not set previously
-
     private final Class<X> javaType;
 
     private Identifier<X, ?> identifier;
 
-    private Set<AbstractIdentifiableType<? super X>> supertypes = new HashSet<>();
+    private Set<AbstractIdentifiableType<? super X>> supertypes = Set.of();
 
     /// AIT which is superclass of this AIT, and from which we inherit attributes
     private AbstractIdentifiableType<? super X> classSupertype;
@@ -61,15 +61,15 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
      * For each attribute name, have a map of subtypes with the actual type parameter and a version of the attribute
      * corresponding to this subtype.
      */
-    private final Map<String, Map<Class<? extends X>, AbstractAttribute<X, ?>>> declaredGenericAttributes = new HashMap<>();
+    private Map<String, Map<Class<? extends X>, AbstractAttribute<X, ?>>> declaredGenericAttributes;
 
-    private final Map<String, AbstractQueryAttribute<X, ?>> declaredQueryAttributes = new HashMap<>();
+    private Map<String, AbstractQueryAttribute<X, ?>> declaredQueryAttributes;
 
     /**
      * For each query attribute name, have a map of subtypes with the actual type parameter and a version of the
      * attribute corresponding to this subtype.
      */
-    private final Map<String, Map<Class<? extends X>, AbstractQueryAttribute<X, ?>>> declaredGenericQueryAttributes = new HashMap<>();
+    private Map<String, Map<Class<? extends X>, AbstractQueryAttribute<X, ?>>> declaredGenericQueryAttributes;
 
     private EntityLifecycleListenerManager lifecycleListenerManager = EntityLifecycleListenerManager.empty();
 
@@ -82,15 +82,24 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     void addDeclaredGenericAttribute(String name, Class<? extends X> subtype, final AbstractAttribute<X, ?> a) {
+        if (declaredGenericAttributes == null) {
+            this.declaredGenericAttributes = new HashMap<>();
+        }
         final Map<Class<? extends X>, AbstractAttribute<X, ?>> map = declaredGenericAttributes.computeIfAbsent(name, k -> new HashMap<>(subtypes.size()));
         map.put(subtype, a);
     }
 
     void addDeclaredQueryAttribute(String name, AbstractQueryAttribute<X, ?> a) {
+        if (declaredQueryAttributes == null) {
+            this.declaredQueryAttributes = new HashMap<>();
+        }
         declaredQueryAttributes.put(name, a);
     }
 
     void addDeclaredGenericQueryAttribute(String name, Class<? extends X> subtype, AbstractQueryAttribute<X, ?> a) {
+        if (declaredGenericQueryAttributes == null) {
+            this.declaredGenericQueryAttributes = new HashMap<>();
+        }
         final Map<Class<? extends X>, AbstractQueryAttribute<X, ?>> map = declaredGenericQueryAttributes.computeIfAbsent(name, k -> new HashMap<>(subtypes.size()));
         map.put(subtype, a);
     }
@@ -130,6 +139,16 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         this.identifier = identifier;
     }
 
+    /**
+     * Finishes initialization of this AIT, setting default values to selected fields and making them immutable.
+     */
+    void finish() {
+        this.subtypes = subtypes == null ? Set.of() : Collections.unmodifiableSet(subtypes);
+        this.declaredGenericAttributes = declaredGenericAttributes == null ? Map.of() : Collections.unmodifiableMap(declaredGenericAttributes);
+        this.declaredQueryAttributes = declaredQueryAttributes == null ? Map.of() : Collections.unmodifiableMap(declaredQueryAttributes);
+        this.declaredGenericQueryAttributes = declaredGenericQueryAttributes == null ? Map.of() : Collections.unmodifiableMap(declaredGenericQueryAttributes);
+    }
+
     @Override
     public boolean hasSingleIdAttribute() {
         return true;    // We do not support id classes
@@ -152,7 +171,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
      * @return {@code true} when managed subtypes exist, {@code false} otherwise
      */
     public boolean hasSubtypes() {
-        return subtypes != null;
+        return !subtypes.isEmpty();
     }
 
     /**
@@ -175,7 +194,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     public Set<AbstractIdentifiableType<? extends X>> getSubtypes() {
-        return subtypes != null ? Collections.unmodifiableSet(subtypes) : Collections.emptySet();
+        return subtypes;
     }
 
     @Override
