@@ -34,6 +34,7 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -509,5 +510,65 @@ class AbstractIdentifiableTypeTest {
 
         final Set<FieldSpecification<? super MetamodelBuilderTest.ClassWithGenericType, ?>> result = parent.getFieldSpecifications();
         assertThat(result, anyOf((Matcher<? super Set<FieldSpecification<? super MetamodelBuilderTest.ClassWithGenericType, ?>>>) hasItem(att), hasItem(attII)));
+    }
+
+    @Test
+    void getQueryAttributeResolvesGenericAttributeFromSupertype() {
+        final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute> parent = new MappedSuperclassTypeImpl<>(MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute.class);
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class.getAnnotation(OWLClass.class)
+                                                                                                                                                                                                                                                                                                                           .iri()));
+        child.setSupertypes(Set.of(parent));
+        final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassA> att = mock(AbstractQueryAttribute.class);
+        final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassB> attII = mock(AbstractQueryAttribute.class);
+        parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, att);
+        parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttributeII.class, attII);
+
+        final QueryAttribute<?, ?> result = child.getQueryAttribute("related");
+        assertEquals(att, result);
+    }
+
+    @Test
+    void getQueryAttributeInSupertypeReturnsFirstAvailableTypedGenericQueryAttribute() {
+        final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute> parent = new MappedSuperclassTypeImpl<>(MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute.class);
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class.getAnnotation(OWLClass.class)
+                                                                                                                                                                                                                                                                                                                           .iri()));
+        child.setSupertypes(Set.of(parent));
+        final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassA> att = mock(AbstractQueryAttribute.class);
+        final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassB> attII = mock(AbstractQueryAttribute.class);
+        parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, att);
+        parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttributeII.class, attII);
+
+        final QueryAttribute<?, ?> result = parent.getQueryAttribute("related");
+        assertThat(Set.of(att, attII), hasItem(result));
+    }
+
+    @Test
+    void getQueryAttributesIncludesGenericQueryAttributes() {
+        final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute> parent = new MappedSuperclassTypeImpl<>(MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute.class);
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class.getAnnotation(OWLClass.class)
+                                                                                                                                                                                                                                                                                                                           .iri()));
+        child.setSupertypes(Set.of(parent));
+        final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassA> att = mock(AbstractQueryAttribute.class);
+        final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassB> attII = mock(AbstractQueryAttribute.class);
+        parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, att);
+        parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttributeII.class, attII);
+
+        final Set<QueryAttribute<? super MetamodelBuilderTest.ConcreteClassWithQueryAttribute, ?>> result = child.getQueryAttributes();
+        assertThat(result, hasItem(att));
+    }
+
+    @Test
+    void getQueryAttributesIncludesFirstAvailableTypedGenericQueryAttribute() {
+        final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute> parent = new MappedSuperclassTypeImpl<>(MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute.class);
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class.getAnnotation(OWLClass.class)
+                                                                                                                                                                                                                                                                                                                           .iri()));
+        child.setSupertypes(Set.of(parent));
+        final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassA> att = mock(AbstractQueryAttribute.class);
+        final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassB> attII = mock(AbstractQueryAttribute.class);
+        parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, att);
+        parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttributeII.class, attII);
+
+        final Set<QueryAttribute<? super MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, ?>> result = parent.getQueryAttributes();
+        assertThat(result, anyOf((Matcher<? super Set<QueryAttribute<? super MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, ?>>>) hasItem(att), hasItem(attII)));
     }
 }
