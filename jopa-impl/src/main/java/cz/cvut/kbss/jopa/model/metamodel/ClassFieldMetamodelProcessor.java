@@ -91,7 +91,6 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
     private void processFieldWithValueType(Field field, Class<?> fieldValueCls, Class<?> sourceCls) {
-        field.setAccessible(true);  // TODO Is this necessary?
         final InferenceInfo inference = processInferenceInfo(field);
 
         if (isTypesField(field)) {
