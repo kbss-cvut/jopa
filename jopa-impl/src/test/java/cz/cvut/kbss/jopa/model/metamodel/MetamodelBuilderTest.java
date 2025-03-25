@@ -50,6 +50,7 @@ import cz.cvut.kbss.jopa.model.annotations.RDFContainer;
 import cz.cvut.kbss.jopa.model.annotations.RDFContainerType;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
+import cz.cvut.kbss.jopa.model.annotations.Sparql;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
@@ -695,5 +696,38 @@ class MetamodelBuilderTest {
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithTwoGenericTypes")
     public static class ConcreteClassWithTwoGenericTypes extends ClassWithTwoGenericTypes<OWLClassA, OWLClassB> {
+    }
+
+    @Test
+    void buildMetamodelSupportsQueryAttributesWithGenericType() {
+        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class, OWLClassB.class, ClassWithGenericTypeAndQueryAttribute.class, ConcreteClassWithQueryAttribute.class, ConcreteClassWithQueryAttributeII.class));
+        builder.buildMetamodel(finderMock);
+
+        final EntityType<ConcreteClassWithQueryAttribute> et = (EntityType<ConcreteClassWithQueryAttribute>) builder.getEntityClass(ConcreteClassWithQueryAttribute.class);
+        final PluralQueryAttribute<? super ConcreteClassWithQueryAttribute, ?, ?> att = (PluralQueryAttribute<? super ConcreteClassWithQueryAttribute, ?, ?>) et.getQueryAttribute("related");
+        assertEquals(OWLClassA.class, att.getBindableJavaType());
+        final EntityType<ConcreteClassWithQueryAttributeII> etII = (EntityType<ConcreteClassWithQueryAttributeII>) builder.getEntityClass(ConcreteClassWithQueryAttributeII.class);
+        final PluralQueryAttribute<? super ConcreteClassWithQueryAttributeII, ?, ?> attII = (PluralQueryAttribute<? super ConcreteClassWithQueryAttributeII, ?, ?>) etII.getQueryAttribute("related");
+        assertEquals(OWLClassB.class, attII.getBindableJavaType());
+    }
+
+    @TestLocal
+    @MappedSuperclass
+    public static abstract class ClassWithGenericTypeAndQueryAttribute<T extends HasUri> {
+        @Id
+        private URI id;
+
+        @Sparql(query = "SELECT ?x WHERE { ?x skos:related ?this }")
+        private Set<T> related;
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithQueryAttribute")
+    public static class ConcreteClassWithQueryAttribute extends ClassWithGenericTypeAndQueryAttribute<OWLClassA> {
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithQueryAttributeII")
+    public static class ConcreteClassWithQueryAttributeII extends ClassWithGenericTypeAndQueryAttribute<OWLClassB> {
     }
 }

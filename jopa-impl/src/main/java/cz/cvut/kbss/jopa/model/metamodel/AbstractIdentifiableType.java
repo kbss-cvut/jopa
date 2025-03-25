@@ -61,13 +61,15 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     private final Map<String, AbstractQueryAttribute<X, ?>> declaredQueryAttributes = new HashMap<>();
 
+    private final Map<String, Map<Class<? extends X>, AbstractQueryAttribute<X, ?>>> declaredGenericQueryAttributes = new HashMap<>();
+
     private EntityLifecycleListenerManager lifecycleListenerManager = EntityLifecycleListenerManager.empty();
 
     AbstractIdentifiableType(Class<X> javaType) {
         this.javaType = javaType;
     }
 
-    void addDeclaredAttribute(final String name, final AbstractAttribute<X, ?> a) {
+    void addDeclaredAttribute(String name, AbstractAttribute<X, ?> a) {
         declaredAttributes.put(name, a);
     }
 
@@ -76,8 +78,13 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         map.put(subtype, a);
     }
 
-    void addDeclaredQueryAttribute(final String name, final AbstractQueryAttribute<X, ?> a) {
+    void addDeclaredQueryAttribute(String name, AbstractQueryAttribute<X, ?> a) {
         declaredQueryAttributes.put(name, a);
+    }
+
+    void addDeclaredGenericQueryAttribute(String name, Class<? extends X> subtype, AbstractQueryAttribute<X, ?> a) {
+        final Map<Class<? extends X>, AbstractQueryAttribute<X, ?>> map = declaredGenericQueryAttributes.computeIfAbsent(name, k -> new HashMap<>());
+        map.put(subtype, a);
     }
 
     /**
@@ -203,9 +210,20 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     @Override
     public Set<QueryAttribute<? super X, ?>> getQueryAttributes() {
         final Set<QueryAttribute<? super X, ?>> queryAttributes = new HashSet<>(declaredQueryAttributes.values());
+        declaredGenericQueryAttributes.values().stream().map(m -> m.values().iterator().next())
+                                      .forEach(queryAttributes::add);
 
         if (classSupertype != null) {
-            queryAttributes.addAll(classSupertype.getQueryAttributes());
+            queryAttributes.addAll(classSupertype.getQueryAttributes(javaType));
+        }
+        return queryAttributes;
+    }
+
+    Set<QueryAttribute<? super X, ?>> getQueryAttributes(Class<?> subtype) {
+        final Set<QueryAttribute<? super X, ?>> queryAttributes = new HashSet<>(declaredQueryAttributes.values());
+        declaredGenericQueryAttributes.values().stream().map(m -> m.get(subtype)).forEach(queryAttributes::add);
+        if (classSupertype != null) {
+            queryAttributes.addAll(classSupertype.getQueryAttributes(subtype));
         }
         return queryAttributes;
     }
@@ -277,10 +295,29 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (declaredQueryAttributes.containsKey(name)) {
             return declaredQueryAttributes.get(name);
         }
+        if (declaredGenericQueryAttributes.containsKey(name)) {
+            return declaredGenericQueryAttributes.get(name).values().iterator().next();
+        }
         if (classSupertype != null) {
-            return classSupertype.getQueryAttribute(name);
+            return classSupertype.getQueryAttribute(name, javaType);
         }
 
+        throw attributeMissing(name, false);
+    }
+
+    AbstractQueryAttribute<? super X, ?> getQueryAttribute(String name, Class<? extends X> subtype) {
+        if (declaredQueryAttributes.containsKey(name)) {
+            return declaredQueryAttributes.get(name);
+        }
+        if (declaredGenericQueryAttributes.containsKey(name)) {
+            final Map<Class<? extends X>, AbstractQueryAttribute<X, ?>> map = declaredGenericQueryAttributes.get(name);
+            if (map.containsKey(subtype)) {
+                return map.get(subtype);
+            }
+        }
+        if (classSupertype != null) {
+            return classSupertype.getQueryAttribute(name, subtype);
+        }
         throw attributeMissing(name, false);
     }
 
@@ -404,13 +441,13 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     @Override
     public Set<PluralAttribute<X, ?, ?>> getDeclaredPluralAttributes() {
         return getDeclaredAttributesImpl().stream().filter(Attribute::isCollection)
-                                 .map(a -> (PluralAttribute<X, ?, ?>) a).collect(Collectors.toSet());
+                                          .map(a -> (PluralAttribute<X, ?, ?>) a).collect(Collectors.toSet());
     }
 
     @Override
     public Set<SingularAttribute<X, ?>> getDeclaredSingularAttributes() {
         return getDeclaredAttributesImpl().stream().filter(att -> !att.isCollection())
-                                 .map(a -> (SingularAttribute<X, ?>) a).collect(Collectors.toSet());
+                                          .map(a -> (SingularAttribute<X, ?>) a).collect(Collectors.toSet());
     }
 
     @Override

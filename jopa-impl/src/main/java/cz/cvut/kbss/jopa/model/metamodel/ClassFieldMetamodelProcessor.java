@@ -103,7 +103,7 @@ class ClassFieldMetamodelProcessor<X> {
         }
 
         if (isQueryAttribute(field)) {
-            createQueryAttribute(field, fieldValueCls);
+            createQueryAttribute(field, fieldValueCls, sourceCls);
             return;
         }
 
@@ -295,7 +295,7 @@ class ClassFieldMetamodelProcessor<X> {
         return field.getAnnotation(Sparql.class) != null;
     }
 
-    private void createQueryAttribute(Field field, Class<?> fieldValueCls) {
+    private void createQueryAttribute(Field field, Class<?> fieldValueCls, Class<?> sourceCls) {
         final Sparql sparqlAnnotation = field.getAnnotation(Sparql.class);
         final String query = sparqlAnnotation.query();
         final FetchType fetchType = sparqlAnnotation.fetchType();
@@ -328,7 +328,11 @@ class ClassFieldMetamodelProcessor<X> {
             a = new SingularQueryAttributeImpl<>(query, sparqlAnnotation.enableReferencingAttributes(), field, et, fetchType, type, participationConstraints, converterWrapper);
         }
 
-        et.addDeclaredQueryAttribute(field.getName(), a);
+        if (!Objects.equals(et.getJavaType(), sourceCls)) {
+            et.addDeclaredGenericQueryAttribute(field.getName(), sourceCls.asSubclass(et.getJavaType()), a);
+        } else {
+            et.addDeclaredQueryAttribute(field.getName(), a);
+        }
     }
 
     private AbstractAttribute<X, ?> createAttribute(PropertyInfo property, InferenceInfo
