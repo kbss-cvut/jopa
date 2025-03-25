@@ -18,25 +18,39 @@
 package cz.cvut.kbss.jopa.test.integration;
 
 import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
+import cz.cvut.kbss.jopa.test.GenericSubclass;
 import cz.cvut.kbss.jopa.test.OWLClassM;
 import cz.cvut.kbss.jopa.test.OWLClassX;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -102,5 +116,30 @@ class AttributesTest extends IntegrationTestBase {
         assertThat(result.getObjectAnnotation(), hasItem(1));
         assertThat(result.getObjectAnnotation(), hasItem("Two"));
         assertThat(result.getObjectAnnotation(), hasItem(uri));
+    }
+
+    @Test
+    void loadingEntitySupportsAbstractGenericSuperclass() throws Exception {
+        final NamedResource subject = NamedResource.create(Generators.generateUri());
+        final NamedResource a = NamedResource.create(Generators.generateUri());
+        when(connectionMock.find(any(AxiomDescriptor.class))).thenAnswer(inv -> {
+            final AxiomDescriptor des = inv.getArgument(0);
+            if (subject.equals(des.getSubject())) {
+                return List.of(
+                        new AxiomImpl<>(subject, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(URI.create(Vocabulary.CLASS_IRI_BASE + "GenericSubclass")))),
+                        new AxiomImpl<>(subject, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.ATTRIBUTE_IRI_BASE + "genericValue"), false), new Value<>(a))
+                );
+            } else {
+                return List.of(
+                        new AxiomImpl<>(a, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(URI.create(Vocabulary.C_OWL_CLASS_A)))),
+                        new AxiomImpl<>(a, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false), new Value<>(new LangString("Test", TestEnvironment.PERSISTENCE_LANGUAGE)))
+                );
+            }
+        });
+        em.getTransaction().begin();
+        final GenericSubclass result = em.find(GenericSubclass.class, subject.getIdentifier());
+        assertNotNull(result);
+        assertEquals(1, result.getGenericValue().size());
+        assertEquals(a.getIdentifier(), result.getGenericValue().iterator().next().getUri());
     }
 }
