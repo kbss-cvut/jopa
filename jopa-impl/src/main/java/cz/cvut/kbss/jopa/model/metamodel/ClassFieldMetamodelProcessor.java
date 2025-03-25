@@ -77,10 +77,7 @@ class ClassFieldMetamodelProcessor<X> {
     void processField(Field field) {
         LOG.trace("processing field: {}.", field);
         if (EntityPropertiesUtils.isFieldTransient(field)) {
-            // Do not log static fields
-            if (!EntityPropertiesUtils.isFieldStatic(field)) {
-                LOG.trace("Skipping transient field {}.", field);
-            }
+            LOG.trace("Skipping transient field {}.", field);
             return;
         }
 
