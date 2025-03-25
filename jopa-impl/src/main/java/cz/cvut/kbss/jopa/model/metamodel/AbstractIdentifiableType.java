@@ -57,10 +57,18 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     private final Map<String, AbstractAttribute<X, ?>> declaredAttributes = new HashMap<>();
 
+    /**
+     * For each attribute name, have a map of subtypes with the actual type parameter and a version of the attribute
+     * corresponding to this subtype.
+     */
     private final Map<String, Map<Class<? extends X>, AbstractAttribute<X, ?>>> declaredGenericAttributes = new HashMap<>();
 
     private final Map<String, AbstractQueryAttribute<X, ?>> declaredQueryAttributes = new HashMap<>();
 
+    /**
+     * For each query attribute name, have a map of subtypes with the actual type parameter and a version of the
+     * attribute corresponding to this subtype.
+     */
     private final Map<String, Map<Class<? extends X>, AbstractQueryAttribute<X, ?>>> declaredGenericQueryAttributes = new HashMap<>();
 
     private EntityLifecycleListenerManager lifecycleListenerManager = EntityLifecycleListenerManager.empty();
@@ -74,7 +82,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     void addDeclaredGenericAttribute(String name, Class<? extends X> subtype, final AbstractAttribute<X, ?> a) {
-        final Map<Class<? extends X>, AbstractAttribute<X, ?>> map = declaredGenericAttributes.computeIfAbsent(name, k -> new HashMap<>());
+        final Map<Class<? extends X>, AbstractAttribute<X, ?>> map = declaredGenericAttributes.computeIfAbsent(name, k -> new HashMap<>(subtypes.size()));
         map.put(subtype, a);
     }
 
@@ -83,7 +91,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     void addDeclaredGenericQueryAttribute(String name, Class<? extends X> subtype, AbstractQueryAttribute<X, ?> a) {
-        final Map<Class<? extends X>, AbstractQueryAttribute<X, ?>> map = declaredGenericQueryAttributes.computeIfAbsent(name, k -> new HashMap<>());
+        final Map<Class<? extends X>, AbstractQueryAttribute<X, ?>> map = declaredGenericQueryAttributes.computeIfAbsent(name, k -> new HashMap<>(subtypes.size()));
         map.put(subtype, a);
     }
 
@@ -190,12 +198,28 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         return attributes;
     }
 
+    /**
+     * Gets declared attributes, including generic ones.
+     * <p>
+     * For generic attributes the first available actually typed element is used.
+     * <p>
+     * This method is expected to be called if this instance represents an abstract type, not an instantiable entity
+     * class.
+     */
     private Set<Attribute<X, ?>> getDeclaredAttributesImpl() {
         final Set<Attribute<X, ?>> attributes = new HashSet<>(declaredAttributes.values());
         declaredGenericAttributes.values().stream().map(m -> m.values().iterator().next()).forEach(attributes::add);
         return attributes;
     }
 
+    /**
+     * Gets attributes for the specified subtype.
+     * <p>
+     * The subtype is used to determine which versions of generic attributes should be included in the result.
+     *
+     * @param subtype Type for which attributes should be returned
+     * @return Set of all attributes for this entity type
+     */
     Set<Attribute<? super X, ?>> getAttributes(Class<? extends X> subtype) {
         final Set<Attribute<? super X, ?>> attributes = new HashSet<>(declaredAttributes.values());
         declaredGenericAttributes.values().stream()
@@ -219,6 +243,14 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         return queryAttributes;
     }
 
+    /**
+     * Gets query attributes for the specified subtype.
+     * <p>
+     * The subtype is used to determine which versions of generic query attributes should be included in the result.
+     *
+     * @param subtype Type for which attributes should be returned
+     * @return Set of all query attributes for this entity type
+     */
     Set<QueryAttribute<? super X, ?>> getQueryAttributes(Class<?> subtype) {
         final Set<QueryAttribute<? super X, ?>> queryAttributes = new HashSet<>(declaredQueryAttributes.values());
         declaredGenericQueryAttributes.values().stream().map(m -> m.get(subtype)).forEach(queryAttributes::add);
@@ -239,8 +271,18 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         });
     }
 
+    /**
+     * Gets attribute with the specified name.
+     * <p>
+     * The specified subtype is used in case the name represents a generic attribute, in which case a version for the
+     * specified subtype is resolved.
+     *
+     * @param name    Attribute name
+     * @param subtype Type for which a possible generic attribute is resolved
+     * @return Attribute with matching name
+     */
     AbstractAttribute<? super X, ?> getAttribute(String name, Class<? extends X> subtype) {
-        return getAttributeIncludingGeneric(name, subtype).orElseGet(() -> {
+        return getDeclaredAttribute(name, subtype).orElseGet(() -> {
             if (classSupertype != null) {
                 return classSupertype.getAttribute(name, subtype);
             }
@@ -248,8 +290,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         });
     }
 
-    private Optional<AbstractAttribute<? super X, ?>> getAttributeIncludingGeneric(String name,
-                                                                                   Class<? extends X> subtype) {
+    private Optional<AbstractAttribute<? super X, ?>> getDeclaredAttribute(String name, Class<? extends X> subtype) {
         if (declaredAttributes.containsKey(name)) {
             return Optional.of(declaredAttributes.get(name));
         }
@@ -262,6 +303,17 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         return Optional.empty();
     }
 
+    /**
+     * Gets a declared attribute with the specified name.
+     * <p>
+     * If the name represents a generic attribute, the first available version is returned.
+     * <p>
+     * This method is expected to be called when this instance represents an abstract class, not an instantiable entity
+     * class.
+     *
+     * @param name Attribute name
+     * @return Matching attribute
+     */
     private Optional<AbstractAttribute<? super X, ?>> getDeclaredAttributeImpl(String name) {
         if (declaredAttributes.containsKey(name)) {
             return Optional.of(declaredAttributes.get(name));
@@ -279,7 +331,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     @Override
     public boolean hasQueryAttribute(String name) {
         Objects.requireNonNull(name);
-        if (declaredQueryAttributes.containsKey(name)) {
+        if (declaredQueryAttributes.containsKey(name) || declaredGenericQueryAttributes.containsKey(name)) {
             return true;
         }
 
@@ -514,7 +566,6 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (!type.isAssignableFrom(a.getJavaType())) {
             throw singularAttNotFound(name, type, true);
         }
-
         return (SingularAttribute<X, Y>) a;
     }
 
@@ -528,7 +579,6 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (directTypes != null) {
             return directTypes;
         }
-
         return classSupertype != null ? classSupertype.getTypes() : null;
     }
 
@@ -537,7 +587,6 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (properties != null) {
             return properties;
         }
-
         return classSupertype != null ? classSupertype.getProperties() : null;
     }
 
@@ -590,7 +639,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     FieldSpecification<? super X, ?> getFieldSpecification(String fieldName, Class<? extends X> subtype) {
-        final Optional<AbstractAttribute<? super X, ?>> att = getAttributeIncludingGeneric(fieldName, subtype);
+        final Optional<AbstractAttribute<? super X, ?>> att = getDeclaredAttribute(fieldName, subtype);
         if (att.isPresent()) {
             return att.get();
         }

@@ -525,6 +525,7 @@ class AbstractIdentifiableTypeTest {
 
         final QueryAttribute<?, ?> result = child.getQueryAttribute("related");
         assertEquals(att, result);
+        assertTrue(child.hasQueryAttribute("related"));
     }
 
     @Test
@@ -540,6 +541,7 @@ class AbstractIdentifiableTypeTest {
 
         final QueryAttribute<?, ?> result = parent.getQueryAttribute("related");
         assertThat(Set.of(att, attII), hasItem(result));
+        assertTrue(parent.hasQueryAttribute("related"));
     }
 
     @Test
