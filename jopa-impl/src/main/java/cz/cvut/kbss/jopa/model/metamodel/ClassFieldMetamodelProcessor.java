@@ -446,11 +446,33 @@ class ClassFieldMetamodelProcessor<X> {
     void processDeferredField(Field field) {
         if (field.getGenericType() instanceof TypeVariable<?> || Collection.class.isAssignableFrom(field.getType())) {
             for (AbstractIdentifiableType<?> st : et.getSubtypes()) {
-                if (!st.isAbstract()) {
-                    assert st.getJavaType().getGenericSuperclass() instanceof ParameterizedType;
-                    final ParameterizedType t = (ParameterizedType) st.getJavaType().getGenericSuperclass();
-                    final Type actualType = t.getActualTypeArguments()[0];
-                    processFieldWithValueType(field, (Class<?>) actualType, st.getJavaType());
+                recursivelyProcessDeferredField(field, st);
+            }
+        }
+    }
+
+    private void recursivelyProcessDeferredField(Field field, AbstractIdentifiableType<?> type) {
+        if (type.isAbstract()) {
+            type.getSubtypes().forEach(st -> recursivelyProcessDeferredField(field, st));
+        } else {
+            assert type.getJavaType().getGenericSuperclass() instanceof ParameterizedType;
+            final String typeVar;
+            if (field.getGenericType() instanceof ParameterizedType pt) {
+                typeVar = pt.getActualTypeArguments()[0].getTypeName();
+            } else if (field.getGenericType() instanceof TypeVariable<?> tv) {
+                typeVar = tv.getTypeName();
+            } else {
+                throw new MetamodelInitializationException("Unsupported generic type " + field.getGenericType() + " of field " + field);
+            }
+
+            final ParameterizedType t = (ParameterizedType) type.getJavaType().getGenericSuperclass();
+            final TypeVariable<?>[] typeVars = ((Class<?>) t.getRawType()).getTypeParameters();
+            assert typeVars.length == t.getActualTypeArguments().length;
+
+            for (int i = 0; i < t.getActualTypeArguments().length; i++) {
+                if (typeVar.equals(typeVars[i].getName())) {
+                    processFieldWithValueType(field, (Class<?>) t.getActualTypeArguments()[i], type.getJavaType());
+                    break;
                 }
             }
         }
