@@ -456,19 +456,12 @@ class ClassFieldMetamodelProcessor<X> {
             type.getSubtypes().forEach(st -> recursivelyProcessDeferredField(field, st));
         } else {
             assert type.getJavaType().getGenericSuperclass() instanceof ParameterizedType;
-            final String typeVar;
-            if (field.getGenericType() instanceof ParameterizedType pt) {
-                typeVar = pt.getActualTypeArguments()[0].getTypeName();
-            } else if (field.getGenericType() instanceof TypeVariable<?> tv) {
-                typeVar = tv.getTypeName();
-            } else {
-                throw new MetamodelInitializationException("Unsupported generic type " + field.getGenericType() + " of field " + field);
-            }
+            final String typeVar = resolveTypeVariable(field);
 
             final ParameterizedType t = (ParameterizedType) type.getJavaType().getGenericSuperclass();
             final TypeVariable<?>[] typeVars = ((Class<?>) t.getRawType()).getTypeParameters();
             assert typeVars.length == t.getActualTypeArguments().length;
-
+            // Match actual type parameter with type variable name in field declaration
             for (int i = 0; i < t.getActualTypeArguments().length; i++) {
                 if (typeVar.equals(typeVars[i].getName())) {
                     processFieldWithValueType(field, (Class<?>) t.getActualTypeArguments()[i], type.getJavaType());
@@ -476,6 +469,20 @@ class ClassFieldMetamodelProcessor<X> {
                 }
             }
         }
+    }
+
+    private static String resolveTypeVariable(Field field) {
+        final String typeVar;
+        if (field.getGenericType() instanceof ParameterizedType pt) {
+            // Collections - e.g. Set<T>
+            typeVar = pt.getActualTypeArguments()[0].getTypeName();
+        } else if (field.getGenericType() instanceof TypeVariable<?> tv) {
+            // Singular attributes - e.g. T
+            typeVar = tv.getTypeName();
+        } else {
+            throw new MetamodelInitializationException("Unsupported generic type " + field.getGenericType() + " of field " + field);
+        }
+        return typeVar;
     }
 
     private static class InferenceInfo {
