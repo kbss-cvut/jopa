@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
@@ -60,6 +61,7 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -607,13 +609,18 @@ class MetamodelBuilderTest {
 
     @Test
     void buildMetamodelSupportsGenericsInAbstractSuperclass() {
-        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class, ClassWithGenericType.class, ConcreteClassWithGenericType.class));
+        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class, OWLClassB.class, ClassWithGenericType.class, ConcreteClassWithGenericType.class, ConcreteClassWithGenericTypeII.class));
         builder.buildMetamodel(finderMock);
         final EntityType<ConcreteClassWithGenericType> et = (EntityType<ConcreteClassWithGenericType>) builder.getEntityClass(ConcreteClassWithGenericType.class);
         final Attribute<ConcreteClassWithGenericType, ?> att = (Attribute<ConcreteClassWithGenericType, ?>) et.getAttribute("boss");
         final SetAttribute<ConcreteClassWithGenericType, ?> setAtt = (SetAttribute<ConcreteClassWithGenericType, ?>) et.getAttribute("values");
         assertEquals(OWLClassA.class, att.getJavaType());
         assertEquals(builder.getEntityClass(OWLClassA.class), setAtt.getElementType());
+        final EntityType<ConcreteClassWithGenericTypeII> etII = (EntityType<ConcreteClassWithGenericTypeII>) builder.getEntityClass(ConcreteClassWithGenericTypeII.class);
+        final Attribute<ConcreteClassWithGenericTypeII, ?> attII = (Attribute<ConcreteClassWithGenericTypeII, ?>) etII.getAttribute("boss");
+        final SetAttribute<ConcreteClassWithGenericTypeII, ?> setAttII = (SetAttribute<ConcreteClassWithGenericTypeII, ?>) etII.getAttribute("values");
+        assertEquals(OWLClassB.class, attII.getJavaType());
+        assertEquals(builder.getEntityClass(OWLClassB.class), setAttII.getElementType());
     }
 
     @TestLocal
@@ -632,5 +639,10 @@ class MetamodelBuilderTest {
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithGenericType")
     public static class ConcreteClassWithGenericType extends ClassWithGenericType<OWLClassA> {
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithGenericTypeII")
+    public static class ConcreteClassWithGenericTypeII extends ClassWithGenericType<OWLClassB> {
     }
 }
