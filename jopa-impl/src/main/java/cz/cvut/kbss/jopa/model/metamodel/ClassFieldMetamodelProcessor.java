@@ -90,11 +90,11 @@ class ClassFieldMetamodelProcessor<X> {
             metamodelBuilder.registerDeferredFieldInitialization(field, context);
             return;
         }
-        processFieldWithValueType(field, fieldValueClassOpt.get());
+        processFieldWithValueType(field, fieldValueClassOpt.get(), field.getDeclaringClass());
     }
 
-    private void processFieldWithValueType(Field field, Class<?> fieldValueCls) {
-        field.setAccessible(true);
+    private void processFieldWithValueType(Field field, Class<?> fieldValueCls, Class<?> sourceCls) {
+        field.setAccessible(true);  // TODO Is this necessary?
         final InferenceInfo inference = processInferenceInfo(field);
 
         if (isTypesField(field)) {
@@ -117,7 +117,7 @@ class ClassFieldMetamodelProcessor<X> {
         propertyAtt.resolve(propertyInfo, metamodelBuilder, fieldValueCls);
 
         if (propertyAtt.isKnownOwlProperty()) {
-            final AbstractAttribute<X, ?> a = createAttribute(propertyInfo, inference, propertyAtt);
+            final AbstractAttribute<X, ?> a = createAndDeclareAttribute(sourceCls, propertyInfo, inference, propertyAtt);
             registerTypeReference(a);
             return;
         }
@@ -130,11 +130,22 @@ class ClassFieldMetamodelProcessor<X> {
         AnnotatedAccessor fieldAccessor = findAnnotatedMethodBelongingToField(field);
 
         if (fieldAccessor != null) {
-            createAndRegisterAttribute(field, inference, fieldValueCls, fieldAccessor);
+            createAndRegisterAttribute(field, inference, fieldValueCls, fieldAccessor, sourceCls);
             return;
         }
 
         throw new MetamodelInitializationException("Unable to process field " + field + ". It is not transient but has no mapping information.");
+    }
+
+    private AbstractAttribute<X, ?> createAndDeclareAttribute(Class<?> sourceCls, PropertyInfo propertyInfo,
+                                                              InferenceInfo inference, PropertyAttributes propertyAtt) {
+        final AbstractAttribute<X, ?> a = createAttribute(propertyInfo, inference, propertyAtt);
+        if (!Objects.equals(et.getJavaType(), sourceCls)) {
+            et.addDeclaredGenericAttribute(a.getName(), sourceCls.asSubclass(et.getJavaType()), a);
+        } else {
+            et.addDeclaredAttribute(a.getName(), a);
+        }
+        return a;
     }
 
 
@@ -184,13 +195,13 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
     private void createAndRegisterAttribute(Field field, InferenceInfo inference, Class<?> fieldValueCls,
-                                            AnnotatedAccessor annotatedAccessor) {
+                                            AnnotatedAccessor annotatedAccessor, Class<?> sourceCls) {
         final PropertyInfo info = PropertyInfo.from(annotatedAccessor.getMethod(), field);
 
         final PropertyAttributes propertyAtt = PropertyAttributes.create(info, mappingValidator, context);
         propertyAtt.resolve(info, metamodelBuilder, fieldValueCls);
 
-        final AbstractAttribute<X, ?> a = createAttribute(info, inference, propertyAtt);
+        final AbstractAttribute<X, ?> a = createAndDeclareAttribute(sourceCls, info, inference, propertyAtt);
         registerTypeReference(a);
     }
 
@@ -354,7 +365,6 @@ class ClassFieldMetamodelProcessor<X> {
             context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = builder.build();
         }
-        et.addDeclaredAttribute(property.getName(), a);
         return a;
     }
 
@@ -440,7 +450,7 @@ class ClassFieldMetamodelProcessor<X> {
                     assert st.getJavaType().getGenericSuperclass() instanceof ParameterizedType;
                     final ParameterizedType t = (ParameterizedType) st.getJavaType().getGenericSuperclass();
                     final Type actualType = t.getActualTypeArguments()[0];
-                    processFieldWithValueType(field, (Class<?>) actualType);
+                    processFieldWithValueType(field, (Class<?>) actualType, st.getJavaType());
                 }
             }
         }
