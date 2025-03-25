@@ -22,6 +22,8 @@ import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.OWLClassR;
+import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.OWLClassV;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
@@ -30,7 +32,6 @@ import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
-import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
@@ -61,7 +62,6 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -644,5 +644,56 @@ class MetamodelBuilderTest {
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithGenericTypeII")
     public static class ConcreteClassWithGenericTypeII extends ClassWithGenericType<OWLClassB> {
+    }
+
+    @Test
+    void buildMetamodelSupportsGenericsInAbstractSuperSuperclass() {
+        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class, OWLClassB.class, OWLClassR.class, OWLClassS.class, ClassWithGenericType.class, ConcreteClassWithGenericType.class, ConcreteClassWithGenericTypeII.class, SubClassWithGenericType.class, ConcreteClassWithGenericTypeIII.class));
+        builder.buildMetamodel(finderMock);
+        final EntityType<ConcreteClassWithGenericTypeIII> et = (EntityType<ConcreteClassWithGenericTypeIII>) builder.getEntityClass(ConcreteClassWithGenericTypeIII.class);
+        final Attribute<? super ConcreteClassWithGenericTypeIII, ?> att = et.getAttribute("boss");
+        final SetAttribute<? super ConcreteClassWithGenericTypeIII, ?> setAtt = et.getSet("values");
+        assertEquals(OWLClassR.class, att.getJavaType());
+        assertEquals(OWLClassR.class, setAtt.getBindableJavaType());
+    }
+
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "SubClassWithGenericType")
+    public static abstract class SubClassWithGenericType<T extends OWLClassS> extends ClassWithGenericType<T> {
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithGenericTypeIII")
+    public static class ConcreteClassWithGenericTypeIII extends SubClassWithGenericType<OWLClassR> {
+    }
+
+    @Test
+    void buildMetamodelSupportsMultipleGenericParametersInAbstractSuperclass() {
+        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class, OWLClassB.class, ClassWithTwoGenericTypes.class, ConcreteClassWithTwoGenericTypes.class));
+        builder.buildMetamodel(finderMock);
+        final EntityType<ConcreteClassWithTwoGenericTypes> et = (EntityType<ConcreteClassWithTwoGenericTypes>) builder.getEntityClass(ConcreteClassWithTwoGenericTypes.class);
+        final SetAttribute<? super ConcreteClassWithTwoGenericTypes, ?> tAtt = et.getSet("tValues");
+        assertEquals(OWLClassA.class, tAtt.getBindableJavaType());
+        final SetAttribute<? super ConcreteClassWithTwoGenericTypes, ?> vAtt = et.getSet("vValues");
+        assertEquals(OWLClassB.class, vAtt.getBindableJavaType());
+    }
+
+    @TestLocal
+    @MappedSuperclass
+    public static abstract class ClassWithTwoGenericTypes<T extends HasUri, V extends HasUri> {
+        @Id
+        private URI uri;
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "fieldOfTypeT")
+        private Set<T> tValues;
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "fieldOfTypeV")
+        private Set<V> vValues;
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithTwoGenericTypes")
+    public static class ConcreteClassWithTwoGenericTypes extends ClassWithTwoGenericTypes<OWLClassA, OWLClassB> {
     }
 }
