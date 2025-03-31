@@ -101,6 +101,7 @@ Supported storages:
 * [Jena](https://jena.apache.org/)
 * [OWLAPI](https://github.com/owlcs/owlapi)
 * [RDF4J](https://rdf4j.org/)
+* [Virtuoso](https://virtuoso.openlinksw.com/)
 
 ## Modules
 
@@ -112,6 +113,7 @@ The whole framework consists of several modules:
 * _OntoDriver RDF4J_ - OntoDriver implementation for RDF4J-accessed storages.
 * _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files.
 * _Ontodriver Jena_ - OntoDriver implementation for Jena-based storages.
+* _OntoDriver Virtuoso_ - OntoDriver implementation for Virtuoso database server.
 * _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see [Example01](https://github.com/kbss-cvut/jopa-examples/tree/master/example01-jopa-rdf4j-owl2java)).
 * _Modelgen_ - [static metamodel generator](https://github.com/kbss-cvut/jopa/wiki/Static-Metamodel).
 * _JOPA Maven plugin_ - Maven plugin for object model (using OWL2Java) and static metamodel (using Modelgen) generation.
@@ -155,6 +157,7 @@ Basically, the _jopa-impl_ module and one of the OntoDriver implementations is a
         <artifactId>ontodriver-rdf4j</artifactId>
         <!-- OR <artifactId>ontodriver-jena</artifactId> -->
         <!-- OR <artifactId>ontodriver-owlapi</artifactId> -->
+        <!-- OR <artifactId>ontodriver-virtuoso</artifactId> -->
     </dependency>
 </dependencies>
 ```
@@ -187,10 +190,11 @@ Some related libraries:
 
 Notable changes:
 
+* **2.3.0** - Add Virtuoso driver.
 * **2.0.0** - Major rewrite of change tracking and lazy loading, remove internal API from the `jopa-api` module etc.
 * **1.0.0** - Support for static metamodel generation and mapping multiple inheritance via Java interfaces.
 * **0.20.0** - Allow editing inferred attributes (See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details). Support `IN`, `NOT LIKE`, `<>` operators in SOQL.
-* **0.19.0** - Add RDF4J driver (renaming of Sesame driver, which has been deprecated and will be removed in the future)
+* **0.19.0** - Add RDF4J driver (renaming of Sesame driver, which has been deprecated and will be removed in the future).
 * **0.17.0** - Support for SPARQL-based entity attributes and Criteria API. See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details.
 
 See [CHANGELOG.md](./CHANGELOG.md) for detailed change history.
