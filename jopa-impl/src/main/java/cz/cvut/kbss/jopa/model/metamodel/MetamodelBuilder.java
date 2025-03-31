@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,6 +58,8 @@ public class MetamodelBuilder {
     private final Map<IdentifiableType<?>, Set<AnnotatedAccessor>> annotatedAccessors = new HashMap<>();
     private final TypeReferenceMap typeReferenceMap = new TypeReferenceMap();
 
+    private final List<DeferredFieldInitialization<?>> deferredFieldInitializations = new ArrayList<>();
+
     private final ConverterResolver converterResolver;
 
     private final Configuration configuration;
@@ -76,8 +79,9 @@ public class MetamodelBuilder {
         assert classFinder != null;
         classFinder.getAttributeConverters().forEach(converterResolver::registerConverter);
         classFinder.getEntities().forEach(this::processOWLClass);
+        processDeferredFields();
+        typeMap.values().forEach(AbstractIdentifiableType::finish);
         classFinder.getResultSetMappings().forEach(mappingProcessor::buildMapper);
-
     }
 
     /**
@@ -90,6 +94,7 @@ public class MetamodelBuilder {
     public void buildMetamodel(Set<Class<?>> entityClasses) {
         assert entityClasses != null;
         entityClasses.forEach(this::processOWLClass);
+        processDeferredFields();
     }
 
     private <X> void processOWLClass(final Class<X> cls) {
@@ -218,7 +223,13 @@ public class MetamodelBuilder {
         } else {
             et.setInheritanceType(getInheritanceTypeFromParents(et));
         }
+    }
 
+    private void processDeferredFields() {
+        for (DeferredFieldInitialization<?> f : deferredFieldInitializations) {
+            final ClassFieldMetamodelProcessor<?> processor = new ClassFieldMetamodelProcessor<>(f.et, this);
+            processor.processDeferredField(f.field);
+        }
     }
 
     public Map<Class<?>, ManagedType<?>> getTypeMap() {
@@ -283,4 +294,10 @@ public class MetamodelBuilder {
     public Set<AnnotatedAccessor> getAnnotatedAccessorsForClass(IdentifiableType<?> k) {
         return annotatedAccessors.getOrDefault(k, Collections.emptySet());
     }
+
+    <X> void registerDeferredFieldInitialization(Field field, TypeBuilderContext<X> et) {
+        deferredFieldInitializations.add(new DeferredFieldInitialization<>(field, et));
+    }
+
+    private record DeferredFieldInitialization<X>(Field field, TypeBuilderContext<X> et) {}
 }

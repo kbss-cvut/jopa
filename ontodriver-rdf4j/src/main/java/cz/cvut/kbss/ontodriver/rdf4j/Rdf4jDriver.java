@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,12 +27,11 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
 import cz.cvut.kbss.ontodriver.rdf4j.config.RuntimeConfiguration;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.ConnectionFactory;
-import cz.cvut.kbss.ontodriver.rdf4j.connector.init.FactoryOfFactories;
+import cz.cvut.kbss.ontodriver.rdf4j.connector.init.Rdf4jFactoryOfFactories;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.loader.StatementLoaderFactory;
 import org.eclipse.rdf4j.repository.Repository;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,12 +39,11 @@ import java.util.Set;
 
 class Rdf4jDriver implements Closeable, ConnectionListener<Rdf4jConnection> {
 
-    private static final List<ConfigurationParameter> CONFIGS = Arrays
-            .asList(DriverConfigParam.AUTO_COMMIT, Rdf4jConfigParam.USE_INFERENCE,
-                    Rdf4jConfigParam.USE_VOLATILE_STORAGE, Rdf4jConfigParam.LOAD_ALL_THRESHOLD,
-                    Rdf4jConfigParam.RECONNECT_ATTEMPTS, Rdf4jConfigParam.REPOSITORY_CONFIG,
-                    Rdf4jConfigParam.INFERENCE_IN_DEFAULT_CONTEXT,
-                    Rdf4jConfigParam.MAX_CONNECTION_POOL_SIZE, Rdf4jConfigParam.CONNECTION_REQUEST_TIMEOUT);
+    private static final List<ConfigurationParameter> CONFIGS = List.of(DriverConfigParam.AUTO_COMMIT,
+            Rdf4jConfigParam.USE_INFERENCE, Rdf4jConfigParam.USE_VOLATILE_STORAGE, Rdf4jConfigParam.LOAD_ALL_THRESHOLD,
+            Rdf4jConfigParam.RECONNECT_ATTEMPTS, Rdf4jConfigParam.REPOSITORY_CONFIG,
+            Rdf4jConfigParam.INFERENCE_IN_DEFAULT_CONTEXT, Rdf4jConfigParam.TRANSACTION_ISOLATION_LEVEL,
+            Rdf4jConfigParam.MAX_CONNECTION_POOL_SIZE, Rdf4jConfigParam.CONNECTION_REQUEST_TIMEOUT);
 
     private final DriverConfiguration configuration;
     private boolean open;
@@ -62,7 +60,7 @@ class Rdf4jDriver implements Closeable, ConnectionListener<Rdf4jConnection> {
         this.configuration = new DriverConfiguration(storageProperties);
         configuration.addConfiguration(properties, CONFIGS);
         this.openedConnections = new HashSet<>();
-        final FactoryOfFactories factory = new FactoryOfFactories(configuration);
+        final Rdf4jFactoryOfFactories factory = new Rdf4jFactoryOfFactories(configuration);
         this.connectionFactory = factory.createConnectorFactory();
         this.statementLoaderFactory = factory.createStatementLoaderFactory();
         this.open = true;

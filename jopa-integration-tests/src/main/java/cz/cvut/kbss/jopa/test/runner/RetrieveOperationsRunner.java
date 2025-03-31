@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -160,7 +160,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         // if primitives are not set, they should fall back to their default values
         assertEquals(entityBB.getUri(), res.getUri());
         assertEquals(0, res.getIntAttribute());
-        assertEquals(false, res.getBooleanAttribute());
+        assertFalse(res.getBooleanAttribute());
         assertEquals(0, res.getByteAttribute());
         assertEquals((short) 0, res.getShortAttribute());
         assertEquals(0L, res.getLongAttribute());
@@ -262,7 +262,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void testRefreshInstanceWithUnmappedProperties() {
+    public void testRefreshInstanceWithUnmappedProperties() {
         this.em = getEntityManager("RefreshEntityWithProperties", false);
         final Map<URI, Set<Object>> properties = Generators.createTypedProperties();
         entityP.setProperties(properties);

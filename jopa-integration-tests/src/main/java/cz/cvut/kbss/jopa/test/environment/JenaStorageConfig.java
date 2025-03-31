@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,11 +30,10 @@ public class JenaStorageConfig extends StorageConfig {
     private static final OntologyConnectorType TYPE = OntologyConnectorType.JENA;
 
     @Override
-    public Map<String, String> createStorageConfiguration(int index) {
-        assert index >= 0;
+    public Map<String, String> createStorageConfiguration() {
         assert name != null;
 
-        String base = name + TYPE + index;
+        String base = name + TYPE;
 
         final Map<String, String> config = new HashMap<>();
         config.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, TYPE.getDriverClass());

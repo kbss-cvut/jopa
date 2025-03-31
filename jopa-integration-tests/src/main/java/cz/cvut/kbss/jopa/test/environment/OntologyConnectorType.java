@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,11 @@ public enum OntologyConnectorType {
     /**
      * RDF4J ontology connector. Name: rdf4j
      */
-    RDF4J("rdf4j", "cz.cvut.kbss.ontodriver.rdf4j.Rdf4jDataSource");
+    RDF4J("rdf4j", "cz.cvut.kbss.ontodriver.rdf4j.Rdf4jDataSource"),
+    /**
+     * Virtuoso ontology connector. Name: virtuoso
+     */
+    VIRTUOSO("virtuoso", "cz.cvut.kbss.ontodriver.virtuoso.VirtuosoDataSource");
 
     private final String name;
 

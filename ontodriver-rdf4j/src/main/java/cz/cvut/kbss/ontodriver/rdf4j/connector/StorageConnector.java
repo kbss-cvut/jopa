@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -66,7 +66,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-public class StorageConnector implements Closeable, Wrapper {
+public class StorageConnector implements Closeable, Rdf4jConnectionProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(StorageConnector.class);
 
@@ -85,27 +85,17 @@ public class StorageConnector implements Closeable, Wrapper {
 
     public StorageConnector(DriverConfiguration configuration) throws Rdf4jDriverException {
         this.configuration = configuration;
-        this.maxReconnectAttempts = resolveMaxReconnectAttempts();
+        this.maxReconnectAttempts = resolveMaxReconnectAttempts(configuration);
     }
 
-    private int resolveMaxReconnectAttempts() throws Rdf4jDriverException {
-        try {
-            final int attempts = configuration.isSet(Rdf4jConfigParam.RECONNECT_ATTEMPTS) ? Integer.parseInt(
-                    configuration.getProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS)) :
-                    Constants.DEFAULT_RECONNECT_ATTEMPTS_COUNT;
-            if (attempts < 0) {
-                throw invalidReconnectAttemptsConfig();
-            }
-            return attempts;
-        } catch (NumberFormatException e) {
-            throw invalidReconnectAttemptsConfig();
+    private static int resolveMaxReconnectAttempts(DriverConfiguration config) throws Rdf4jDriverException {
+        final int attempts = config.getProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS, Constants.DEFAULT_RECONNECT_ATTEMPTS_COUNT);
+        if (attempts < 0) {
+            throw new Rdf4jDriverException(
+                    "Invalid value of configuration parameter " + Rdf4jOntoDriverProperties.RECONNECT_ATTEMPTS +
+                            ". Must be a non-negative integer.");
         }
-    }
-
-    private static Rdf4jDriverException invalidReconnectAttemptsConfig() {
-        return new Rdf4jDriverException(
-                "Invalid value of configuration parameter " + Rdf4jOntoDriverProperties.RECONNECT_ATTEMPTS +
-                        ". Must be a non-negative integer.");
+        return attempts;
     }
 
     public void initializeRepository() throws Rdf4jDriverException {
@@ -330,11 +320,13 @@ public class StorageConnector implements Closeable, Wrapper {
         return sail instanceof MemoryStore;
     }
 
+    @Override
     public ValueFactory getValueFactory() {
         verifyOpen();
         return repository.getValueFactory();
     }
 
+    @Override
     public RepositoryConnection acquireConnection() throws Rdf4jDriverException {
         verifyOpen();
         // Workaround for local native storage being reset when multiple drivers access it

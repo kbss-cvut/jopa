@@ -1,3 +1,20 @@
+/*
+ * JOPA
+ * Copyright (C) 2025 Czech Technical University in Prague
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
+ */
 package cz.cvut.kbss.ontodriver.rdf4j.container;
 
 import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
@@ -126,7 +143,7 @@ public class ContainerHandler {
         toPersist.add(vf.createStatement(toRdf4jIri(descriptor.getOwner()
                                                               .getIdentifier()), toRdf4jIri(descriptor.getProperty()
                                                                                                       .getIdentifier()), containerIri, contextIri));
-        toPersist.add(vf.createStatement(containerIri, RDF.TYPE, toRdf4jIri(descriptor.getType())));
+        toPersist.add(vf.createStatement(containerIri, RDF.TYPE, toRdf4jIri(descriptor.getType()), contextIri));
         toPersist.addAll(generateContainerContent(descriptor, containerIri, contextIri));
         connector.addStatements(toPersist);
     }

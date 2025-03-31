@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,8 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.eclipse.rdf4j.common.transaction.IsolationLevel;
 import org.eclipse.rdf4j.repository.Repository;
 
+import java.util.Objects;
+
 public final class ConnectionFactoryImpl implements ConnectionFactory {
 
     private boolean open;
@@ -35,7 +37,7 @@ public final class ConnectionFactoryImpl implements ConnectionFactory {
 
     public ConnectionFactoryImpl(StorageConnector connector, ConnectionFactoryConfig config) {
         this.open = true;
-        this.connector = connector;
+        this.connector = Objects.requireNonNull(connector);
         this.isGraphDB = config.isGraphDB();
         this.txIsolationLevel = config.txIsolationLevel();
     }
@@ -67,9 +69,7 @@ public final class ConnectionFactoryImpl implements ConnectionFactory {
         if (!open) {
             return;
         }
-        if (connector != null) {
-            connector.close();
-        }
+        connector.close();
         this.open = false;
     }
 

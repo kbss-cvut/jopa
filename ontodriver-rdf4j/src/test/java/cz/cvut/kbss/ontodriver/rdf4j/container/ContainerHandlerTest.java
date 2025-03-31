@@ -1,3 +1,20 @@
+/*
+ * JOPA
+ * Copyright (C) 2025 Czech Technical University in Prague
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
+ */
 package cz.cvut.kbss.ontodriver.rdf4j.container;
 
 import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
@@ -222,7 +239,8 @@ class ContainerHandlerTest {
             assertEquals(1, containerStatement.size());
             final Resource container = (Resource) containerStatement.get(0).getObject();
             assertEquals(values.size(), conn.getStatements(container, null, null).stream()
-                                            .filter(Predicate.not(s -> s.getPredicate().equals(RDF.TYPE))).toList().size());
+                                            .filter(Predicate.not(s -> s.getPredicate().equals(RDF.TYPE))).toList()
+                                            .size());
             for (int i = 0; i < values.size(); i++) {
                 final org.eclipse.rdf4j.model.Value v = values.get(i) instanceof NamedResource u ? vf.createIRI(u.toString()) : vf.createLiteral((int) values.get(i));
                 if (contextIri != null) {
@@ -336,6 +354,35 @@ class ContainerHandlerTest {
             assertFalse(conn.hasStatement(vf.createIRI(owner.toString()), vf.createIRI(property.getIdentifier()
                                                                                                .toString()), containerIri, false));
             assertFalse(conn.hasStatement(containerIri, null, null, false));
+        }
+    }
+
+    /**
+     * Bug #316
+     */
+    @Test
+    void persistContainerSavesContainerTypeStatementInCorrectContext() throws Exception {
+        final Assertion property = Assertion.createObjectPropertyAssertion(URI.create("https://example.com/hasCandidates"), false);
+        final List<NamedResource> values = List.of(NamedResource.create(Generator.generateUri()));
+        final URI context = Generator.generateUri();
+        final ContainerValueDescriptor<NamedResource> descriptor = ContainerValueDescriptor.bagValueDescriptor(owner, property, context);
+        values.forEach(descriptor::addValue);
+
+        storageConnection.begin();
+        sut.persistContainer(descriptor);
+        storageConnection.commit();
+
+        try (final RepositoryConnection conn = repository.getConnection()) {
+            final List<Statement> containerStatement = conn.getStatements(vf.createIRI(owner.getIdentifier()
+                                                                                            .toString()), vf.createIRI(property.getIdentifier()
+                                                                                                                               .toString()), null)
+                                                           .stream().toList();
+            assertEquals(1, containerStatement.size());
+            final List<Statement> containerTypeStatement = conn.getStatements((Resource) containerStatement.get(0)
+                                                                                                           .getObject(), RDF.TYPE, null)
+                                                               .stream().toList();
+            assertEquals(1, containerTypeStatement.size());
+            assertEquals(vf.createIRI(context.toString()), containerTypeStatement.get(0).getContext());
         }
     }
 }

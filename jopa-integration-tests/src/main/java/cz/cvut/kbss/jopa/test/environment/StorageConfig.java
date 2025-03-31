@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,8 +43,7 @@ public abstract class StorageConfig {
      * This method performs any necessary tasks before creating the storage properties (typically deleting the old
      * data).
      *
-     * @param index Index appended to file/folder name, used when multiple storages of the same type can occur
      * @return OntologyStorageProperties
      */
-    public abstract Map<String, String> createStorageConfiguration(int index);
+    public abstract Map<String, String> createStorageConfiguration();
 }

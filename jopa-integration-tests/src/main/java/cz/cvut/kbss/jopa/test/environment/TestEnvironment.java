@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,10 +23,7 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProvider;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class TestEnvironment {
@@ -52,37 +49,15 @@ public class TestEnvironment {
 
     public static EntityManager getPersistenceConnector(String name, StorageConfig storage,
                                                         boolean cache, Map<String, String> properties) {
-        return getPersistenceConnector(name, Collections.singletonList(storage), cache, properties)
-                .get(0);
-    }
-
-    /**
-     * Creates persistence connector for the specified list of storages.
-     *
-     * @param baseName Base name used for ontology URI and physical storage path/URI
-     * @param storages List of storage configurations
-     * @param cache    Whether second level cache should be enabled
-     * @param props    Additional properties for the persistence provider
-     * @return Persistence context
-     */
-    public static List<EntityManager> getPersistenceConnector(String baseName,
-                                                              List<StorageConfig> storages, boolean cache,
-                                                              Map<String, String> props) {
         final Map<String, String> params = initParams(cache);
         // Can override default params
-        params.putAll(props);
-        int i = 1;
-        final List<EntityManager> managers = new ArrayList<>(storages.size());
-        for (StorageConfig si : storages) {
-            si.setName(baseName);
-            si.setDirectory(TEST_RESULTS_DIR);
-            final Map<String, String> config = new HashMap<>(si.createStorageConfiguration(i++));
-            config.putAll(params);
-            final EntityManager em = Persistence.createEntityManagerFactory("context-name_" + i, config)
-                                                .createEntityManager();
-            managers.add(em);
-        }
-        return managers;
+        params.putAll(properties);
+        storage.setName(name);
+        storage.setDirectory(TEST_RESULTS_DIR);
+        final Map<String, String> config = new HashMap<>(storage.createStorageConfiguration());
+        config.putAll(params);
+        return Persistence.createEntityManagerFactory("Test_" + name, config)
+                                            .createEntityManager();
     }
 
     private static Map<String, String> initParams(boolean cache) {

@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,12 +32,11 @@ public class OwlapiStorageConfig extends StorageConfig {
     private static final OntologyConnectorType TYPE = OntologyConnectorType.OWLAPI;
 
     @Override
-    public Map<String, String> createStorageConfiguration(int index) {
+    public Map<String, String> createStorageConfiguration() {
         assert directory != null : "directory is not set";
         assert name != null;
-        assert index >= 0;
 
-        String base = name + TYPE + index;
+        String base = name + TYPE;
         final File url = new File(directory + File.separator + base + ".owl");
         TestEnvironment.removeOldTestFiles(url);
 

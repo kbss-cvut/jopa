@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -274,11 +274,11 @@ class StorageConnectorTest {
     }
 
     @Test
-    void initializationThrowsRdf4jDriverExceptionWhenReconnectAttemptsIsNotANumber() {
+    void initializationThrowsIllegalArgumentDriverExceptionWhenReconnectAttemptsIsNotANumber() {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.RECONNECT_ATTEMPTS, "not-a-number");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        assertThrows(Rdf4jDriverException.class, () -> createSut(conf));
+        assertThrows(IllegalArgumentException.class, () -> createSut(conf));
     }
 
     @Test
