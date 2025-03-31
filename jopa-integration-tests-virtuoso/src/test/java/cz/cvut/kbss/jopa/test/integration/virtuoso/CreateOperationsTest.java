@@ -17,6 +17,9 @@
  */
 package cz.cvut.kbss.jopa.test.integration.virtuoso;
 
+import cz.cvut.kbss.jopa.test.OWLClassP;
+import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.test.environment.VirtuosoDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.VirtuosoPersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.CreateOperationsRunner;
@@ -26,6 +29,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @EnabledIfSystemProperty(named = "virtuoso.host", matches = ".+")
 @EnabledIfSystemProperty(named = "virtuoso.port", matches = ".+")
@@ -52,5 +62,34 @@ public class CreateOperationsTest extends CreateOperationsRunner {
     @Override
     public void testPersistEntityWithASKQueryAttr() {
         super.testPersistEntityWithASKQueryAttr();
+    }
+
+    @Test
+    @Override
+    public void testPersistTypedProperties() throws Exception {
+        this.em = getEntityManager("PersistTypedProperties", false);
+        entityP.setProperties(Generators.createTypedProperties());
+        // Because of https://github.com/openlink/virtuoso-opensource/issues/1347
+        for (Set<Object> values : entityP.getProperties().values()) {
+            if (values.contains(1)) {
+                values.remove(true);
+            } else if (values.contains(0)) {
+                values.remove(false);
+            }
+        }
+        persist(entityP);
+        em.clear();
+
+        final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
+        assertEquals(entityP.getProperties().keySet(), res.getProperties().keySet());
+        for (URI property : entityP.getProperties().keySet()) {
+            final Set<Object> expected = entityP.getProperties().get(property);
+            final Set<Object> actual = res.getProperties().get(property);
+            assertEquals(expected, actual);
+        }
+        final List<Quad> expectedStatements = new ArrayList<>();
+        entityP.getProperties()
+               .forEach((k, vs) -> vs.forEach(v -> expectedStatements.add(new Quad(entityP.getUri(), k, v, (String) null))));
+        verifyStatementsPresent(expectedStatements, em);
     }
 }

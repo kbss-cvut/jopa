@@ -14,7 +14,7 @@
     <description>Virtuoso implementation of the OntoDriver API</description>
 
     <properties>
-        <com.openlinksw.rdf4jdriver.version>1.18</com.openlinksw.rdf4jdriver.version>
+        <com.openlinksw.rdf4jdriver.version>1.20</com.openlinksw.rdf4jdriver.version>
         <com.openlinksw.jdbcdriver.version>3.123</com.openlinksw.jdbcdriver.version>
     </properties>
 

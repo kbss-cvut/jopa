@@ -132,6 +132,7 @@ public class StorageConnection implements RepoConnection {
     public void begin() throws Rdf4jDriverException {
         this.connection = connectionProvider.acquireConnection();
         try {
+            LOG.trace("Begin storage transaction.");
             connection.begin(isolationLevel);
         } catch (RepositoryException e) {
             throw new Rdf4jDriverException(e);
@@ -143,6 +144,7 @@ public class StorageConnection implements RepoConnection {
         assert connection != null;
 
         try {
+            LOG.trace("Commit storage transaction.");
             connection.commit();
             connection.close();
             this.connection = null;
@@ -155,6 +157,7 @@ public class StorageConnection implements RepoConnection {
     public void rollback() throws Rdf4jDriverException {
         assert connection != null;
         try {
+            LOG.trace("Rollback storage transaction.");
             connection.rollback();
             connection.close();
             this.connection = null;
