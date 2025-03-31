@@ -262,7 +262,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void testRefreshInstanceWithUnmappedProperties() {
+    public void testRefreshInstanceWithUnmappedProperties() {
         this.em = getEntityManager("RefreshEntityWithProperties", false);
         final Map<URI, Set<Object>> properties = Generators.createTypedProperties();
         entityP.setProperties(properties);

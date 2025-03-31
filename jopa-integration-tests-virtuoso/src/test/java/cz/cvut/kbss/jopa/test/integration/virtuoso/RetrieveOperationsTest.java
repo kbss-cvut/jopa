@@ -17,6 +17,8 @@
  */
 package cz.cvut.kbss.jopa.test.integration.virtuoso;
 
+import cz.cvut.kbss.jopa.test.OWLClassP;
+import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.VirtuosoDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.VirtuosoPersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.RetrieveOperationsRunner;
@@ -28,7 +30,13 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @EnabledIfSystemProperty(named = "virtuoso.host", matches = ".+")
 @EnabledIfSystemProperty(named = "virtuoso.port", matches = ".+")
@@ -51,6 +59,30 @@ public class RetrieveOperationsTest extends RetrieveOperationsRunner {
     @Override
     public void reloadAllowsToReloadFileStorageContent() {
         // Do nothing, Virtuoso driver does not support accessing plain RDF files
+    }
+
+    @Test
+    @Override
+    public void testRefreshInstanceWithUnmappedProperties() {
+        this.em = getEntityManager("RefreshEntityWithProperties", false);
+        final Map<URI, Set<Object>> properties = Generators.createTypedProperties();
+        entityP.setProperties(properties);
+        // Because of https://github.com/openlink/virtuoso-opensource/issues/1347
+        for (Set<Object> values : entityP.getProperties().values()) {
+            if (values.contains(1)) {
+                values.remove(true);
+            } else if (values.contains(0)) {
+                values.remove(false);
+            }
+        }
+        persist(entityP);
+
+        final OWLClassP p = findRequired(OWLClassP.class, entityP.getUri());
+        p.getProperties().put(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#addedProperty"),
+                Collections.singleton("Test"));
+        assertNotEquals(properties, p.getProperties());
+        em.refresh(p);
+        assertEquals(properties, p.getProperties());
     }
 
     @Override
