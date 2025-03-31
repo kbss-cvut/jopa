@@ -160,7 +160,7 @@
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>true</autoPublish>
                             <excludeArtifacts>
-                                jopa-integration-tests,jopa-integration-tests-jena,jopa-integration-tests-owlapi,jopa-integration-tests-rdf4j,jopa-distribution
+                                jopa-integration-tests,jopa-integration-tests-jena,jopa-integration-tests-owlapi,jopa-integration-tests-rdf4j,jopa-integration-tests-virtuoso,jopa-distribution
                             </excludeArtifacts>
                         </configuration>
                     </plugin>
