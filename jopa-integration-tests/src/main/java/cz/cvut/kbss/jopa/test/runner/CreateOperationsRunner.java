@@ -68,8 +68,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -290,7 +288,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistTypedProperties() throws Exception {
+    public void testPersistTypedProperties() throws Exception {
         this.em = getEntityManager("PersistTypedProperties", false);
         entityP.setProperties(Generators.createTypedProperties());
         persist(entityP);
