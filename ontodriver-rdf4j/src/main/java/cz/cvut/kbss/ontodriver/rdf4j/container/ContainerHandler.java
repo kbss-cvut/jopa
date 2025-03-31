@@ -126,7 +126,7 @@ public class ContainerHandler {
         toPersist.add(vf.createStatement(toRdf4jIri(descriptor.getOwner()
                                                               .getIdentifier()), toRdf4jIri(descriptor.getProperty()
                                                                                                       .getIdentifier()), containerIri, contextIri));
-        toPersist.add(vf.createStatement(containerIri, RDF.TYPE, toRdf4jIri(descriptor.getType())));
+        toPersist.add(vf.createStatement(containerIri, RDF.TYPE, toRdf4jIri(descriptor.getType()), contextIri));
         toPersist.addAll(generateContainerContent(descriptor, containerIri, contextIri));
         connector.addStatements(toPersist);
     }
