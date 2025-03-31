@@ -36,6 +36,14 @@
 
     <build>
         <plugins>
+            <!-- Do not generate sources JAR for integration tests -->
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <skipSource>true</skipSource>
+                </configuration>
+            </plugin>
             <!-- Do not deploy/generate Javadoc for integration tests -->
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
