@@ -15,15 +15,15 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.jopa.test.integration.virtuoso;
+package cz.cvut.kbss.jopa.test.integration;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.EntityManagerFactoryImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.Vocabulary;
-import cz.cvut.kbss.jopa.test.integration.virtuoso.environment.PersistenceFactory;
-import cz.cvut.kbss.jopa.test.integration.virtuoso.environment.TestDataSource;
+import cz.cvut.kbss.jopa.test.integration.environment.PersistenceFactory;
+import cz.cvut.kbss.jopa.test.integration.environment.TestDataSource;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
