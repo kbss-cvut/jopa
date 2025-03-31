@@ -30,6 +30,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,9 +72,9 @@ public class CreateOperationsTest extends CreateOperationsRunner {
         entityP.setProperties(Generators.createTypedProperties());
         // Because of https://github.com/openlink/virtuoso-opensource/issues/1347
         for (Set<Object> values : entityP.getProperties().values()) {
-            if (values.contains(1)) {
+            if (values.contains(1) || values.contains(BigInteger.valueOf(1L))) {
                 values.remove(true);
-            } else if (values.contains(0)) {
+            } else if (values.contains(0) || values.contains(BigInteger.valueOf(0L))) {
                 values.remove(false);
             }
         }
