@@ -79,6 +79,18 @@
 
     <build>
         <plugins>
+            <!-- Do not build JAR for integration tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Do not generate sources JAR for integration tests -->
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
