@@ -157,9 +157,8 @@
                         <version>0.7.0</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <skipPublishing>true</skipPublishing>
                             <publishingServerId>central</publishingServerId>
-                            <autoPublish>false</autoPublish>
+                            <autoPublish>true</autoPublish>
                             <excludeArtifacts>
                                 jopa-integration-tests,jopa-integration-tests-jena,jopa-integration-tests-owlapi,jopa-integration-tests-rdf4j,jopa-integration-tests-virtuoso,jopa-distribution
                             </excludeArtifacts>
