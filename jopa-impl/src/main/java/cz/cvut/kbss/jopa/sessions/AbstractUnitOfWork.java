@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.proxy.IndirectWrapper;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
@@ -784,6 +785,24 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         }
         repoMap.remove(descriptor, entity);
         repoMap.removeEntityToRepository(entity);
+    }
+
+    /**
+     * Removes {@link IndirectWrapper} and {@link LazyLoadingProxy} instances from the specified entity (if present).
+     *
+     * @param entity The entity to remove indirect wrappers from
+     */
+    protected void removeIndirectWrappersAndProxies(Object entity) {
+        assert entity != null;
+        final EntityType<?> et = entityType(entity.getClass());
+        for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
+            final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
+            if (value instanceof IndirectWrapper indirectWrapper) {
+                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, indirectWrapper.unwrap());
+            } else if (value instanceof LazyLoadingProxy lazyLoadingProxy) {
+                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, lazyLoadingProxy.unwrap());
+            }
+        }
     }
 
     @Override

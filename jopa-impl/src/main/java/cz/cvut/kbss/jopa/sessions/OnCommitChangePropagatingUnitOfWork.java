@@ -39,7 +39,7 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
 
     @Override
     void detachAllManagedInstances() {
-        cloneMapping.forEach(this::removeLazyLoadingProxies);
+        cloneMapping.forEach(this::removeIndirectWrappersAndProxies);
     }
 
     @Override
@@ -129,7 +129,7 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
     @Override
     public void unregisterObject(Object object) {
         super.unregisterObject(object);
-        removeLazyLoadingProxies(object);
+        removeIndirectWrappersAndProxies(object);
     }
 
     @Override
