@@ -144,7 +144,9 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         if (result != null) {
             final LoadStateDescriptor<T> loadStateDescriptor = uow.getLoadStateRegistry().get(result);
             assert loadStateDescriptor != null;
-            getCache().add(loadingParameters.getIdentifier(), result, new Descriptors(loadingParameters.getDescriptor(), loadStateDescriptor));
+            if (!loadingParameters.shouldBypassCache()) {
+                getCache().add(loadingParameters.getIdentifier(), result, new Descriptors(loadingParameters.getDescriptor(), loadStateDescriptor));
+            }
         }
         return result;
     }
