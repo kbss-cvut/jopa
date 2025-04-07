@@ -53,12 +53,12 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     final Set<Object> originalMapping = new HashSet<>();
 
     private final LazyLoadingProxyFactory lazyLoaderFactory;
-
-    private static final CacheManager disabledCache = new DisabledCacheManager();
+    private CacheManager liveObjectCache;
 
     ReadOnlyUnitOfWork(AbstractSession parent, Configuration configuration) {
         super(parent, configuration);
         this.lazyLoaderFactory = new LazyLoadingProxyFactory(this);
+        this.liveObjectCache = resolveCacheManager();
     }
 
     // TODO: remove
@@ -371,11 +371,16 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     ////////////////////////////////////////////////CACHE METHODS///////////////////////////////////////////////////////
+    private CacheManager resolveCacheManager() {
+        final String enabledStr = this.configuration.get(JOPAPersistenceProperties.CACHE_ENABLED_READ_ONLY);
+        return (enabledStr != null && !Boolean.parseBoolean(enabledStr))
+                ? new DisabledCacheManager()
+                : this.parent.getLiveObjectCache();
+    }
+
     @Override
     public CacheManager getLiveObjectCache() {
-        // either return new instance of disabled cache or
-        // return static instance
-        return disabledCache;
+        return this.liveObjectCache;
     }
 
     private void evictPossiblyUpdatedReferencesFromCache() {
