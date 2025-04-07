@@ -73,7 +73,7 @@ public class PrefixMap {
      *
      * @param ontologyManager Manager of ontologies to process
      */
-    private Map<String, String> resolvePrefixes(OWLOntologyManager ontologyManager,
+    private static Map<String, String> resolvePrefixes(OWLOntologyManager ontologyManager,
                                                 TransformationConfiguration config) {
         final Map<String, String> result = new ConcurrentHashMap<>(builtInPrefixes());
         ontologyManager.ontologies().parallel().filter(o -> o.getOntologyID().isNamed()).forEach(o -> {
