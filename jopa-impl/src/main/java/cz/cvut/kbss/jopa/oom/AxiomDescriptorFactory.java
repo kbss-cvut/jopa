@@ -73,7 +73,7 @@ class AxiomDescriptorFactory {
         }
     }
 
-    private void addAssertionToDescriptor(Descriptor entityDescriptor, FieldSpecification<?, ?> att,
+    private static void addAssertionToDescriptor(Descriptor entityDescriptor, FieldSpecification<?, ?> att,
                                           final AxiomDescriptor descriptor, final Assertion assertion) {
         descriptor.addAssertion(assertion);
         final Set<URI> attContexts = entityDescriptor.getAttributeContexts(att);

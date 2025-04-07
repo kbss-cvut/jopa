@@ -71,7 +71,7 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
         return new AbsFunction<>((Class<N>) x.getJavaType(), (AbstractPathExpression) x, this);
     }
 
-    private void validateFunctionArgument(Expression<?> x) {
+    private static void validateFunctionArgument(Expression<?> x) {
         if (!(x instanceof AbstractPathExpression)) {
             throw new IllegalArgumentException("Function can be applied only to path expressions.");
         }

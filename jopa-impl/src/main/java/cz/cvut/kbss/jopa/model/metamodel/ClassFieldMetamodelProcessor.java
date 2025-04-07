@@ -201,8 +201,7 @@ class ClassFieldMetamodelProcessor<X> {
         registerTypeReference(a);
     }
 
-    private boolean methodsAnnotationsEqual(Method newMethod, Method foundMethod) {
-
+    private static boolean methodsAnnotationsEqual(Method newMethod, Method foundMethod) {
         return Objects.equals(newMethod.getAnnotation(OWLObjectProperty.class), foundMethod.getAnnotation(OWLObjectProperty.class)) &&
                 Objects.equals(newMethod.getAnnotation(OWLDataProperty.class), foundMethod.getAnnotation(OWLDataProperty.class)) &&
                 Objects.equals(newMethod.getAnnotation(OWLAnnotationProperty.class), foundMethod.getAnnotation(OWLAnnotationProperty.class)) &&
@@ -214,7 +213,7 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
 
-    private boolean propertyBelongsToMethod(Field property, AnnotatedAccessor accessor) {
+    private static boolean propertyBelongsToMethod(Field property, AnnotatedAccessor accessor) {
         if (!property.getName().equals(accessor.getPropertyName())) {
             return false;
         }
