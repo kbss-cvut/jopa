@@ -357,6 +357,19 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return super.readObject(cls, identifier, descriptor);
     }
 
+    @Override
+    public Object getCloneForOriginal(Object original) {
+        // this unit of work does not track clone-original
+        // simply return the original object
+        return original;
+    }
+
+    @Override
+    public Object createIndirectCollection(Object collection, Object owner, Field field) {
+        // Do not create any special kind of collection, just return the argument
+        return collection;
+    }
+
     ////////////////////////////////////////////////CACHE METHODS///////////////////////////////////////////////////////
     @Override
     public CacheManager getLiveObjectCache() {
@@ -416,18 +429,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
-    // TODO: move and remove
-    @Override
-    public Object createIndirectCollection(Object collection, Object owner, Field field) {
-        // Do not create any special kind of collection, just return the argument
-        return collection;
-    }
-
-//    @Override
-//    public Object registerExistingObject(Object entity, CloneRegistrationDescriptor registrationDescriptor) {
-//        throw new UnsupportedOperationException("registerExistingObject: Method not implemented.");
-//    }
-
     protected static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
                                                    Descriptor descriptor) {
         throw new UnsupportedOperationException("copyChangeSet: Method not implemented.");
@@ -471,14 +472,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     @Override
     public void writeUncommittedChanges() {
         throw new UnsupportedOperationException("writeUncommitedChanges: Method not implemented.");
-    }
-
-    // TODO: move
-    @Override
-    public Object getCloneForOriginal(Object original) {
-        // this unit of work does not track clone-original
-        // simply return the original object
-        return original;
     }
 
     @Override
