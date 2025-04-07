@@ -242,15 +242,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
                 if (IndirectWrapperHelper.requiresIndirectWrapper(fieldValue)) {
                     // register objects if possible
-                    // TODO: process field correctly (Collection, MultilingualString, Map)
-                    if (fieldValue instanceof Iterable) {
-                        ((Iterable<?>) fieldValue).forEach(obj -> {
-                            if (!super.isEntityType(obj.getClass())) { return; }
-
-                            final Descriptor entityDescriptor = super.getDescriptor(original);
-                            final Descriptor fieldDescriptor = super.getFieldDescriptor(original, f, entityDescriptor);
-                            registerExistingObject(obj, fieldDescriptor);
-                        });
+                    Descriptor fieldDescriptor = super.getDescriptor(original).getAttributeDescriptor(fs);
+                    if (fs.isCollection()) {
+                        this.registerExistingObjects((Iterable<Object>) fieldValue, fieldDescriptor);
                     }
                     newValue = fieldValue;
                 } else if (super.isEntityType(fieldValueClass)) {
@@ -266,8 +260,11 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         }
     }
 
-    private void registerExistingObjectsInCollection() {
-        // TODO: implement
+    private void registerExistingObjects(Iterable<Object> collection, Descriptor descriptor) {
+        collection.forEach(obj -> {
+            if (!super.isEntityType(obj.getClass())) { return; }
+            registerExistingObject(obj, descriptor);
+        });
     }
 
     @Override
@@ -309,11 +306,8 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             registerExistingObject(orig, fieldDescriptor);
         } else {
             // Collection or Map
-            // TODO: Collection, map or multilingual string,
-            // check if the type is entityType
-            // this functionality will basically be the same as in processEntityFields
-            for (Object o : (Iterable<?>) orig) {
-                registerExistingObject(o, fieldDescriptor);
+            if (fieldSpec.isCollection()) {
+                this.registerExistingObjects((Iterable<Object>) orig, fieldDescriptor);
             }
         }
 
