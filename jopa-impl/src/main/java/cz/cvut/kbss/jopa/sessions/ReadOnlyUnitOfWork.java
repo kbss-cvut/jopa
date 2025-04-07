@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.model.EntityState;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
@@ -28,6 +29,7 @@ import cz.cvut.kbss.jopa.sessions.cache.DisabledCacheManager;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -210,10 +212,14 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return entity;
     }
 
-    private void registerOriginal(Object original, Descriptor descriptor) {
-        originalMapping.add(original);
-        final Object identifier = super.getIdentifier(original);
-        keysToOriginals.put(identifier, original);
+    @Override
+    public Object registerExistingObject(Object entity, CloneRegistrationDescriptor registrationDescriptor) {
+        if (entity == null) { return null; }
+
+        final CloneConfiguration cloneConfig = CloneConfiguration.withDescriptor(registrationDescriptor.getDescriptor())
+                                                                 .addPostRegisterHandlers(registrationDescriptor.getPostCloneHandlers());
+        Object clone = cloneBuilder.buildClone(entity, cloneConfig);
+        assert clone != null;
 
         registerEntity(clone, registrationDescriptor.getDescriptor());
         List.of(new PostLoadInvoker(getMetamodel())).forEach(c -> c.accept(clone));
