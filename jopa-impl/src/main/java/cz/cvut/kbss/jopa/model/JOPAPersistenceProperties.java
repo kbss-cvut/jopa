@@ -119,6 +119,8 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
      */
     public static final String TRANSACTION_MODE = "cz.cvut.kbss.jopa.transactionMode";
 
+    public static final String CACHE_ENABLED_READ_ONLY = "cz.cvut.jopa.readOnly.cache.enable";
+
     private JOPAPersistenceProperties() {
         throw new AssertionError();
     }
