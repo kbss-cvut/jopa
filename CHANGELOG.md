@@ -1,5 +1,8 @@
 # JOPA - Change Log
 
+## 2.3.1 - 2025-04-07
+- Ensure change tracking proxies are unwrapped on entity detach.
+
 ## 2.3.0 - 2025-03-31
 - Add support for generic abstract entity classes/mapped superclasses (Enhancement #310).
 - Add Virtuoso OntoDriver (Feature #57).
