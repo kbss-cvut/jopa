@@ -139,16 +139,25 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             LOG.trace("L1 CACHE hit: Object with identifier {}.", identifier);
             return result;
         }
-
-        // check repository
         LoadingParameters<T> params = new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor);
-        result = storage.find(params);
-        // TODO: Post load here? yes
 
-        LOG.trace("Read object {} with identifier {}.", result, identifier);
-
-        final Object original = registerExistingObject(result, descriptor);
-        return cls.cast(original);
+        // registered result is either original or clone of original (if original is read from cache)
+        Object registeredResult;
+        // TODO: cache: if cached make clone and pretend it is original
+        if (getLiveObjectCache().contains(cls, identifier, descriptor)) {
+//            result = getLiveObjectCache().get(cls, identifier, descriptor);
+            result = storage.find(params);
+            LOG.trace("Read cached object {} with identifier {} is cached. Cloning it.", result, identifier);
+            registeredResult = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor));
+        } else {
+            // check repository
+            // TODO: bypass cache?
+            params.bypassCache();
+            result = storage.find(params);
+            LOG.trace("Read object {} with identifier {}.", result, identifier);
+            registeredResult = registerExistingObject(result, descriptor);
+        }
+        return cls.cast(registeredResult);
     }
 
     @Override
