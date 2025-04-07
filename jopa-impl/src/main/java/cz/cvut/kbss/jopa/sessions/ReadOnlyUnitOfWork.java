@@ -92,6 +92,8 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         System.out.println("}");
         System.out.println();
 
+        System.out.println(loadStateRegistry);
+
         // print referenceProxies - comment out (referenceProxies is private field)
 //        System.out.println();
 //        System.out.println(ANSI_ORANGE + "referenceProxies" + ANSI_RESET + "{");
@@ -106,10 +108,18 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         debugPrint();
         LOG.trace("Clearing read-only UOW.");
 
+
+        System.out.println("CACHE BEFORE");
+        System.out.println(this.getLiveObjectCache());
+
+
         // TODO: try not to call super.clear() (there are unnecessary clears on hash sets for clones
         super.clear();
         keysToOriginals.clear();
         originalMapping.clear();
+
+        System.out.println("CACHE AFTER");
+        System.out.println(this.getLiveObjectCache());
     }
 
     @Override
@@ -143,15 +153,11 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
         // registered result is either original or clone of original (if original is read from cache)
         Object registeredResult;
-        // TODO: cache: if cached make clone and pretend it is original
         if (getLiveObjectCache().contains(cls, identifier, descriptor)) {
-//            result = getLiveObjectCache().get(cls, identifier, descriptor);
             result = storage.find(params);
             LOG.trace("Read cached object {} with identifier {} is cached. Cloning it.", result, identifier);
             registeredResult = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor));
         } else {
-            // check repository
-            // TODO: bypass cache?
             params.bypassCache();
             result = storage.find(params);
             LOG.trace("Read object {} with identifier {}.", result, identifier);
@@ -198,9 +204,8 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             LOG.trace("Original object {} already registered", entity);
             return entity;
         }
-        registerOriginal(entity, descriptor);
-
-        // TODO: post load listeners are triggered after registration?
+        registerEntity(entity, descriptor);
+        processEntityFields(entity);
         List.of(new PostLoadInvoker(getMetamodel())).forEach(c -> c.accept(entity));
         return entity;
     }
@@ -210,14 +215,23 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         final Object identifier = super.getIdentifier(original);
         keysToOriginals.put(identifier, original);
 
-        super.registerEntityWithOntologyContext(original, descriptor);
+        registerEntity(clone, registrationDescriptor.getDescriptor());
+        List.of(new PostLoadInvoker(getMetamodel())).forEach(c -> c.accept(clone));
+        return clone;
+    }
+
+    private void registerEntity(Object entity, Descriptor descriptor) {
+        originalMapping.add(entity);
+        final Object identifier = super.getIdentifier(entity);
+        keysToOriginals.put(identifier, entity);
+
+        super.registerEntityWithOntologyContext(entity, descriptor);
         // TODO: why does this work: (maybe this should not be handled) vzdy bude nastaven
-        if (isEntityType(original.getClass()) && !super.getLoadStateRegistry().contains(original)) {
+        if (super.isEntityType(entity.getClass()) && !super.getLoadStateRegistry().contains(entity)) {
             super.getLoadStateRegistry().put(
-                original,
-                LoadStateDescriptorFactory.createAllUnknown(original, (EntityType<? super Object>) getMetamodel().entity(original.getClass())));
+                entity,
+                LoadStateDescriptorFactory.createAllUnknown(entity, (EntityType<? super Object>) getMetamodel().entity(entity.getClass())));
         }
-        processEntityFields(original);
     }
 
     private void processEntityFields(Object original) {
@@ -293,6 +307,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             return EntityPropertiesUtils.getFieldValue(field, entity);
         }
 
+        // TODO: cache: if not in cache, clone it here and put into cache?
         storage.loadFieldValue(entity, fieldSpec, entityDescriptor);
         final Object orig = EntityPropertiesUtils.getFieldValue(field, entity);
         final Object entityOriginal = getOriginal(entity);
@@ -401,15 +416,17 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         throw new UnsupportedOperationException("Method not implemented.");
     }
 
+    // TODO: move and remove
     @Override
     public Object createIndirectCollection(Object collection, Object owner, Field field) {
-        throw new UnsupportedOperationException("createIndirectCollection: Method not implemented.");
+        // Do not create any special kind of collection, just return the argument
+        return collection;
     }
 
-    @Override
-    public Object registerExistingObject(Object entity, CloneRegistrationDescriptor registrationDescriptor) {
-        throw new UnsupportedOperationException("registerExistingObject: Method not implemented.");
-    }
+//    @Override
+//    public Object registerExistingObject(Object entity, CloneRegistrationDescriptor registrationDescriptor) {
+//        throw new UnsupportedOperationException("registerExistingObject: Method not implemented.");
+//    }
 
     protected static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
                                                    Descriptor descriptor) {
@@ -456,9 +473,12 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         throw new UnsupportedOperationException("writeUncommitedChanges: Method not implemented.");
     }
 
+    // TODO: move
     @Override
     public Object getCloneForOriginal(Object original) {
-        throw new UnsupportedOperationException("Method not implemented.");
+        // this unit of work does not track clone-original
+        // simply return the original object
+        return original;
     }
 
     @Override
