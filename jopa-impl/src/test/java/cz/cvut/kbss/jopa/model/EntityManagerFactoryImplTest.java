@@ -22,6 +22,8 @@ import cz.cvut.kbss.jopa.environment.utils.DataSourceStub;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.sessions.ReadOnlyUnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
@@ -37,6 +39,7 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -159,5 +162,11 @@ class EntityManagerFactoryImplTest {
             assertTrue(emf.isOpen());
         }
         verify(closeListener).accept(any(EntityManagerFactoryImpl.class));
+    }
+
+    @Test
+    void createEntityManagerWithReadOnlyTransactionModeReturnsEntityManagerWithReadOnlyPersistenceContext() {
+        final EntityManager em = emf.createEntityManager(Map.of(JOPAPersistenceProperties.TRANSACTION_MODE, "read_only"));
+        assertInstanceOf(ReadOnlyUnitOfWork.class, em.unwrap(UnitOfWork.class));
     }
 }
