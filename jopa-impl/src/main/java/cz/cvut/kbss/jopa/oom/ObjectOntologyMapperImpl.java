@@ -28,6 +28,7 @@ import cz.cvut.kbss.jopa.oom.exception.EntityDeconstructionException;
 import cz.cvut.kbss.jopa.oom.exception.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
+import cz.cvut.kbss.jopa.sessions.ReadOnlyUnitOfWork;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
@@ -266,7 +267,18 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             // This prevents endless cycles in bidirectional relationships
             return cls.cast(existing);
         } else {
-            return loadEntityInternal(new LoadingParameters<>(cls, identifier, descriptor));
+            // setup loading params
+            LoadingParameters<T> params = new LoadingParameters<>(cls, identifier, descriptor);
+
+            // TODO:
+            // This is necessary when loading object properties (singular and plural)
+            // The solution is not ideal. I think that LoadingParams
+            // should be propagated to this method by loading appropriate methods.
+            if (uow instanceof ReadOnlyUnitOfWork) {
+                // this prevents caching of entities loaded by ReadOnlyUOW
+                params.bypassCache();
+            }
+            return loadEntityInternal(params);
         }
     }
 
