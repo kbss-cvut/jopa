@@ -158,7 +158,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         if (getLiveObjectCache().contains(cls, identifier, descriptor)) {
             result = storage.find(params);
             LOG.trace("Read cached object {} with identifier {} is cached. Cloning it.", result, identifier);
-            registeredResult = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor));
+            registeredResult = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor)
+                    .postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel())))
+            );
         } else {
             params.bypassCache();
             result = storage.find(params);
@@ -206,6 +208,8 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             LOG.trace("Original object {} already registered", entity);
             return entity;
         }
+
+        // TODO: whether it should be cloned or not
         registerEntity(entity, descriptor);
         processEntityFields(entity);
         List.of(new PostLoadInvoker(getMetamodel())).forEach(c -> c.accept(entity));
@@ -222,7 +226,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         assert clone != null;
 
         registerEntity(clone, registrationDescriptor.getDescriptor());
-        List.of(new PostLoadInvoker(getMetamodel())).forEach(c -> c.accept(clone));
+        registrationDescriptor.getPostCloneHandlers().forEach(c -> c.accept(clone));
         return clone;
     }
 
@@ -270,7 +274,11 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
                 } else if (super.isEntityType(fieldValueClass)) {
                     final Descriptor entityDescriptor = super.getDescriptor(original);
                     final Descriptor fieldDescriptor = super.getFieldDescriptor(original, f, entityDescriptor);
-                    newValue = registerExistingObject(fieldValue, fieldDescriptor);
+                    if (this.getLiveObjectCache().contains(fieldValueClass, super.getIdentifier(fieldValue), fieldDescriptor)) {
+                        newValue = registerExistingObject(fieldValue, new CloneRegistrationDescriptor(fieldDescriptor));
+                    } else{
+                        newValue = registerExistingObject(fieldValue, fieldDescriptor);
+                    }
                 } else {
                     // We assume that the value is immutable
                     newValue = fieldValue;
@@ -298,42 +306,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     boolean containsOriginal(Object entity) {
         assert entity != null;
         return originalMapping.contains(entity);
-    }
-
-    @Override
-    public <T> Object loadEntityField(T entity, FieldSpecification<? super T, ?> fieldSpec) {
-        Objects.requireNonNull(entity);
-        Objects.requireNonNull(fieldSpec);
-        final Field field = fieldSpec.getJavaField();
-        assert field.getDeclaringClass().isAssignableFrom(entity.getClass());
-
-        final Descriptor entityDescriptor = super.getDescriptor(entity);
-        final LoadStateDescriptor<?> loadStateDescriptor = loadStateRegistry.get(entity);
-        if (loadStateDescriptor.isLoaded(fieldSpec) == LoadState.LOADED) {
-            return EntityPropertiesUtils.getFieldValue(field, entity);
-        }
-
-        // TODO: cache: if not in cache, clone it here and put into cache?
-        storage.loadFieldValue(entity, fieldSpec, entityDescriptor);
-        final Object orig = EntityPropertiesUtils.getFieldValue(field, entity);
-        final Object entityOriginal = getOriginal(entity);
-        if (entityOriginal != null) {
-            EntityPropertiesUtils.setFieldValue(field, entityOriginal, orig);
-        }
-        final Descriptor fieldDescriptor = super.getFieldDescriptor(entity, field, entityDescriptor);
-
-        if (super.isEntityType(field.getType())) {
-            // Single entity
-            registerExistingObject(orig, fieldDescriptor);
-        } else {
-            // Collection or Map
-            if (fieldSpec.isCollection()) {
-                this.registerExistingObjects((Iterable<Object>) orig, fieldDescriptor);
-            }
-        }
-
-        loadStateDescriptor.setLoaded((FieldSpecification) fieldSpec, LoadState.LOADED);
-        return orig;
     }
 
     @Override
@@ -376,7 +348,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return collection;
     }
 
-    ////////////////////////////////////////////////CACHE METHODS///////////////////////////////////////////////////////
     private CacheManager resolveCacheManager() {
         final String enabledStr = this.configuration.get(JOPAPersistenceProperties.CACHE_ENABLED_READ_ONLY);
         return (enabledStr != null && !Boolean.parseBoolean(enabledStr))
@@ -386,147 +357,142 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
     @Override
     public CacheManager getLiveObjectCache() {
-        return this.liveObjectCache;
-    }
-
-    private void evictPossiblyUpdatedReferencesFromCache() {
-        throw new UnsupportedOperationException("Method not implemented.");
+        return super.getLiveObjectCache();
     }
 
     @Override
     public void putObjectIntoCache(Object identifier, Object entity, Descriptor descriptor) {
-        throw new UnsupportedOperationException("putObjectIntoCache: Method not implemented.");
-    }
-
-    @Override
-    public void removeObjectFromCache(Object toRemove, URI context) {
-        throw new UnsupportedOperationException("removeObjectFromCache: Method not implemented.");
-    }
-
-    // this is only used in on commit and change tracking uow -> could be deleted
-    @Override
-    void preventCachingIfReferenceIsNotLoaded(ChangeRecord changeRecord) {
-        throw new UnsupportedOperationException("Method not implemented.");
+        // object should never be put into cached in this uow
     }
 
     //////////////////////////////////////THESE METHODS SHOULD NOT BE SUPPORTED/////////////////////////////////////////
     @Override
+    public void removeObjectFromCache(Object toRemove, URI context) {
+        throw new UnsupportedOperationException("Method not supported.");
+    }
+
+    @Override
+    void preventCachingIfReferenceIsNotLoaded(ChangeRecord changeRecord) {
+        throw new UnsupportedOperationException("Method not supported.");
+    }
+
+    @Override
     public boolean isObjectNew(Object entity) {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public <T> T mergeDetached(T entity, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     protected <T> T getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     protected void evictAfterMerge(EntityType<?> et, URI identifier, Descriptor descriptor) {
-        throw new UnsupportedOperationException("evictAfterMerge: Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public <T> void refreshObject(T object) {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     protected static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
                                                    Descriptor descriptor) {
-        throw new UnsupportedOperationException("copyChangeSet: Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     protected ObjectChangeSet processInferredValueChanges(ObjectChangeSet changeSet) {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     void validateIntegrityConstraints() {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     void calculateChanges() {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public void commitToStorage() {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     void persistNewObjects() {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     void registerClone(Object clone, Object original, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public void registerOriginalForNewClone(Object clone, Object original) {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public void writeUncommittedChanges() {
-        throw new UnsupportedOperationException("writeUncommitedChanges: Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public boolean hasChanges() {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     void setHasChanges() {
-        throw new UnsupportedOperationException("Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public void restoreRemovedObject(Object entity) {
-        throw new UnsupportedOperationException("restoreRemovedObject: Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public boolean isFlushingChanges() {
-        throw new UnsupportedOperationException("isFlushingChanges: Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public void attributeChanged(Object entity, Field f) {
-        throw new UnsupportedOperationException("attributedChanged: Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public void attributeChanged(Object entity, FieldSpecification<?, ?> fieldSpec) {
-        throw new UnsupportedOperationException("attributeChanged: Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     protected void markCloneForDeletion(Object entity, Object identifier) {
-        throw new UnsupportedOperationException("markCloneForDeletion: Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public void registerNewObject(Object entity, Descriptor descriptor) {
-        throw new UnsupportedOperationException("registerNewObject: Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     public void removeObject(Object object) {
-        throw new UnsupportedOperationException("removeObject: Method not implemented.");
+        throw new UnsupportedOperationException("Method not supported.");
     }
 }

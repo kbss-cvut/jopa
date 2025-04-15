@@ -295,5 +295,15 @@ public class LruCacheManager implements CacheManager {
                 }
             }
         }
+
+        @Override
+        public String toString() {
+            return repoCache.toString();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return entityCache.toString();
     }
 }
