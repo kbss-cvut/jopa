@@ -439,6 +439,16 @@ class ObjectOntologyMapperTest {
     }
 
     @Test
+    void loadEntityDoesNotPutIntoSecondLevelCacheWhenBypassCache() throws Exception {
+        final Collection<Axiom<?>> axiomsForA = getAxiomsForEntityA();
+        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(axiomsForA);
+        loadingParameters.bypassCache();
+        final OWLClassA result = mapper.loadEntity(loadingParameters);
+        assertNotNull(result);
+        verify(cacheMock, never()).add(IDENTIFIER, result, new Descriptors(loadingParameters.getDescriptor(), loadStateRegistry.get(result)));
+    }
+
+    @Test
     void loadEntityPutsIntoSecondLevelCacheThenEntityAndEntitiesItReferences() throws Exception {
         final Collection<Axiom<?>> axiomsForA = getAxiomsForEntityA();
         final URI identifier = Generators.createIndividualIdentifier();
