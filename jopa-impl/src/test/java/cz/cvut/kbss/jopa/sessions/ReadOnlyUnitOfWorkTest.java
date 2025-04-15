@@ -6,12 +6,16 @@ import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.EntityState;
+import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingListProxy;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingSetProxy;
 import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxy;
 import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxyGenerator;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
@@ -23,6 +27,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -30,16 +36,20 @@ import org.mockito.quality.Strictness;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -53,6 +63,9 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     private Field fieldMock;
     private FieldSpecification fieldSpecificationMock;
     private ObjectChangeSet objectChangeSetMock;
+    private URI uriMock;
+    private ChangeRecord changeRecordMock;
+    private EntityType entityTypeMock;
 
     @BeforeEach
     @Override
@@ -66,6 +79,9 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         fieldMock = Mockito.mock(Field.class);
         fieldSpecificationMock = Mockito.mock(FieldSpecification.class);
         objectChangeSetMock = Mockito.mock(ObjectChangeSet.class);
+        uriMock = Mockito.mock(URI.class);
+        changeRecordMock = Mockito.mock(ChangeRecord.class);
+        entityTypeMock = Mockito.mock(EntityType.class);
     }
 
     @Override
@@ -80,11 +96,6 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     void throwsUnsupportedOperationOnRemoveObject() {
         assertThrows(UnsupportedOperationException.class, () -> uow.removeObject(objectMock));
-    }
-
-    @Test
-    void throwsUnsupportedOperationOnRegisterExistingObjectWithCloneDescriptor() {
-        assertThrows(UnsupportedOperationException.class, () -> uow.registerExistingObject(objectMock, cloneRegistrationDescriptorMock));
     }
 
     @Test
@@ -121,11 +132,6 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     void throwsUnsupportedOperationOnSetHasChanges() {
         assertThrows(UnsupportedOperationException.class, () -> uow.setHasChanges());
-    }
-
-    @Test
-    void throwsUnsupportedOperationOnGetCloneForOriginal() {
-        assertThrows(UnsupportedOperationException.class, () -> uow.getCloneForOriginal(objectMock));
     }
 
     @Test
@@ -176,6 +182,91 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     }
 
     @Test
+    void throwsUnsupportedOperationOnRemoveObjectFromCache() {
+        assertThrows(UnsupportedOperationException.class, () -> uow.removeObjectFromCache(objectMock, uriMock));
+    }
+
+    @Test
+    void throwsUnsupportedOperationOnPreventCachingIfReferenceIsNotLoaded() {
+        assertThrows(UnsupportedOperationException.class, () -> uow.preventCachingIfReferenceIsNotLoaded(changeRecordMock));
+    }
+
+    @Test
+    void throwsUnsupportedOperationOnIsObjectNew() {
+        assertThrows(UnsupportedOperationException.class, () -> uow.isObjectNew(objectMock));
+    }
+
+    @Test
+    void throwsUnsupportedOperationOnMergeDetached() {
+        assertThrows(UnsupportedOperationException.class, () -> uow.mergeDetached(entityA, descriptorMock));
+    }
+
+    @Test
+    void throwsUnsupportedOperationOnMergeDetachedInternal() {
+        assertThrows(UnsupportedOperationException.class, () -> uow.mergeDetachedInternal(entityA, descriptorMock));
+    }
+
+    @Test
+    void throwsUnsupportedOperationOnGetInstanceForMerge() {
+        assertThrows(UnsupportedOperationException.class, () -> uow.getInstanceForMerge(uriMock, entityTypeMock, descriptorMock));
+    }
+
+    @Test
+    void throwsUnsupportedOperationOnEvictAfterMerge() {
+        assertThrows(UnsupportedOperationException.class, () -> uow.evictAfterMerge(entityTypeMock, uriMock, descriptorMock));
+    }
+
+    @Test
+    void throwsUnsupportedOperationOnRefreshObject() {
+        assertThrows(UnsupportedOperationException.class, () -> uow.refreshObject(objectMock));
+    }
+
+    @Test
+    @Override
+    void getManagedOriginalReturnsManagedOriginalInstance() {
+        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false);
+        params.bypassCache();
+        when(storageMock.find(params)).thenReturn(
+                entityA);
+        defaultLoadStateDescriptor(entityA);
+        uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+
+        final OWLClassA res = uow.getManagedOriginal(OWLClassA.class, entityA.getUri(), descriptor);
+        assertNotNull(res);
+        assertSame(entityA, res);
+    }
+
+    @Test
+    @Override
+    void getOriginalReturnsOriginalRegisteredByReadObject() {
+        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false);
+        params.bypassCache();
+        when(storageMock.find(params)).thenReturn(
+                entityA);
+        defaultLoadStateDescriptor(entityA);
+        OWLClassA tO = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+        assertNotNull(tO);
+        OWLClassA origOne = (OWLClassA) uow.getOriginal(tO);
+        assertSame(entityA, origOne);
+        OWLClassA origTwo = (OWLClassA) uow.getOriginal(tO);
+        assertSame(origOne, origTwo);
+    }
+
+    @Test
+    @Override
+    void readObjectLoadsObjectFromStorage() {
+        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false);
+        params.bypassCache();
+        when(storageMock.find(params))
+                .thenReturn(entityA);
+        defaultLoadStateDescriptor(entityA);
+        OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+        assertNotNull(res);
+        assertEquals(entityA.getUri(), res.getUri());
+        verify(storageMock).find(params);
+    }
+
+    @Test
     @Override
     void clearCleansUpPersistenceContext() {
         final OWLClassD d = new OWLClassD();
@@ -223,6 +314,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     void readObjectInternalRegistersUnmanagedObject() {
         LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, getValueAsURI(entityA.getUri()), descriptor);
+        params.bypassCache();
         when(storageMock.find(params)).thenReturn(entityA);
         defaultLoadStateDescriptor(entityA);
 
@@ -235,6 +327,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     void readObjectInternalReturnsObject() {
         LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, getValueAsURI(entityA.getUri()), descriptor);
+        params.bypassCache();
         when(storageMock.find(params)).thenReturn(entityA);
         defaultLoadStateDescriptor(entityA);
 
@@ -420,6 +513,72 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         assertTrue(uow.isObjectManaged(entityA));
     }
 
+    @Test
+    void registerExistingObjectRegistersEagerlyLoadedEntityField() {
+        defaultLoadStateDescriptor(entityD);
+
+        uow.registerExistingObject(entityD, descriptor);
+
+        assertTrue(uow.isObjectManaged(entityA));
+    }
+
+    @Test
+    void getOriginalReturnsOriginal() {
+        Object result = uow.getOriginal(entityA);
+
+        assertSame(entityA, result);
+    }
+
+    @Test
+    void getCloneForOriginalReturnsOriginal() {
+        Object result = uow.getCloneForOriginal(entityA);
+
+        assertSame(entityA, result);
+    }
+
+    @Test
+    void containsOriginalThrowsAssertionErrorForNullArgument() {
+        assertThrows(AssertionError.class, () -> uow.containsOriginal(null));
+    }
+
+    @Test
+    void containsOriginalReturnsTrueForManagedEntity() {
+        defaultLoadStateDescriptor(entityA);
+        Object result = uow.registerExistingObject(entityA, descriptor);
+
+        assertTrue(uow.containsOriginal(result));
+
+    }
+
+    @Test
+    void containsOriginalReturnsFalseForNotManagedEntity() {
+        defaultLoadStateDescriptor(entityA);
+
+        assertFalse(uow.containsOriginal(entityA));
+    }
+
+    @Test
+    void loadEntityFieldRegistersEntityAttribute() {
+        final OWLClassL original = new OWLClassL(Generators.createIndividualIdentifier());
+        final LoadStateDescriptor<OWLClassL> loadStateDescriptor = LoadStateDescriptorFactory
+                .createNotLoaded(original, metamodelMocks.forOwlClassL().entityType());
+
+        uow.getLoadStateRegistry().put(original, loadStateDescriptor);
+        when(metamodelMock.getLazyLoadingProxy(OWLClassA.class)).thenReturn((Class) new LazyLoadingEntityProxyGenerator().generate(OWLClassA.class));
+        final OWLClassL result = (OWLClassL) uow.registerExistingObject(original, descriptor);
+        doAnswer(invocation -> {
+            final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
+            EntityPropertiesUtils.setFieldValue(f.getJavaField(), invocation.getArguments()[0], entityA);
+            return null;
+        }).when(storageMock)
+          .loadFieldValue(eq(result), eq(metamodelMocks.forOwlClassL().owlClassAAtt()), eq(descriptor));
+        defaultLoadStateDescriptor(entityA);
+
+        uow.loadEntityField(result, metamodelMocks.forOwlClassL().owlClassAAtt());
+
+        assertNotNull(uow.getManagedOriginal(entityA.getClass(), entityA.getUri(), descriptor));
+        assertEquals(LoadState.LOADED, uow.getLoadStateRegistry().get(original).isLoaded(metamodelMocks.forOwlClassL().owlClassAAtt()));
+    }
 
     @Test
     void registerExistingObjectRegistersObjectPropertyField() {
@@ -432,6 +591,54 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         assertTrue(uow.containsOriginal(entityA));
     }
 
+    @Test
+    void registerExistingObjectClonesOriginal() {
+        defaultLoadStateDescriptor(entityD);
+
+        OWLClassD clone = (OWLClassD) uow.registerExistingObject(entityD, new CloneRegistrationDescriptor(descriptor));
+
+        // original on clone reference different instance
+        assertNotSame(entityD, clone);
+
+        // uri is cloned
+        assertNotNull(clone.getUri());
+        assertEquals(entityD.getUri(), clone.getUri());
+
+        // object property is cloned
+        assertNotNull(clone.getOwlClassA());
+        assertNotSame(entityA, clone.getOwlClassA());
+    }
+
+    @Test
+    void registerExistingObjectRegistersClonedOriginal() {
+        defaultLoadStateDescriptor(entityD);
+
+        OWLClassD clone = (OWLClassD) uow.registerExistingObject(entityD, new CloneRegistrationDescriptor(descriptor));
+
+        // original is not registered
+        assertFalse(uow.isObjectManaged(entityD));
+
+        // clone is registered
+        assertTrue(uow.isObjectManaged(clone));
+    }
+
+    @Test
+    void isObjectManagedTrowsNullPointerExceptionForNullArgument() {
+        assertThrows(NullPointerException.class, () -> uow.isObjectManaged(null));
+    }
+
+    @Test
+    void isObjectManagedReturnsTrueForManagedObject() {
+        defaultLoadStateDescriptor(entityA);
+        Object result = uow.registerExistingObject(entityD, descriptor);
+
+        assertTrue(uow.contains(result));
+    }
+
+    @Test
+    void isObjectManagedReturnsFalseForNotManagedObject() {
+        assertFalse(uow.isObjectManaged(objectMock));
+    }
 
     @Test
     @Override
@@ -454,7 +661,9 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     @Override
     void rollbackDetachesAllManagedEntities() {
-        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false)))
+        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false);
+        params.bypassCache();
+        when(storageMock.find(params))
                 .thenReturn(entityA);
         defaultLoadStateDescriptor(entityA, entityB);
         final OWLClassA result = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
@@ -467,28 +676,40 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
 
     @Test
     @Override
-    void loadFieldLoadsManagedTypeAttribute() {
-        final OWLClassL original = new OWLClassL(Generators.createIndividualIdentifier());
-        final LoadStateDescriptor<OWLClassL> loadStateDescriptor = LoadStateDescriptorFactory.createNotLoaded(original, metamodelMocks.forOwlClassL()
-                                                                                                                                      .entityType());
-        uow.getLoadStateRegistry().put(original, loadStateDescriptor);
-        when(metamodelMock.getLazyLoadingProxy(OWLClassA.class)).thenReturn((Class) new LazyLoadingEntityProxyGenerator().generate(OWLClassA.class));
-        final OWLClassL result = (OWLClassL) uow.registerExistingObject(original, descriptor);
-        doAnswer(invocation -> {
-            final FieldSpecification<?, ?> f = (FieldSpecification<?, ?>) invocation.getArguments()[1];
-            EntityPropertiesUtils.setFieldValue(f.getJavaField(), invocation.getArguments()[0], Collections.singleton(entityA));
-            return null;
-        }).when(storageMock)
-          .loadFieldValue(eq(result), eq(metamodelMocks.forOwlClassL().setAttribute()), eq(descriptor));
+    void registerExistingObjectInvokesPostCloneListeners() {
+        try (MockedConstruction<PostLoadInvoker> mockedConstruction = mockConstruction(PostLoadInvoker.class,
+                (mock, context) -> {
+                    doNothing().when(mock).accept(entityA);
+                })) {
+            defaultLoadStateDescriptor(entityA);
+
+            final Object result = uow.registerExistingObject(entityA, descriptor);
+
+            assertEquals(1, mockedConstruction.constructed().size(), "PostLoadInvoker was created exactly once");
+            verify(mockedConstruction.constructed().get(0), times(1)).accept(result);
+        }
+    }
+
+    @Test
+    void registerExistingObjectWithCloningInvokesPostCloneListeners() {
+        final Consumer<Object> plVerifier = mock(Consumer.class);
         defaultLoadStateDescriptor(entityA);
+        final Object result = uow.registerExistingObject(entityA, new CloneRegistrationDescriptor(descriptor).postCloneHandlers(List.of(plVerifier)));
+        verify(plVerifier).accept(result);
+    }
 
-        uow.loadEntityField(result, metamodelMocks.forOwlClassL().setAttribute());
-        verify(storageMock).loadFieldValue(result, metamodelMocks.forOwlClassL().setAttribute(), descriptor);
-        assertNotNull(result.getSet());
-        assertEquals(1, result.getSet().size());
+    @Test
+    void readObjectInternalClonesCachedEntity() {
+        when(uow.getLiveObjectCache().contains(
+                ArgumentMatchers.any(),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.any()
+        )).thenReturn(true);
+        when(storageMock.find(ArgumentMatchers.any())).thenReturn(entityA);
 
-        // Verify that the loaded value was cloned
-        assertSame(entityA, result.getSet().iterator().next());
-        assertTrue(uow.contains(result.getSet().iterator().next()));
+        OWLClassA result = uow.readObjectInternal(entityA.getClass(), entityA.getUri(), descriptor);
+
+        assertNotNull(result);
+        assertNotSame(entityA, result);
     }
 }
