@@ -19,6 +19,8 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
@@ -520,5 +522,61 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         defaultLoadStateDescriptor(entityA);
         OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertFalse(uow.isObjectNew(managed));
+    }
+
+    @Test
+    void commitAddsNewlyAddedReferenceToObjectToCache() throws Exception {
+        when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+        final OWLClassD d = new OWLClassD();
+        d.setUri(URI.create("http://tempD"));
+        final OWLClassA a = new OWLClassA();
+        a.setUri(URI.create("http://oldA"));
+        d.setOwlClassA(a);
+        defaultLoadStateDescriptor(d);
+        defaultLoadStateDescriptor(a);
+        final OWLClassD clone = (OWLClassD) uow.registerExistingObject(d, descriptor);
+        final OWLClassA newA = new OWLClassA();
+        newA.setUri(URI.create("http://newA"));
+        newA.setStringAttribute("somestring");
+        clone.setOwlClassA(newA);
+        uow.attributeChanged(clone, OWLClassD.getOwlClassAField());
+        uow.registerNewObject(newA, descriptor);
+        uow.commit();
+
+        assertEquals(d.getOwlClassA().getUri(), newA.getUri());
+        verify(serverSessionStub.getLiveObjectCache()).add(eq(newA.getUri()), any(Object.class), any(Descriptors.class));
+    }
+
+    @Test
+    void removeObjectFromCacheEvictsObjectFromCacheManager() {
+        uow.removeObjectFromCache(entityB, descriptor.getSingleContext().orElse(null));
+        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassB.class, entityB.getUri(), descriptor.getSingleContext()
+                                                                                                          .orElse(null));
+    }
+
+    @Test
+    void commitPutsIntoCacheInstanceMergedAsDetachedDuringTransaction() {
+        final OWLClassA original = new OWLClassA(entityA.getUri());
+        original.setStringAttribute("originalStringAttribute");
+        when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
+        when(storageMock.find(any())).thenReturn(original);
+        final LoadStateDescriptor<OWLClassA> loadStateDescriptor = LoadStateDescriptorFactory.createAllLoaded(original, metamodelMocks.forOwlClassA()
+                                                                                                                                      .entityType());
+        uow.loadStateRegistry.put(original, loadStateDescriptor);
+
+        final OWLClassA merged = uow.mergeDetached(entityA, descriptor);
+        assertNotNull(merged);
+        assertEquals(entityA.getStringAttribute(), merged.getStringAttribute());
+        uow.commit();
+        verify(serverSessionStub.getLiveObjectCache()).add(entityA.getUri(), original, new Descriptors(descriptor, loadStateDescriptor));
+    }
+
+    @Test
+    void commitEvictsInferredClassesFromCache() {
+        defaultLoadStateDescriptor(entityA);
+        uow.registerExistingObject(entityA, descriptor);
+        uow.registerNewObject(entityB, descriptor);
+        uow.commit();
+        verify(serverSessionStub.getLiveObjectCache()).evictInferredObjects();
     }
 }

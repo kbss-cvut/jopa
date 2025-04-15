@@ -112,29 +112,6 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     }
 
     @Test
-    void commitAddsNewlyAddedReferenceToObjectToCache() throws Exception {
-        when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
-        final OWLClassD d = new OWLClassD();
-        d.setUri(URI.create("http://tempD"));
-        final OWLClassA a = new OWLClassA();
-        a.setUri(URI.create("http://oldA"));
-        d.setOwlClassA(a);
-        defaultLoadStateDescriptor(d);
-        defaultLoadStateDescriptor(a);
-        final OWLClassD clone = (OWLClassD) uow.registerExistingObject(d, descriptor);
-        final OWLClassA newA = new OWLClassA();
-        newA.setUri(URI.create("http://newA"));
-        newA.setStringAttribute("somestring");
-        clone.setOwlClassA(newA);
-        uow.attributeChanged(clone, OWLClassD.getOwlClassAField());
-        uow.registerNewObject(newA, descriptor);
-        uow.commit();
-
-        assertEquals(d.getOwlClassA().getUri(), newA.getUri());
-        verify(serverSessionStub.getLiveObjectCache()).add(eq(newA.getUri()), any(Object.class), any(Descriptors.class));
-    }
-
-    @Test
     void containsReturnsTrueForRegisteredExistingObject() {
         defaultLoadStateDescriptor(entityA);
         OWLClassA res = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
@@ -248,13 +225,6 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         assertEquals(entityB.getUri(), clone.getUri());
         final OWLClassB cloneTwo = (OWLClassB) uow.registerExistingObject(entityB, descriptor);
         assertSame(clone, cloneTwo);
-    }
-
-    @Test
-    void removeObjectFromCacheEvictsObjectFromCacheManager() {
-        uow.removeObjectFromCache(entityB, descriptor.getSingleContext().orElse(null));
-        verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassB.class, entityB.getUri(), descriptor.getSingleContext()
-                                                                                                          .orElse(null));
     }
 
     @Test
@@ -424,23 +394,6 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     }
 
     @Test
-    void commitPutsIntoCacheInstanceMergedAsDetachedDuringTransaction() {
-        final OWLClassA original = new OWLClassA(entityA.getUri());
-        original.setStringAttribute("originalStringAttribute");
-        when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
-        when(storageMock.find(any())).thenReturn(original);
-        final LoadStateDescriptor<OWLClassA> loadStateDescriptor = LoadStateDescriptorFactory.createAllLoaded(original, metamodelMocks.forOwlClassA()
-                                                                                                                                      .entityType());
-        uow.loadStateRegistry.put(original, loadStateDescriptor);
-
-        final OWLClassA merged = uow.mergeDetached(entityA, descriptor);
-        assertNotNull(merged);
-        assertEquals(entityA.getStringAttribute(), merged.getStringAttribute());
-        uow.commit();
-        verify(serverSessionStub.getLiveObjectCache()).add(entityA.getUri(), original, new Descriptors(descriptor, loadStateDescriptor));
-    }
-
-    @Test
     void clearResetsCloneBuilder() {
         defaultLoadStateDescriptor(entityA);
         uow.registerExistingObject(entityA, descriptor);
@@ -454,15 +407,6 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         defaultLoadStateDescriptor(entityA);
         final Object result = uow.registerExistingObject(entityA, new CloneRegistrationDescriptor(descriptor).postCloneHandlers(List.of(plVerifier)));
         verify(plVerifier).accept(result);
-    }
-
-    @Test
-    void commitEvictsInferredClassesFromCache() {
-        defaultLoadStateDescriptor(entityA);
-        uow.registerExistingObject(entityA, descriptor);
-        uow.registerNewObject(entityB, descriptor);
-        uow.commit();
-        verify(serverSessionStub.getLiveObjectCache()).evictInferredObjects();
     }
 
     @Test
