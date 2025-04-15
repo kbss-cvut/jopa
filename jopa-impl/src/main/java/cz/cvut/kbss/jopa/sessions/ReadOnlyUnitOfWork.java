@@ -63,65 +63,13 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         this.liveObjectCache = resolveCacheManager();
     }
 
-    // TODO: remove
-    private void debugPrint() {
-        final String ANSI_RESET =  "\u001B[0m";
-        final String ANSI_YELLOW = "\u001B[33m";
-        final String ANSI_BLUE = "\u001B[34m";
-        final String ANSI_ORANGE = "\u001B[38;5;208m";
-
-        LOG.info(ANSI_YELLOW + "-------------------------------------------------------------" + ANSI_RESET);
-
-        // these should be empty
-        System.out.println("cloneMapping");
-        System.out.println(this.cloneMapping);
-        System.out.println("cloneToOriginals");
-        System.out.println(this.cloneToOriginals);
-        System.out.println("keysToClones");
-        System.out.println(this.keysToClones);
-
-        // print originals
-        System.out.println();
-        System.out.println(ANSI_ORANGE + "originalMapping" + ANSI_RESET + "{");
-        originalMapping.forEach(o -> System.out.println("   " + o));
-        System.out.println("}");
-        System.out.println();
-
-        // print keys -> originals
-        System.out.println();
-        System.out.println(ANSI_ORANGE + "keysToOriginals" + ANSI_RESET + "{");
-        keysToOriginals.forEach((k, v) -> System.out.printf("%-15s : %s%n", k, v));
-        System.out.println("}");
-        System.out.println();
-
-        System.out.println(loadStateRegistry);
-
-        // print referenceProxies - comment out (referenceProxies is private field)
-//        System.out.println();
-//        System.out.println(ANSI_ORANGE + "referenceProxies" + ANSI_RESET + "{");
-//        referenceProxies.forEach((k, v) -> System.out.printf("%-15s : %s%n", k, v));
-//        System.out.println("}");
-//        System.out.println();
-        LOG.info(ANSI_YELLOW + "-------------------------------------------------------------" + ANSI_RESET);
-    }
-
     @Override
     public void clear() {
-        debugPrint();
         LOG.trace("Clearing read-only UOW.");
 
-
-        System.out.println("CACHE BEFORE");
-        System.out.println(this.getLiveObjectCache());
-
-
-        // TODO: try not to call super.clear() (there are unnecessary clears on hash sets for clones
         super.clear();
         keysToOriginals.clear();
         originalMapping.clear();
-
-        System.out.println("CACHE AFTER");
-        System.out.println(this.getLiveObjectCache());
     }
 
     @Override
@@ -148,7 +96,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         // check managed objects
         T result = readManagedObject(cls, identifier, descriptor);
         if (result != null) {
-            LOG.trace("L1 CACHE hit: Object with identifier {}.", identifier);
             return result;
         }
         LoadingParameters<T> params = new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor);
@@ -209,7 +156,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             return entity;
         }
 
-        // TODO: whether it should be cloned or not
         registerEntity(entity, descriptor);
         processEntityFields(entity);
         List.of(new PostLoadInvoker(getMetamodel())).forEach(c -> c.accept(entity));
@@ -236,7 +182,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         keysToOriginals.put(identifier, entity);
 
         super.registerEntityWithOntologyContext(entity, descriptor);
-        // TODO: why does this work: (maybe this should not be handled) vzdy bude nastaven
+
         if (super.isEntityType(entity.getClass()) && !super.getLoadStateRegistry().contains(entity)) {
             super.getLoadStateRegistry().put(
                 entity,
