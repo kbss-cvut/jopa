@@ -869,7 +869,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             clone = null;
         } else {
             if (isEntityType(field.getType())) {
-                clone = registerExistingObject(fieldValueOrig, fieldDescriptor);
+                clone = registerExistingObject(fieldValueOrig, new CloneRegistrationDescriptor(fieldDescriptor));
                 putObjectIntoCache(getIdentifier(clone), fieldValueOrig, fieldDescriptor);
             } else {
                 clone = cloneBuilder.buildClone(entity, field, fieldValueOrig, fieldDescriptor);
