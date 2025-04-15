@@ -6,6 +6,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassE;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
+import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exception.IdentifierNotSetException;
@@ -13,10 +14,12 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMultilingualString;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
@@ -40,6 +43,8 @@ import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.environment.utils.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -578,5 +583,18 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         uow.registerNewObject(entityB, descriptor);
         uow.commit();
         verify(serverSessionStub.getLiveObjectCache()).evictInferredObjects();
+    }
+
+    @Test
+    void unregisterObjectReplacesChangeTrackingProxiesWithReferencedObjects() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassU entityU = new OWLClassU(Generators.createIndividualIdentifier());
+        entityU.setSingularStringAtt(MultilingualString.create("test", "en"));
+        defaultLoadStateDescriptor(entityU);
+        final OWLClassU managed = (OWLClassU) uow.registerExistingObject(entityU, descriptor);
+        assertInstanceOf(ChangeTrackingIndirectMultilingualString.class, managed.getSingularStringAtt());
+        uow.unregisterObject(managed);
+        assertThat(managed.getSingularStringAtt(), instanceOf(MultilingualString.class));
+        assertThat(managed.getSingularStringAtt(), not(instanceOf(ChangeTrackingIndirectMultilingualString.class)));
     }
 }

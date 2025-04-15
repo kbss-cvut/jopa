@@ -548,17 +548,4 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         verify(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassL().owlClassAAtt(), descriptor);
         verify(storageMock).isInferred(clone, metamodelMocks.forOwlClassL().owlClassAAtt(), clone.getSingleA(), descriptor);
     }
-
-    @Test
-    void unregisterObjectReplacesChangeTrackingProxiesWithReferencedObjects() {
-        when(transactionMock.isActive()).thenReturn(true);
-        final OWLClassU entityU = new OWLClassU(Generators.createIndividualIdentifier());
-        entityU.setSingularStringAtt(MultilingualString.create("test", "en"));
-        defaultLoadStateDescriptor(entityU);
-        final OWLClassU managed = (OWLClassU) uow.registerExistingObject(entityU, descriptor);
-        assertInstanceOf(ChangeTrackingIndirectMultilingualString.class, managed.getSingularStringAtt());
-        uow.unregisterObject(managed);
-        assertThat(managed.getSingularStringAtt(), instanceOf(MultilingualString.class));
-        assertThat(managed.getSingularStringAtt(), not(instanceOf(ChangeTrackingIndirectMultilingualString.class)));
-    }
 }
