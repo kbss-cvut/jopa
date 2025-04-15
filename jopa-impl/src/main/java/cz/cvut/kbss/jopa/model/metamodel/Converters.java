@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,22 +56,22 @@ public class Converters {
 
     private static final Map<Class<?>, ConverterWrapper<?, ?>> DEFAULT_CONVERTERS = initDefaultConverters();
 
-    private final Map<Class<?>, ConverterWrapper<?, ?>> converters = new HashMap<>();
+    private final Map<Class<?>, ConverterWrapper<?, ?>> registeredConverters = new HashMap<>();
 
     Converters(Configuration configuration) {
         initConverters(configuration);
     }
 
     private void initConverters(Configuration configuration) {
-        converters.put(Object.class, new ObjectConverter(configuration.is(JOPAPersistenceProperties.PREFER_MULTILINGUAL_STRING)));
+        registeredConverters.put(Object.class, new ObjectConverter(configuration.is(JOPAPersistenceProperties.PREFER_MULTILINGUAL_STRING)));
     }
 
     Optional<ConverterWrapper<?, ?>> getCustomConverter(Class<?> attributeType) {
-        return Optional.ofNullable(converters.get(attributeType));
+        return Optional.ofNullable(registeredConverters.get(attributeType));
     }
 
     void registerConverter(Class<?> attributeType, ConverterWrapper<?, ?> converter) {
-        converters.put(attributeType, converter);
+        registeredConverters.put(attributeType, converter);
     }
 
     public static Optional<ConverterWrapper<?, ?>> getDefaultConverter(Class<?> attributeType) {

@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,6 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.proxy.IndirectWrapper;
-import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
@@ -121,24 +120,6 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
             deregisterEntityFromPersistenceContext(instance);
         });
         newObjectsCloneToOriginal.keySet().forEach(this::removeIndirectWrappersAndProxies);
-    }
-
-    /**
-     * Removes {@link IndirectWrapper} and {@link LazyLoadingProxy} instances from the specified entity (if present).
-     *
-     * @param entity The entity to remove indirect wrappers from
-     */
-    private void removeIndirectWrappersAndProxies(Object entity) {
-        assert entity != null;
-        final EntityType<?> et = entityType(entity.getClass());
-        for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
-            final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
-            if (value instanceof IndirectWrapper indirectWrapper) {
-                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, indirectWrapper.unwrap());
-            } else if (value instanceof LazyLoadingProxy lazyLoadingProxy) {
-                EntityPropertiesUtils.setFieldValue(fs.getJavaField(), entity, lazyLoadingProxy.unwrap());
-            }
-        }
     }
 
     @Override

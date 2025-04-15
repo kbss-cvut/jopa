@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,7 +35,7 @@ public class Rdf4jTypes implements Types {
     private final Procedure beforeCallback;
     private final Procedure afterChangeCallback;
 
-    Rdf4jTypes(Rdf4jAdapter adapter, Procedure beforeCallback, Procedure afterChangeCallback) {
+    public Rdf4jTypes(Rdf4jAdapter adapter, Procedure beforeCallback, Procedure afterChangeCallback) {
         this.adapter = adapter;
         this.beforeCallback = beforeCallback;
         this.afterChangeCallback = afterChangeCallback;

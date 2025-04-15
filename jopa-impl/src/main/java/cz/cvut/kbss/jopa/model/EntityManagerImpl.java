@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,6 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
-import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxy;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
@@ -420,10 +419,8 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
      * @param entity - the entity to check and load
      * @return the lazy loaded entity or the original
      */
-    private Object getLoadedEntity(Object entity) {
-        return entity instanceof LazyLoadingProxy<?> proxy
-                ? proxy.triggerLazyLoading()
-                : entity;
+    private static Object getLoadedEntity(Object entity) {
+        return entity instanceof LazyLoadingProxy<?> proxy ? proxy.triggerLazyLoading() : entity;
     }
 
     @Override

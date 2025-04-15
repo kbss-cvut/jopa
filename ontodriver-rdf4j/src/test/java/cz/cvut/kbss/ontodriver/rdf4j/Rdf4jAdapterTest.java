@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,7 +44,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
@@ -59,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -120,16 +123,11 @@ class Rdf4jAdapterTest {
 
     @Test
     void testGetContexts() throws Exception {
-        final List<Resource> contexts = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            contexts.add(VF.createIRI("http://krizik.felk.cvut.cz/ontologies/context" + i));
-        }
+        final List<Resource> contexts = IntStream.range(0, 5).mapToObj(i -> (Resource) VF.createIRI(Generator.generateUri().toString())).toList();
+
         when(connectorMock.getContexts()).thenReturn(contexts);
         final List<URI> res = adapter.getContexts();
-        assertEquals(contexts.size(), res.size());
-        for (int i = 0; i < contexts.size(); i++) {
-            assertEquals(contexts.get(i).stringValue(), res.get(i).toString());
-        }
+        assertEquals(contexts.stream().map(i -> URI.create(i.stringValue())).toList(), res);
     }
 
     @Test
@@ -682,7 +680,6 @@ class Rdf4jAdapterTest {
         final IRI rdf4jProperty = VF.createIRI(property.toString());
         final boolean inferred = false;
         final Assertion assertion = Assertion.createDataPropertyAssertion(property, "en", inferred);
-        final String oldValue = "oldValue";
         final String newValue = "newValue";
         desc.addAssertion(assertion);
         desc.addAssertionValue(assertion, new Value<>(newValue));
@@ -795,5 +792,17 @@ class Rdf4jAdapterTest {
         verify(connectorMock).begin();
         final Statement s = VF.createStatement(subjectIri, RDF.TYPE, VF.createIRI(axiom.getValue().stringValue()));
         verify(connectorMock).isInferred(s, Collections.emptySet());
+    }
+
+    @Test
+    void getContextsStartsTransaction() throws Exception {
+        final List<Resource> contexts = IntStream.range(0, 5).mapToObj(i -> (Resource) VF.createIRI(Generator.generateUri().toString())).toList();
+
+        when(connectorMock.getContexts()).thenReturn(contexts);
+        final List<URI> res = adapter.getContexts();
+        assertEquals(contexts.stream().map(c -> URI.create(c.stringValue())).toList(), res);
+        final InOrder inOrder = Mockito.inOrder(connectorMock);
+        inOrder.verify(connectorMock).begin();
+        inOrder.verify(connectorMock).getContexts();
     }
 }

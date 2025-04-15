@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,17 +31,7 @@ public class RuntimeConfiguration {
     private StatementLoaderFactory statementLoaderFactory = new DefaultStatementLoaderFactory();
 
     public RuntimeConfiguration(DriverConfiguration config) {
-        if (config.isSet(Rdf4jConfigParam.LOAD_ALL_THRESHOLD)) {
-            try {
-                this.loadAllThreshold = Integer.parseInt(config.getProperty(Rdf4jConfigParam.LOAD_ALL_THRESHOLD));
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(
-                        "Invalid value of the \"" + Rdf4jOntoDriverProperties.LOAD_ALL_THRESHOLD +
-                                "\" parameter. Must be a valid integer.", e);
-            }
-        } else {
-            this.loadAllThreshold = Constants.DEFAULT_LOAD_ALL_THRESHOLD;
-        }
+        this.loadAllThreshold = config.getProperty(Rdf4jConfigParam.LOAD_ALL_THRESHOLD, Constants.DEFAULT_LOAD_ALL_THRESHOLD);
     }
 
     public int getLoadAllThreshold() {

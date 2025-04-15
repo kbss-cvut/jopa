@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,23 +24,48 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.MappedSuperclassTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.oom.exception.AmbiguousEntityTypeException;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class PolymorphicEntityTypeResolverTest {
 
     private static final NamedResource INDIVIDUAL = NamedResource.create(Generators.createIndividualIdentifier());
@@ -53,7 +78,6 @@ public class PolymorphicEntityTypeResolverTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         this.etS = metamodelMock.entity(OWLClassS.class);
@@ -161,10 +185,10 @@ public class PolymorphicEntityTypeResolverTest {
                 getTypeAxioms(mostSpecificEtOne.getIRI().toString(), mostSpecificEtTwo.getIRI().toString());
 
         final AmbiguousEntityTypeException ex = assertThrows(AmbiguousEntityTypeException.class,
-                                                             () -> execute(etS, types));
+                () -> execute(etS, types));
         assertThat(ex.getMessage(),
-                   containsString("Unable to determine unique entity type for loading individual " + INDIVIDUAL +
-                                          ". Matching types are "));
+                containsString("Unable to determine unique entity type for loading individual " + INDIVIDUAL +
+                        ". Matching types are "));
         assertThat(ex.getMessage(), containsString(mostSpecificEtOne.toString()));
         assertThat(ex.getMessage(), containsString(mostSpecificEtTwo.toString()));
     }
@@ -174,7 +198,8 @@ public class PolymorphicEntityTypeResolverTest {
         final IdentifiableEntityType rootEt = generateEntityType(
                 IRI.create(Generators.createIndividualIdentifier().toString()));
         final IdentifiableEntityType<OWLClassQ> etQ = metamodelMock.entity(OWLClassQ.class);
-        final MappedSuperclassTypeImpl mappedSuperclassType = (MappedSuperclassTypeImpl) etQ.getSupertypes().iterator().next();
+        final MappedSuperclassTypeImpl mappedSuperclassType = (MappedSuperclassTypeImpl) etQ.getSupertypes().iterator()
+                                                                                            .next();
         when(mappedSuperclassType.getSupertypes()).thenReturn(Collections.singleton(rootEt));
         when(rootEt.getSubtypes()).thenReturn(Collections.singleton(mappedSuperclassType));
         final Collection<Axiom<URI>> types = getTypeAxioms(etQ.getIRI().toString());
@@ -185,11 +210,10 @@ public class PolymorphicEntityTypeResolverTest {
     @Test
     public void determineActualEntityTypeReturnsNullWhenMostSpecificTypeIsAbstract() {
         final String abstractTypeIri = Generators.createIndividualIdentifier().toString();
-        final IdentifiableEntityType<AbstractSubtype> etAbstract = spy(
-                new AbstractEntityType<>(
-                        AbstractSubtype.class, IRI.create(abstractTypeIri)));
+        final IdentifiableEntityType<AbstractSubtype> etAbstract = spy(new AbstractEntityType<>(AbstractSubtype.class, IRI.create(abstractTypeIri)));
         doReturn(Collections.singleton(etR)).when(etAbstract).getSupertypes();
         doReturn(Collections.singleton(etAbstract)).when(etR).getSubtypes();
+        when(etAbstract.getSubtypes()).thenReturn(Set.of());
 
         final Collection<Axiom<URI>> types = getTypeAxioms(abstractTypeIri);
         assertNull(execute(etS, types));
@@ -201,11 +225,10 @@ public class PolymorphicEntityTypeResolverTest {
     @Test
     public void determineActualEntityTypeIsNotAmbiguousWhenOneOfTheTypesIsAbstract() {
         final String abstractTypeIri = Generators.createIndividualIdentifier().toString();
-        final IdentifiableEntityType<AbstractSubtype> etAbstract = spy(
-                new AbstractEntityType<>(
-                        AbstractSubtype.class, IRI.create(abstractTypeIri)));
+        final IdentifiableEntityType<AbstractSubtype> etAbstract = spy(new AbstractEntityType<>(AbstractSubtype.class, IRI.create(abstractTypeIri)));
         doReturn(Collections.singleton(etR)).when(etAbstract).getSupertypes();
         doReturn(Collections.singleton(etAbstract)).when(etR).getSubtypes();
+        when(etAbstract.getSubtypes()).thenReturn(Set.of());
         final IdentifiableEntityType mostSpecificEtOne = generateEntityTypeSubtree(Generators.randomPositiveInt(5), etR);
 
         final Collection<Axiom<URI>> types = getTypeAxioms(mostSpecificEtOne.getIRI().toString(), abstractTypeIri);

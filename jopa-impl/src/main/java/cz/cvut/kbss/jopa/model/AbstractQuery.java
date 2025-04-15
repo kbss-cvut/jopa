@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,6 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.utils.Procedure;
 import cz.cvut.kbss.jopa.utils.ThrowingConsumer;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
@@ -44,8 +43,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * Common state and behavior of both {@link cz.cvut.kbss.jopa.model.query.Query} and {@link
- * cz.cvut.kbss.jopa.model.query.TypedQuery} implementations.
+ * Common state and behavior of both {@link cz.cvut.kbss.jopa.model.query.Query} and
+ * {@link cz.cvut.kbss.jopa.model.query.TypedQuery} implementations.
  */
 abstract class AbstractQuery implements Query {
 
@@ -55,8 +54,8 @@ abstract class AbstractQuery implements Query {
     private final Map<String, Object> hints = new HashMap<>();
     private final ConnectionWrapper connection;
 
-    private Procedure rollbackOnlyMarker;
-    private Procedure ensureOpenProcedure = () -> {
+    private Runnable rollbackOnlyMarker;
+    private Runnable ensureOpenProcedure = () -> {
     };
 
     AbstractQuery(QueryHolder query, ConnectionWrapper connection) {
@@ -77,13 +76,13 @@ abstract class AbstractQuery implements Query {
 
     void markTransactionForRollback() {
         if (rollbackOnlyMarker != null) {
-            rollbackOnlyMarker.execute();
+            rollbackOnlyMarker.run();
         }
     }
 
     void ensureOpen() {
         assert ensureOpenProcedure != null;
-        ensureOpenProcedure.execute();
+        ensureOpenProcedure.run();
     }
 
     /**
@@ -91,7 +90,7 @@ abstract class AbstractQuery implements Query {
      *
      * @param rollbackOnlyMarker The marker to invoke on exceptions
      */
-    void setRollbackOnlyMarker(Procedure rollbackOnlyMarker) {
+    void setRollbackOnlyMarker(Runnable rollbackOnlyMarker) {
         this.rollbackOnlyMarker = rollbackOnlyMarker;
     }
 
@@ -102,7 +101,7 @@ abstract class AbstractQuery implements Query {
      *
      * @param ensureOpenProcedure The procedure to call when ensuring that persistence context is open
      */
-    void setEnsureOpenProcedure(Procedure ensureOpenProcedure) {
+    void setEnsureOpenProcedure(Runnable ensureOpenProcedure) {
         this.ensureOpenProcedure = ensureOpenProcedure;
     }
 
@@ -290,14 +289,16 @@ abstract class AbstractQuery implements Query {
     <R> Stream<R> executeQueryForStream(Function<ResultRow, Optional<R>> function) throws OntoDriverException {
         final Statement stmt = initQueryStatement();
         final ResultSet rs = stmt.executeQuery(query.assembleQuery());
-        return StreamSupport.stream(new QueryResultSpliterator<>(rs.spliterator(), function, () -> {
+        final Runnable closeHandler = () -> {
             try {
                 stmt.close();
             } catch (OntoDriverException e) {
                 markTransactionForRollback();
                 throw new OWLPersistenceException(e);
             }
-        }), false);
+        };
+        return StreamSupport.stream(new QueryResultSpliterator<>(rs.spliterator(), function, closeHandler), false)
+                            .onClose(closeHandler);
     }
 
     boolean exceptionCausesRollback(RuntimeException e) {

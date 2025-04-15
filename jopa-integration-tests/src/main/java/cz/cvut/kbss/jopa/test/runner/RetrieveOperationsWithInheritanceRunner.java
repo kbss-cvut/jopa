@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,10 +17,14 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
-import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.oom.exception.AmbiguousEntityTypeException;
-import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.OWLClassQ;
+import cz.cvut.kbss.jopa.test.OWLClassS;
+import cz.cvut.kbss.jopa.test.OWLClassSParent;
+import cz.cvut.kbss.jopa.test.OWLClassT;
+import cz.cvut.kbss.jopa.test.OWLClassU;
+import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
@@ -35,7 +39,12 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheritanceRunner {
 
@@ -58,7 +67,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
                 entityQ.getStringAttribute()));
         data.addAll(triplesForA());
         data.add(new Quad(entityQ.getUri(), URI.create(Vocabulary.P_HAS_OWL_CLASS_A), entityA.getUri()));
-        final EntityManager em = getEntityManager("findReadsAttributesOfMappedSuperclass", false);
+        this.em = getEntityManager("findReadsAttributesOfMappedSuperclass", false);
         persistTestData(data, em);
 
         final OWLClassQ result = em.find(OWLClassQ.class, entityQ.getUri());
@@ -83,7 +92,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     @Test
     void findReadsAttributesOfEntitySuperclass() throws Exception {
         final Collection<Quad> data = triplesForEntityT();
-        final EntityManager em = getEntityManager("findReadsAttributesOfEntitySuperclass", false);
+        this.em = getEntityManager("findReadsAttributesOfEntitySuperclass", false);
         persistTestData(data, em);
 
         final OWLClassT result = em.find(OWLClassT.class, entityT.getUri());
@@ -109,7 +118,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
     @Test
     void findLoadsSuperclassInstanceWhenRequestedAndClassAssertionIsPresent() throws Exception {
-        final EntityManager em = getEntityManager("findLoadsSuperclassInstanceWhenRequestedAndClassAssertionIsPresent",
+        this.em = getEntityManager("findLoadsSuperclassInstanceWhenRequestedAndClassAssertionIsPresent",
                 false);
         final Collection<Quad> data = triplesForEntityT();
         data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
@@ -126,7 +135,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     void findLoadsSubclassWhenSuperclassIsPassedInAndTypeCorrespondsToSubclass() throws Exception {
         final Collection<Quad> data = triplesForEntityT();
 
-        final EntityManager em = getEntityManager(
+        this.em = getEntityManager(
                 "findLoadsSubclassWhenSuperclassIsPassedInAndTypeCorrespondsToSubclass",
                 false);
         persistTestData(data, em);
@@ -152,7 +161,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         data.add(new Quad(entityT.getUri(), URI.create(RDFS.LABEL), entityT.getName()));
         data.add(new Quad(entityT.getUri(), URI.create(DC.Terms.DESCRIPTION), entityT.getDescription()));
 
-        final EntityManager em = getEntityManager("findLoadsSubclassOfAbstractParent", false);
+        this.em = getEntityManager("findLoadsSubclassOfAbstractParent", false);
         persistTestData(data, em);
 
         final OWLClassSParent result = em.find(OWLClassSParent.class, entityT.getUri());
@@ -168,7 +177,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         final Collection<Quad> data = triplesForEntityT();
         data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
 
-        final EntityManager em = getEntityManager("findLoadsMostConcreteSubclassOfAbstractAncestor", false);
+        this.em = getEntityManager("findLoadsMostConcreteSubclassOfAbstractAncestor", false);
         persistTestData(data, em);
 
         final OWLClassSParent result = em.find(OWLClassSParent.class, entityT.getUri());
@@ -183,7 +192,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         data.remove(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_T)));
         data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S_PARENT)));
 
-        final EntityManager em = getEntityManager("findReturnsNullWhenMatchingClassIsAbstract", false);
+        this.em = getEntityManager("findReturnsNullWhenMatchingClassIsAbstract", false);
         persistTestData(data, em);
 
         assertNull(em.find(OWLClassSParent.class, entityT.getUri()));
@@ -195,7 +204,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S)));
         data.add(new Quad(entityT.getUri(), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_S_PARENT)));
 
-        final EntityManager em = getEntityManager("findReturnsMostSpecificSubtypeWhenReturnTypeIsAbstractAncestor",
+        this.em = getEntityManager("findReturnsMostSpecificSubtypeWhenReturnTypeIsAbstractAncestor",
                 false);
         persistTestData(data, em);
 

@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 import cz.cvut.kbss.ontodriver.Connection;
 
 @FunctionalInterface
-interface ConnectionListener<C extends Connection> {
+public interface ConnectionListener<C extends Connection> {
 
     /**
      * Notification that the specified connection has been closed.

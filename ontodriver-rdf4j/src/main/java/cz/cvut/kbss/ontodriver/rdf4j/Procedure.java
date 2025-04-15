@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,7 @@ import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
  * Executes a method which takes no arguments and returns no result.
  */
 @FunctionalInterface
-interface Procedure {
+public interface Procedure {
     /**
      * Executes the procedure.
      *

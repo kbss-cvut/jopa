@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -49,7 +49,6 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
-import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -900,10 +899,14 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         persist(entityA);
 
         em.getTransaction().begin();
-        final OWLClassA toRemove = findRequired(OWLClassA.class, entityA.getUri());
-        em.remove(toRemove);
-        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> em.merge(toRemove));
-        assertThat(ex.getMessage(), containsString("removed"));
+        try {
+            final OWLClassA toRemove = findRequired(OWLClassA.class, entityA.getUri());
+            em.remove(toRemove);
+            final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> em.merge(toRemove));
+            assertThat(ex.getMessage(), containsString("removed"));
+        } finally {
+            em.getTransaction().rollback();
+        }
     }
 
     @Test
@@ -1214,19 +1217,20 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     public void concurrentTransactionsLeaveDataInConsistentState() {
         final String a1String = "a1String";
         final String a2String = "a2String";
-        this.em= getEntityManager("concurrentTransactionsLeaveDataInConsistentState", false);
-        final EntityManager secondEm = em.getEntityManagerFactory().createEntityManager();
-        persist(entityA);
-        em.getTransaction().begin();
-        final OWLClassA a1 = em.find(OWLClassA.class, entityA.getUri());
+        this.em = getEntityManager("concurrentTransactionsLeaveDataInConsistentState", false);
+        try (final EntityManager secondEm = em.getEntityManagerFactory().createEntityManager()) {
+            persist(entityA);
+            em.getTransaction().begin();
+            final OWLClassA a1 = em.find(OWLClassA.class, entityA.getUri());
 
-        secondEm.getTransaction().begin();
-        final OWLClassA a2 = secondEm.find(OWLClassA.class, entityA.getUri());
+            secondEm.getTransaction().begin();
+            final OWLClassA a2 = secondEm.find(OWLClassA.class, entityA.getUri());
 
-        a1.setStringAttribute(a1String);
-        a2.setStringAttribute(a2String);
-        em.getTransaction().commit();
-        secondEm.getTransaction().commit();
+            a1.setStringAttribute(a1String);
+            a2.setStringAttribute(a2String);
+            em.getTransaction().commit();
+            secondEm.getTransaction().commit();
+        }
 
         final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
         assertEquals(a2String, result.getStringAttribute());

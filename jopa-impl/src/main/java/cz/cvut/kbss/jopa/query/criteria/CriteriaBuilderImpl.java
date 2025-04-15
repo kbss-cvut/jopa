@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -71,7 +71,7 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
         return new AbsFunction<>((Class<N>) x.getJavaType(), (AbstractPathExpression) x, this);
     }
 
-    private void validateFunctionArgument(Expression<?> x) {
+    private static void validateFunctionArgument(Expression<?> x) {
         if (!(x instanceof AbstractPathExpression)) {
             throw new IllegalArgumentException("Function can be applied only to path expressions.");
         }

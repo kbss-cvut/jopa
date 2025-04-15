@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class Rdf4jAdapter implements Closeable, Wrapper {
+public class Rdf4jAdapter implements Closeable, Wrapper {
 
     /**
      * Maximum number of attempts to generate a unique identifier
@@ -119,6 +119,7 @@ class Rdf4jAdapter implements Closeable, Wrapper {
     }
 
     List<URI> getContexts() throws Rdf4jDriverException {
+        startTransactionIfNotActive();
         final List<Resource> contextIds = connector.getContexts();
         final List<URI> contexts = new ArrayList<>(contextIds.size());
         for (Resource res : contextIds) {

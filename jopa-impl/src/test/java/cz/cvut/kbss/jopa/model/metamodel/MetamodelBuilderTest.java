@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,12 +18,16 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.OWLClassR;
+import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.OWLClassV;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
@@ -46,6 +50,7 @@ import cz.cvut.kbss.jopa.model.annotations.RDFContainer;
 import cz.cvut.kbss.jopa.model.annotations.RDFContainerType;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
+import cz.cvut.kbss.jopa.model.annotations.Sparql;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
@@ -601,5 +606,137 @@ class MetamodelBuilderTest {
         @RDFContainer(type = RDFContainerType.ALT)
         @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "rdf-alt")
         private Set<Integer> rdfAlt;
+    }
+
+    @Test
+    void buildMetamodelSupportsGenericsInAbstractSuperclass() {
+        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class, OWLClassB.class, ClassWithGenericType.class, ConcreteClassWithGenericType.class, ConcreteClassWithGenericTypeII.class));
+        builder.buildMetamodel(finderMock);
+        final EntityType<ConcreteClassWithGenericType> et = (EntityType<ConcreteClassWithGenericType>) builder.getEntityClass(ConcreteClassWithGenericType.class);
+        final Attribute<ConcreteClassWithGenericType, ?> att = (Attribute<ConcreteClassWithGenericType, ?>) et.getAttribute("boss");
+        final SetAttribute<ConcreteClassWithGenericType, ?> setAtt = (SetAttribute<ConcreteClassWithGenericType, ?>) et.getAttribute("values");
+        assertEquals(OWLClassA.class, att.getJavaType());
+        assertEquals(builder.getEntityClass(OWLClassA.class), setAtt.getElementType());
+        final EntityType<ConcreteClassWithGenericTypeII> etII = (EntityType<ConcreteClassWithGenericTypeII>) builder.getEntityClass(ConcreteClassWithGenericTypeII.class);
+        final Attribute<ConcreteClassWithGenericTypeII, ?> attII = (Attribute<ConcreteClassWithGenericTypeII, ?>) etII.getAttribute("boss");
+        final SetAttribute<ConcreteClassWithGenericTypeII, ?> setAttII = (SetAttribute<ConcreteClassWithGenericTypeII, ?>) etII.getAttribute("values");
+        assertEquals(OWLClassB.class, attII.getJavaType());
+        assertEquals(builder.getEntityClass(OWLClassB.class), setAttII.getElementType());
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithGenericType")
+    public static abstract class ClassWithGenericType<T extends HasUri> {
+        @Id
+        private URI uri;
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "generic-value")
+        private T boss;
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "generic-values")
+        private Set<T> values;
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithGenericType")
+    public static class ConcreteClassWithGenericType extends ClassWithGenericType<OWLClassA> {
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithGenericTypeII")
+    public static class ConcreteClassWithGenericTypeII extends ClassWithGenericType<OWLClassB> {
+    }
+
+    @Test
+    void buildMetamodelSupportsGenericsInAbstractSuperSuperclass() {
+        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class, OWLClassB.class, OWLClassR.class, OWLClassS.class, ClassWithGenericType.class, ConcreteClassWithGenericType.class, ConcreteClassWithGenericTypeII.class, SubClassWithGenericType.class, ConcreteClassWithGenericTypeIII.class));
+        builder.buildMetamodel(finderMock);
+        final EntityType<ConcreteClassWithGenericTypeIII> et = (EntityType<ConcreteClassWithGenericTypeIII>) builder.getEntityClass(ConcreteClassWithGenericTypeIII.class);
+        final Attribute<? super ConcreteClassWithGenericTypeIII, ?> att = et.getAttribute("boss");
+        final SetAttribute<? super ConcreteClassWithGenericTypeIII, ?> setAtt = et.getSet("values");
+        assertEquals(OWLClassR.class, att.getJavaType());
+        assertEquals(OWLClassR.class, setAtt.getBindableJavaType());
+    }
+
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "SubClassWithGenericType")
+    public static abstract class SubClassWithGenericType<T extends OWLClassS> extends ClassWithGenericType<T> {
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithGenericTypeIII")
+    public static class ConcreteClassWithGenericTypeIII extends SubClassWithGenericType<OWLClassR> {
+    }
+
+    @Test
+    void buildMetamodelSupportsMultipleGenericParametersInAbstractSuperclass() {
+        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class, OWLClassB.class, ClassWithTwoGenericTypes.class, ConcreteClassWithTwoGenericTypes.class));
+        builder.buildMetamodel(finderMock);
+        final EntityType<ConcreteClassWithTwoGenericTypes> et = (EntityType<ConcreteClassWithTwoGenericTypes>) builder.getEntityClass(ConcreteClassWithTwoGenericTypes.class);
+        final SetAttribute<? super ConcreteClassWithTwoGenericTypes, ?> tAtt = et.getSet("tValues");
+        assertEquals(OWLClassA.class, tAtt.getBindableJavaType());
+        final SetAttribute<? super ConcreteClassWithTwoGenericTypes, ?> vAtt = et.getSet("vValues");
+        assertEquals(OWLClassB.class, vAtt.getBindableJavaType());
+    }
+
+    @TestLocal
+    @MappedSuperclass
+    public static abstract class ClassWithTwoGenericTypes<T extends HasUri, V extends HasUri> {
+        @Id
+        private URI uri;
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "fieldOfTypeT")
+        private Set<T> tValues;
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "fieldOfTypeV")
+        private Set<V> vValues;
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithTwoGenericTypes")
+    public static class ConcreteClassWithTwoGenericTypes extends ClassWithTwoGenericTypes<OWLClassA, OWLClassB> {
+    }
+
+    @Test
+    void buildMetamodelSupportsQueryAttributesWithGenericType() {
+        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class, OWLClassB.class, ClassWithGenericTypeAndQueryAttribute.class, ConcreteClassWithQueryAttribute.class, ConcreteClassWithQueryAttributeII.class));
+        builder.buildMetamodel(finderMock);
+
+        final EntityType<ConcreteClassWithQueryAttribute> et = (EntityType<ConcreteClassWithQueryAttribute>) builder.getEntityClass(ConcreteClassWithQueryAttribute.class);
+        final PluralQueryAttribute<? super ConcreteClassWithQueryAttribute, ?, ?> att = (PluralQueryAttribute<? super ConcreteClassWithQueryAttribute, ?, ?>) et.getQueryAttribute("related");
+        assertEquals(OWLClassA.class, att.getBindableJavaType());
+        final EntityType<ConcreteClassWithQueryAttributeII> etII = (EntityType<ConcreteClassWithQueryAttributeII>) builder.getEntityClass(ConcreteClassWithQueryAttributeII.class);
+        final PluralQueryAttribute<? super ConcreteClassWithQueryAttributeII, ?, ?> attII = (PluralQueryAttribute<? super ConcreteClassWithQueryAttributeII, ?, ?>) etII.getQueryAttribute("related");
+        assertEquals(OWLClassB.class, attII.getBindableJavaType());
+    }
+
+    @TestLocal
+    @MappedSuperclass
+    public static abstract class ClassWithGenericTypeAndQueryAttribute<T extends HasUri> {
+        @Id
+        private URI id;
+
+        @Sparql(query = "SELECT ?x WHERE { ?x skos:related ?this }")
+        private Set<T> related;
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithQueryAttribute")
+    public static class ConcreteClassWithQueryAttribute extends ClassWithGenericTypeAndQueryAttribute<OWLClassA> {
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ConcreteClassWithQueryAttributeII")
+    public static class ConcreteClassWithQueryAttributeII extends ClassWithGenericTypeAndQueryAttribute<OWLClassB> {
+    }
+
+    @Test
+    void buildMetamodelFinishesBuildingEntityTypes() {
+        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class));
+        builder.buildMetamodel(finderMock);
+        final AbstractIdentifiableType<OWLClassA> a = (AbstractIdentifiableType<OWLClassA>) builder.getEntityClass(OWLClassA.class);
+        assertNotNull(a.getSubtypes());
+        assertTrue(a.getSubtypes().isEmpty());
     }
 }

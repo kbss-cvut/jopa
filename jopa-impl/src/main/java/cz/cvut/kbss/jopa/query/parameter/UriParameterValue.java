@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,6 +40,7 @@ class UriParameterValue extends AbstractParameterValue {
 
     @Override
     public String getQueryString() {
+        // TODO Allow prefixed URIs - they should not be wrapped in <>
         return IdentifierTransformer.stringifyIri(uri);
     }
 

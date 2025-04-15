@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,6 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.utils.Procedure;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
@@ -74,10 +73,10 @@ abstract class QueryTestBase {
     ResultSetIterator resultSetIterator;
 
     @Mock
-    Procedure handler;
+    Runnable handler;
 
     @Mock
-    Procedure ensureOpenProcedure;
+    Runnable ensureOpenProcedure;
 
     SparqlQueryFactory queryFactory;
 
@@ -113,10 +112,10 @@ abstract class QueryTestBase {
     void setParameterByNameSetsAllOccurrencesOfVariableInQuery() throws Exception {
         final String query = "SELECT ?y ?z WHERE { ?x ?y ?z . ?z ?y ?x . }";
         final Query q = createQuery(query, Object.class);
-        q.setParameter("x", "Individual");
+        q.setParameter("x", URI.create("http://example.com/individual"));
         q.getResultList();
         verify(connectionWrapperMock).createStatement();
-        verify(statementMock).executeQuery("SELECT ?y ?z WHERE { \"Individual\" ?y ?z . ?z ?y \"Individual\" . }");
+        verify(statementMock).executeQuery("SELECT ?y ?z WHERE { <http://example.com/individual> ?y ?z . ?z ?y <http://example.com/individual> . }");
     }
 
     @Test
@@ -277,14 +276,14 @@ abstract class QueryTestBase {
     void executeUpdateEnsuresPersistenceContextIsOpen() {
         final AbstractQuery q = createQuery(UPDATE_QUERY);
         q.executeUpdate();
-        verify(ensureOpenProcedure).execute();
+        verify(ensureOpenProcedure).run();
     }
 
     @Test
     void getResultListEnsuresPersistenceContextIsOpen() {
         final AbstractQuery q = createQuery(SELECT_QUERY, OWLClassA.class);
         q.getResultList();
-        verify(ensureOpenProcedure).execute();
+        verify(ensureOpenProcedure).run();
     }
 
     @Test

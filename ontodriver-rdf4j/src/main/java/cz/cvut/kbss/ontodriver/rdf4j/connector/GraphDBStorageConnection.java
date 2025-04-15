@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,6 @@ import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.common.transaction.IsolationLevel;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
 import java.util.Set;
@@ -34,12 +33,14 @@ public class GraphDBStorageConnection extends StorageConnection {
 
     @Override
     public boolean isInferred(Statement statement, Set<IRI> contexts) throws Rdf4jDriverException {
-        try (final RepositoryConnection conn = storageConnector.acquireConnection()) {
-            final IRI[] ctxArr = contexts.toArray(new IRI[0]);
-            // Inferred statements are in the implicit graph in GraphDB. This graph is not accessible via the RDF4J API
-            return conn.hasStatement(statement, true) && !conn.hasStatement(statement, false, ctxArr);
-        } catch (RepositoryException e) {
-            throw new Rdf4jDriverException(e);
-        }
+        return withConnection(conn -> {
+            try {
+                final IRI[] ctxArr = contexts.toArray(new IRI[0]);
+                // Inferred statements are in the implicit graph in GraphDB. This graph is not accessible via the RDF4J API
+                return conn.hasStatement(statement, true) && !conn.hasStatement(statement, false, ctxArr);
+            } catch (RepositoryException e) {
+                throw new Rdf4jDriverException(e);
+            }
+        });
     }
 }

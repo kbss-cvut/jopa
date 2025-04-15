@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,6 +46,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
@@ -76,15 +77,20 @@ class ClassFieldMetamodelProcessor<X> {
     void processField(Field field) {
         LOG.trace("processing field: {}.", field);
         if (EntityPropertiesUtils.isFieldTransient(field)) {
-            // Do not log static fields
-            if (!EntityPropertiesUtils.isFieldStatic(field)) {
-                LOG.trace("Skipping transient field {}.", field);
-            }
+            LOG.trace("Skipping transient field {}.", field);
             return;
         }
 
-        final Class<?> fieldValueCls = getFieldValueType(field);
-        field.setAccessible(true);
+        final Optional<Class<?>> fieldValueClassOpt = getFieldValueType(field);
+        if (fieldValueClassOpt.isEmpty()) {
+            // Defer generic field initialization
+            metamodelBuilder.registerDeferredFieldInitialization(field, context);
+            return;
+        }
+        processFieldWithValueType(field, fieldValueClassOpt.get(), field.getDeclaringClass());
+    }
+
+    private void processFieldWithValueType(Field field, Class<?> fieldValueCls, Class<?> sourceCls) {
         final InferenceInfo inference = processInferenceInfo(field);
 
         if (isTypesField(field)) {
@@ -97,7 +103,7 @@ class ClassFieldMetamodelProcessor<X> {
         }
 
         if (isQueryAttribute(field)) {
-            createQueryAttribute(field, fieldValueCls);
+            createQueryAttribute(field, fieldValueCls, sourceCls);
             return;
         }
 
@@ -107,7 +113,7 @@ class ClassFieldMetamodelProcessor<X> {
         propertyAtt.resolve(propertyInfo, metamodelBuilder, fieldValueCls);
 
         if (propertyAtt.isKnownOwlProperty()) {
-            final AbstractAttribute<X, ?> a = createAttribute(propertyInfo, inference, propertyAtt);
+            final AbstractAttribute<X, ?> a = createAndDeclareAttribute(sourceCls, propertyInfo, inference, propertyAtt);
             registerTypeReference(a);
             return;
         }
@@ -120,12 +126,24 @@ class ClassFieldMetamodelProcessor<X> {
         AnnotatedAccessor fieldAccessor = findAnnotatedMethodBelongingToField(field);
 
         if (fieldAccessor != null) {
-            createAndRegisterAttribute(field, inference, fieldValueCls, fieldAccessor);
+            createAndRegisterAttribute(field, inference, fieldValueCls, fieldAccessor, sourceCls);
             return;
         }
 
         throw new MetamodelInitializationException("Unable to process field " + field + ". It is not transient but has no mapping information.");
     }
+
+    private AbstractAttribute<X, ?> createAndDeclareAttribute(Class<?> sourceCls, PropertyInfo propertyInfo,
+                                                              InferenceInfo inference, PropertyAttributes propertyAtt) {
+        final AbstractAttribute<X, ?> a = createAttribute(propertyInfo, inference, propertyAtt);
+        if (!Objects.equals(et.getJavaType(), sourceCls)) {
+            et.addDeclaredGenericAttribute(a.getName(), sourceCls.asSubclass(et.getJavaType()), a);
+        } else {
+            et.addDeclaredAttribute(a.getName(), a);
+        }
+        return a;
+    }
+
 
     /**
      * Do a bottom top search of hierarchy in order to find annotated accessor belonging to given field. This is used
@@ -173,18 +191,17 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
     private void createAndRegisterAttribute(Field field, InferenceInfo inference, Class<?> fieldValueCls,
-                                            AnnotatedAccessor annotatedAccessor) {
+                                            AnnotatedAccessor annotatedAccessor, Class<?> sourceCls) {
         final PropertyInfo info = PropertyInfo.from(annotatedAccessor.getMethod(), field);
 
         final PropertyAttributes propertyAtt = PropertyAttributes.create(info, mappingValidator, context);
         propertyAtt.resolve(info, metamodelBuilder, fieldValueCls);
 
-        final AbstractAttribute<X, ?> a = createAttribute(info, inference, propertyAtt);
+        final AbstractAttribute<X, ?> a = createAndDeclareAttribute(sourceCls, info, inference, propertyAtt);
         registerTypeReference(a);
     }
 
-    private boolean methodsAnnotationsEqual(Method newMethod, Method foundMethod) {
-
+    private static boolean methodsAnnotationsEqual(Method newMethod, Method foundMethod) {
         return Objects.equals(newMethod.getAnnotation(OWLObjectProperty.class), foundMethod.getAnnotation(OWLObjectProperty.class)) &&
                 Objects.equals(newMethod.getAnnotation(OWLDataProperty.class), foundMethod.getAnnotation(OWLDataProperty.class)) &&
                 Objects.equals(newMethod.getAnnotation(OWLAnnotationProperty.class), foundMethod.getAnnotation(OWLAnnotationProperty.class)) &&
@@ -196,7 +213,7 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
 
-    private boolean propertyBelongsToMethod(Field property, AnnotatedAccessor accessor) {
+    private static boolean propertyBelongsToMethod(Field property, AnnotatedAccessor accessor) {
         if (!property.getName().equals(accessor.getPropertyName())) {
             return false;
         }
@@ -207,17 +224,18 @@ class ClassFieldMetamodelProcessor<X> {
         return true;
     }
 
-    private static Class<?> getFieldValueType(Field field) {
+    private static Optional<Class<?>> getFieldValueType(Field field) {
         if (Collection.class.isAssignableFrom(field.getType())) {
             return getSetOrListErasureType((ParameterizedType) field.getGenericType());
         } else if (field.getType().isArray()) {
             throw new MetamodelInitializationException("Array persistent attributes are not supported.");
         } else {
-            return field.getType();
+            // If the type is generic, defer its resolution until the metamodel is built
+            return field.getGenericType() instanceof TypeVariable<?> ? Optional.empty() : Optional.of(field.getType());
         }
     }
 
-    private static Class<?> getSetOrListErasureType(final ParameterizedType cls) {
+    private static Optional<Class<?>> getSetOrListErasureType(final ParameterizedType cls) {
         final Type[] t = cls.getActualTypeArguments();
 
         if (t.length != 1) {
@@ -225,10 +243,12 @@ class ClassFieldMetamodelProcessor<X> {
         }
         Type type = t[0];
         if (type instanceof Class<?>) {
-            return (Class<?>) type;
+            return Optional.of((Class<?>) type);
         } else if (type instanceof ParameterizedType) {
             final Type rawType = ((ParameterizedType) type).getRawType();
-            return (Class<?>) rawType;
+            return Optional.of((Class<?>) rawType);
+        } else if (type instanceof TypeVariable) {
+            return Optional.empty();
         }
         throw new OWLPersistenceException("Unsupported collection element type " + type);
     }
@@ -274,7 +294,7 @@ class ClassFieldMetamodelProcessor<X> {
         return field.getAnnotation(Sparql.class) != null;
     }
 
-    private void createQueryAttribute(Field field, Class<?> fieldValueCls) {
+    private void createQueryAttribute(Field field, Class<?> fieldValueCls, Class<?> sourceCls) {
         final Sparql sparqlAnnotation = field.getAnnotation(Sparql.class);
         final String query = sparqlAnnotation.query();
         final FetchType fetchType = sparqlAnnotation.fetchType();
@@ -307,7 +327,11 @@ class ClassFieldMetamodelProcessor<X> {
             a = new SingularQueryAttributeImpl<>(query, sparqlAnnotation.enableReferencingAttributes(), field, et, fetchType, type, participationConstraints, converterWrapper);
         }
 
-        et.addDeclaredQueryAttribute(field.getName(), a);
+        if (!Objects.equals(et.getJavaType(), sourceCls)) {
+            et.addDeclaredGenericQueryAttribute(field.getName(), sourceCls.asSubclass(et.getJavaType()), a);
+        } else {
+            et.addDeclaredQueryAttribute(field.getName(), a);
+        }
     }
 
     private AbstractAttribute<X, ?> createAttribute(PropertyInfo property, InferenceInfo
@@ -340,7 +364,6 @@ class ClassFieldMetamodelProcessor<X> {
             context.getConverterResolver().resolveConverter(property, propertyAttributes).ifPresent(builder::converter);
             a = builder.build();
         }
-        et.addDeclaredAttribute(property.getName(), a);
         return a;
     }
 
@@ -417,6 +440,48 @@ class ClassFieldMetamodelProcessor<X> {
 
     private static boolean isIdentifierField(Field field) {
         return field.getAnnotation(Id.class) != null;
+    }
+
+    void processDeferredField(Field field) {
+        if (field.getGenericType() instanceof TypeVariable<?> || Collection.class.isAssignableFrom(field.getType())) {
+            for (AbstractIdentifiableType<?> st : et.getSubtypes()) {
+                recursivelyProcessDeferredField(field, st);
+            }
+        }
+    }
+
+    private void recursivelyProcessDeferredField(Field field, AbstractIdentifiableType<?> type) {
+        if (type.isAbstract()) {
+            type.getSubtypes().forEach(st -> recursivelyProcessDeferredField(field, st));
+        } else {
+            assert type.getJavaType().getGenericSuperclass() instanceof ParameterizedType;
+            final String typeVar = resolveTypeVariable(field);
+
+            final ParameterizedType t = (ParameterizedType) type.getJavaType().getGenericSuperclass();
+            final TypeVariable<?>[] typeVars = ((Class<?>) t.getRawType()).getTypeParameters();
+            assert typeVars.length == t.getActualTypeArguments().length;
+            // Match actual type parameter with type variable name in field declaration
+            for (int i = 0; i < t.getActualTypeArguments().length; i++) {
+                if (typeVar.equals(typeVars[i].getName())) {
+                    processFieldWithValueType(field, (Class<?>) t.getActualTypeArguments()[i], type.getJavaType());
+                    break;
+                }
+            }
+        }
+    }
+
+    private static String resolveTypeVariable(Field field) {
+        final String typeVar;
+        if (field.getGenericType() instanceof ParameterizedType pt) {
+            // Collections - e.g. Set<T>
+            typeVar = pt.getActualTypeArguments()[0].getTypeName();
+        } else if (field.getGenericType() instanceof TypeVariable<?> tv) {
+            // Singular attributes - e.g. T
+            typeVar = tv.getTypeName();
+        } else {
+            throw new MetamodelInitializationException("Unsupported generic type " + field.getGenericType() + " of field " + field);
+        }
+        return typeVar;
     }
 
     private static class InferenceInfo {

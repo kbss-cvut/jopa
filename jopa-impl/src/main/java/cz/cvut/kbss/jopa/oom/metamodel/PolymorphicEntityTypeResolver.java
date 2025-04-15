@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,6 @@
 package cz.cvut.kbss.jopa.oom.metamodel;
 
 import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.oom.exception.AmbiguousEntityTypeException;
@@ -81,9 +80,9 @@ public class PolymorphicEntityTypeResolver<T> {
     }
 
     private void findMatchingEntityType(AbstractIdentifiableType<? extends T> parent,
-                                        Set<EntityType<? extends T>> ancestors) {
+                                        Set<IdentifiableEntityType<? extends T>> ancestors) {
         for (AbstractIdentifiableType<? extends T> subtype : parent.getSubtypes()) {
-            final Set<EntityType<? extends T>> updatedAncestors = new HashSet<>(ancestors);
+            final Set<IdentifiableEntityType<? extends T>> updatedAncestors = new HashSet<>(ancestors);
             if (subtype.getPersistenceType() == Type.PersistenceType.ENTITY && !subtype.isAbstract()) {
                 assert subtype instanceof IdentifiableEntityType;
                 final IdentifiableEntityType<? extends T> et = (IdentifiableEntityType<? extends T>) subtype;
@@ -97,8 +96,9 @@ public class PolymorphicEntityTypeResolver<T> {
         }
     }
 
-    private void addMatchingType(IdentifiableEntityType<? extends T> et, Set<EntityType<? extends T>> ancestors) {
+    private void addMatchingType(IdentifiableEntityType<? extends T> et,
+                                 Set<IdentifiableEntityType<? extends T>> ancestors) {
         matches.add(et);
-        ancestors.forEach(matches::remove);
+        matches.removeAll(ancestors);
     }
 }

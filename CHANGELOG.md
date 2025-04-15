@@ -1,5 +1,18 @@
 # JOPA - Change Log
 
+## 2.3.1 - 2025-04-07
+- Ensure change tracking proxies are unwrapped on entity detach.
+
+## 2.3.0 - 2025-03-31
+- Add support for generic abstract entity classes/mapped superclasses (Enhancement #310).
+- Add Virtuoso OntoDriver (Feature #57).
+- Fix an issue with RDF container type statement context (Bug #316).
+- Dependency updates: RDF4J 5.1.2.
+
+## 2.2.3 - 2025-03-21
+- Fix a NPX when calling `getContexts` on RDF4J driver (Bug #311).
+- Dependency updates: Jena 5.3.0.
+
 ## 2.2.2 - 2025-01-18
 - Fix an issue with parsing SPARQL query parameters (Enhancement #294).
 - Fix an issue with passing a lazy loading proxy to `EntityManager.remove` (Bug #306).

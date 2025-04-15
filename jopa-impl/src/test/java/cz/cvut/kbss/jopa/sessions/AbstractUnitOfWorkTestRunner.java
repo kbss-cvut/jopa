@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,17 +21,19 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
+import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMultilingualString;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxyGenerator;
-import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
@@ -545,5 +547,18 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         assertThat(clone.getSingleA(), not(instanceOf(LazyLoadingProxy.class)));
         verify(storageMock).loadFieldValue(clone, metamodelMocks.forOwlClassL().owlClassAAtt(), descriptor);
         verify(storageMock).isInferred(clone, metamodelMocks.forOwlClassL().owlClassAAtt(), clone.getSingleA(), descriptor);
+    }
+
+    @Test
+    void unregisterObjectReplacesChangeTrackingProxiesWithReferencedObjects() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassU entityU = new OWLClassU(Generators.createIndividualIdentifier());
+        entityU.setSingularStringAtt(MultilingualString.create("test", "en"));
+        defaultLoadStateDescriptor(entityU);
+        final OWLClassU managed = (OWLClassU) uow.registerExistingObject(entityU, descriptor);
+        assertInstanceOf(ChangeTrackingIndirectMultilingualString.class, managed.getSingularStringAtt());
+        uow.unregisterObject(managed);
+        assertThat(managed.getSingularStringAtt(), instanceOf(MultilingualString.class));
+        assertThat(managed.getSingularStringAtt(), not(instanceOf(ChangeTrackingIndirectMultilingualString.class)));
     }
 }

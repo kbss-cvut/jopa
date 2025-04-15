@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,12 +45,12 @@ public class StorageConnection implements RepoConnection {
 
     private boolean open;
 
-    final StorageConnector storageConnector;
+    final Rdf4jConnectionProvider connectionProvider;
     private final IsolationLevel isolationLevel;
     private RepositoryConnection connection;
 
-    public StorageConnection(StorageConnector storageConnector, IsolationLevel isolationLevel) {
-        this.storageConnector = storageConnector;
+    public StorageConnection(Rdf4jConnectionProvider connectionProvider, IsolationLevel isolationLevel) {
+        this.connectionProvider = connectionProvider;
         this.isolationLevel = isolationLevel;
         this.open = true;
     }
@@ -83,7 +83,7 @@ public class StorageConnection implements RepoConnection {
     @Override
     public TupleQueryResult executeSelectQuery(QuerySpecification query) throws Rdf4jDriverException {
         // Always create a separate connection, it is released by the result set once it is closed
-        return new ConnectionStatementExecutor(storageConnector.acquireConnection()).executeSelectQuery(query);
+        return new ConnectionStatementExecutor(connectionProvider.acquireConnection()).executeSelectQuery(query);
     }
 
     @Override
@@ -91,11 +91,11 @@ public class StorageConnection implements RepoConnection {
         return withConnection(conn -> new ConnectionStatementExecutor(conn).executeBooleanQuery(query));
     }
 
-    private <R> R withConnection(ThrowingFunction<RepositoryConnection, R> call) throws Rdf4jDriverException {
+    protected  <R> R withConnection(ThrowingFunction<RepositoryConnection, R> call) throws Rdf4jDriverException {
         if (connection != null) {
             return call.apply(connection);
         } else {
-            try (final RepositoryConnection conn = storageConnector.acquireConnection()) {
+            try (final RepositoryConnection conn = connectionProvider.acquireConnection()) {
                 return call.apply(conn);
             }
         }
@@ -106,7 +106,7 @@ public class StorageConnection implements RepoConnection {
         if (connection != null) {
             new ConnectionStatementExecutor(connection).executeUpdate(query);
         } else {
-            try (final RepositoryConnection conn = storageConnector.acquireConnection()) {
+            try (final RepositoryConnection conn = connectionProvider.acquireConnection()) {
                 new ConnectionStatementExecutor(conn).executeUpdate(query);
             }
         }
@@ -125,13 +125,14 @@ public class StorageConnection implements RepoConnection {
 
     @Override
     public ValueFactory getValueFactory() {
-        return storageConnector.getValueFactory();
+        return connectionProvider.getValueFactory();
     }
 
     @Override
     public void begin() throws Rdf4jDriverException {
-        this.connection = storageConnector.acquireConnection();
+        this.connection = connectionProvider.acquireConnection();
         try {
+            LOG.trace("Begin storage transaction.");
             connection.begin(isolationLevel);
         } catch (RepositoryException e) {
             throw new Rdf4jDriverException(e);
@@ -143,6 +144,7 @@ public class StorageConnection implements RepoConnection {
         assert connection != null;
 
         try {
+            LOG.trace("Commit storage transaction.");
             connection.commit();
             connection.close();
             this.connection = null;
@@ -155,6 +157,7 @@ public class StorageConnection implements RepoConnection {
     public void rollback() throws Rdf4jDriverException {
         assert connection != null;
         try {
+            LOG.trace("Rollback storage transaction.");
             connection.rollback();
             connection.close();
             this.connection = null;
@@ -261,6 +264,6 @@ public class StorageConnection implements RepoConnection {
         if (cls.isAssignableFrom(RepositoryConnection.class)) {
             return cls.cast(connection);
         }
-        return storageConnector.unwrap(cls);
+        return connectionProvider.unwrap(cls);
     }
 }

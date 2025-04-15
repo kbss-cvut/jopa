@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,14 +31,14 @@ import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import java.util.List;
 import java.util.Objects;
 
-class Rdf4jLists implements Lists {
+public class Rdf4jLists implements Lists {
 
     private final Rdf4jAdapter adapter;
 
     private final Procedure beforeCallback;
     private final Procedure afterChangeCallback;
 
-    Rdf4jLists(Rdf4jAdapter adapter, Procedure beforeCallback, Procedure afterChangeCallback) {
+    public Rdf4jLists(Rdf4jAdapter adapter, Procedure beforeCallback, Procedure afterChangeCallback) {
         this.adapter = adapter;
         this.beforeCallback = beforeCallback;
         this.afterChangeCallback = afterChangeCallback;

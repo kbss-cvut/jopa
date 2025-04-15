@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -225,7 +224,7 @@ class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -271,7 +270,7 @@ class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     private <T> TypedQueryImpl<T> queryWithRollbackMarker(String query, Class<T> cls) {
@@ -288,7 +287,7 @@ class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -299,7 +298,7 @@ class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -310,7 +309,7 @@ class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -321,7 +320,7 @@ class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -332,7 +331,7 @@ class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -343,7 +342,7 @@ class TypedQueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -375,7 +374,7 @@ class TypedQueryImplTest extends QueryTestBase {
         initDataForQuery(5);
         query.setRollbackOnlyMarker(handler);
         assertThrows(NoUniqueResultException.class, query::getSingleResult);
-        verify(handler, never()).execute();
+        verify(handler, never()).run();
     }
 
     @Test
@@ -383,7 +382,7 @@ class TypedQueryImplTest extends QueryTestBase {
         final TypedQueryImpl<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
         query.setRollbackOnlyMarker(handler);
         assertThrows(NoResultException.class, query::getSingleResult);
-        verify(handler, never()).execute();
+        verify(handler, never()).run();
     }
 
     @Test

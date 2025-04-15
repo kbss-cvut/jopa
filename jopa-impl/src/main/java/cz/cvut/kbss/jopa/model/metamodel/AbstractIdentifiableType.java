@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,12 +24,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * Instances of the type AbstractIdentifiableType represent entity or mapped superclass types which can be queried for
  * attributes, subtypes and so on.
+ * <p>
+ * After all attributes and fields are initialized, {@link #finish()} should be invoked to ensure consistent behavior
+ * and initialization of default values of attributes that were not provided during building.
  *
  * @param <X> Entity type being represented by this instance
  */
@@ -40,7 +44,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     private Identifier<X, ?> identifier;
 
-    private Set<AbstractIdentifiableType<? super X>> supertypes = new HashSet<>();
+    private Set<AbstractIdentifiableType<? super X>> supertypes = Set.of();
 
     /// AIT which is superclass of this AIT, and from which we inherit attributes
     private AbstractIdentifiableType<? super X> classSupertype;
@@ -53,7 +57,19 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     private final Map<String, AbstractAttribute<X, ?>> declaredAttributes = new HashMap<>();
 
-    private final Map<String, AbstractQueryAttribute<X, ?>> declaredQueryAttributes = new HashMap<>();
+    /**
+     * For each attribute name, have a map of subtypes with the actual type parameter and a version of the attribute
+     * corresponding to this subtype.
+     */
+    private Map<String, Map<Class<? extends X>, AbstractAttribute<X, ?>>> declaredGenericAttributes;
+
+    private Map<String, AbstractQueryAttribute<X, ?>> declaredQueryAttributes;
+
+    /**
+     * For each query attribute name, have a map of subtypes with the actual type parameter and a version of the
+     * attribute corresponding to this subtype.
+     */
+    private Map<String, Map<Class<? extends X>, AbstractQueryAttribute<X, ?>>> declaredGenericQueryAttributes;
 
     private EntityLifecycleListenerManager lifecycleListenerManager = EntityLifecycleListenerManager.empty();
 
@@ -61,12 +77,31 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         this.javaType = javaType;
     }
 
-    void addDeclaredAttribute(final String name, final AbstractAttribute<X, ?> a) {
+    void addDeclaredAttribute(String name, AbstractAttribute<X, ?> a) {
         declaredAttributes.put(name, a);
     }
 
-    void addDeclaredQueryAttribute(final String name, final AbstractQueryAttribute<X, ?> a) {
+    void addDeclaredGenericAttribute(String name, Class<? extends X> subtype, final AbstractAttribute<X, ?> a) {
+        if (declaredGenericAttributes == null) {
+            this.declaredGenericAttributes = new HashMap<>();
+        }
+        final Map<Class<? extends X>, AbstractAttribute<X, ?>> map = declaredGenericAttributes.computeIfAbsent(name, k -> new HashMap<>(subtypes.size()));
+        map.put(subtype, a);
+    }
+
+    void addDeclaredQueryAttribute(String name, AbstractQueryAttribute<X, ?> a) {
+        if (declaredQueryAttributes == null) {
+            this.declaredQueryAttributes = new HashMap<>();
+        }
         declaredQueryAttributes.put(name, a);
+    }
+
+    void addDeclaredGenericQueryAttribute(String name, Class<? extends X> subtype, AbstractQueryAttribute<X, ?> a) {
+        if (declaredGenericQueryAttributes == null) {
+            this.declaredGenericQueryAttributes = new HashMap<>();
+        }
+        final Map<Class<? extends X>, AbstractQueryAttribute<X, ?>> map = declaredGenericQueryAttributes.computeIfAbsent(name, k -> new HashMap<>(subtypes.size()));
+        map.put(subtype, a);
     }
 
     /**
@@ -100,8 +135,18 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         this.properties = a;
     }
 
-    public void setIdentifier(final Identifier<X, ?> identifier) {
+    void setIdentifier(final Identifier<X, ?> identifier) {
         this.identifier = identifier;
+    }
+
+    /**
+     * Finishes initialization of this AIT, setting default values to selected fields and making them immutable.
+     */
+    void finish() {
+        this.subtypes = subtypes == null ? Set.of() : Collections.unmodifiableSet(subtypes);
+        this.declaredGenericAttributes = declaredGenericAttributes == null ? Map.of() : Collections.unmodifiableMap(declaredGenericAttributes);
+        this.declaredQueryAttributes = declaredQueryAttributes == null ? Map.of() : Collections.unmodifiableMap(declaredQueryAttributes);
+        this.declaredGenericQueryAttributes = declaredGenericQueryAttributes == null ? Map.of() : Collections.unmodifiableMap(declaredGenericQueryAttributes);
     }
 
     @Override
@@ -126,7 +171,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
      * @return {@code true} when managed subtypes exist, {@code false} otherwise
      */
     public boolean hasSubtypes() {
-        return subtypes != null;
+        return !subtypes.isEmpty();
     }
 
     /**
@@ -149,7 +194,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     public Set<AbstractIdentifiableType<? extends X>> getSubtypes() {
-        return subtypes != null ? Collections.unmodifiableSet(subtypes) : Collections.emptySet();
+        return subtypes;
     }
 
     @Override
@@ -165,20 +210,71 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     @Override
     public Set<Attribute<? super X, ?>> getAttributes() {
-        final Set<Attribute<? super X, ?>> attributes = new HashSet<>(declaredAttributes.values());
+        final Set<Attribute<? super X, ?>> attributes = (Set) getDeclaredAttributesImpl();
         if (classSupertype != null) {
-            attributes.addAll(classSupertype.getAttributes());
+            attributes.addAll(classSupertype.getAttributes(javaType));
         }
+        return attributes;
+    }
 
+    /**
+     * Gets declared attributes, including generic ones.
+     * <p>
+     * For generic attributes the first available actually typed element is used.
+     * <p>
+     * This method is expected to be called if this instance represents an abstract type, not an instantiable entity
+     * class.
+     */
+    private Set<Attribute<X, ?>> getDeclaredAttributesImpl() {
+        final Set<Attribute<X, ?>> attributes = new HashSet<>(declaredAttributes.values());
+        declaredGenericAttributes.values().stream().map(m -> m.values().iterator().next()).forEach(attributes::add);
+        return attributes;
+    }
+
+    /**
+     * Gets attributes for the specified subtype.
+     * <p>
+     * The subtype is used to determine which versions of generic attributes should be included in the result.
+     *
+     * @param subtype Type for which attributes should be returned
+     * @return Set of all attributes for this entity type
+     */
+    Set<Attribute<? super X, ?>> getAttributes(Class<? extends X> subtype) {
+        final Set<Attribute<? super X, ?>> attributes = new HashSet<>(declaredAttributes.values());
+        declaredGenericAttributes.values().stream()
+                                 .flatMap(m -> m.entrySet().stream().filter(e -> e.getKey().equals(subtype))
+                                                .map(Map.Entry::getValue)).forEach(attributes::add);
+        if (classSupertype != null) {
+            attributes.addAll(classSupertype.getAttributes(subtype));
+        }
         return attributes;
     }
 
     @Override
     public Set<QueryAttribute<? super X, ?>> getQueryAttributes() {
         final Set<QueryAttribute<? super X, ?>> queryAttributes = new HashSet<>(declaredQueryAttributes.values());
+        declaredGenericQueryAttributes.values().stream().map(m -> m.values().iterator().next())
+                                      .forEach(queryAttributes::add);
 
         if (classSupertype != null) {
-            queryAttributes.addAll(classSupertype.getQueryAttributes());
+            queryAttributes.addAll(classSupertype.getQueryAttributes(javaType));
+        }
+        return queryAttributes;
+    }
+
+    /**
+     * Gets query attributes for the specified subtype.
+     * <p>
+     * The subtype is used to determine which versions of generic query attributes should be included in the result.
+     *
+     * @param subtype Type for which attributes should be returned
+     * @return Set of all query attributes for this entity type
+     */
+    Set<QueryAttribute<? super X, ?>> getQueryAttributes(Class<?> subtype) {
+        final Set<QueryAttribute<? super X, ?>> queryAttributes = new HashSet<>(declaredQueryAttributes.values());
+        declaredGenericQueryAttributes.values().stream().map(m -> m.get(subtype)).forEach(queryAttributes::add);
+        if (classSupertype != null) {
+            queryAttributes.addAll(classSupertype.getQueryAttributes(subtype));
         }
         return queryAttributes;
     }
@@ -186,14 +282,65 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     @Override
     public AbstractAttribute<? super X, ?> getAttribute(String name) {
         Objects.requireNonNull(name);
-        if (declaredAttributes.containsKey(name)) {
-            return declaredAttributes.get(name);
-        }
+        return getDeclaredAttributeImpl(name).orElseGet(() -> {
+            if (classSupertype != null) {
+                return classSupertype.getAttribute(name, javaType);
+            }
+            throw attributeMissing(name, false);
+        });
+    }
 
-        if (classSupertype != null) {
-            return classSupertype.getAttribute(name);
+    /**
+     * Gets attribute with the specified name.
+     * <p>
+     * The specified subtype is used in case the name represents a generic attribute, in which case a version for the
+     * specified subtype is resolved.
+     *
+     * @param name    Attribute name
+     * @param subtype Type for which a possible generic attribute is resolved
+     * @return Attribute with matching name
+     */
+    AbstractAttribute<? super X, ?> getAttribute(String name, Class<? extends X> subtype) {
+        return getDeclaredAttribute(name, subtype).orElseGet(() -> {
+            if (classSupertype != null) {
+                return classSupertype.getAttribute(name, subtype);
+            }
+            throw attributeMissing(name, false);
+        });
+    }
+
+    private Optional<AbstractAttribute<? super X, ?>> getDeclaredAttribute(String name, Class<? extends X> subtype) {
+        if (declaredAttributes.containsKey(name)) {
+            return Optional.of(declaredAttributes.get(name));
         }
-        throw attributeMissing(name, false);
+        if (declaredGenericAttributes.containsKey(name)) {
+            final Map<Class<? extends X>, AbstractAttribute<X, ?>> map = declaredGenericAttributes.get(name);
+            if (map.containsKey(subtype)) {
+                return Optional.of(map.get(subtype));
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Gets a declared attribute with the specified name.
+     * <p>
+     * If the name represents a generic attribute, the first available version is returned.
+     * <p>
+     * This method is expected to be called when this instance represents an abstract class, not an instantiable entity
+     * class.
+     *
+     * @param name Attribute name
+     * @return Matching attribute
+     */
+    private Optional<AbstractAttribute<? super X, ?>> getDeclaredAttributeImpl(String name) {
+        if (declaredAttributes.containsKey(name)) {
+            return Optional.of(declaredAttributes.get(name));
+        }
+        if (declaredGenericAttributes.containsKey(name)) {
+            return Optional.of(declaredGenericAttributes.get(name).values().iterator().next());
+        }
+        return Optional.empty();
     }
 
     protected IllegalArgumentException attributeMissing(String name, boolean declared) {
@@ -203,7 +350,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     @Override
     public boolean hasQueryAttribute(String name) {
         Objects.requireNonNull(name);
-        if (declaredQueryAttributes.containsKey(name)) {
+        if (declaredQueryAttributes.containsKey(name) || declaredGenericQueryAttributes.containsKey(name)) {
             return true;
         }
 
@@ -219,10 +366,29 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (declaredQueryAttributes.containsKey(name)) {
             return declaredQueryAttributes.get(name);
         }
+        if (declaredGenericQueryAttributes.containsKey(name)) {
+            return declaredGenericQueryAttributes.get(name).values().iterator().next();
+        }
         if (classSupertype != null) {
-            return classSupertype.getQueryAttribute(name);
+            return classSupertype.getQueryAttribute(name, javaType);
         }
 
+        throw attributeMissing(name, false);
+    }
+
+    AbstractQueryAttribute<? super X, ?> getQueryAttribute(String name, Class<? extends X> subtype) {
+        if (declaredQueryAttributes.containsKey(name)) {
+            return declaredQueryAttributes.get(name);
+        }
+        if (declaredGenericQueryAttributes.containsKey(name)) {
+            final Map<Class<? extends X>, AbstractQueryAttribute<X, ?>> map = declaredGenericQueryAttributes.get(name);
+            if (map.containsKey(subtype)) {
+                return map.get(subtype);
+            }
+        }
+        if (classSupertype != null) {
+            return classSupertype.getQueryAttribute(name, subtype);
+        }
         throw attributeMissing(name, false);
     }
 
@@ -340,27 +506,24 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     @Override
     public Set<Attribute<X, ?>> getDeclaredAttributes() {
-        return new HashSet<>(declaredAttributes.values());
+        return getDeclaredAttributesImpl();
     }
 
     @Override
     public Set<PluralAttribute<X, ?, ?>> getDeclaredPluralAttributes() {
-        return declaredAttributes.values().stream().filter(Attribute::isCollection)
-                                 .map(a -> (PluralAttribute<X, ?, ?>) a).collect(Collectors.toSet());
+        return getDeclaredAttributesImpl().stream().filter(Attribute::isCollection)
+                                          .map(a -> (PluralAttribute<X, ?, ?>) a).collect(Collectors.toSet());
     }
 
     @Override
     public Set<SingularAttribute<X, ?>> getDeclaredSingularAttributes() {
-        return declaredAttributes.values().stream().filter(att -> !att.isCollection())
-                                 .map(a -> (SingularAttribute<X, ?>) a).collect(Collectors.toSet());
+        return getDeclaredAttributesImpl().stream().filter(att -> !att.isCollection())
+                                          .map(a -> (SingularAttribute<X, ?>) a).collect(Collectors.toSet());
     }
 
     @Override
     public AbstractAttribute<X, ?> getDeclaredAttribute(String name) {
-        if (declaredAttributes.containsKey(name)) {
-            return declaredAttributes.get(name);
-        }
-        throw attributeMissing(name, true);
+        return (AbstractAttribute<X, ?>) getDeclaredAttributeImpl(name).orElseThrow(() -> attributeMissing(name, true));
     }
 
     @Override
@@ -422,7 +585,6 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (!type.isAssignableFrom(a.getJavaType())) {
             throw singularAttNotFound(name, type, true);
         }
-
         return (SingularAttribute<X, Y>) a;
     }
 
@@ -436,7 +598,6 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (directTypes != null) {
             return directTypes;
         }
-
         return classSupertype != null ? classSupertype.getTypes() : null;
     }
 
@@ -445,7 +606,6 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         if (properties != null) {
             return properties;
         }
-
         return classSupertype != null ? classSupertype.getProperties() : null;
     }
 
@@ -467,24 +627,48 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     @Override
     public FieldSpecification<? super X, ?> getFieldSpecification(String fieldName) {
-        if (declaredAttributes.containsKey(fieldName)) {
-            return declaredAttributes.get(fieldName);
+        final Optional<AbstractAttribute<? super X, ?>> declaredAtt = getDeclaredAttributeImpl(fieldName);
+        if (declaredAtt.isPresent()) {
+            return declaredAtt.get();
         }
         if (declaredQueryAttributes.containsKey(fieldName)) {
             return declaredQueryAttributes.get(fieldName);
         }
-        if (directTypes != null && directTypes.getName().equals(fieldName)) {
-            return directTypes;
-        } else if (properties != null && properties.getName().equals(fieldName)) {
-            return properties;
-        } else if (identifier != null && identifier.getName().equals(fieldName)) {
-            return identifier;
-        }
-        if (classSupertype != null) {
-            return classSupertype.getFieldSpecification(fieldName);
-        }
+        return getSpecialAttribute(fieldName).orElseGet(() -> {
+            if (classSupertype != null) {
+                return classSupertype.getFieldSpecification(fieldName, javaType);
+            }
 
-        throw new IllegalArgumentException("Field " + fieldName + " is not present in type " + this);
+            throw new IllegalArgumentException("Field " + fieldName + " is not present in type " + this);
+        });
+    }
+
+    private Optional<FieldSpecification<? super X, ?>> getSpecialAttribute(String fieldName) {
+        if (declaredQueryAttributes.containsKey(fieldName)) {
+            return Optional.of(declaredQueryAttributes.get(fieldName));
+        }
+        if (directTypes != null && directTypes.getName().equals(fieldName)) {
+            return Optional.of(directTypes);
+        } else if (properties != null && properties.getName().equals(fieldName)) {
+            return Optional.of(properties);
+        } else if (identifier != null && identifier.getName().equals(fieldName)) {
+            return Optional.of(identifier);
+        }
+        return Optional.empty();
+    }
+
+    FieldSpecification<? super X, ?> getFieldSpecification(String fieldName, Class<? extends X> subtype) {
+        final Optional<AbstractAttribute<? super X, ?>> att = getDeclaredAttribute(fieldName, subtype);
+        if (att.isPresent()) {
+            return att.get();
+        }
+        return getSpecialAttribute(fieldName).orElseGet(() -> {
+            if (classSupertype != null) {
+                return classSupertype.getFieldSpecification(fieldName, subtype);
+            }
+
+            throw new IllegalArgumentException("Field " + fieldName + " is not present in type " + this);
+        });
     }
 
     @Override

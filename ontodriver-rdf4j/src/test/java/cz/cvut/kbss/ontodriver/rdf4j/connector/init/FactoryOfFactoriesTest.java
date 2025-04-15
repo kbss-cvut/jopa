@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,7 +33,7 @@ class FactoryOfFactoriesTest {
     void initializationResolvesThatUnderlyingRepoIsNotGraphDBWhenItDoesNotContainGraphDBInternalIdStatements() throws Exception {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        final FactoryOfFactories sut = new FactoryOfFactories(conf);
+        final Rdf4jFactoryOfFactories sut = new Rdf4jFactoryOfFactories(conf);
         assertFalse(sut.resolveFactoryConfig().isGraphDB());
     }
 
@@ -42,7 +42,7 @@ class FactoryOfFactoriesTest {
         final DriverConfiguration conf = TestUtils.createDriverConfig("test");
         conf.setProperty(Rdf4jConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         conf.setProperty(Rdf4jConfigParam.TRANSACTION_ISOLATION_LEVEL, IsolationLevels.SERIALIZABLE.toString());
-        final FactoryOfFactories sut = new FactoryOfFactories(conf);
+        final Rdf4jFactoryOfFactories sut = new Rdf4jFactoryOfFactories(conf);
         final ConnectionFactoryConfig result = sut.resolveFactoryConfig();
         assertEquals(IsolationLevels.SERIALIZABLE, result.txIsolationLevel());
     }

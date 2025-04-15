@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -288,14 +288,19 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistTypedProperties() throws Exception {
+    public void testPersistTypedProperties() throws Exception {
         this.em = getEntityManager("PersistTypedProperties", false);
         entityP.setProperties(Generators.createTypedProperties());
         persist(entityP);
         em.clear();
 
         final OWLClassP res = findRequired(OWLClassP.class, entityP.getUri());
-        assertEquals(entityP.getProperties(), res.getProperties());
+        assertEquals(entityP.getProperties().keySet(), res.getProperties().keySet());
+        for (URI property : entityP.getProperties().keySet()) {
+            final Set<Object> expected = entityP.getProperties().get(property);
+            final Set<Object> actual = res.getProperties().get(property);
+            assertEquals(expected, actual);
+        }
         final List<Quad> expectedStatements = new ArrayList<>();
         entityP.getProperties()
                .forEach((k, vs) -> vs.forEach(v -> expectedStatements.add(new Quad(entityP.getUri(), k, v, (String) null))));
@@ -651,20 +656,20 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    void testPersistEntityWithASKQueryAttr() {
+    public void testPersistEntityWithASKQueryAttr() {
         this.em = getEntityManager("PersistWithASKQueryAttr", false);
 
-        em.getTransaction().begin();
-        em.persist(entityWithQueryAttr4);
-        assertTrue(em.contains(entityWithQueryAttr4));
-        em.getTransaction().commit();
+        transactional(() -> {
+            em.persist(entityWithQueryAttr4);
+            assertTrue(em.contains(entityWithQueryAttr4));
+        });
         em.clear();
 
         final OWLClassWithQueryAttr4 resultEntity =
                 findRequired(OWLClassWithQueryAttr4.class, entityWithQueryAttr4.getUri());
         assertEquals(entityWithQueryAttr4.getUri(), resultEntity.getUri());
         assertEquals(entityWithQueryAttr4.getStringAttribute(), resultEntity.getStringAttribute());
-        assertEquals(true, resultEntity.getAskQueryAttribute());
+        assertTrue(resultEntity.getAskQueryAttribute());
     }
 
     @Test

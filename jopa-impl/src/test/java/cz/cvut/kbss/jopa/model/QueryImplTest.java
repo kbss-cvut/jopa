@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,13 +33,25 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -100,7 +112,7 @@ class QueryImplTest extends QueryTestBase {
         when(resultRow.getObject(anyInt())).thenReturn(res);
         final List result = q.getResultList();
         for (Object row : result) {
-            assertTrue(row instanceof Object[]);
+            assertInstanceOf(Object[].class, row);
             final Object[] rowArr = (Object[]) row;
             for (Object o : rowArr) {
                 assertEquals(res, o);
@@ -150,7 +162,7 @@ class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -196,7 +208,7 @@ class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     private QueryImpl queryWithRollbackMarker(String query) {
@@ -213,7 +225,7 @@ class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -224,7 +236,7 @@ class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -235,7 +247,7 @@ class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -246,7 +258,7 @@ class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -257,7 +269,7 @@ class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -268,7 +280,7 @@ class QueryImplTest extends QueryTestBase {
         } catch (RuntimeException e) {
             // Swallow the exception
         }
-        verify(handler).execute();
+        verify(handler).run();
     }
 
     @Test
@@ -305,14 +317,14 @@ class QueryImplTest extends QueryTestBase {
         when(resultSetIterator.hasNext()).thenReturn(true).thenReturn(true).thenReturn(false);
         when(resultRow.getObject(anyInt())).thenReturn("str");
         assertThrows(NoUniqueResultException.class, query::getSingleResult);
-        verify(handler, never()).execute();
+        verify(handler, never()).run();
     }
 
     @Test
     void noResultExceptionInGetSingleResultDoesNotCauseTransactionRollback() {
         final Query query = queryWithRollbackMarker(SELECT_QUERY);
         assertThrows(NoResultException.class, query::getSingleResult);
-        verify(handler, never()).execute();
+        verify(handler, never()).run();
     }
 
     @SuppressWarnings("unchecked")
@@ -358,6 +370,24 @@ class QueryImplTest extends QueryTestBase {
             assertThrows(OWLPersistenceException.class, () -> sut.getResultStream().forEach(Assertions::assertNotNull));
         } finally {
             verify(statementMock).close();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void getResultStreamClosesResultSetWhenStreamIsProcessed() throws Exception {
+        final Query sut = createQuery(SELECT_QUERY);
+        when(resultSetMock.isOpen()).thenReturn(true);
+        when(resultSetMock.getColumnCount()).thenReturn(2);
+        when(resultSetMock.isBound(anyInt())).thenReturn(true);
+        when(resultSetMock.hasNext()).thenReturn(true, true, false);
+        when(resultSetMock.getObject(anyInt())).thenReturn("str");
+        try (Stream<Object> res = sut.getResultStream()) {
+            final Optional<Object> any = res.findAny();
+            assertTrue(any.isPresent());
+        } finally {
+            verify(statementMock).close();
+            verify(resultSetMock).close();
         }
     }
 }

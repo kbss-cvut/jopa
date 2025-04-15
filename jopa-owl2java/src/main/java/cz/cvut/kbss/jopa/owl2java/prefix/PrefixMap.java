@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2024 Czech Technical University in Prague
+ * Copyright (C) 2025 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -73,7 +73,7 @@ public class PrefixMap {
      *
      * @param ontologyManager Manager of ontologies to process
      */
-    private Map<String, String> resolvePrefixes(OWLOntologyManager ontologyManager,
+    private static Map<String, String> resolvePrefixes(OWLOntologyManager ontologyManager,
                                                 TransformationConfiguration config) {
         final Map<String, String> result = new ConcurrentHashMap<>(builtInPrefixes());
         ontologyManager.ontologies().parallel().filter(o -> o.getOntologyID().isNamed()).forEach(o -> {
