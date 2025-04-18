@@ -18,14 +18,12 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.model.EntityState;
-import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxyFactory;
-import cz.cvut.kbss.jopa.sessions.cache.DisabledCacheManager;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
@@ -33,7 +31,6 @@ import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
-import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
@@ -55,18 +52,14 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     final Set<Object> originalMapping = new HashSet<>();
 
     private final LazyLoadingProxyFactory lazyLoaderFactory;
-    private CacheManager liveObjectCache;
 
     ReadOnlyUnitOfWork(AbstractSession parent, Configuration configuration) {
         super(parent, configuration);
         this.lazyLoaderFactory = new LazyLoadingProxyFactory(this);
-        this.liveObjectCache = resolveCacheManager();
     }
 
     @Override
     public void clear() {
-        LOG.trace("Clearing read-only UOW.");
-
         super.clear();
         keysToOriginals.clear();
         originalMapping.clear();
@@ -102,16 +95,14 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
         // registered result is either original or clone of original (if original is read from cache)
         Object registeredResult;
-        if (getLiveObjectCache().contains(cls, identifier, descriptor)) {
+        if (isObjectInCache(cls, identifier, descriptor)) {
             result = storage.find(params);
-            LOG.trace("Read cached object {} with identifier {} is cached. Cloning it.", result, identifier);
             registeredResult = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor)
                     .postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel())))
             );
         } else {
             params.bypassCache();
             result = storage.find(params);
-            LOG.trace("Read object {} with identifier {}.", result, identifier);
             registeredResult = registerExistingObject(result, descriptor);
         }
         return cls.cast(registeredResult);
@@ -148,11 +139,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
     @Override
     public Object registerExistingObject(Object entity, Descriptor descriptor) {
-        LOG.trace("Registering object {}", entity);
         if (entity == null) { return null; }
 
         if (containsOriginal(entity)) {
-            LOG.trace("Original object {} already registered", entity);
             return entity;
         }
 
@@ -220,8 +209,12 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
                 } else if (super.isEntityType(fieldValueClass)) {
                     final Descriptor entityDescriptor = super.getDescriptor(original);
                     final Descriptor fieldDescriptor = super.getFieldDescriptor(original, f, entityDescriptor);
-                    if (this.getLiveObjectCache().contains(fieldValueClass, super.getIdentifier(fieldValue), fieldDescriptor)) {
-                        newValue = registerExistingObject(fieldValue, new CloneRegistrationDescriptor(fieldDescriptor));
+
+                    if (isObjectManaged(fieldValue)) {
+                        newValue = fieldValue;
+                    } else if (isObjectInCache(fieldValueClass, super.getIdentifier(fieldValue), fieldDescriptor)) {
+                        newValue = registerExistingObject(fieldValue, new CloneRegistrationDescriptor(fieldDescriptor)
+                                .postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel()))));
                     } else{
                         newValue = registerExistingObject(fieldValue, fieldDescriptor);
                     }
@@ -237,7 +230,12 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     private void registerExistingObjects(Iterable<Object> collection, Descriptor descriptor) {
         collection.forEach(obj -> {
             if (!super.isEntityType(obj.getClass())) { return; }
-            registerExistingObject(obj, descriptor);
+            if (isObjectInCache(obj.getClass(), super.getIdentifier(obj), descriptor)) {
+                registerExistingObject(obj, new CloneRegistrationDescriptor(descriptor)
+                        .postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel()))));
+            } else {
+                registerExistingObject(obj, descriptor);
+            }
         });
     }
 
@@ -294,16 +292,8 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return collection;
     }
 
-    private CacheManager resolveCacheManager() {
-        final String enabledStr = this.configuration.get(JOPAPersistenceProperties.CACHE_ENABLED_READ_ONLY);
-        return (enabledStr != null && !Boolean.parseBoolean(enabledStr))
-                ? new DisabledCacheManager()
-                : this.parent.getLiveObjectCache();
-    }
-
-    @Override
-    public CacheManager getLiveObjectCache() {
-        return super.getLiveObjectCache();
+    private boolean isObjectInCache(Class<?> cls, Object identifier, Descriptor descriptor) {
+        return getLiveObjectCache().contains(cls, identifier, descriptor);
     }
 
     @Override
