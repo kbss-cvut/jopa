@@ -199,6 +199,7 @@ public class MetamodelFactory {
         when(attMock.isNonEmpty()).thenReturn(attInfo.nonEmpty);
         when(attMock.getPersistentAttributeType()).thenReturn(attInfo.type);
         when(attMock.getConverter()).thenReturn(attInfo.converter);
+        when(attMock.includeExplicit()).thenReturn(true);
         when(attMock.isCollection()).thenReturn(Collection.class.isAssignableFrom(attInfo.field.getType()));
         if (attMock instanceof SingularAttributeImpl) {
             initSingularAttribute((SingularAttributeImpl) attMock, attInfo);
@@ -274,6 +275,7 @@ public class MetamodelFactory {
         when(typesMock.getElementType()).thenReturn(attInfo.elementType);
         when(typesMock.isCollection()).thenReturn(true);
         when(typesMock.getFetchType()).thenReturn(FetchType.EAGER);
+        when(typesMock.includeExplicit()).thenReturn(true);
         when(etMock.getFieldSpecification(attInfo.field.getName())).thenReturn(typesMock);
         when(etMock.getTypes()).thenReturn(typesMock);
     }

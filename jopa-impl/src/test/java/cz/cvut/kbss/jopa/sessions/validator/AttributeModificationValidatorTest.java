@@ -33,6 +33,7 @@ class AttributeModificationValidatorTest {
     void verifyCanModifyAllowsModificationOfInferredAttributes() {
         final FieldSpecification<?, ?> fs = mock(FieldSpecification.class);
         when(fs.isInferred()).thenReturn(true);
+        when(fs.includeExplicit()).thenReturn(true);
         assertDoesNotThrow(() -> AttributeModificationValidator.verifyCanModify(fs));
     }
 
@@ -47,6 +48,15 @@ class AttributeModificationValidatorTest {
     @Test
     void verifyCanModifyAllowsModificationToRegularFields() {
         final FieldSpecification<?, ?> fs = mock(FieldSpecification.class);
+        when(fs.includeExplicit()).thenReturn(true);
         assertDoesNotThrow(() -> AttributeModificationValidator.verifyCanModify(fs));
+    }
+
+    @Test
+    void verifyCanModifyThrowsAttributeModificationForbiddenWhenAttributeIncludeExplicitIsFalse() {
+        final FieldSpecification<?, ?> fs = mock(FieldSpecification.class);
+        when(fs.includeExplicit()).thenReturn(false);
+        assertThrows(AttributeModificationForbiddenException.class,
+                () -> AttributeModificationValidator.verifyCanModify(fs));
     }
 }
