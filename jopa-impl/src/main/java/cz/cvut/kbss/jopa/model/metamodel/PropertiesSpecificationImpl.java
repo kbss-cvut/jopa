@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.ontodriver.model.InferenceMode;
 
 import java.lang.reflect.Field;
 
@@ -26,7 +27,7 @@ public class PropertiesSpecificationImpl<X, Y, K, V> implements PropertiesSpecif
     private final FetchType fetchType;
     private final Field javaField;
     private final Class<Y> javaType;
-    private final boolean inferred;
+    private final InferenceMode inferenceMode;
     private final Class<K> propertyIdType;
     private final Class<V> propertyValueType;
 
@@ -35,7 +36,7 @@ public class PropertiesSpecificationImpl<X, Y, K, V> implements PropertiesSpecif
         this.fetchType = builder.fetchType;
         this.javaField = builder.javaField;
         this.javaType = builder.javaType;
-        this.inferred = builder.inferred;
+        this.inferenceMode = builder.inferenceMode;
         this.propertyIdType = builder.propertyIdType;
         this.propertyValueType = builder.propertyValueType;
     }
@@ -62,13 +63,12 @@ public class PropertiesSpecificationImpl<X, Y, K, V> implements PropertiesSpecif
 
     @Override
     public boolean isInferred() {
-        return inferred;
+        return inferenceMode != InferenceMode.EXPLICIT;
     }
 
     @Override
     public boolean includeExplicit() {
-        // TODO
-        return true;
+        return inferenceMode != InferenceMode.INFERRED;
     }
 
     @Override
@@ -100,7 +100,7 @@ public class PropertiesSpecificationImpl<X, Y, K, V> implements PropertiesSpecif
         private FetchType fetchType;
         private Field javaField;
         private Class<Y> javaType;
-        private boolean inferred;
+        private InferenceMode inferenceMode;
         private Class<K> propertyIdType;
         private Class<V> propertyValueType;
 
@@ -124,8 +124,8 @@ public class PropertiesSpecificationImpl<X, Y, K, V> implements PropertiesSpecif
             return this;
         }
 
-        public PropertiesSpecificationBuilder<X, Y, K, V> inferred(boolean inferred) {
-            this.inferred = inferred;
+        public PropertiesSpecificationBuilder<X, Y, K, V> inferenceMode(InferenceMode inferenceMode) {
+            this.inferenceMode = inferenceMode;
             return this;
         }
 
