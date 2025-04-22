@@ -51,7 +51,8 @@ class AxiomDescriptorFactory {
         addForTypes(loadingParams, et, descriptor);
         addForProperties(loadingParams, et, descriptor);
         for (Attribute<?, ?> att : et.getAttributes()) {
-            final Assertion a = createAssertion(att, loadingParams.getDescriptor().getAttributeDescriptor(att));
+            final Descriptor attDescriptor = loadingParams.getDescriptor().getAttributeDescriptor(att);
+            final Assertion a = createAssertion(att, attDescriptor, includeInferred(att, attDescriptor));
             addAssertionToDescriptor(loadingParams.getDescriptor(), att, descriptor, a);
         }
         return descriptor;
@@ -74,7 +75,7 @@ class AxiomDescriptorFactory {
     }
 
     private static void addAssertionToDescriptor(Descriptor entityDescriptor, FieldSpecification<?, ?> att,
-                                          final AxiomDescriptor descriptor, final Assertion assertion) {
+                                                 final AxiomDescriptor descriptor, final Assertion assertion) {
         descriptor.addAssertion(assertion);
         final Set<URI> attContexts = entityDescriptor.getAttributeContexts(att);
         if (attContexts.isEmpty() && !entityDescriptor.getContexts().isEmpty()) {
@@ -95,37 +96,35 @@ class AxiomDescriptorFactory {
         }
     }
 
-    private static Assertion createAssertion(Attribute<?, ?> att, Descriptor descriptor) {
+    private static Assertion createAssertion(Attribute<?, ?> att, Descriptor descriptor, boolean includeInferred) {
         assert att != null;
-        switch (att.getPersistentAttributeType()) {
-            case OBJECT:
-                return createObjectPropertyAssertion(att.getIRI().toURI(), includeInferred(att, descriptor));
-            case DATA:
+        return switch (att.getPersistentAttributeType()) {
+            case OBJECT -> createObjectPropertyAssertion(att.getIRI().toURI(), includeInferred);
+            case DATA -> {
                 if (isRdfContainer(att) || isReferencedList(att)) {
                     // If the attribute is a referenced list or an RDF container containing data property values,
                     // it is mapped as a data property
                     // However, the referenced list nodes themselves are resources (individuals) and thus have to be
                     // referenced via an object property
                     // Similarly, the RDF container is represented by a resource even when it contains literals
-                    return createObjectPropertyAssertion(att.getIRI().toURI(), includeInferred(att, descriptor));
+                    yield createObjectPropertyAssertion(att.getIRI().toURI(), includeInferred);
                 }
                 if (withLanguage(att, descriptor)) {
-                    return createDataPropertyAssertion(att.getIRI().toURI(), language(att, descriptor),
-                            includeInferred(att, descriptor));
+                    yield createDataPropertyAssertion(att.getIRI()
+                                                          .toURI(), language(att, descriptor), includeInferred);
                 } else {
-                    return createDataPropertyAssertion(att.getIRI().toURI(), includeInferred(att, descriptor));
+                    yield createDataPropertyAssertion(att.getIRI().toURI(), includeInferred);
                 }
-            case ANNOTATION:
+            }
+            case ANNOTATION -> {
                 if (withLanguage(att, descriptor)) {
-                    return createAnnotationPropertyAssertion(att.getIRI().toURI(), language(att, descriptor),
-                            includeInferred(att, descriptor));
+                    yield createAnnotationPropertyAssertion(att.getIRI().toURI(), language(att, descriptor),
+                            includeInferred);
                 } else {
-                    return createAnnotationPropertyAssertion(att.getIRI().toURI(), includeInferred(att, descriptor));
+                    yield createAnnotationPropertyAssertion(att.getIRI().toURI(), includeInferred);
                 }
-            default:
-                throw new IllegalArgumentException(
-                        "Illegal persistent attribute type " + att.getPersistentAttributeType());
-        }
+            }
+        };
     }
 
     private static boolean isReferencedList(Attribute<?, ?> att) {
@@ -165,20 +164,40 @@ class AxiomDescriptorFactory {
 
     AxiomDescriptor createForFieldLoading(URI identifier, FieldSpecification<?, ?> fieldSpec,
                                           Descriptor entityDescriptor, EntityType<?> et) {
+        final boolean includeInferred = includeInferred(fieldSpec, entityDescriptor.getAttributeDescriptor(fieldSpec));
+        return createForFieldLoadingImpl(identifier, fieldSpec, entityDescriptor, et, includeInferred);
+    }
+
+    private AxiomDescriptor createForFieldLoadingImpl(URI identifier, FieldSpecification<?, ?> fieldSpec,
+                                                      Descriptor entityDescriptor, EntityType<?> et,
+                                                      boolean includeInferred) {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(identifier));
         entityDescriptor.getContexts().forEach(descriptor::addSubjectContext);
         final Assertion assertion;
         if (et.getTypes() != null && fieldSpec.equals(et.getTypes())) {
-            assertion = Assertion.createClassAssertion(
-                    includeInferred(et.getTypes(), entityDescriptor.getAttributeDescriptor(et.getTypes())));
+            assertion = Assertion.createClassAssertion(includeInferred);
         } else if (et.getProperties() != null && fieldSpec.equals(et.getProperties())) {
-            assertion = Assertion.createUnspecifiedPropertyAssertion(
-                    includeInferred(et.getProperties(), entityDescriptor.getAttributeDescriptor(et.getProperties())));
+            assertion = Assertion.createUnspecifiedPropertyAssertion(includeInferred);
         } else {
-            assertion =
-                    createAssertion((Attribute<?, ?>) fieldSpec, entityDescriptor.getAttributeDescriptor(fieldSpec));
+            assertion = createAssertion((Attribute<?, ?>) fieldSpec, entityDescriptor.getAttributeDescriptor(fieldSpec), includeInferred);
         }
         addAssertionToDescriptor(entityDescriptor, fieldSpec, descriptor, assertion);
         return descriptor;
+    }
+
+    /**
+     * Creates an axiom descriptor for loading only asserted values for the specified field.
+     * <p>
+     * This will override the field's inference setting.
+     *
+     * @param identifier       Subject identifier
+     * @param fieldSpec        Field specification
+     * @param entityDescriptor Entity descriptor
+     * @param et               Entity type
+     * @return Axiom descriptor
+     */
+    AxiomDescriptor createForAssertedFieldLoading(URI identifier, FieldSpecification<?, ?> fieldSpec,
+                                                  Descriptor entityDescriptor, EntityType<?> et) {
+        return createForFieldLoadingImpl(identifier, fieldSpec, entityDescriptor, et, false);
     }
 }
