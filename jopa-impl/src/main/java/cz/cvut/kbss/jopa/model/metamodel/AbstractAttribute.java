@@ -175,9 +175,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         private IRI iri;
         private CascadeType[] cascadeTypes;
         private FetchType fetchType;
-        private boolean inferred;
-        private boolean includeExplicit;
-        private InferenceMode inferenceMode;
+        private InferenceMode inferenceMode = InferenceMode.EXPLICIT;
         private boolean nonEmpty = false;
         private boolean lexicalForm = false;
         private boolean simpleLiteral = false;

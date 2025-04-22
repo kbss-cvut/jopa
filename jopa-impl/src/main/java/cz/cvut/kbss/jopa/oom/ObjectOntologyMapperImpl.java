@@ -182,17 +182,26 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             entityBuilder.setQueryAttributeFieldValue(entity, queryAttribute, et);
             return;
         }
-
-        final AxiomDescriptor axiomDescriptor =
-                descriptorFactory.createForFieldLoading(identifier, fieldSpec, descriptor, et);
         try {
-            final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
-            entityBuilder.setFieldValue(entity, fieldSpec, axioms, et, descriptor);
+            final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(identifier, fieldSpec, descriptor, et);
+            final Collection<Axiom<?>> allAxioms = storageConnection.find(axiomDescriptor);
+            if (!fieldSpec.includeExplicit()) {
+                final AxiomDescriptor assertedDescriptor = descriptorFactory.createForAssertedFieldLoading(identifier, fieldSpec, descriptor, et);
+                final Collection<Axiom<?>> assertedAxioms = storageConnection.find(assertedDescriptor);
+                removeAsserted(allAxioms, assertedAxioms);
+            }
+            entityBuilder.setFieldValue(entity, fieldSpec, allAxioms, et, descriptor);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         } catch (IllegalArgumentException e) {
             throw new EntityReconstructionException(e);
         }
+    }
+
+    private static void removeAsserted(Collection<Axiom<?>> allAxioms, Collection<Axiom<?>> asserted) {
+        allAxioms.removeIf(ax -> asserted.stream().anyMatch(assertedAx ->
+                Objects.equals(assertedAx.getAssertion().getIdentifier(), ax.getAssertion().getIdentifier()) &&
+                        Objects.equals(ax.getValue(), assertedAx.getValue())));
     }
 
     @Override
