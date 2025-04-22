@@ -39,6 +39,7 @@ import cz.cvut.kbss.jopa.model.annotations.Sparql;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.ontodriver.model.InferenceMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +92,7 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
     private void processFieldWithValueType(Field field, Class<?> fieldValueCls, Class<?> sourceCls) {
-        final InferenceInfo inference = processInferenceInfo(field);
+        final InferenceMode inference = resolveInferenceMode(field);
 
         if (isTypesField(field)) {
             processTypesField(field, fieldValueCls, inference);
@@ -134,7 +135,7 @@ class ClassFieldMetamodelProcessor<X> {
     }
 
     private AbstractAttribute<X, ?> createAndDeclareAttribute(Class<?> sourceCls, PropertyInfo propertyInfo,
-                                                              InferenceInfo inference, PropertyAttributes propertyAtt) {
+                                                              InferenceMode inference, PropertyAttributes propertyAtt) {
         final AbstractAttribute<X, ?> a = createAttribute(propertyInfo, inference, propertyAtt);
         if (!Objects.equals(et.getJavaType(), sourceCls)) {
             et.addDeclaredGenericAttribute(a.getName(), sourceCls.asSubclass(et.getJavaType()), a);
@@ -190,7 +191,7 @@ class ClassFieldMetamodelProcessor<X> {
         return foundAccessor;
     }
 
-    private void createAndRegisterAttribute(Field field, InferenceInfo inference, Class<?> fieldValueCls,
+    private void createAndRegisterAttribute(Field field, InferenceMode inference, Class<?> fieldValueCls,
                                             AnnotatedAccessor annotatedAccessor, Class<?> sourceCls) {
         final PropertyInfo info = PropertyInfo.from(annotatedAccessor.getMethod(), field);
 
@@ -253,39 +254,48 @@ class ClassFieldMetamodelProcessor<X> {
         throw new OWLPersistenceException("Unsupported collection element type " + type);
     }
 
-    private InferenceInfo processInferenceInfo(Field field) {
+    private InferenceMode resolveInferenceMode(Field field) {
         final Inferred inferred = field.getAnnotation(Inferred.class);
 
-        final InferenceInfo inference = new InferenceInfo(inferred);
-        if (inference.inferred) {
+        final InferenceMode result;
+        if (inferred != null) {
+            if (inferred.includeExplicit()) {
+                result = InferenceMode.EXPLICIT_AND_INFERRED;
+            } else {
+                result = InferenceMode.INFERRED;
+            }
+        } else {
+            result = InferenceMode.EXPLICIT;
+        }
+        if (result != InferenceMode.EXPLICIT) {
             metamodelBuilder.addInferredClass(cls);
         }
-        return inference;
+        return result;
     }
 
     private static boolean isTypesField(Field field) {
         return field.getAnnotation(Types.class) != null;
     }
 
-    private void processTypesField(Field field, Class<?> fieldValueCls, InferenceInfo inference) {
+    private void processTypesField(Field field, Class<?> fieldValueCls, InferenceMode inference) {
         mappingValidator.validateTypesField(field);
         // Always use eager for Types, they are fetched eagerly anyway to ensure entity is of correct type
         final FetchType fetchType = FetchType.EAGER;
-        et.addDirectTypes(new TypesSpecificationImpl<>(et, fetchType, field, fieldValueCls, inference.inferred));
+        et.addDirectTypes(new TypesSpecificationImpl<>(et, fetchType, field, fieldValueCls, inference));
     }
 
     private static boolean isPropertiesField(Field field) {
         return field.getAnnotation(Properties.class) != null;
     }
 
-    private void processPropertiesField(Field field, Class<?> fieldValueCls, InferenceInfo inference) {
+    private void processPropertiesField(Field field, Class<?> fieldValueCls, InferenceMode inference) {
         Properties properties = field.getAnnotation(Properties.class);
         mappingValidator.validatePropertiesField(field);
         final PropertiesParametersResolver paramsResolver = new PropertiesParametersResolver(field);
-        final FetchType fetchType = inference.inferred ? FetchType.EAGER : properties.fetchType();
+        final FetchType fetchType = inference != InferenceMode.EXPLICIT ? FetchType.EAGER : properties.fetchType();
         et.addOtherProperties(
                 PropertiesSpecificationImpl.declaringType(et).fetchType(fetchType).javaField(field)
-                                           .javaType(fieldValueCls).inferred(inference.inferred)
+                                           .javaType(fieldValueCls).inferenceMode(inference)
                                            .propertyIdType(paramsResolver.getPropertyIdentifierType())
                                            .propertyValueType(paramsResolver.getPropertyValueType()).build());
     }
@@ -334,8 +344,7 @@ class ClassFieldMetamodelProcessor<X> {
         }
     }
 
-    private AbstractAttribute<X, ?> createAttribute(PropertyInfo property, InferenceInfo
-            inference, PropertyAttributes propertyAttributes) {
+    private AbstractAttribute<X, ?> createAttribute(PropertyInfo property, InferenceMode inference, PropertyAttributes propertyAttributes) {
         final AbstractAttribute<X, ?> a;
         if (property.getAnnotation(RDFContainer.class) != null) {
             a = createRdfContainerAttribute(property, inference, propertyAttributes);
@@ -369,17 +378,16 @@ class ClassFieldMetamodelProcessor<X> {
 
     private <B extends AbstractAttribute.AbstractAttributeBuilder<X, ?>> B setCommonBuildParameters(B builder,
                                                                                                     PropertyInfo propertyInfo,
-                                                                                                    InferenceInfo inference) {
+                                                                                                    InferenceMode inference) {
         builder.declaringType(et)
                .propertyInfo(propertyInfo)
-               .inferred(inference.inferred)
-               .includeExplicit(inference.includeExplicit);
+                .inferenceMode(inference);
         return builder;
     }
 
-    private AbstractAttribute<X, ?> createRdfContainerAttribute(PropertyInfo property, InferenceInfo inference,
+    private AbstractAttribute<X, ?> createRdfContainerAttribute(PropertyInfo property, InferenceMode inference,
                                                                 PropertyAttributes propertyAttributes) {
-        if (inference.inferred) {
+        if (inference != InferenceMode.EXPLICIT) {
             throw new InvalidFieldMappingException("RDF container attributes cannot be inferred. Attribute: " + property.getName());
         }
         final RDFContainer rdfContainer = property.getAnnotation(RDFContainer.class);
@@ -392,7 +400,7 @@ class ClassFieldMetamodelProcessor<X> {
         return builder.build();
     }
 
-    private AbstractAttribute<X, ?> createListAttribute(PropertyInfo property, InferenceInfo
+    private AbstractAttribute<X, ?> createListAttribute(PropertyInfo property, InferenceMode
             inference, PropertyAttributes propertyAttributes) {
         if (property.getAnnotation(RDFCollection.class) != null) {
             return createRdfCollectionAttribute(property, inference, propertyAttributes);
@@ -411,7 +419,7 @@ class ClassFieldMetamodelProcessor<X> {
         return builder.build();
     }
 
-    private AbstractAttribute<X, ?> createRdfCollectionAttribute(PropertyInfo property, InferenceInfo inference,
+    private AbstractAttribute<X, ?> createRdfCollectionAttribute(PropertyInfo property, InferenceMode inference,
                                                                  PropertyAttributes propertyAttributes) {
         final RDFCollectionAttribute.RDFCollectionAttributeBuilder builder = setCommonBuildParameters(RDFCollectionAttribute.builder(propertyAttributes),
                 property, inference);
@@ -482,15 +490,5 @@ class ClassFieldMetamodelProcessor<X> {
             throw new MetamodelInitializationException("Unsupported generic type " + field.getGenericType() + " of field " + field);
         }
         return typeVar;
-    }
-
-    private static class InferenceInfo {
-        private final boolean inferred;
-        private final boolean includeExplicit;
-
-        InferenceInfo(Inferred inferredAnnotation) {
-            this.inferred = inferredAnnotation != null;
-            this.includeExplicit = inferredAnnotation == null || inferredAnnotation.includeExplicit();
-        }
     }
 }

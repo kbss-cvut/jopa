@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
+import cz.cvut.kbss.ontodriver.model.InferenceMode;
 
 import java.util.List;
 
@@ -84,14 +85,8 @@ public class RDFCollectionAttribute<X, V> extends ListAttributeImpl<X, V> {
         }
 
         @Override
-        public RDFCollectionAttributeBuilder<X, V> inferred(boolean inferred) {
-            super.inferred(inferred);
-            return this;
-        }
-
-        @Override
-        public RDFCollectionAttributeBuilder<X, V> includeExplicit(boolean includeExplicit) {
-            super.includeExplicit(includeExplicit);
+        public RDFCollectionAttributeBuilder<X, V> inferenceMode(InferenceMode inferenceMode) {
+            super.inferenceMode(inferenceMode);
             return this;
         }
 

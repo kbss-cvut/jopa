@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.ontodriver.model.InferenceMode;
 
 import java.lang.reflect.Field;
 import java.util.Set;
@@ -27,16 +28,16 @@ public class TypesSpecificationImpl<X, Y> implements TypesSpecification<X, Y> {
     private final FetchType fetchType;
     private final Field javaField;
     private final Class<Y> elementType;
-    private final boolean inferred;
+    private final InferenceMode inferenceMode;
 
     public TypesSpecificationImpl(final ManagedType<X> declaringType,
                                   final FetchType fetchType, final Field javaField,
-                                  final Class<Y> elementType, boolean inferred) {
+                                  final Class<Y> elementType, InferenceMode inferenceMode) {
         this.declaringType = declaringType;
         this.fetchType = fetchType;
         this.javaField = javaField;
         this.elementType = elementType;
-        this.inferred = inferred;
+        this.inferenceMode = inferenceMode;
     }
 
     @Override
@@ -66,13 +67,12 @@ public class TypesSpecificationImpl<X, Y> implements TypesSpecification<X, Y> {
 
     @Override
     public boolean isInferred() {
-        return inferred;
+        return inferenceMode != InferenceMode.EXPLICIT;
     }
 
     @Override
     public boolean includeExplicit() {
-        // TODO
-        return true;
+        return inferenceMode != InferenceMode.INFERRED;
     }
 
     @Override

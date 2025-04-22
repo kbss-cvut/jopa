@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
+import cz.cvut.kbss.ontodriver.model.InferenceMode;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -40,9 +41,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     private final FetchType fetchType;
 
-    private final boolean inferred;
-
-    private final boolean includeExplicit;
+    private final InferenceMode inferenceMode;
 
     private final boolean nonEmpty;
 
@@ -65,8 +64,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         this.iri = builder.iri;
         this.cascadeTypes = builder.cascadeTypes;
         this.fetchType = builder.fetchType;
-        this.inferred = builder.inferred;
-        this.includeExplicit = builder.includeExplicit;
+        this.inferenceMode = builder.inferenceMode;
         this.constraints = builder.constraints;
         this.nonEmpty = builder.nonEmpty;
         this.converter = builder.converter;
@@ -123,12 +121,12 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
 
     @Override
     public boolean isInferred() {
-        return inferred;
+        return inferenceMode != InferenceMode.EXPLICIT;
     }
 
     @Override
     public boolean includeExplicit() {
-        return includeExplicit;
+        return inferenceMode != InferenceMode.INFERRED;
     }
 
     @Override
@@ -179,6 +177,7 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
         private FetchType fetchType;
         private boolean inferred;
         private boolean includeExplicit;
+        private InferenceMode inferenceMode;
         private boolean nonEmpty = false;
         private boolean lexicalForm = false;
         private boolean simpleLiteral = false;
@@ -214,13 +213,8 @@ public abstract class AbstractAttribute<X, Y> implements Attribute<X, Y> {
             return this;
         }
 
-        public AbstractAttributeBuilder<X, Y> inferred(boolean inferred) {
-            this.inferred = inferred;
-            return this;
-        }
-
-        public AbstractAttributeBuilder<X, Y> includeExplicit(boolean includeExplicit) {
-            this.includeExplicit = includeExplicit;
+        public AbstractAttributeBuilder<X, Y> inferenceMode(InferenceMode inferenceMode) {
+            this.inferenceMode = inferenceMode;
             return this;
         }
 

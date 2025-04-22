@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
+import cz.cvut.kbss.ontodriver.model.InferenceMode;
 
 import java.util.Collection;
 import java.util.Map;
@@ -105,14 +106,8 @@ public abstract class AbstractPluralAttribute<X, C, E> extends AbstractAttribute
         }
 
         @Override
-        public PluralAttributeBuilder<X, C, E> inferred(boolean inferred) {
-            super.inferred(inferred);
-            return this;
-        }
-
-        @Override
-        public PluralAttributeBuilder<X, C, E> includeExplicit(boolean includeExplicit) {
-            super.includeExplicit(includeExplicit);
+        public PluralAttributeBuilder<X, C, E> inferenceMode(InferenceMode inferenceMode) {
+            super.inferenceMode(inferenceMode);
             return this;
         }
 
