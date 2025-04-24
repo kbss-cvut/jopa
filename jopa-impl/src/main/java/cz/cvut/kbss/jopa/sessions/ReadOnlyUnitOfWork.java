@@ -228,15 +228,15 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     private void registerExistingObjects(Iterable<Object> collection, Descriptor descriptor) {
-        collection.forEach(obj -> {
-            if (!super.isEntityType(obj.getClass())) { return; }
-            if (isObjectInCache(obj.getClass(), super.getIdentifier(obj), descriptor)) {
-                registerExistingObject(obj, new CloneRegistrationDescriptor(descriptor)
+        for (Object entity : collection) {
+            if (!super.isEntityType(entity.getClass())) { return; }
+            if (isObjectInCache(entity.getClass(), super.getIdentifier(entity), descriptor)) {
+                registerExistingObject(entity, new CloneRegistrationDescriptor(descriptor)
                         .postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel()))));
             } else {
-                registerExistingObject(obj, descriptor);
+                registerExistingObject(entity, descriptor);
             }
-        });
+        }
     }
 
     @Override
