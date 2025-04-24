@@ -27,11 +27,15 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.Arguments;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -78,52 +82,25 @@ public class ServerSessionTest {
         assertNotNull(sa);
     }
 
-    @Test
-    public void acquireUnitOfWorkWithReadOnlyPropertyUoWReturnsReadOnlyUnitOfWork() {
-        Configuration config = new Configuration();
-        config.set(JOPAPersistenceProperties.TRANSACTION_MODE, "read_only");
-
-        UnitOfWork uow = session.acquireUnitOfWork(config);
-
-        assertInstanceOf(ReadOnlyUnitOfWork.class, uow);
+    static Stream<Arguments> unitOfWorkModeProvider() {
+        return Stream.of(
+                Arguments.of(JOPAPersistenceProperties.TRANSACTION_MODE, "read_only", ReadOnlyUnitOfWork.class),
+                Arguments.of(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, "immediate", ChangeTrackingUnitOfWork.class),
+                Arguments.of(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, "on_commit", OnCommitChangePropagatingUnitOfWork.class),
+                Arguments.of(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, "invalid_mode", ChangeTrackingUnitOfWork.class),
+                Arguments.of("", "", ChangeTrackingUnitOfWork.class)
+        );
     }
 
-    @Test
-    public void acquireUnitOfWorkWithImmediateChangeTrackingModeReturnsChangeTrackingUnitOfWork() {
+    @ParameterizedTest
+    @MethodSource("unitOfWorkModeProvider")
+    void acquireUnitOfWorkReturnsCorrectType(String property, String transactionMode,
+                                             Class<AbstractUnitOfWork> expectedUOWClass) {
         Configuration config = new Configuration();
-        config.set(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, "immediate");
+        config.set(property, transactionMode);
 
         UnitOfWork uow = session.acquireUnitOfWork(config);
 
-        assertInstanceOf(ChangeTrackingUnitOfWork.class, uow);
-    }
-
-    @Test
-    public void acquireUnitOfWorkWithOnCommitChangeTrackingModeReturnsOnCommitChangePropagatingUnitOfWork() {
-        Configuration config = new Configuration();
-        config.set(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, "on_commit");
-
-        UnitOfWork uow = session.acquireUnitOfWork(config);
-
-        assertInstanceOf(OnCommitChangePropagatingUnitOfWork.class, uow);
-    }
-
-    @Test
-    public void acquireUnitOfWorkWithInvalidOrMissingChangeTrackingModeReturnsChangeTrackingUnitOfWork() {
-        Configuration config = new Configuration();
-        config.set(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, "invalidMode");
-
-        UnitOfWork uow = session.acquireUnitOfWork(config);
-
-        assertInstanceOf(ChangeTrackingUnitOfWork.class, uow);
-    }
-
-    @Test
-    public void acquireUnitOfWorkWithMissingChangeTrackingModeReturnsChangeTrackingUnitOfWork() {
-        Configuration config = new Configuration();
-
-        UnitOfWork uow = session.acquireUnitOfWork(config);
-
-        assertInstanceOf(ChangeTrackingUnitOfWork.class, uow);
+        assertInstanceOf(expectedUOWClass, uow);
     }
 }
