@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
@@ -27,17 +28,25 @@ import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -152,5 +161,25 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
         assertEquals(entityD, result);
         verify(entityConstructorMock).populateQueryAttributes(entityD, metamodelMocks.forOwlClassD().entityType());
         verify(entityConstructorMock).populateQueryAttributes(entityA, etAMock);
+    }
+
+    @Test
+    void loadEntityRemovesAssertedAxiomsWhenInferredFieldIsMarkedAsNotIncludeExplicit() throws Exception {
+        when(metamodelMocks.forOwlClassA().stringAttribute().includeExplicit()).thenReturn(false);
+        final List<Axiom<?>> axioms = new ArrayList<>(List.of(
+                new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(Vocabulary.c_OwlClassA))),
+                new AxiomImpl<>(INDIVIDUAL, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), true), new Value<>("asserted value"))
+        ));
+        when(connectionMock.find(axiomDescriptor)).thenReturn(axioms);
+        final AxiomDescriptor explicitField = new AxiomDescriptor(INDIVIDUAL);
+        explicitField.addAssertion(Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false));
+        when(descriptorFactoryMock.createForAssertedFieldLoading(IDENTIFIER, metamodelMocks.forOwlClassA()
+                                                                                           .stringAttribute(), descriptor, etAMock)).thenReturn(explicitField);
+        when(connectionMock.find(explicitField)).thenReturn(List.of(new AxiomImpl<>(INDIVIDUAL, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("asserted value"))));
+
+        instanceLoader.loadEntity(loadingParameters);
+        final ArgumentCaptor<Collection<Axiom<?>>> captor = ArgumentCaptor.forClass(Collection.class);
+        verify(entityConstructorMock).reconstructEntity(any(), captor.capture());
+        assertEquals(List.of(new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(Vocabulary.c_OwlClassA)))), captor.getValue());
     }
 }

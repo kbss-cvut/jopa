@@ -184,6 +184,7 @@ public class MetamodelFactory {
         when(id.getDeclaringType()).thenReturn(et);
         when(id.getName()).thenReturn(idField.getName());
         when(id.isGenerated()).thenReturn(generated);
+        when(id.includeExplicit()).thenReturn(true);
         when(et.getFieldSpecification(idField.getName())).thenReturn(id);
     }
 
