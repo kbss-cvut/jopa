@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.query.soql;
 
 /**
  * A SOQL expression that may require a SPARQL FILTER expression.
- *
+ * <p>
  * Note that currently the expression works for two arguments only.
  */
 interface FilterableExpression {
