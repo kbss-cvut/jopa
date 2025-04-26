@@ -17,7 +17,7 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
-public class SoqlOrderParameter extends SoqlParameter {
+class SoqlOrderParameter extends SoqlParameter {
 
     private String orderingBy;
 

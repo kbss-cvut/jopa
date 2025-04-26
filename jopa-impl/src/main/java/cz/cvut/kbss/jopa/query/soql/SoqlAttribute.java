@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SoqlAttribute extends SoqlParameter {
+class SoqlAttribute extends SoqlParameter {
 
     private static final String TRIPLE_END = " . ";
 
