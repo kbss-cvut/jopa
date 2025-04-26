@@ -37,7 +37,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -175,11 +174,26 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
         explicitField.addAssertion(Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false));
         when(descriptorFactoryMock.createForAssertedFieldLoading(IDENTIFIER, metamodelMocks.forOwlClassA()
                                                                                            .stringAttribute(), descriptor, etAMock)).thenReturn(explicitField);
-        when(connectionMock.find(explicitField)).thenReturn(List.of(new AxiomImpl<>(INDIVIDUAL, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("asserted value"))));
+        when(connectionMock.find(explicitField)).thenReturn(new ArrayList<>(List.of(new AxiomImpl<>(INDIVIDUAL, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("asserted value")))));
 
         instanceLoader.loadEntity(loadingParameters);
-        final ArgumentCaptor<Collection<Axiom<?>>> captor = ArgumentCaptor.forClass(Collection.class);
-        verify(entityConstructorMock).reconstructEntity(any(), captor.capture());
-        assertEquals(List.of(new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(Vocabulary.c_OwlClassA)))), captor.getValue());
+        verify(entityConstructorMock).reconstructEntity(any(), eq(List.of(new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(Vocabulary.c_OwlClassA))))));
+    }
+
+    @Test
+    void loadEntityDoesNotRemoveAssertedClassAssertionAxiomWhenTypesFieldAreInferredNotIncludingExplicit() throws Exception {
+        when(metamodelMocks.forOwlClassA().typesSpec().includeExplicit()).thenReturn(false);
+        final List<Axiom<?>> axioms = new ArrayList<>(List.of(
+                new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(true), new Value<>(NamedResource.create(Vocabulary.c_OwlClassA)))
+        ));
+        when(connectionMock.find(axiomDescriptor)).thenReturn(axioms);
+        final AxiomDescriptor explicitField = new AxiomDescriptor(INDIVIDUAL);
+        explicitField.addAssertion(Assertion.createClassAssertion(false));
+        when(descriptorFactoryMock.createForAssertedFieldLoading(IDENTIFIER, metamodelMocks.forOwlClassA()
+                                                                                           .typesSpec(), descriptor, etAMock)).thenReturn(explicitField);
+        when(connectionMock.find(explicitField)).thenReturn(new ArrayList<>(List.of(new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(Vocabulary.c_OwlClassA))))));
+
+        instanceLoader.loadEntity(loadingParameters);
+        verify(entityConstructorMock).reconstructEntity(any(), eq(axioms));
     }
 }
