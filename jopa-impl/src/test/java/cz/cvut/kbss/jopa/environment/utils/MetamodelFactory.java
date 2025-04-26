@@ -869,11 +869,13 @@ public class MetamodelFactory {
     }
 
     public static void initPhoneMocks(IdentifiableEntityType<Phone> etMock, SingularAttributeImpl phoneNumberAttMock,
+                                      SingularAttributeImpl phoneBrandAttMock,
                                       Identifier idMock) throws NoSuchFieldException, SecurityException {
         initEntityType(etMock, Phone.class, EntityLifecycleListenerManager.empty());
         when(etMock.getAttributes()).thenReturn(Collections.singleton(phoneNumberAttMock));
         when(etMock.getFieldSpecifications()).thenReturn(Set.of(phoneNumberAttMock, idMock));
         initAttribute(etMock, phoneNumberAttMock, new AttributeInfo(Phone.class.getDeclaredField("number"), Attribute.PersistentAttributeType.DATA));
+        initAttribute(etMock, phoneBrandAttMock, new AttributeInfo(Phone.class.getDeclaredField("brand"), Attribute.PersistentAttributeType.DATA));
         initIdentifier(etMock, idMock, Phone.class.getDeclaredField("uri"), false);
     }
 

@@ -846,7 +846,7 @@ public class SoqlQueryListener implements SoqlListener {
         while (it.hasNext()) {
             final SoqlAttribute current = it.next();
             if (current.isInstanceOf() || current.isOrderBy() || current.isGroupBy()) {
-                attributesPart.append(processAttribute(current));
+                processAttribute(current).forEach(attributesPart::append);
                 it.remove();
             }
         }
@@ -872,10 +872,8 @@ public class SoqlQueryListener implements SoqlListener {
                 if (myAttr.requiresFilter()) {
                     toFilter.add(myAttr);
                 }
-                final String bgp = processAttribute(myAttr);
-                if (attributesPart.indexOf(bgp) == -1) {
-                    attributesPart.append(bgp);
-                }
+                final List<String> bgps = processAttribute(myAttr);
+                bgps.stream().filter(bgp -> attributesPart.indexOf(bgp) == -1).forEach(attributesPart::append);
             }
         }
         attributesPart.append(processAllFilters(toFilter, toInvFilter));
@@ -913,7 +911,7 @@ public class SoqlQueryListener implements SoqlListener {
         }
         buildInvFilter.append("FILTER NOT EXISTS { ");
         for (SoqlAttribute attr : toInvFilter) {
-            buildInvFilter.append(processAttribute(attr));
+            processAttribute(attr).forEach(buildInvFilter::append);
             if (attr.requiresFilter()) {
                 toFilter.add(attr);
             }
@@ -922,7 +920,7 @@ public class SoqlQueryListener implements SoqlListener {
         return buildInvFilter.toString();
     }
 
-    private String processAttribute(SoqlAttribute attr) {
+    private List<String> processAttribute(SoqlAttribute attr) {
         return attr.getBasicGraphPattern(rootVariable);
     }
 

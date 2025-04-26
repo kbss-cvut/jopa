@@ -31,4 +31,7 @@ public class Phone {
 
     @OWLDataProperty(iri = Vocabulary.p_p_phoneNumber)
     private String number;
+
+    @OWLDataProperty(iri = Vocabulary.p_p_phoneBrand, simpleLiteral = true)
+    private String brand;
 }
