@@ -92,7 +92,7 @@ abstract class EntityInstanceLoader {
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
-            removeAsserted(axioms, loadingParameters, et);
+            removeAssertedForInferredOnlyFields(axioms, loadingParameters, et);
             return axioms.isEmpty() ? null : entityBuilder.reconstructEntity(
                     new EntityConstructor.EntityConstructionParameters<>(identifier, et, descriptor, loadingParameters.isForceEager()),
                     axioms);
@@ -159,14 +159,16 @@ abstract class EntityInstanceLoader {
      * @param loadingParameters Entity loading parameters
      * @param et                Entity type
      */
-    private <T, U extends T> void removeAsserted(Collection<Axiom<?>> allAxioms, LoadingParameters<T> loadingParameters,
-                                                 IdentifiableEntityType<U> et) throws OntoDriverException {
+    private <T, U extends T> void removeAssertedForInferredOnlyFields(Collection<Axiom<?>> allAxioms, LoadingParameters<T> loadingParameters,
+                                                                      IdentifiableEntityType<U> et) throws OntoDriverException {
         for (FieldSpecification<? super U, ?> fs : et.getFieldSpecifications()) {
             if (fs.includeExplicit()) {
                 continue;
             }
             final AxiomDescriptor desc = descriptorFactory.createForAssertedFieldLoading(loadingParameters.getIdentifier(), fs, loadingParameters.getDescriptor(), et);
             final Collection<Axiom<?>> asserted = storageConnection.find(desc);
+            // Ensure entity class assertion axiom is not removed, we need it for entity reconstruction
+            asserted.removeIf(ax -> MappingUtils.isEntityClassAssertion(ax, et));
             removeAxioms(allAxioms, asserted);
         }
     }
