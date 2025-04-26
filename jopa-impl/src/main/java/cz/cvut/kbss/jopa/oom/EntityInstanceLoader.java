@@ -134,7 +134,7 @@ abstract class EntityInstanceLoader {
         visited.put(instance, null);
         handlers.forEach(h -> h.accept(new Pair<>(instance, et)));
         et.getAttributes().stream().filter(Attribute::isAssociation).forEach(att -> {
-            final Class<?> cls = att.isCollection() ? ((PluralAttribute) att).getElementType()
+            final Class<?> cls = att.isCollection() ? ((PluralAttribute<?, ?, ?>) att).getElementType()
                                                                              .getJavaType() : att.getJavaType();
             if (!metamodel.isEntityType(cls)) {
                 return;
