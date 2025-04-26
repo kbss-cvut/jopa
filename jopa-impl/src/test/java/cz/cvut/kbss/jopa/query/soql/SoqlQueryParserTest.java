@@ -777,7 +777,6 @@ public class SoqlQueryParserTest {
     void parseQueryWithProjectedAttributeAndRelatedAttribute() {
         final String soqlIdFirst = "SELECT d.owlClassA FROM OWLClassD d WHERE d.uri = :uri AND d.owlClassA.stringAttribute = :stringAtt";
         final String expectedSparql = "SELECT ?owlClassA WHERE { ?uri a " + strUri(Vocabulary.c_OwlClassD) + " . " +
-                "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . " + // FIXME: Duplicated SPARQL #281
                 "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . " +
                 "?owlClassA " + strUri(Vocabulary.p_a_stringAttribute) + " ?stringAtt . }";
         parseAndAssertEquality(soqlIdFirst, expectedSparql);
@@ -787,7 +786,6 @@ public class SoqlQueryParserTest {
     void parseQueryWithDistinctProjectedAttributeAndRelatedAttribute() {
         final String soqlIdFirst = "SELECT DISTINCT d.owlClassA FROM OWLClassD d WHERE d.uri = :uri AND d.owlClassA.stringAttribute = :stringAtt";
         final String expectedSparql = "SELECT DISTINCT ?owlClassA WHERE { ?uri a " + strUri(Vocabulary.c_OwlClassD) + " . " +
-                "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . " + // FIXME: Duplicated SPARQL #281
                 "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . " +
                 "?owlClassA " + strUri(Vocabulary.p_a_stringAttribute) + " ?stringAtt . }";
         parseAndAssertEquality(soqlIdFirst, expectedSparql);
@@ -845,6 +843,16 @@ public class SoqlQueryParserTest {
     void parseQueryTranslatesQueryUsingRootIdentifierAfterReferenceIdentifier() {
         final String soql = "SELECT DISTINCT h FROM OWLClassH h WHERE h.owlClassA.uri = :aUri AND h.owlClassG.uri = :gUri AND h.uri = :hUri";
         final String expectedSparql = "SELECT DISTINCT ?hUri WHERE { ?hUri a " + strUri(Vocabulary.c_OwlClassH) + " . ?hUri " + strUri(Vocabulary.p_h_hasA) + " ?aUri . ?hUri " + strUri(Vocabulary.p_h_hasG) + " ?gUri . }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryDoesNotGenerateDuplicateTriplePatterns() {
+        final String soql = "SELECT p FROM Person p WHERE p.phone.number = :phoneNumber AND p.phone.brand = :brand";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . " +
+                "?x " + strUri(Vocabulary.p_p_hasPhone) + " ?phone . " +
+                "?phone " + strUri(Vocabulary.p_p_phoneNumber) + " ?phoneNumber . " +
+                "?phone " + strUri(Vocabulary.p_p_phoneBrand) + " ?brand . }";
         parseAndAssertEquality(soql, expectedSparql);
     }
 }

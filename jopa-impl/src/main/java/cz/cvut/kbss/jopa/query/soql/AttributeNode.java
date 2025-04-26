@@ -17,16 +17,16 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
-public class AttributeNode extends SoqlNode {
+class AttributeNode extends SoqlNode {
 
     private String value;
     private String iri = "";
 
-    public AttributeNode(String value) {
+    AttributeNode(String value) {
         this.value = value;
     }
 
-    public AttributeNode(SoqlNode parent, String value) {
+    AttributeNode(SoqlNode parent, String value) {
         super(parent);
         this.value = value;
     }
