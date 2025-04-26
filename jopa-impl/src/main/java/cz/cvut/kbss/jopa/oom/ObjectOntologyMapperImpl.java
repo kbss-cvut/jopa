@@ -188,7 +188,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             if (!fieldSpec.includeExplicit()) {
                 final AxiomDescriptor assertedDescriptor = descriptorFactory.createForAssertedFieldLoading(identifier, fieldSpec, descriptor, et);
                 final Collection<Axiom<?>> assertedAxioms = storageConnection.find(assertedDescriptor);
-                removeAsserted(allAxioms, assertedAxioms);
+                EntityInstanceLoader.removeAxioms(allAxioms, assertedAxioms);
             }
             entityBuilder.setFieldValue(entity, fieldSpec, allAxioms, et, descriptor);
         } catch (OntoDriverException e) {
@@ -196,12 +196,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         } catch (IllegalArgumentException e) {
             throw new EntityReconstructionException(e);
         }
-    }
-
-    private static void removeAsserted(Collection<Axiom<?>> allAxioms, Collection<Axiom<?>> asserted) {
-        allAxioms.removeIf(ax -> asserted.stream().anyMatch(assertedAx ->
-                Objects.equals(assertedAx.getAssertion().getIdentifier(), ax.getAssertion().getIdentifier()) &&
-                        Objects.equals(ax.getValue(), assertedAx.getValue())));
     }
 
     @Override
