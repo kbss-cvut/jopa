@@ -44,39 +44,22 @@ public class ManagedClassProcessor {
         throw new AssertionError();
     }
 
-    static <T> TypeBuilderContext<T> processManagedType(Class<T> cls, Configuration config) {
-        final NamespaceResolver resolver = detectNamespaces(cls);
+    static <T> TypeBuilderContext<T> processManagedType(Class<T> cls, NamespaceResolver namespaceResolver,
+                                                        Configuration config) {
         final AbstractIdentifiableType<T> type;
         if (isEntityType(cls)) {
-            type = processEntityType(cls, resolver, config);
+            type = processEntityType(cls, namespaceResolver, config);
         } else if (isMappedSuperclassType(cls)) {
             type = processMappedSuperclassType(cls);
         } else {
             throw new MetamodelInitializationException("Type " + cls + " is not a managed type.");
         }
-        return new TypeBuilderContext<>(type, resolver);
+        return new TypeBuilderContext<>(type, namespaceResolver);
     }
 
     /**
-     * Detects namespace declarations relevant to the specified class.
-     * <p>
-     * This means namespaces declared on the class itself, namespaces it inherited from super types, as well as
-     * namespaces declared for the package that contains the specified class.
-     * <p>
-     * Namespaces declared directly by {@link Namespace} as well as in {@link Namespaces} are considered.
-     *
-     * @param cls Class to detect namespaces for
-     * @return Namespace resolver containing detected namespaces
-     */
-    public static <T> NamespaceResolver detectNamespaces(Class<T> cls) {
-        final NamespaceResolver resolver = new NamespaceResolver();
-        detectNamespaces(cls, resolver);
-        return resolver;
-    }
-
-    /**
-     * Detects namespace declarations relevant to the specified class and registers them with the specified {@link
-     * NamespaceResolver}.
+     * Detects namespace declarations relevant to the specified class and registers them with the specified
+     * {@link NamespaceResolver}.
      * <p>
      * This means namespaces declared on the class itself, namespaces it inherited from super types, as well as
      * namespaces declared for the package that contains the specified class.
@@ -122,7 +105,7 @@ public class ManagedClassProcessor {
         }
     }
 
-    private static  <T> Class<? extends T> resolveInstantiableType(Class<T> cls, Configuration config) {
+    private static <T> Class<? extends T> resolveInstantiableType(Class<T> cls, Configuration config) {
         if (ChangeTrackingMode.IMMEDIATE == ChangeTrackingMode.resolve(config)) {
             return new ManageableClassGenerator(config).generate(cls);
         } else {
@@ -160,8 +143,8 @@ public class ManagedClassProcessor {
     /**
      * Checks whether the specified class is a managed type.
      * <p>
-     * That is, if it is an entity type (annotated with {@link OWLClass}) or a mapped superclass (annotated with {@link
-     * MappedSuperclass}).
+     * That is, if it is an entity type (annotated with {@link OWLClass}) or a mapped superclass (annotated with
+     * {@link MappedSuperclass}).
      *
      * @param cls Class to check
      * @return {@code true} if the class is a managed type, {@code false} otherwise
