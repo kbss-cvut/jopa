@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.utils.ChangeTrackingMode;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -46,7 +47,7 @@ class ManagedClassProcessorTest {
     @Test
     void processManagedTypeThrowsInitializationExceptionWhenClassIsMissingNoArgConstructor() {
         final MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class,
-                () -> ManagedClassProcessor.processManagedType(ClassWithoutNoArgConstructor.class, new Configuration()));
+                () -> ManagedClassProcessor.processManagedType(ClassWithoutNoArgConstructor.class, new NamespaceResolver(), new Configuration()));
         assertEquals("Entity " + ClassWithoutNoArgConstructor.class + " is missing required no-arg constructor.",
                 ex.getMessage());
     }
@@ -63,29 +64,31 @@ class ManagedClassProcessorTest {
 
     @Test
     void processManagedTypeReturnsEntityTypeForEntity() {
-        final TypeBuilderContext<OWLClassA> res = ManagedClassProcessor.processManagedType(OWLClassA.class, new Configuration());
+        final TypeBuilderContext<OWLClassA> res = ManagedClassProcessor.processManagedType(OWLClassA.class, new NamespaceResolver(), new Configuration());
         assertInstanceOf(EntityType.class, res.getType());
     }
 
     @Test
     void processManagedTypeGeneratesInstantiableTypeForEntityClass() {
-        final TypeBuilderContext<OWLClassA> res = ManagedClassProcessor.processManagedType(OWLClassA.class, new Configuration());
+        final TypeBuilderContext<OWLClassA> res = process(OWLClassA.class);
         final Class<? extends OWLClassA> instantiableType = res.getType().getInstantiableJavaType();
         assertTrue(OWLClassA.class.isAssignableFrom(instantiableType));
         assertNotEquals(OWLClassA.class, instantiableType);
     }
 
+    private <T> TypeBuilderContext<T> process(Class<T> cls) {
+        return ManagedClassProcessor.processManagedType(cls, new NamespaceResolver(), new Configuration());
+    }
+
     @Test
     void processManagedTypeReturnsMappedSuperclassTypeForMappedSuperclass() {
-        final TypeBuilderContext<QMappedSuperclass> res = ManagedClassProcessor
-                .processManagedType(QMappedSuperclass.class, new Configuration());
+        final TypeBuilderContext<QMappedSuperclass> res = process(QMappedSuperclass.class);
         assertInstanceOf(MappedSuperclassType.class, res.getType());
     }
 
     @Test
     void processManagedTypeReturnsAbstractEntityTypeTypeForInterfaces() {
-        final TypeBuilderContext<InterfaceClass> res = ManagedClassProcessor
-                .processManagedType(InterfaceClass.class, new Configuration());
+        final TypeBuilderContext<InterfaceClass> res = process(InterfaceClass.class);
         assertInstanceOf(AbstractEntityType.class, res.getType());
     }
 
@@ -96,7 +99,7 @@ class ManagedClassProcessorTest {
 
     @Test
     void processManagedTypeReturnsConcreteEntityTypeTypeForClasses() {
-        final TypeBuilderContext<OWLEntity> res = ManagedClassProcessor.processManagedType(OWLEntity.class, new Configuration());
+        final TypeBuilderContext<OWLEntity> res = process(OWLEntity.class);
         assertInstanceOf(ConcreteEntityType.class, res.getType());
     }
 
@@ -109,7 +112,7 @@ class ManagedClassProcessorTest {
     @Test
     void processManagedTypeThrowsExceptionOnNonManagedInterface() {
         final MetamodelInitializationException ex = assertThrows(MetamodelInitializationException.class,
-                () -> ManagedClassProcessor.processManagedType(NonManagedInterfaceA.class, new Configuration()));
+                () -> process(NonManagedInterfaceA.class));
         assertEquals("Type " + NonManagedInterfaceA.class + " is not a managed type.",
                 ex.getMessage());
     }
@@ -130,7 +133,7 @@ class ManagedClassProcessorTest {
 
     @Test
     void processManagedTypeCreatesEntityTypeWithEntityClassAsInstantiableTypeWhenOnCommitChangeTrackingModeIsConfigured() {
-        final TypeBuilderContext<OWLClassA> result = ManagedClassProcessor.processManagedType(OWLClassA.class, new Configuration(Map.of(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, ChangeTrackingMode.ON_COMMIT.toString())));
+        final TypeBuilderContext<OWLClassA> result = ManagedClassProcessor.processManagedType(OWLClassA.class, new NamespaceResolver(), new Configuration(Map.of(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, ChangeTrackingMode.ON_COMMIT.toString())));
         assertEquals(OWLClassA.class, result.getType().getInstantiableJavaType());
     }
 

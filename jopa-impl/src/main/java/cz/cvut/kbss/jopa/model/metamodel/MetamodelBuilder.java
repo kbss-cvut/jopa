@@ -31,6 +31,7 @@ import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.mapper.ResultSetMappingProcessor;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.Constants;
+import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +60,8 @@ public class MetamodelBuilder {
     private final TypeReferenceMap typeReferenceMap = new TypeReferenceMap();
 
     private final List<DeferredFieldInitialization<?>> deferredFieldInitializations = new ArrayList<>();
+
+    private final NamespaceResolver namespaceResolver = new NamespaceResolver();
 
     private final ConverterResolver converterResolver;
 
@@ -104,7 +107,8 @@ public class MetamodelBuilder {
 
         LOG.debug("Processing OWL class: {}", cls);
 
-        final TypeBuilderContext<X> et = ManagedClassProcessor.processManagedType(cls, configuration);
+        ManagedClassProcessor.detectNamespaces(cls, namespaceResolver);
+        final TypeBuilderContext<X> et = ManagedClassProcessor.processManagedType(cls, namespaceResolver, configuration);
         et.setConverterResolver(converterResolver);
         et.setPuLanguage(configuration.get(JOPAPersistenceProperties.LANG));
 
@@ -177,7 +181,7 @@ public class MetamodelBuilder {
             if (typeMap.containsKey(managedSupertype)) {
                 superTypes.add((AbstractIdentifiableType<? super X>) typeMap.get(managedSupertype));
             } else {
-                final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype, configuration);
+                final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype, namespaceResolver, configuration);
                 context.setConverterResolver(converterResolver);
                 context.setPuLanguage(configuration.get(JOPAPersistenceProperties.LANG));
                 processManagedType(context);
@@ -297,6 +301,10 @@ public class MetamodelBuilder {
 
     <X> void registerDeferredFieldInitialization(Field field, TypeBuilderContext<X> et) {
         deferredFieldInitializations.add(new DeferredFieldInitialization<>(field, et));
+    }
+
+    public NamespaceResolver getNamespaceResolver() {
+        return namespaceResolver;
     }
 
     private record DeferredFieldInitialization<X>(Field field, TypeBuilderContext<X> et) {}

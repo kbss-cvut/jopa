@@ -32,6 +32,7 @@ import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.MetamodelUtils;
+import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +62,8 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
 
     private NamedQueryManager namedQueryManager;
     private ResultSetMappingManager resultSetMappingManager;
+
+    private NamespaceResolver namespaceResolver;
 
     private final Configuration configuration;
 
@@ -119,6 +122,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         this.entities = metamodelBuilder.getEntities();
         this.inferredClasses = metamodelBuilder.getInferredClasses();
         this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
+        this.namespaceResolver = metamodelBuilder.getNamespaceResolver();
     }
 
     @Override
@@ -246,5 +250,14 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     public <X> Class<? extends X> getEntityReferenceProxy(Class<X> cls) {
         assert isEntityType(cls);
         return (Class<? extends X>) referenceProxyClasses.computeIfAbsent(cls, c -> new EntityReferenceProxyGenerator().generate(cls));
+    }
+
+    /**
+     * Gets namespace resolver containing namespaces detected for this persistence unit.
+     *
+     * @return NamespaceResolver
+     */
+    public NamespaceResolver getNamespaceResolver() {
+        return namespaceResolver;
     }
 }
