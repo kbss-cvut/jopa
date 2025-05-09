@@ -72,7 +72,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
     @Override
     public void commit() {
-        LOG.trace("Read-only UnitOfWork commit started.");
+        LOG.trace("Read-only UnitOfWork commit started. Nothing is commited to a database.");
         if (!isActive()) {
             throw new IllegalStateException("Cannot commit inactive Unit of Work!");
         }
