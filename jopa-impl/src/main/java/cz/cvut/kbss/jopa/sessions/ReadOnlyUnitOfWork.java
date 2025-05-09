@@ -70,6 +70,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         originalMapping.forEach(super::removeLazyLoadingProxies);
     }
 
+    /**
+     * {@code ReadOnlyUnitOfWork} commits nothing. The persistence context is cleared.
+     */
     @Override
     public void commit() {
         LOG.trace("Read-only UnitOfWork commit started. Nothing is commited to a database.");
@@ -114,6 +117,10 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return getManagedOriginal(cls, identifier, descriptor);
     }
 
+    /**
+     * {@inheritDoc}
+     * Note that the {@code ReadOnlyUnitOfWork} does not distinguish between original and cloned objects.
+     */
     @Override
     public <T> T getManagedOriginal(Class<T> cls, Object identifier, Descriptor descriptor) {
         if (!this.keysToOriginals.containsKey(identifier)) { return null; }
@@ -126,6 +133,10 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return isInRepository(descriptor, original) ? cls.cast(original) : null;
     }
 
+    /**
+     * {@inheritDoc}
+     * @param object Entity to detach
+     */
     @Override
     public void unregisterObject(Object object) {
         if (object == null) { return; }
@@ -137,6 +148,12 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         super.unregisterEntityFromOntologyContext(object);
     }
 
+    /**
+     * Register an existing object in this Unit of Work without cloning it.
+     * @param entity     Object
+     * @param descriptor Entity descriptor identifying repository contexts
+     * @return Registered entity
+     */
     @Override
     public Object registerExistingObject(Object entity, Descriptor descriptor) {
         if (entity == null) { return null; }
@@ -151,6 +168,13 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return entity;
     }
 
+    /**
+     * Register an existing object in this Unit of Work.
+     * Creates a working clone of the specified object according to the configuration.
+     * @param entity                 Object
+     * @param registrationDescriptor Configuration of the registration
+     * @return Registered clone of the specified object.
+     */
     @Override
     public Object registerExistingObject(Object entity, CloneRegistrationDescriptor registrationDescriptor) {
         if (entity == null) { return null; }
@@ -239,11 +263,16 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         }
     }
 
+
+    /**
+     * Simply returns the specified entity.
+     * {@code ReadOnlyUnitOfWork} does not distinguish between original and cloned objects.
+     * @param entity Object
+     * @return the specified entity.
+     */
     @Override
-    public Object getOriginal(Object original) {
-        // simply return the original object
-        // TODO: change javadoc
-        return original;
+    public Object getOriginal(Object entity) {
+        return entity;
     }
 
     @Override
@@ -252,12 +281,26 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return originalMapping.contains(entity);
     }
 
+    /**
+     * Return true if the given entity is managed.
+     * @param entity Object to check
+     * @return {@code true} when the entity is managed, {@code false} otherwise
+     */
     @Override
     public boolean isObjectManaged(Object entity) {
         Objects.requireNonNull(entity);
         return this.originalMapping.contains(entity);
     }
 
+
+    /**
+     * Gets the lifecycle state of the specified entity.
+     * <p>
+     * {@code ReadOnlyUnitOfWork}
+     * @param entity Entity whose state to resolve
+     * @return {@code EntityState.MANAGED} if this Unit Of Work contains the specified entity,
+     * {@code EntityState.NOT_MANAGED} otherwise
+     */
     @Override
     public EntityState getState(Object entity) {
         Objects.requireNonNull(entity);
@@ -274,18 +317,38 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
                  : EntityState.NOT_MANAGED;
     }
 
+    /**
+     * Retrieves object with the specified identifier. A reference is not retrieved!
+     * The method is implemented via the {@code readObject} and has exactly the same
+     * behaviour.
+     * @param cls        The type of the returned object
+     * @param identifier Instance identifier
+     * @param descriptor Entity descriptor
+     * @return The retrieved object or {@code null} if there is no object with the specified identifier in the specified
+     * repository
+     * @param <T>
+     */
     @Override
     public <T> T getReference(Class<T> cls, Object identifier, Descriptor descriptor) {
         return super.readObject(cls, identifier, descriptor);
     }
 
+    /**
+     * Simply returns the specified original object. {@code ReadOnlyUnitOfWork} does not
+     * distinguish between original and cloned objects.
+     * @param original The original object whose clone we are looking for
+     * @return specified original
+     */
     @Override
     public Object getCloneForOriginal(Object original) {
-        // this unit of work does not track clone-original
-        // simply return the original object
         return original;
     }
 
+    /**
+     * {@inheritDoc}
+     * {@code ReadOnlyUnitOfWork} simply returns the specified collection.
+     * No special indirect collection is needed.
+     */
     @Override
     public Object createIndirectCollection(Object collection, Object owner, Field field) {
         // Do not create any special kind of collection, just return the argument
@@ -296,6 +359,12 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         return getLiveObjectCache().contains(cls, identifier, descriptor);
     }
 
+    /**
+     * Does nothing. {@code ReadOnlyUnitOfWork} should not put objects into the cache.
+     * @param identifier Object identifier
+     * @param entity     Object to cache
+     * @param descriptor Descriptor of repository context
+     */
     @Override
     public void putObjectIntoCache(Object identifier, Object entity, Descriptor descriptor) {
         // object should never be put into cached in this uow
@@ -306,143 +375,248 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         throw new UnsupportedOperationException("Method not supported.");
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public void removeObjectFromCache(Object toRemove, URI context) {
+    public void removeObjectFromCache(Object toRemove, URI context) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    void preventCachingIfReferenceIsNotLoaded(ChangeRecord changeRecord) {
+    void preventCachingIfReferenceIsNotLoaded(ChangeRecord changeRecord) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public boolean isObjectNew(Object entity) {
+    public boolean isObjectNew(Object entity) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
         return false;
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public <T> T mergeDetached(T entity, Descriptor descriptor) {
+    public <T> T mergeDetached(T entity, Descriptor descriptor) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
         return null;
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
+    public <T> T mergeDetachedInternal(T entity, Descriptor descriptor) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
         return null;
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    protected <T> T getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
+    protected <T> T getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
         return null;
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    protected void evictAfterMerge(EntityType<?> et, URI identifier, Descriptor descriptor) {
+    protected void evictAfterMerge(EntityType<?> et, URI identifier, Descriptor descriptor) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public <T> void refreshObject(T object) {
+    public <T> void refreshObject(T object) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     protected static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
-                                                   Descriptor descriptor) {
+                                                   Descriptor descriptor) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
         return null;
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    protected ObjectChangeSet processInferredValueChanges(ObjectChangeSet changeSet) {
+    protected ObjectChangeSet processInferredValueChanges(ObjectChangeSet changeSet) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
         return null;
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    void validateIntegrityConstraints() {
+    void validateIntegrityConstraints() throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    void calculateChanges() {
+    void calculateChanges() throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public void commitToStorage() {
+    public void commitToStorage() throws UnsupportedOperationException {
         // TODO
 //        storage.commit();
         throw new UnsupportedOperationException("Method not supported.");
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    void persistNewObjects() {
+    void persistNewObjects() throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    void registerClone(Object clone, Object original, Descriptor descriptor) {
+    void registerClone(Object clone, Object original, Descriptor descriptor) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public void registerOriginalForNewClone(Object clone, Object original) {
+    public void registerOriginalForNewClone(Object clone, Object original) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public void writeUncommittedChanges() {
+    public void writeUncommittedChanges() throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public boolean hasChanges() {
+    public boolean hasChanges() throws UnsupportedOperationException {
         throwUnsupportedOperationException();
         return false;
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    void setHasChanges() {
+    void setHasChanges() throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public void restoreRemovedObject(Object entity) {
+    public void restoreRemovedObject(Object entity) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public boolean isFlushingChanges() {
+    public boolean isFlushingChanges() throws UnsupportedOperationException {
         throwUnsupportedOperationException();
         return false;
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public void attributeChanged(Object entity, Field f) {
+    public void attributeChanged(Object entity, Field f) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public void attributeChanged(Object entity, FieldSpecification<?, ?> fieldSpec) {
+    public void attributeChanged(Object entity, FieldSpecification<?, ?> fieldSpec) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    protected void markCloneForDeletion(Object entity, Object identifier) {
+    protected void markCloneForDeletion(Object entity, Object identifier) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public void registerNewObject(Object entity, Descriptor descriptor) {
+    public void registerNewObject(Object entity, Descriptor descriptor) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 
+    /**
+     * Method not supported.
+     * @throws UnsupportedOperationException Method not supported.
+     */
     @Override
-    public void removeObject(Object object) {
+    public void removeObject(Object object) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 }
