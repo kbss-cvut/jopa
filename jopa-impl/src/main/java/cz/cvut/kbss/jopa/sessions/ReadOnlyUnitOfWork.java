@@ -302,133 +302,147 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     //////////////////////////////////////THESE METHODS SHOULD NOT BE SUPPORTED/////////////////////////////////////////
+    private static void throwUnsupportedOperationException() {
+        throw new UnsupportedOperationException("Method not supported.");
+    }
+
     @Override
     public void removeObjectFromCache(Object toRemove, URI context) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     void preventCachingIfReferenceIsNotLoaded(ChangeRecord changeRecord) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     public boolean isObjectNew(Object entity) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
+        return false;
     }
 
     @Override
     public <T> T mergeDetached(T entity, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
+        return null;
     }
 
     @Override
     public <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
+        return null;
     }
 
     @Override
     protected <T> T getInstanceForMerge(URI identifier, EntityType<T> et, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
+        return null;
     }
 
     @Override
     protected void evictAfterMerge(EntityType<?> et, URI identifier, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     public <T> void refreshObject(T object) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     protected static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
                                                    Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
+        return null;
     }
 
     @Override
     protected ObjectChangeSet processInferredValueChanges(ObjectChangeSet changeSet) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
+        return null;
     }
 
     @Override
     void validateIntegrityConstraints() {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     void calculateChanges() {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     public void commitToStorage() {
+        // TODO
+//        storage.commit();
         throw new UnsupportedOperationException("Method not supported.");
     }
 
     @Override
     void persistNewObjects() {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     void registerClone(Object clone, Object original, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     public void registerOriginalForNewClone(Object clone, Object original) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     public void writeUncommittedChanges() {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     public boolean hasChanges() {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
+        return false;
     }
 
     @Override
     void setHasChanges() {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     public void restoreRemovedObject(Object entity) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     public boolean isFlushingChanges() {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
+        return false;
     }
 
     @Override
     public void attributeChanged(Object entity, Field f) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     public void attributeChanged(Object entity, FieldSpecification<?, ?> fieldSpec) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     protected void markCloneForDeletion(Object entity, Object identifier) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     public void registerNewObject(Object entity, Descriptor descriptor) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 
     @Override
     public void removeObject(Object object) {
-        throw new UnsupportedOperationException("Method not supported.");
+        throwUnsupportedOperationException();
     }
 }
