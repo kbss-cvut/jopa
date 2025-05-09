@@ -115,12 +115,15 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
     public static final String CHANGE_TRACKING_MODE = "cz.cvut.kbss.jopa.changeTrackingMode";
 
     /**
-     * Configures transaction mode. (read_only, read_write[default])
+     * Configures transaction mode. Expected values: (read_only, read_write[default]).
+     * <p>
+     * Use {@link cz.cvut.kbss.jopa.utils.Constants#READ_ONLY_TRANSACTION_MODE} or
+     * {@link cz.cvut.kbss.jopa.utils.Constants#READ_WRITE_TRANSACTION_MODE} as values.
      */
     public static final String TRANSACTION_MODE = "cz.cvut.kbss.jopa.transactionMode";
 
     /**
-     * Whether a second level cache should be used for the read-only mode. (true, false)
+     * Whether a second level cache should be used for the read-only mode. Expected values: (true, false).
      */
     public static final String CACHE_ENABLED_READ_ONLY = "cz.cvut.jopa.readOnly.cache.enable";
 
