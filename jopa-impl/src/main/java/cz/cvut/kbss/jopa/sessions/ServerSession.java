@@ -30,6 +30,7 @@ import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.ChangeTrackingMode;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.Constants;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -96,7 +97,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
      */
     public UnitOfWork acquireUnitOfWork(Configuration configuration) {
         final String enabledStr = configuration.get(JOPAPersistenceProperties.TRANSACTION_MODE);
-        if (enabledStr != null && enabledStr.equals("read_only")) {
+        if (Constants.READ_ONLY_TRANSACTION_MODE.equals(enabledStr)) {
             LOG.trace("Acquiring read-only UnitOfWork.");
             return new ReadOnlyUnitOfWork(this, configuration);
         }
