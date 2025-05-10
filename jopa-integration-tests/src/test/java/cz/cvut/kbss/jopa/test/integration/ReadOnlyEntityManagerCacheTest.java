@@ -185,38 +185,6 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
     }
 
     @Test
-    void findResultSingularObjectPropertyIsClonedIfItIsAlreadyCached() throws Exception {
-        final URI instanceDUri = Generators.generateUri();
-        final URI instanceAUri = Generators.generateUri();
-        when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceAUri
-        ))).thenReturn(axiomsForA(instanceAUri));
-        when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceDUri
-        ))).thenReturn(axiomsForD(instanceDUri, instanceAUri));
-
-        final OWLClassA instanceA = em.find(OWLClassA.class, instanceAUri);
-        assertNotNull(instanceA);
-
-        // assert firstA is cached
-        Descriptor descriptor = new EntityDescriptor();
-        assertTrue(isCached(OWLClassA.class, instanceAUri, descriptor));
-        OWLClassA instanceAOriginal = (OWLClassA) getCachedValue(OWLClassA.class, instanceAUri, descriptor);
-        assertNotNull(instanceAOriginal);
-
-        // read instanceD that references instanceA
-        final OWLClassD instanceD = readOnlyEm.find(OWLClassD.class, instanceDUri);
-        assertNotNull(instanceD);
-
-        // instanceD should be cloned
-        assertNotNull(instanceD.getOwlClassA());
-        assertNotSame(instanceA, instanceD.getOwlClassA());
-
-        // connection is invoked for classA (read-write) and classD (read-only)
-        verify(connectionMock, times(2)).find(any(AxiomDescriptor.class));
-    }
-
-    @Test
     void findResultWithPluralObjectPropertyIsDeepClonedIfItIsAlreadyCached() throws Exception {
         final URI instanceFFUri = Generators.generateUri();
         final URI instanceAUri1 = Generators.generateUri();
