@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.accessors.DefaultStorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
@@ -29,6 +30,7 @@ import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.ChangeTrackingMode;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.Constants;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -94,6 +96,12 @@ public class ServerSession extends AbstractSession implements Wrapper {
      * @return UnitOfWork instance
      */
     public UnitOfWork acquireUnitOfWork(Configuration configuration) {
+        final String enabledStr = configuration.get(JOPAPersistenceProperties.TRANSACTION_MODE);
+        if (Constants.READ_ONLY_TRANSACTION_MODE.equals(enabledStr)) {
+            LOG.trace("Acquiring read-only UnitOfWork.");
+            return new ReadOnlyUnitOfWork(this, configuration);
+        }
+
         final ChangeTrackingMode mode = ChangeTrackingMode.resolve(configuration);
         return switch (mode) {
             case IMMEDIATE -> {
