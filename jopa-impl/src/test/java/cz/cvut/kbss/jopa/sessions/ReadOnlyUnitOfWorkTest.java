@@ -155,11 +155,6 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     }
 
     @Test
-    void throwsUnsupportedOperationOnCommitToStorage() {
-        assertThrows(UnsupportedOperationException.class, () -> uow.commitToStorage());
-    }
-
-    @Test
     void throwsUnsupportedOperationOnCalculateChanges() {
         assertThrows(UnsupportedOperationException.class, () -> uow.calculateChanges());
     }

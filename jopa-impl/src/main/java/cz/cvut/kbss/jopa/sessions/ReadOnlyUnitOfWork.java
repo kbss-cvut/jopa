@@ -80,6 +80,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             throw new IllegalStateException("Cannot commit inactive Unit of Work!");
         }
         this.clear();
+        this.commitToStorage();
         LOG.trace("UnitOfWork commit finished.");
     }
 
@@ -370,6 +371,11 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         // object should never be put into cached in this uow
     }
 
+    @Override
+    public void commitToStorage() {
+        storage.commit();
+    }
+
     //////////////////////////////////////THESE METHODS SHOULD NOT BE SUPPORTED/////////////////////////////////////////
     private static void throwUnsupportedOperationException() {
         throw new UnsupportedOperationException("Method not supported.");
@@ -487,17 +493,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     @Override
     void calculateChanges() throws UnsupportedOperationException {
         throwUnsupportedOperationException();
-    }
-
-    /**
-     * Method not supported.
-     * @throws UnsupportedOperationException Method not supported.
-     */
-    @Override
-    public void commitToStorage() throws UnsupportedOperationException {
-        // TODO
-//        storage.commit();
-        throw new UnsupportedOperationException("Method not supported.");
     }
 
     /**
