@@ -74,7 +74,7 @@ import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
 
 public abstract class AbstractUnitOfWork extends AbstractSession implements UnitOfWork {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractUnitOfWork.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractUnitOfWork.class);
     final IndirectWrapperHelper indirectWrapperHelper;
 
     // Read-only!!! It is just the keyset of cloneToOriginals
@@ -301,7 +301,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         return getManagedClone(cls, identifier, descriptor);
     }
 
-    private boolean isInRepository(Descriptor descriptor, Object entity) {
+    protected boolean isInRepository(Descriptor descriptor, Object entity) {
         assert descriptor != null;
         assert entity != null;
 
@@ -776,7 +776,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         unregisterEntityFromOntologyContext(object);
     }
 
-    private void unregisterEntityFromOntologyContext(Object entity) {
+    protected void unregisterEntityFromOntologyContext(Object entity) {
         assert entity != null;
 
         final Descriptor descriptor = repoMap.getEntityDescriptor(entity);
@@ -875,7 +875,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
                 object.toString();
     }
 
-    private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
+    protected <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
         final EntityType<?> et = entityType(entity.getClass());
         final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(field.getName());
         return entityDescriptor.getAttributeDescriptor(fieldSpec);
@@ -888,7 +888,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             clone = null;
         } else {
             if (isEntityType(field.getType())) {
-                clone = registerExistingObject(fieldValueOrig, fieldDescriptor);
+                clone = registerExistingObject(fieldValueOrig, new CloneRegistrationDescriptor(fieldDescriptor));
                 putObjectIntoCache(getIdentifier(clone), fieldValueOrig, fieldDescriptor);
             } else {
                 clone = cloneBuilder.buildClone(entity, field, fieldValueOrig, fieldDescriptor);
