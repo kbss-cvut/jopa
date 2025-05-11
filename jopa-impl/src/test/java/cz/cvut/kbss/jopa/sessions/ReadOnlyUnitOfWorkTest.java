@@ -433,6 +433,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         final OWLClassL result = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
 
         assertInstanceOf(LazyLoadingEntityProxy.class, result.getSingleA());
+        assertInstanceOf(OWLClassA.class, result.getSingleA());
     }
 
     @Test
