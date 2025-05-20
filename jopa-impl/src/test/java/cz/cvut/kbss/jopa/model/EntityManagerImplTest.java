@@ -33,7 +33,6 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityLifecycleListenerManager;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
@@ -105,8 +104,6 @@ class EntityManagerImplTest {
     @Mock
     private MetamodelImpl metamodelMock;
 
-    private ServerSession serverSessionMock;
-
     private EntityDescriptorFactory descriptorFactory;
 
     private MetamodelMocks mocks;
@@ -116,16 +113,17 @@ class EntityManagerImplTest {
     @BeforeEach
     void setUp() throws Exception {
         final Configuration config = new Configuration();
-        this.serverSessionMock = spy(new ServerSessionStub(metamodelMock, connectorMock));
+        final ServerSession serverSessionMock = spy(new ServerSessionStub(metamodelMock, connectorMock));
         this.uow = spy(new ChangeTrackingUnitOfWork(serverSessionMock, config));
         doReturn(uow).when(serverSessionMock).acquireUnitOfWork(any());
         when(emfMock.getMetamodel()).thenReturn(metamodelMock);
+        when(emfMock.getServerSession()).thenReturn(serverSessionMock);
         final NamespaceResolver nsResolver = new NamespaceResolver();
-        this.descriptorFactory = new EntityDescriptorFactory(metamodelMock, nsResolver);
+        this.descriptorFactory = new DefaultEntityDescriptorFactory(metamodelMock, nsResolver);
         when(metamodelMock.getNamespaceResolver()).thenReturn(nsResolver);
         this.mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
-        this.em = new EntityManagerImpl(emfMock, config, serverSessionMock);
+        this.em = new EntityManagerImpl(emfMock, config, descriptorFactory);
     }
 
     @Test
@@ -672,7 +670,7 @@ class EntityManagerImplTest {
 
     @Test
     void entityManagerIsAutoCloseable() {
-        try (final EntityManager em = new EntityManagerImpl(emfMock, new Configuration(Collections.emptyMap()), serverSessionMock)) {
+        try (final EntityManager em = new EntityManagerImpl(emfMock, new Configuration(Collections.emptyMap()), descriptorFactory)) {
             assertTrue(em.isOpen());
         }
         verify(emfMock).entityManagerClosed(any(AbstractEntityManager.class));

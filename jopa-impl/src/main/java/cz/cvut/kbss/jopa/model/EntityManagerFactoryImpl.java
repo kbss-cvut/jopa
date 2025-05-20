@@ -43,9 +43,11 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     private final Configuration configuration;
     private final OntologyStorageProperties storageProperties;
 
-    private volatile ServerSession serverSession;
+    private ServerSession serverSession;
 
-    private volatile MetamodelImpl metamodel;
+    private final MetamodelImpl metamodel;
+
+    private final EntityDescriptorFactory descriptorFactory;
 
     private final Consumer<EntityManagerFactoryImpl> closeListener;
 
@@ -55,7 +57,8 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         this.configuration = new Configuration(properties != null ? properties : Collections.emptyMap());
         this.closeListener = closeListener;
         this.storageProperties = initStorageProperties();
-        initMetamodel();
+        this.metamodel = initMetamodel();
+        this.descriptorFactory = initDescriptorFactory();
     }
 
     private OntologyStorageProperties initStorageProperties() {
@@ -68,9 +71,14 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
                                         .build();
     }
 
-    private void initMetamodel() {
-        this.metamodel = new MetamodelImpl(configuration);
+    private MetamodelImpl initMetamodel() {
+        final MetamodelImpl metamodel = new MetamodelImpl(configuration);
         metamodel.build(new PersistenceUnitClassFinder());
+        return metamodel;
+    }
+
+    private EntityDescriptorFactory initDescriptorFactory() {
+        return new CachingEntityDescriptorFactory(new DefaultEntityDescriptorFactory(metamodel, metamodel.getNamespaceResolver()));
     }
 
     @Override
@@ -87,7 +95,6 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
                 serverSession.close();
                 this.serverSession = null;
             }
-            this.metamodel = null;
             this.open = false;
         }
         closeListener.accept(this);
@@ -101,15 +108,11 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     @Override
     public EntityManager createEntityManager(Map<String, String> map) {
         ensureOpen();
-
-        final Map<String, String> newMap = new HashMap<>(map);
-
-        newMap.putAll(configuration.getProperties());
-
         initServerSession();
 
-        final AbstractEntityManager c = new EntityManagerImpl(this, new Configuration(newMap), this.serverSession);
-
+        final Map<String, String> newMap = new HashMap<>(map);
+        newMap.putAll(configuration.getProperties());
+        final AbstractEntityManager c = new EntityManagerImpl(this, new Configuration(newMap), descriptorFactory);
         em.add(c);
         return c;
     }
@@ -137,12 +140,14 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     }
 
     /**
-     * The server session should by initialized by now, but to make sure, there is default initialization with an empty
-     * properties map.
+     * Gets the {@link ServerSession} that provides storage access and second level cache in this persistence unit.
      *
      * @return The ServerSession for this factory.
+     * @throws IllegalStateException If the factory is closed
      */
     public ServerSession getServerSession() {
+        ensureOpen();
+        initServerSession();
         return serverSession;
     }
 

@@ -29,7 +29,6 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
-import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
@@ -56,7 +55,6 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     private static final Object MAP_VALUE = new Object();
 
     private final EntityManagerFactoryImpl emf;
-    private final ServerSession serverSession;
 
     private boolean open;
 
@@ -68,15 +66,13 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     private Map<Object, Object> cascadingRegistry = new IdentityHashMap<>();
 
-    EntityManagerImpl(EntityManagerFactoryImpl emf, Configuration configuration, ServerSession serverSession) {
+    EntityManagerImpl(EntityManagerFactoryImpl emf, Configuration configuration,
+                      EntityDescriptorFactory descriptorFactory) {
         this.emf = emf;
-        this.serverSession = serverSession;
         this.configuration = configuration;
-        this.descriptorFactory = new EntityDescriptorFactory(emf.getMetamodel(), emf.getMetamodel()
-                                                                                    .getNamespaceResolver());
+        this.descriptorFactory = descriptorFactory;
 
         this.transaction = new EntityTransactionWrapper(this);
-
         this.open = true;
     }
 
@@ -613,7 +609,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     @Override
     public UnitOfWork getCurrentPersistenceContext() {
         if (persistenceContext == null) {
-            this.persistenceContext = serverSession.acquireUnitOfWork(configuration);
+            this.persistenceContext = emf.getServerSession().acquireUnitOfWork(configuration);
         }
         return persistenceContext;
     }
@@ -631,12 +627,12 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     @Override
     public void transactionStarted(EntityTransaction t) {
-        serverSession.transactionStarted(t, this);
+        emf.getServerSession().transactionStarted(t, this);
     }
 
     @Override
     public void transactionFinished(EntityTransaction t) {
-        this.serverSession.transactionFinished(t);
+        emf.getServerSession().transactionFinished(t);
     }
 
     @Override

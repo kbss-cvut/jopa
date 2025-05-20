@@ -286,12 +286,10 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         this.em = getEntityManager("retrieveSupportsContextSpecifiedByAnnotation", false);
         final ClassInContext entity = new ClassInContext("Test label");
         entity.setId(Generators.generateUri());
-        transactionalThrowing(() -> {
-            persistTestData(List.of(
-                    new Quad(entity.getId(), URI.create(RDF.TYPE), URI.create(ClassInContext.getClassIri()), URI.create("https://example.com/context")),
-                    new Quad(entity.getId(), URI.create(RDFS.LABEL), entity.getLabel(), TestEnvironment.PERSISTENCE_LANGUAGE, URI.create("https://example.com/context"))
-            ), em);
-        });
+        transactionalThrowing(() -> persistTestData(List.of(
+                new Quad(entity.getId(), URI.create(RDF.TYPE), URI.create(ClassInContext.getClassIri()), URI.create("https://example.com/context")),
+                new Quad(entity.getId(), URI.create(RDFS.LABEL), entity.getLabel(), TestEnvironment.PERSISTENCE_LANGUAGE, URI.create("https://example.com/context"))
+        ), em));
 
         final ClassInContext result = findRequired(ClassInContext.class, entity.getId());
         assertNotNull(result);
