@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"unused", "unchecked"})
 @ExtendWith(MockitoExtension.class)
-class EntityDescriptorFactoryTest {
+class DefaultEntityDescriptorFactoryTest {
 
     @Mock
     private MetamodelImpl metamodel;
@@ -46,7 +46,7 @@ class EntityDescriptorFactoryTest {
     private NamespaceResolver namespaceResolver = new NamespaceResolver();
 
     @InjectMocks
-    private EntityDescriptorFactory sut;
+    private DefaultEntityDescriptorFactory sut;
 
     @Test
     void createDescriptorCreatesEntityDescriptorWithContextSpecifiedInAnnotationOnEntityClass() throws Exception {
