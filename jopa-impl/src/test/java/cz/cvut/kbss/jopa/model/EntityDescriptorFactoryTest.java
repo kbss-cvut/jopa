@@ -8,12 +8,16 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.descriptors.FieldDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +27,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -296,5 +301,65 @@ class EntityDescriptorFactoryTest {
 
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "reference")
         private WithReferenceCycle reference;
+    }
+
+    @Test
+    void createDescriptorUsesClassContextForTypesAndProperties() {
+        namespaceResolver.registerNamespace("ex", "https://example.com/");
+        final IdentifiableEntityType<WithTypesAndProperties> type = mock(IdentifiableEntityType.class);
+        when(metamodel.entity(WithTypesAndProperties.class)).thenReturn(type);
+        final TypesSpecification types = mock(TypesSpecification.class);
+        final PropertiesSpecification props = mock(PropertiesSpecification.class);
+
+        final Descriptor result = sut.createDescriptor(WithTypesAndProperties.class);
+        assertEquals(Set.of(URI.create("https://example.com/context")), result.getAttributeContexts(types));
+        assertEquals(Set.of(URI.create("https://example.com/context")), result.getAttributeContexts(props));
+    }
+
+    @TestLocal
+    @Context("https://example.com/context")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "WithTypesAndProperties")
+    private static class WithTypesAndProperties {
+        @Id
+        private URI id;
+
+        @Types
+        private Set<String> types;
+
+        @Properties
+        private Map<String, Set<String>> properties;
+    }
+
+    @Test
+    void createDescriptorUsesContextSpecifiedOnTypesAndProperties() throws Exception {
+        namespaceResolver.registerNamespace("ex", "https://example.com/");
+        final IdentifiableEntityType<WithTypesAndPropertiesInContext> type = mock(IdentifiableEntityType.class);
+        when(metamodel.entity(WithTypesAndPropertiesInContext.class)).thenReturn(type);
+        final TypesSpecification types = mock(TypesSpecification.class);
+        when(types.getJavaField()).thenReturn(WithTypesAndPropertiesInContext.class.getDeclaredField("types"));
+        when(type.getTypes()).thenReturn(types);
+        final PropertiesSpecification props = mock(PropertiesSpecification.class);
+        when(props.getJavaField()).thenReturn(WithTypesAndPropertiesInContext.class.getDeclaredField("properties"));
+        when(type.getProperties()).thenReturn(props);
+
+        final Descriptor result = sut.createDescriptor(WithTypesAndPropertiesInContext.class);
+        assertEquals(Set.of(URI.create("https://example.com/types-context")), result.getAttributeContexts(types));
+        assertEquals(Set.of(URI.create("https://example.com/properties-context")), result.getAttributeContexts(props));
+    }
+
+    @TestLocal
+    @Context("https://example.com/context")
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "WithTypesAndPropertiesInContext")
+    private static class WithTypesAndPropertiesInContext {
+        @Id
+        private URI id;
+
+        @Context("ex:types-context")
+        @Types
+        private Set<String> types;
+
+        @Context("ex:properties-context")
+        @Properties
+        private Map<String, Set<String>> properties;
     }
 }

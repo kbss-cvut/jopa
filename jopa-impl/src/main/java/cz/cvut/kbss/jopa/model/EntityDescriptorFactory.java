@@ -79,6 +79,14 @@ public class EntityDescriptorFactory {
                 attributeContext.ifPresent(ctx -> result.addAttributeContext(att, contextUri(ctx)));
             }
         });
+        if (entityType.getTypes() != null) {
+            final Optional<Context> typesCtx = resolveContext(entityType.getTypes().getJavaField());
+            typesCtx.ifPresent(context -> result.addAttributeContext(entityType.getTypes(), contextUri(context)));
+        }
+        if (entityType.getProperties() != null) {
+            final Optional<Context> propertiesCtx = resolveContext(entityType.getProperties().getJavaField());
+            propertiesCtx.ifPresent(context -> result.addAttributeContext(entityType.getProperties(), contextUri(context)));
+        }
         return result;
     }
 
