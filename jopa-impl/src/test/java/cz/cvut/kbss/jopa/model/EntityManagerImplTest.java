@@ -433,6 +433,7 @@ class EntityManagerImplTest {
         when(attOne.getJavaField()).thenReturn(CascadeCycleOne.class.getDeclaredField("two"));
         when(attOne.getName()).thenReturn("two");
         when(attOne.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(attOne.getJavaType()).thenReturn(CascadeCycleTwo.class);
         when(etOne.getAttributes()).thenReturn(Collections.singleton(attOne));
         when(etOne.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
         final IdentifiableEntityType<CascadeCycleTwo> etTwo = mock(IdentifiableEntityType.class);
@@ -445,6 +446,7 @@ class EntityManagerImplTest {
         when(attTwo.getJavaField()).thenReturn(CascadeCycleTwo.class.getDeclaredField("one"));
         when(attTwo.getName()).thenReturn("one");
         when(attTwo.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(attTwo.getJavaType()).thenReturn(CascadeCycleOne.class);
         when(etTwo.getAttributes()).thenReturn(Collections.singleton(attTwo));
         when(etTwo.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
         when(metamodelMock.entity(CascadeCycleOne.class)).thenReturn(etOne);

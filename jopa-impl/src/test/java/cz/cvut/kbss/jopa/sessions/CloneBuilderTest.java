@@ -723,6 +723,7 @@ public class CloneBuilderTest {
         when(hasB.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(hasB.getCollectionType()).thenReturn(CollectionType.SET);
         when(hasB.getElementType()).thenReturn(etB);
+        when(hasB.isCollection()).thenReturn(true);
         final Set aFieldSpecs = new HashSet<>(2);
         aFieldSpecs.add(idA);
         aFieldSpecs.add(hasB);
@@ -731,6 +732,7 @@ public class CloneBuilderTest {
         final SingularAttribute hasA = mock(SingularAttribute.class);
         when(hasA.getJavaField()).thenReturn(B.class.getDeclaredField("a"));
         when(hasA.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(hasA.getJavaType()).thenReturn(A.class);
         final Set bFieldSpecs = new HashSet<>(2);
         bFieldSpecs.add(idB);
         bFieldSpecs.add(hasA);

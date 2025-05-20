@@ -306,6 +306,7 @@ class EntityDescriptorTest {
     void addAttributeContextCreatesEntityDescriptorAndAddsContextToItWhenItDidNotExist() throws Exception {
         when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
         when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(parentAtt.getJavaType()).thenReturn(RecursiveClass.class);
         final EntityDescriptor sut = new EntityDescriptor();
         sut.addAttributeContext(parentAtt, CONTEXT_ONE);
 
@@ -328,6 +329,7 @@ class EntityDescriptorTest {
     void addAttributeContextSupportsMultipleContextsAddedToObjectPropertyAttribute() throws Exception {
         when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
         when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(parentAtt.getJavaType()).thenReturn(RecursiveClass.class);
         final EntityDescriptor sut = new EntityDescriptor();
         sut.addAttributeContext(parentAtt, CONTEXT_ONE).addAttributeContext(parentAtt, CONTEXT_TWO);
 
@@ -416,6 +418,7 @@ class EntityDescriptorTest {
     void includeInferredIsByDefaultInheritedFromParentEntityDescriptor() throws Exception {
         when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
         when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(parentAtt.getJavaType()).thenReturn(RecursiveClass.class);
         final EntityDescriptor sut = new EntityDescriptor();
         sut.disableInference();
         assertFalse(sut.includeInferred());
@@ -427,6 +430,7 @@ class EntityDescriptorTest {
     void includeInferredInheritedFromParentDescriptorCanBeOverridenInChildEntityDescriptor() throws Exception {
         when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
         when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(parentAtt.getJavaType()).thenReturn(RecursiveClass.class);
         final EntityDescriptor sut = new EntityDescriptor();
         sut.disableInference();
         assertFalse(sut.includeInferred());
