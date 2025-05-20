@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
+import cz.cvut.kbss.jopa.test.ClassInContext;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
@@ -34,8 +35,10 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -276,5 +279,22 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         final List<URI> result = em.getContexts();
         assertEquals(2, result.size());
         assertThat(result, hasItems(CONTEXT_ONE, CONTEXT_TWO));
+    }
+
+    @Test
+    void retrieveSupportsContextSpecifiedByAnnotation() {
+        this.em = getEntityManager("retrieveSupportsContextSpecifiedByAnnotation", false);
+        final ClassInContext entity = new ClassInContext("Test label");
+        entity.setId(Generators.generateUri());
+        transactionalThrowing(() -> {
+            persistTestData(List.of(
+                    new Quad(entity.getId(), URI.create(RDF.TYPE), URI.create(ClassInContext.getClassIri()), URI.create("https://example.com/context")),
+                    new Quad(entity.getId(), URI.create(RDFS.LABEL), entity.getLabel(), TestEnvironment.PERSISTENCE_LANGUAGE, URI.create("https://example.com/context"))
+            ), em);
+        });
+
+        final ClassInContext result = findRequired(ClassInContext.class, entity.getId());
+        assertNotNull(result);
+        assertEquals(entity.getLabel(), result.getLabel());
     }
 }

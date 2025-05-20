@@ -5,10 +5,8 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.utils.NamespaceResolver;
-import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -33,7 +31,7 @@ import java.util.Set;
  */
 public class EntityDescriptorFactory {
 
-    private final Metamodel metamodel;
+    private final MetamodelImpl metamodel;
     private final NamespaceResolver namespaceResolver;
 
     public EntityDescriptorFactory(MetamodelImpl metamodel, NamespaceResolver namespaceResolver) {
@@ -69,7 +67,7 @@ public class EntityDescriptorFactory {
             final Optional<Context> attributeContext = resolveContext(att.getJavaMember());
             if (att.getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT) {
                 final Class<?> javaType = att.isCollection() ? ((PluralAttribute<? super T, ?, ?>) att).getBindableJavaType() : att.getJavaType();
-                if (IdentifierUtils.isResourceIdentifierType(javaType)) {
+                if (!metamodel.isEntityType(javaType)) {
                     attributeContext.ifPresent(ctx -> result.addAttributeContext(att, contextUri(ctx)));
                 } else {
                     result.addAttributeDescriptor(att, createDescriptorImpl(javaType,

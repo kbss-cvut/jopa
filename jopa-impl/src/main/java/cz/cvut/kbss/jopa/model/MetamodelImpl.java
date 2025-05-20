@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 
 public class MetamodelImpl implements Metamodel, MetamodelProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Metamodel.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MetamodelImpl.class);
 
     private Map<Class<?>, ManagedType<?>> typeMap;
     private Map<Class<?>, EntityType<?>> entities;
@@ -92,13 +92,18 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         final MetamodelBuilder metamodelBuilder = new MetamodelBuilder(configuration);
         metamodelBuilder.buildMetamodel(classFinder);
 
-        this.typeMap = metamodelBuilder.getTypeMap();
-        this.entities = metamodelBuilder.getEntities();
-        this.inferredClasses = metamodelBuilder.getInferredClasses();
+        initFromMetamodelBuilder(metamodelBuilder);
         this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
         this.resultSetMappingManager = metamodelBuilder.getResultSetMappingManager();
         this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
         new StaticMetamodelInitializer(this).initializeStaticMetamodel();
+    }
+
+    private void initFromMetamodelBuilder(MetamodelBuilder metamodelBuilder) {
+        this.typeMap = metamodelBuilder.getTypeMap();
+        this.entities = metamodelBuilder.getEntities();
+        this.inferredClasses = metamodelBuilder.getInferredClasses();
+        this.namespaceResolver = metamodelBuilder.getNamespaceResolver();
     }
 
     /**
@@ -122,7 +127,6 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         this.entities = metamodelBuilder.getEntities();
         this.inferredClasses = metamodelBuilder.getInferredClasses();
         this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
-        this.namespaceResolver = metamodelBuilder.getNamespaceResolver();
     }
 
     @Override
