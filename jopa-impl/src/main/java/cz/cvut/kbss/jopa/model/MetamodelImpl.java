@@ -131,7 +131,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         // Unwrap parent from generated subclass if necessary
         final Class<?> actualCls = MetamodelUtils.getEntityClass(cls);
         if (!isEntityType(actualCls)) {
-            throw new IllegalArgumentException(actualCls.getName() + " is not a known entity in this persistence unit.");
+            throw new IllegalArgumentException(actualCls.getName() + " is not a known entity class in this persistence unit.");
         }
         return (IdentifiableEntityType<X>) entities.get(actualCls);
     }
