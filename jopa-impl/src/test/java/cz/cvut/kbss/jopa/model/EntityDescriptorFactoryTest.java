@@ -110,6 +110,7 @@ class EntityDescriptorFactoryTest {
         when(rootType.getAttributes()).thenReturn(Set.of(att));
         when(metamodel.entity(WithReference.class)).thenReturn(rootType);
         when(metamodel.entity(SimpleWithNamespacedContext.class)).thenReturn(referencedType);
+        when(metamodel.isEntityType(SimpleWithNamespacedContext.class)).thenReturn(true);
 
         final Descriptor resul = sut.createDescriptor(WithReference.class);
         assertInstanceOf(EntityDescriptor.class, resul);
@@ -173,6 +174,7 @@ class EntityDescriptorFactoryTest {
         when(att.getJavaMember()).thenReturn(PropagatesContext.class.getDeclaredField("reference"));
         final IdentifiableEntityType<OWLClassA> referencedType = mock(IdentifiableEntityType.class);
         when(metamodel.entity(OWLClassA.class)).thenReturn(referencedType);
+        when(metamodel.isEntityType(OWLClassA.class)).thenReturn(true);
 
         final Descriptor result = sut.createDescriptor(PropagatesContext.class);
         assertInstanceOf(EntityDescriptor.class, result);
@@ -204,6 +206,7 @@ class EntityDescriptorFactoryTest {
         when(att.getJavaMember()).thenReturn(WithAttributeContexts.class.getDeclaredField("reference"));
         when(att.getJavaType()).thenReturn(OWLClassA.class);
         when(metamodel.entity(OWLClassA.class)).thenReturn(referencedType);
+        when(metamodel.isEntityType(OWLClassA.class)).thenReturn(true);
 
         final Descriptor result = sut.createDescriptor(WithAttributeContexts.class);
         assertInstanceOf(EntityDescriptor.class, result);
@@ -226,6 +229,7 @@ class EntityDescriptorFactoryTest {
         when(rootType.getAttributes()).thenReturn(Set.of(att));
         when(metamodel.entity(WithPluralReference.class)).thenReturn(rootType);
         when(metamodel.entity(SimpleWithNamespacedContext.class)).thenReturn(referencedType);
+        when(metamodel.isEntityType(SimpleWithNamespacedContext.class)).thenReturn(true);
 
         final Descriptor result = sut.createDescriptor(WithPluralReference.class);
         assertInstanceOf(EntityDescriptor.class, result);

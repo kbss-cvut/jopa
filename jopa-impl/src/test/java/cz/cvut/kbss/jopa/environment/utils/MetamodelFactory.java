@@ -202,6 +202,7 @@ public class MetamodelFactory {
         when(attMock.getConverter()).thenReturn(attInfo.converter);
         when(attMock.includeExplicit()).thenReturn(true);
         when(attMock.isCollection()).thenReturn(Collection.class.isAssignableFrom(attInfo.field.getType()));
+        when(attMock.getJavaMember()).thenReturn(attInfo.field);
         if (attMock instanceof SingularAttributeImpl) {
             initSingularAttribute((SingularAttributeImpl) attMock, attInfo);
         } else {
@@ -277,6 +278,7 @@ public class MetamodelFactory {
         when(typesMock.isCollection()).thenReturn(true);
         when(typesMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(typesMock.includeExplicit()).thenReturn(true);
+        when(typesMock.getJavaField()).thenReturn(attInfo.field);
         when(etMock.getFieldSpecification(attInfo.field.getName())).thenReturn(typesMock);
         when(etMock.getTypes()).thenReturn(typesMock);
     }
@@ -313,6 +315,7 @@ public class MetamodelFactory {
         when(propsMock.getDeclaringType()).thenReturn(etMock);
         when(propsMock.getPropertyIdentifierType()).thenReturn(propertyType);
         when(propsMock.getPropertyValueType()).thenReturn(valueType);
+        when(propsMock.getJavaField()).thenReturn(attInfo.field);
         when(etMock.getFieldSpecification(propsMock.getName())).thenReturn(propsMock);
         when(etMock.getProperties()).thenReturn(propsMock);
     }
@@ -348,6 +351,7 @@ public class MetamodelFactory {
         when(rdfSeqMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(rdfSeqMock.getDeclaringType()).thenReturn(etMock);
         when(rdfSeqMock.getJavaType()).thenReturn(List.class);
+        when(rdfSeqMock.getJavaMember()).thenReturn(OWLClassC.getRdfSeqField());
         when(rdfSeqMock.getCascadeTypes())
                 .thenReturn(OWLClassC.getRdfSeqField().getAnnotation(OWLObjectProperty.class).cascade());
 

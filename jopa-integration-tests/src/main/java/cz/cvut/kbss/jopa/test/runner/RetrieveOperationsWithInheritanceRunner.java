@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.oom.exception.AmbiguousEntityTypeException;
 import cz.cvut.kbss.jopa.test.OWLClassQ;
 import cz.cvut.kbss.jopa.test.OWLClassS;
@@ -257,9 +256,9 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         sameIndividual.setName(entityT.getName());
         persist(sameIndividual);
         assertTrue(em.getEntityManagerFactory().getCache()
-                     .contains(OWLClassT.class, entityT.getUri(), new EntityDescriptor()));
+                     .contains(OWLClassT.class, entityT.getUri(), em.createDescriptor(OWLClassT.class)));
         assertTrue(em.getEntityManagerFactory().getCache()
-                     .contains(OWLClassU.class, sameIndividual.getUri(), new EntityDescriptor()));
+                     .contains(OWLClassU.class, sameIndividual.getUri(), em.createDescriptor(OWLClassU.class)));
 
         assertThrows(AmbiguousEntityTypeException.class, () -> em.find(OWLClassS.class, entityT.getUri()));
     }

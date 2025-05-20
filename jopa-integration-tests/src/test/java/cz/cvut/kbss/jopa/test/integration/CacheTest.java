@@ -17,9 +17,10 @@
  */
 package cz.cvut.kbss.jopa.test.integration;
 
-import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectSet;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
@@ -134,7 +135,7 @@ class CacheTest extends IntegrationTestBase {
                 new AxiomImpl<>(NamedResource.create(uri), Assertion.createClassAssertion(false),
                                 new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_F))));
         when(connectionMock.find(any())).thenReturn(axioms);
-        final EntityDescriptor descriptor = new EntityDescriptor();
+        final Descriptor descriptor = em.createDescriptor(OWLClassF.class);
         em.getTransaction().begin();
         final OWLClassF entityF = em.find(OWLClassF.class, uri);
         assertTrue(emf.getCache().contains(OWLClassF.class, entityF.getUri(), descriptor));
