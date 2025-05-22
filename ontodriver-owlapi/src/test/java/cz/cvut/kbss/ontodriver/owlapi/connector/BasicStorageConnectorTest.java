@@ -19,14 +19,25 @@ package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
 import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
-import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.AddAxiom;
+import org.semanticweb.owlapi.model.AddImport;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLImportsDeclaration;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import java.io.File;
 import java.net.URI;
@@ -37,7 +48,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BasicStorageConnectorTest {
 
@@ -257,5 +272,21 @@ public class BasicStorageConnectorTest {
         assertTrue(snapshot.getOntology().getOntologyID().isAnonymous());
         assertNotNull(snapshot.getOntologyManager());
         assertNotNull(snapshot.getDataFactory());
+    }
+
+    @Test
+    void ontologyIsNotSavedWhenVolatileStorageIsConfigured() throws OntoDriverException {
+        final File nonExistent = new File(System.getProperty("java.io.tmpdir") + File.separator + "non-existent.owl");
+        assertFalse(nonExistent.exists());
+        try {
+            final OntologyStorageProperties storageProperties = initStorageProperties(nonExistent.toURI(), ONTOLOGY_URI);
+            final DriverConfiguration driverConfig = new DriverConfiguration(storageProperties);
+            driverConfig.setProperty(OwlapiConfigParam.USE_VOLATILE_STORAGE, "true");
+            this.connector = new BasicStorageConnector(driverConfig);
+            connector.close();
+            assertFalse(nonExistent.exists());
+        } finally {
+            nonExistent.delete();
+        }
     }
 }

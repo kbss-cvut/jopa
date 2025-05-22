@@ -20,7 +20,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.config;
 public abstract class Rdf4jOntoDriverProperties {
 
     /**
-     * Specifies whether a in-memory storage should be used for local RDF4J repositories.
+     * Specifies whether an in-memory storage should be used for local RDF4J repositories.
      * <p>
      * When set to true, any local RDF4J repositories that are created by the driver are created as only MemoryStores
      * without any persistent backend. Repositories accessed over the Internet or already existing locally are not
