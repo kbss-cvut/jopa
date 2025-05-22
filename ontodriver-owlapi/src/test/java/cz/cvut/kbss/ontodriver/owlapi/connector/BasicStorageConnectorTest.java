@@ -38,16 +38,19 @@ import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLImportsDeclaration;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -224,7 +227,7 @@ public class BasicStorageConnectorTest {
         final String importedOntoLocation = "https://www.w3.org/TR/2003/PR-owl-guide-20031215/wine";
         final IRI importedOntoIri = IRI.create("http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine");
         final OWLImportsDeclaration importDecl = manager.getOWLDataFactory()
-                .getOWLImportsDeclaration(IRI.create(importedOntoLocation));
+                                                        .getOWLImportsDeclaration(IRI.create(importedOntoLocation));
         manager.applyChange(new AddImport(ontology, importDecl));
         manager.saveOntology(ontology, IRI.create(physicalUri));
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, ONTOLOGY_URI);
@@ -233,7 +236,7 @@ public class BasicStorageConnectorTest {
         final Stream<OWLOntology> imports = snapshot.getOntology().imports();
         final Optional<OWLOntology> imported =
                 imports.filter(imp -> imp.getOntologyID().getOntologyIRI().orElse(IRI.create(""))
-                        .equals(importedOntoIri)).findAny();
+                                         .equals(importedOntoIri)).findAny();
         assertTrue(imported.isPresent());
     }
 
@@ -287,6 +290,34 @@ public class BasicStorageConnectorTest {
             assertFalse(nonExistent.exists());
         } finally {
             nonExistent.delete();
+        }
+    }
+
+    @Test
+    void writeToFileAllowsWritingCurrentOntologyStateToSpecifiedFile() throws Exception {
+        final File nonExistent = new File(System.getProperty("java.io.tmpdir") + File.separator + "non-existent.owl");
+        final File targetFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "write-to-file-test.owl");
+        assertFalse(targetFile.exists());
+        try {
+            final OntologyStorageProperties storageProperties = initStorageProperties(nonExistent.toURI(), ONTOLOGY_URI);
+            final DriverConfiguration driverConfig = new DriverConfiguration(storageProperties);
+            driverConfig.setProperty(OwlapiConfigParam.USE_VOLATILE_STORAGE, "true");
+            this.connector = new BasicStorageConnector(driverConfig);
+            final OWLDataFactory df = new OWLDataFactoryImpl();
+            final OWLClass cls = df.getOWLClass(IRI.create("http://krizik.felk.cvut.cz/ontologies/jopa#OWClassA"));
+            final OWLAxiom classDeclaration = df.getOWLDeclarationAxiom(cls);
+            final OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+            final MutableAddAxiom add = new MutableAddAxiom(manager.createOntology(), classDeclaration);
+            connector.applyChanges(List.of(add));
+            connector.writeToFile(targetFile.getAbsolutePath());
+            assertTrue(targetFile.exists());
+            final OWLOntology o = manager.loadOntology(IRI.create(targetFile));
+            assertEquals(o.axioms().count(), o.axioms().count());
+            manager.clearOntologies();
+            connector.close();
+        } finally {
+            nonExistent.delete();
+            targetFile.delete();
         }
     }
 }
