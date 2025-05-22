@@ -44,6 +44,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -303,5 +304,26 @@ public class BasicStorageConnector extends AbstractConnector {
             throw new OntologyStorageException(
                     "Error when saving ontology to " + configuration.getStorageProperties().getPhysicalURI(), e);
         }
+    }
+
+    /**
+     * Writes the current state of the ontology to a file given by the specified path.
+     * <p>
+     * This method is mainly for debugging purposes, allowing to output the current state of the ontology to a file.
+     *
+     * @param targetPath Target file path
+     * @throws OntologyStorageException When unable to write to the file
+     */
+    public void writeToFile(String targetPath) throws OntologyStorageException {
+        ensureOpen();
+        WRITE.lock();
+        try {
+            ontologyManager.saveOntology(ontology, IRI.create(new File(targetPath).toURI()));
+        } catch (OWLOntologyStorageException e) {
+            throw new OntologyStorageException("Error when saving ontology to " + targetPath, e);
+        } finally {
+            WRITE.unlock();
+        }
+
     }
 }
