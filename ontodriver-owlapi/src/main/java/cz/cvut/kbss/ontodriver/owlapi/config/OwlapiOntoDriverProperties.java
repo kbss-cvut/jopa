@@ -46,6 +46,16 @@ public abstract class OwlapiOntoDriverProperties {
      */
     public static final String DEFAULT_IRI_MAPPING_DELIMITER = ">";
 
+    /**
+     * Specifies whether an in-memory storage should be used for OWL ontologies.
+     * <p>
+     * When set to true, the ontology created by the driver is not stored. If an ontology file already existed, this
+     * setting has no effect and changes made by the driver are written to the file.
+     * <p>
+     * {@code Boolean} value expected, default is false.
+     */
+    public static final String USE_VOLATILE_STORAGE = "cz.cvut.kbss.ontodriver.owlapi.use-volatile-storage";
+
     private OwlapiOntoDriverProperties() {
         throw new AssertionError();
     }
