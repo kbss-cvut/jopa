@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.test.environment;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiOntoDriverProperties;
 import openllet.owlapi.OpenlletReasonerFactory;
 
 import java.util.HashMap;
@@ -44,7 +45,8 @@ public class OwlapiPersistenceFactory implements PersistenceFactory {
 
     private static Map<String, String> initProperties() {
         final Map<String, String> map = new HashMap<>();
-        map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
+        map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, "true");
+        map.put(OwlapiOntoDriverProperties.USE_VOLATILE_STORAGE, "true");
         map.put(JOPAPersistenceProperties.LANG, TestEnvironment.PERSISTENCE_LANGUAGE);
         map.put(OntoDriverProperties.REASONER_FACTORY_CLASS, OpenlletReasonerFactory.class.getName());
         return map;
