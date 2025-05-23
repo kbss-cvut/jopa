@@ -213,7 +213,6 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
         OWLClassFF resultF = readOnlyEm.find(OWLClassFF.class, instanceFFUri);
         assertNotSame(originalFF, resultF);
 
-        // plural object properties are not cloned if already cached TODO
         FieldSpecification<?, ?> fs = emf.getMetamodel()
                                          .entity(OWLClassFF.class)
                                          .getFieldSpecification("simpleSet");
@@ -224,7 +223,7 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
             assertNotSame(originalA, instance);
         });
 
-        // connection is invoked for classFF (read-write) and three times for classD (read-write)
+        // connection is invoked for classFF (read-write) and three times for classA (read-write)
         verify(connectionMock, times(4)).find(any(AxiomDescriptor.class));
     }
 
