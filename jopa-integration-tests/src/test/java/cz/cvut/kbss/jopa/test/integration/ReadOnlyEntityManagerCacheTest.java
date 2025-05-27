@@ -185,7 +185,8 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
     }
 
     @Test
-    void findResultWithPluralObjectPropertyIsDeepClonedIfItIsAlreadyCached() throws Exception {
+    void findResultIsDeepClonedIfItIsAlreadyCached() throws Exception {
+        // entire subgraph is cloned if its root is cached
         final URI instanceFFUri = Generators.generateUri();
         final URI instanceAUri1 = Generators.generateUri();
         final URI instanceAUri2 = Generators.generateUri();
