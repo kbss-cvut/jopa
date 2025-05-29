@@ -39,7 +39,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
@@ -48,6 +47,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
+
     @Mock
     private Statement statementMock;
     @Mock
@@ -106,10 +106,12 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
         final URI instanceDUri = Generators.generateUri();
         final URI instanceAUri = Generators.generateUri();
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceAUri
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceAUri)
         ))).thenReturn(axiomsForA(instanceAUri));
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceDUri
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceDUri)
         ))).thenReturn(axiomsForD(instanceDUri, instanceAUri));
 
         final OWLClassD instanceD = readOnlyEm.find(OWLClassD.class, instanceDUri);
@@ -131,31 +133,34 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
         final URI instanceAUri2 = Generators.generateUri();
         final URI instanceAUri3 = Generators.generateUri();
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceFFUri
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceFFUri)
         ))).thenReturn(axiomsForFF(instanceFFUri, instanceAUri1, instanceAUri2, instanceAUri3));
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceAUri1
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceAUri1)
         ))).thenReturn(axiomsForA(instanceAUri1));
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceAUri2
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceAUri2)
         ))).thenReturn(axiomsForA(instanceAUri2));
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceAUri3
-        ))).thenReturn(axiomsForA(instanceAUri2));
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceAUri3)
+        ))).thenReturn(axiomsForA(instanceAUri3));
 
         final OWLClassFF instanceFF = readOnlyEm.find(OWLClassFF.class, instanceFFUri);
         assertNotNull(instanceFF);
         assertNotNull(instanceFF.getSimpleSet());
         assertFalse(instanceFF.getSimpleSet().isEmpty());
 
-        // plural object properties are not cached
+        // The plural object properties are not cached
         FieldSpecification<?, ?> fs = emf.getMetamodel()
                                          .entity(OWLClassFF.class)
                                          .getFieldSpecification("simpleSet");
         Descriptor descriptor = new ObjectPropertyCollectionDescriptor(fs);
-        instanceFF.getSimpleSet().forEach((OWLClassA instance) -> {
-            assertFalse(isCached(instance.getClass(), instance.getUri(), descriptor));
-        });
+        instanceFF.getSimpleSet().forEach(
+                (OWLClassA instance) -> assertFalse(isCached(instance.getClass(), instance.getUri(), descriptor)));
 
         // connection is invoked for classFF (read-only) and three times for classA (read-only)
         verify(connectionMock, times(4)).find(any(AxiomDescriptor.class));
@@ -186,23 +191,27 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
 
     @Test
     void findResultIsDeepClonedIfItIsAlreadyCached() throws Exception {
-        // entire subgraph is cloned if its root is cached
+        // The entire subgraph is cloned if its root is cached
         final URI instanceFFUri = Generators.generateUri();
         final URI instanceAUri1 = Generators.generateUri();
         final URI instanceAUri2 = Generators.generateUri();
         final URI instanceAUri3 = Generators.generateUri();
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceFFUri
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceFFUri)
         ))).thenReturn(axiomsForFF(instanceFFUri, instanceAUri1, instanceAUri2, instanceAUri3));
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceAUri1
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceAUri1)
         ))).thenReturn(axiomsForA(instanceAUri1));
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceAUri2
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceAUri2)
         ))).thenReturn(axiomsForA(instanceAUri2));
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceAUri3
-        ))).thenReturn(axiomsForA(instanceAUri2));
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceAUri3)
+        ))).thenReturn(axiomsForA(instanceAUri3));
 
         final OWLClassFF instanceFF = em.find(OWLClassFF.class, instanceFFUri);
         OWLClassFF originalFF = (OWLClassFF) getCachedValue(OWLClassFF.class, instanceFFUri, new EntityDescriptor());
@@ -213,13 +222,9 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
 
         OWLClassFF resultF = readOnlyEm.find(OWLClassFF.class, instanceFFUri);
         assertNotSame(originalFF, resultF);
-
-        FieldSpecification<?, ?> fs = emf.getMetamodel()
-                                         .entity(OWLClassFF.class)
-                                         .getFieldSpecification("simpleSet");
-        Descriptor descriptor = new ObjectPropertyCollectionDescriptor(fs);
         resultF.getSimpleSet().forEach((OWLClassA instance) -> {
-            OWLClassA originalA = (OWLClassA) getCachedValue(instance.getClass(), instance.getUri(), descriptor);
+            OWLClassA originalA =
+                    (OWLClassA) getCachedValue(instance.getClass(), instance.getUri(), new EntityDescriptor());
             assertNotNull(originalA);
             assertNotSame(originalA, instance);
         });
@@ -233,14 +238,17 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
         final URI instanceDUri = Generators.generateUri();
         final URI instanceAUri = Generators.generateUri();
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceAUri
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceAUri)
         ))).thenReturn(axiomsForA(instanceAUri));
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceDUri
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceDUri)
         ))).thenReturn(axiomsForD(instanceDUri, instanceAUri));
 
         final OWLClassA instanceA = em.find(OWLClassA.class, instanceAUri);
-        final OWLClassA instanceAOriginal = (OWLClassA) getCachedValue(OWLClassA.class, instanceAUri, new EntityDescriptor());
+        final OWLClassA instanceAOriginal =
+                (OWLClassA) getCachedValue(OWLClassA.class, instanceAUri, new EntityDescriptor());
         assertNotNull(instanceA);
         assertNotNull(instanceAOriginal);
 
@@ -262,17 +270,21 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
         final URI instanceAUri2 = Generators.generateUri();
         final URI instanceAUri3 = Generators.generateUri();
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceFFUri
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceFFUri)
         ))).thenReturn(axiomsForFF(instanceFFUri, instanceAUri1, instanceAUri2, instanceAUri3));
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceAUri1
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceAUri1)
         ))).thenReturn(axiomsForA(instanceAUri1));
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceAUri2
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceAUri2)
         ))).thenReturn(axiomsForA(instanceAUri2));
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier() == instanceAUri3
-        ))).thenReturn(axiomsForA(instanceAUri2));
+                                                 axiomDescriptor != null && axiomDescriptor.getSubject().getIdentifier()
+                                                                                           .equals(instanceAUri3)
+        ))).thenReturn(axiomsForA(instanceAUri3));
 
         final OWLClassA instanceA = em.find(OWLClassA.class, instanceAUri1);
         OWLClassA originalA = (OWLClassA) getCachedValue(OWLClassA.class, instanceAUri1, new EntityDescriptor());
@@ -284,14 +296,14 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
 
         OWLClassA clone = resultF.getSimpleSet()
                                  .stream()
-                                 .filter((OWLClassA a) -> a.getUri() == instanceA.getUri())
+                                 .filter((OWLClassA a) -> a.getUri().equals(instanceAUri1))
                                  .findFirst()
                                  .get();
         assertNotNull(clone);
         assertNotSame(originalA, clone);
 
-        // connection is invoked for classA (read-write), for classFF, and three times for classD (read-write)
-        verify(connectionMock, times(5)).find(any(AxiomDescriptor.class));
+        // connection is invoked for classA (A1, read-write), for classFF, and two times for classA (A2, A3, read-only)
+        verify(connectionMock, times(4)).find(any(AxiomDescriptor.class));
     }
 
     @Test
@@ -333,19 +345,22 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
         Assertion assertion = Assertion.createObjectPropertyAssertion(new URI(Vocabulary.P_HAS_OWL_CLASS_A), false);
         aDescriptor.addAssertion(assertion);
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.toString().equals(aDescriptor.toString())
+                                                 axiomDescriptor != null && axiomDescriptor.toString()
+                                                                                           .equals(aDescriptor.toString())
         ))).thenReturn(axiomsForPropertyDDToA(instanceDDUri, instanceAUri));
 
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null
-                && !axiomDescriptor.toString().equals(aDescriptor.toString())
-                && axiomDescriptor.getSubject().getIdentifier() == instanceAUri
+                                                 axiomDescriptor != null
+                                                         && !axiomDescriptor.toString().equals(aDescriptor.toString())
+                                                         && axiomDescriptor.getSubject().getIdentifier()
+                                                                           .equals(instanceAUri)
         ))).thenReturn(axiomsForA(instanceAUri));
 
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null
-                && !axiomDescriptor.toString().equals(aDescriptor.toString())
-                && axiomDescriptor.getSubject().getIdentifier() == instanceDDUri
+                                                 axiomDescriptor != null
+                                                         && !axiomDescriptor.toString().equals(aDescriptor.toString())
+                                                         && axiomDescriptor.getSubject().getIdentifier()
+                                                                           .equals(instanceDDUri)
         ))).thenReturn(axiomsForDD(instanceDDUri, instanceAUri));
 
         // load DD by read-only
@@ -376,19 +391,22 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
         Assertion assertion = Assertion.createObjectPropertyAssertion(new URI(Vocabulary.P_HAS_OWL_CLASS_A), false);
         aDescriptor.addAssertion(assertion);
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null && axiomDescriptor.toString().equals(aDescriptor.toString())
+                                                 axiomDescriptor != null && axiomDescriptor.toString()
+                                                                                           .equals(aDescriptor.toString())
         ))).thenReturn(axiomsForPropertyDDToA(instanceDDUri, instanceAUri));
 
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null
-                        && !axiomDescriptor.toString().equals(aDescriptor.toString())
-                        && axiomDescriptor.getSubject().getIdentifier() == instanceAUri
+                                                 axiomDescriptor != null
+                                                         && !axiomDescriptor.toString().equals(aDescriptor.toString())
+                                                         && axiomDescriptor.getSubject().getIdentifier()
+                                                                           .equals(instanceAUri)
         ))).thenReturn(axiomsForA(instanceAUri));
 
         when(connectionMock.find(argThat((AxiomDescriptor axiomDescriptor) ->
-                axiomDescriptor != null
-                        && !axiomDescriptor.toString().equals(aDescriptor.toString())
-                        && axiomDescriptor.getSubject().getIdentifier() == instanceDDUri
+                                                 axiomDescriptor != null
+                                                         && !axiomDescriptor.toString().equals(aDescriptor.toString())
+                                                         && axiomDescriptor.getSubject().getIdentifier()
+                                                                           .equals(instanceDDUri)
         ))).thenReturn(axiomsForDD(instanceDDUri, instanceAUri));
 
         // load A by read-write
@@ -419,8 +437,9 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
     private Collection<Axiom<?>> axiomsForPropertyDDToA(URI identifierDD, URI identifierA) {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         final NamedResource nr = NamedResource.create(identifierDD);
-        axioms.add(new AxiomImpl<>(nr, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_OWL_CLASS_A), false),
-                new Value<Object>(NamedResource.create(identifierA))));
+        axioms.add(new AxiomImpl<>(nr, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_OWL_CLASS_A),
+                                                                               false),
+                                   new Value<Object>(NamedResource.create(identifierA))));
         return axioms;
     }
 
@@ -428,10 +447,10 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         final NamedResource nr = NamedResource.create(identifier);
         axioms.add(new AxiomImpl<>(nr, Assertion.createClassAssertion(false),
-                new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_A))));
+                                   new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_A))));
         axioms.add(new AxiomImpl<>(nr,
-                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE),
-                        false), new Value<>("stringAttribute")));
+                                   Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE),
+                                                                         false), new Value<>("stringAttribute")));
         return axioms;
     }
 
@@ -439,9 +458,10 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         final NamedResource nr = NamedResource.create(identifierDD);
         axioms.add(new AxiomImpl<>(nr, Assertion.createClassAssertion(false),
-                new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_D))));
-        axioms.add(new AxiomImpl<>(nr, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_OWL_CLASS_A), false),
-                new Value<Object>(NamedResource.create(identifierA))));
+                                   new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_D))));
+        axioms.add(new AxiomImpl<>(nr, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_OWL_CLASS_A),
+                                                                               false),
+                                   new Value<Object>(NamedResource.create(identifierA))));
         return axioms;
     }
 
@@ -449,9 +469,10 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
         final NamedResource id = NamedResource.create(identifierD);
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         axioms.add(new AxiomImpl<>(id, Assertion.createClassAssertion(false),
-                new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_D))));
-        axioms.add(new AxiomImpl<>(id, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_OWL_CLASS_A), false),
-                new Value<Object>(NamedResource.create(identifierA))));
+                                   new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_D))));
+        axioms.add(new AxiomImpl<>(id, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_OWL_CLASS_A),
+                                                                               false),
+                                   new Value<Object>(NamedResource.create(identifierA))));
         return axioms;
     }
 
@@ -459,13 +480,19 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
         final NamedResource id = NamedResource.create(identifierF);
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         axioms.add(new AxiomImpl<>(id, Assertion.createClassAssertion(false),
-                new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_F))));
-        axioms.add(new AxiomImpl<>(id, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_F_HAS_SIMPLE_SET), false),
-                new Value<Object>(NamedResource.create(identifierA1))));
-        axioms.add(new AxiomImpl<>(id, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_F_HAS_SIMPLE_SET), false),
-                new Value<Object>(NamedResource.create(identifierA2))));
-        axioms.add(new AxiomImpl<>(id, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_F_HAS_SIMPLE_SET), false),
-                new Value<Object>(NamedResource.create(identifierA3))));
+                                   new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_F))));
+        axioms.add(new AxiomImpl<>(id,
+                                   Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_F_HAS_SIMPLE_SET),
+                                                                           false),
+                                   new Value<>(NamedResource.create(identifierA1))));
+        axioms.add(new AxiomImpl<>(id,
+                                   Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_F_HAS_SIMPLE_SET),
+                                                                           false),
+                                   new Value<>(NamedResource.create(identifierA2))));
+        axioms.add(new AxiomImpl<>(id,
+                                   Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_F_HAS_SIMPLE_SET),
+                                                                           false),
+                                   new Value<>(NamedResource.create(identifierA3))));
         return axioms;
     }
 }

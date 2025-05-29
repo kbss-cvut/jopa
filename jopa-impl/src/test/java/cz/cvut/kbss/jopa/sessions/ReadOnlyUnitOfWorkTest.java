@@ -43,7 +43,15 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static cz.cvut.kbss.jopa.utils.EntityPropertiesUtils.getValueAsURI;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -58,7 +66,6 @@ import static org.mockito.Mockito.when;
 class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     private Object objectMock;
     private Descriptor descriptorMock;
-    private CloneRegistrationDescriptor cloneRegistrationDescriptorMock;
     private Object identifierMock;
     private Field fieldMock;
     private FieldSpecification fieldSpecificationMock;
@@ -74,7 +81,6 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
 
         objectMock = Mockito.mock(Object.class);
         descriptorMock = Mockito.mock(Descriptor.class);
-        cloneRegistrationDescriptorMock = Mockito.mock(CloneRegistrationDescriptor.class);
         identifierMock = Mockito.mock(Object.class);
         fieldMock = Mockito.mock(Field.class);
         fieldSpecificationMock = Mockito.mock(FieldSpecification.class);
@@ -171,9 +177,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
 
     @Test
     void throwsUnsupportedOperationOnCopyChangeSet() {
-        assertThrows(UnsupportedOperationException.class, () -> {
-            ReadOnlyUnitOfWork.copyChangeSet(objectChangeSetMock, objectMock, objectMock, descriptorMock);
-        });
+        assertThrows(UnsupportedOperationException.class, () -> ReadOnlyUnitOfWork.copyChangeSet(objectChangeSetMock, objectMock, objectMock, descriptorMock));
     }
 
     @Test
@@ -573,7 +577,8 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         uow.loadEntityField(result, metamodelMocks.forOwlClassL().owlClassAAtt());
 
         assertNotNull(uow.getManagedOriginal(entityA.getClass(), entityA.getUri(), descriptor));
-        assertEquals(LoadState.LOADED, uow.getLoadStateRegistry().get(original).isLoaded(metamodelMocks.forOwlClassL().owlClassAAtt()));
+        assertEquals(LoadState.LOADED, uow.getLoadStateRegistry().get(original)
+                                          .isLoaded(metamodelMocks.forOwlClassL().owlClassAAtt()));
     }
 
     @Test
@@ -674,9 +679,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Override
     void registerExistingObjectInvokesPostCloneListeners() {
         try (MockedConstruction<PostLoadInvoker> mockedConstruction = mockConstruction(PostLoadInvoker.class,
-                (mock, context) -> {
-                    doNothing().when(mock).accept(entityA);
-                })) {
+                (mock, context) -> doNothing().when(mock).accept(entityA))) {
             defaultLoadStateDescriptor(entityA);
 
             final Object result = uow.registerExistingObject(entityA, descriptor);
