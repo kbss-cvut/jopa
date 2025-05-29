@@ -109,4 +109,9 @@
             <version>${rdf4j.version}</version>
         </dependency>
     </dependencies>
+
+    <scm>
+        <url>https://github.com/kbss-cvut/jopa</url>
+        <connection>scm:git:git://github.com/kbss-cvut/jopa.git</connection>
+    </scm>
 </project>

@@ -310,9 +310,14 @@
     </organization>
 
     <scm>
-        <url>https://github.com/kbss-cvut/jopa.git</url>
-        <connection>scm:git:https://github.com/kbss-cvut/jopa.git</connection>
+        <url>https://github.com/kbss-cvut/jopa</url>
+        <connection>scm:git:git://github.com/kbss-cvut/jopa.git</connection>
     </scm>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/kbss-cvut/jopa/issues</url>
+    </issueManagement>
 
     <distributionManagement>
         <repository>

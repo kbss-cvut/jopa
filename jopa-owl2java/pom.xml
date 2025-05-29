@@ -100,4 +100,9 @@
             </plugin>
         </plugins>
     </build>
+
+    <scm>
+        <url>https://github.com/kbss-cvut/jopa</url>
+        <connection>scm:git:git://github.com/kbss-cvut/jopa.git</connection>
+    </scm>
 </project>
