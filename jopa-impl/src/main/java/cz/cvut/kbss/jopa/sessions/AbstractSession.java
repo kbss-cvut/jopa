@@ -26,7 +26,7 @@ import java.util.Objects;
 /**
  * Defines common session-related methods.
  */
-abstract class AbstractSession implements MetamodelProvider, ConfigurationHolder {
+public abstract class AbstractSession implements MetamodelProvider, ConfigurationHolder {
 
     protected final Configuration configuration;
 

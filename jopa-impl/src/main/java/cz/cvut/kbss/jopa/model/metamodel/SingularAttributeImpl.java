@@ -35,11 +35,6 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
     }
 
     @Override
-    public boolean isId() {
-        return false;
-    }
-
-    @Override
     public boolean isVersion() {
         throw new UnsupportedOperationException();
     }

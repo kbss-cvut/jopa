@@ -35,7 +35,6 @@ import java.util.Date;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -94,7 +93,7 @@ class VariableResultMapperTest {
 
     @Test
     void mapTransformsValueToTargetType() throws OntoDriverException {
-        final String value = "http://onto.fel.cvut.cz";
+        final String value = "https://onto.fel.cvut.cz";
         when(resultRow.isBound(NAME)).thenReturn(true);
         when(resultRow.getObject(NAME)).thenReturn(value);
         final VariableResultMapper mapper = new VariableResultMapper(WithTypeTransform.getVariableMapping());

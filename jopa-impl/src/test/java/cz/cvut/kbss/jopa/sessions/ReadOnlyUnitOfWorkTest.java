@@ -176,11 +176,6 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     }
 
     @Test
-    void throwsUnsupportedOperationOnCopyChangeSet() {
-        assertThrows(UnsupportedOperationException.class, () -> ReadOnlyUnitOfWork.copyChangeSet(objectChangeSetMock, objectMock, objectMock, descriptorMock));
-    }
-
-    @Test
     void throwsUnsupportedOperationOnRemoveObjectFromCache() {
         assertThrows(UnsupportedOperationException.class, () -> uow.removeObjectFromCache(objectMock, uriMock));
     }

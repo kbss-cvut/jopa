@@ -150,11 +150,6 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     @Override
-    public boolean hasSingleIdAttribute() {
-        return true;    // We do not support id classes
-    }
-
-    @Override
     public <Y> SingularAttribute<X, Y> getDeclaredVersion(Class<Y> type) {
         // TODO
         throw new UnsupportedOperationException();

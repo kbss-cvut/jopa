@@ -22,72 +22,61 @@ import cz.cvut.kbss.jopa.NonJPA;
 import java.util.Set;
 
 /**
- * Instances of the type IdentifiableType represent entity or mapped superclass
- * types.
+ * Instances of the type IdentifiableType represent entity or a mapped superclass types.
  *
- * @param <X>
- *            The represented entity or mapped superclass type.
+ * @param <X> The represented entity or a mapped superclass type.
  */
 public interface IdentifiableType<X> extends ManagedType<X> {
 
     /**
-     * Return the attribute that corresponds to the version attribute of the
-     * entity or mapped superclass.
+     * Return the attribute that corresponds to the version attribute of the entity or mapped superclass.
      *
-     * @param type
-     *            the type of the represented version attribute
+     * @param type the type of the represented version attribute
      * @return version attribute
-     * @throws IllegalArgumentException
-     *             if version attribute of the given type is not present in the
-     *             identifiable type
+     * @throws IllegalArgumentException if version attribute of the given type is not present in the identifiable type
      */
 
     <Y> SingularAttribute<? super X, Y> getVersion(Class<Y> type);
 
     /**
-     * Return the attribute that corresponds to the version attribute declared
-     * by the entity or mapped superclass.
+     * Return the attribute that corresponds to the version attribute declared by the entity or mapped superclass.
      *
-     * @param type
-     *            the type of the represented declared version attribute
+     * @param type the type of the represented declared version attribute
      * @return declared version attribute
-     * @throws IllegalArgumentException
-     *             if version attribute of the type is not declared in the
-     *             identifiable type
+     * @throws IllegalArgumentException if version attribute of the type is not declared in the identifiable type
      */
     <Y> SingularAttribute<X, Y> getDeclaredVersion(Class<Y> type);
 
     /**
-     * Return the identifiable types that corresponds to the most specific mapped
-     * superclass or entity extended by the entity or mapped superclass.
+     * Return the identifiable types that correspond to the most specific mapped superclass or entity extended by the
+     * entity or mapped superclass.
      *
-     * @return supertype of identifiable type or null if no
-     *
-     *         such supertype
+     * @return supertype of this identifiable type or null if no such supertype
      */
     Set<? extends IdentifiableType<? super X>> getSupertypes();
 
     /**
-     * Whether the identifiable type has a single id attribute. Returns true for
-     * a simple id or embedded id; returns false for an idclass.
+     * Whether the identifiable type has a single id attribute.
+     * <p>
+     * Returns true for a simple id or embedded id; returns false for an idclass.
      *
-     * @return boolean indicating whether the identifiable
-     *
-     *         type has a single id attribute
+     * @return boolean indicating whether the identifiable type has a single id attribute
      */
-    boolean hasSingleIdAttribute();
+    default boolean hasSingleIdAttribute() {
+        // We do not support IdClasses
+        return true;
+    }
 
     /**
      * Whether the identifiable type has a version attribute.
      *
-     * @return boolean indicating whether the identifiable
-     *
-     *         type has a version attribute
+     * @return boolean indicating whether the identifiable type has a version attribute
      */
     boolean hasVersionAttribute();
 
     /**
      * Return the attribute that corresponds to the id attribute of the entity or mapped superclass.
+     *
      * @return Identifier attribute
      */
     @NonJPA

@@ -58,7 +58,7 @@ public class DeleteOperationsTest extends DeleteOperationsRunner {
     @Test
     @Override
     public void removeTriggersLazyLoading() {
-        // OWL doesn't remove all statements, unlike RDF4J and Jena, but keeps certain top-level attributes. That's why this test has to be overriden
+        // OWL doesn't remove all statements, unlike RDF4J and Jena, but keeps certain top-level attributes. That's why this test has to be overridden
         this.em = getEntityManager("removeTriggersLazyLoading", true);
         persist(entityI);
 

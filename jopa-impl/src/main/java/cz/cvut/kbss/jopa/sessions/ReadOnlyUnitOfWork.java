@@ -229,7 +229,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
             final Field f = fs.getJavaField();
             final Object fieldValue = EntityPropertiesUtils.getFieldValue(f, original);
-            Object newValue = null;
+            Object newValue;
 
             if (loadState.isLoaded(fs) == LoadState.NOT_LOADED) {
                 newValue = lazyLoaderFactory.createProxy(original, (FieldSpecification<? super Object, ?>) fs);
@@ -242,7 +242,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
                     // register objects if possible
                     Descriptor fieldDescriptor = super.getDescriptor(original).getAttributeDescriptor(fs);
                     if (fs.isCollection()) {
-                        newValue = this.registerExistingObjects((Collection<Object>) fieldValue, fs, fieldDescriptor);
+                        newValue = this.registerExistingObjects((Collection<Object>) fieldValue, fieldDescriptor);
                     } else {
                         newValue = fieldValue;
                     }
@@ -267,8 +267,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         }
     }
 
-    private Collection<Object> registerExistingObjects(Collection<Object> collection, FieldSpecification<?, ?> fs,
-                                                       Descriptor descriptor) {
+    private Collection<Object> registerExistingObjects(Collection<Object> collection, Descriptor descriptor) {
         final Collection<Object> copy = CollectionFactory.createDefaultCollection(CollectionFactory.resolveCollectionType(collection.getClass()));
         for (Object entity : collection) {
             if (!super.isEntityType(entity.getClass())) {
@@ -497,20 +496,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
-     */
-    protected static ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
-                                                   Descriptor descriptor) throws UnsupportedOperationException {
-        throwUnsupportedOperationException();
-        return null;
-    }
-
-    /**
-     * Method not supported.
-     *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     protected ObjectChangeSet processInferredValueChanges(
@@ -520,9 +508,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     void validateIntegrityConstraints() throws UnsupportedOperationException {
@@ -530,9 +518,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     void calculateChanges() throws UnsupportedOperationException {
@@ -540,9 +528,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     void persistNewObjects() throws UnsupportedOperationException {
@@ -550,9 +538,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     void registerClone(Object clone, Object original, Descriptor descriptor) throws UnsupportedOperationException {
@@ -560,9 +548,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     public void registerOriginalForNewClone(Object clone, Object original) throws UnsupportedOperationException {
@@ -570,9 +558,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     public void writeUncommittedChanges() throws UnsupportedOperationException {
@@ -580,9 +568,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     public boolean hasChanges() throws UnsupportedOperationException {
@@ -591,9 +579,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     void setHasChanges() throws UnsupportedOperationException {
@@ -601,9 +589,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     public void restoreRemovedObject(Object entity) throws UnsupportedOperationException {
@@ -611,9 +599,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     public boolean isFlushingChanges() throws UnsupportedOperationException {
@@ -622,9 +610,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     public void attributeChanged(Object entity, Field f) throws UnsupportedOperationException {
@@ -632,9 +620,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     public void attributeChanged(Object entity,
@@ -643,9 +631,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     protected void markCloneForDeletion(Object entity, Object identifier) throws UnsupportedOperationException {
@@ -654,9 +642,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     public void registerNewObject(Object entity, Descriptor descriptor) throws UnsupportedOperationException {
@@ -664,9 +652,9 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Method not supported.
+     * Method is not supported.
      *
-     * @throws UnsupportedOperationException Method not supported.
+     * @throws UnsupportedOperationException Always thrown
      */
     @Override
     public void removeObject(Object object) throws UnsupportedOperationException {

@@ -71,7 +71,7 @@ public class ConverterResolver {
      * @return Possible converter instance to be used for transformation of values of the specified field. Returns empty
      * {@code Optional} if no suitable converter is found (or needed)
      */
-    public Optional<ConverterWrapper<?, ?>> resolveConverter(PropertyInfo field, PropertyAttributes config) {
+    Optional<ConverterWrapper<?, ?>> resolveConverter(PropertyInfo field, PropertyAttributes config) {
         final Class<?> attValueType = config.getType().getJavaType();
         final Optional<ConverterWrapper<?, ?>> localCustomConverter = resolveCustomConverter(field, config);
         if (localCustomConverter.isPresent()) {

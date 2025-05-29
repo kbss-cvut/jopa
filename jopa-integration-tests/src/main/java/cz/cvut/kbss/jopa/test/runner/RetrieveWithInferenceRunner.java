@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class RetrieveWithInferenceRunner extends BaseRunner {
 
-    protected OWLClassW entityW = new OWLClassW();
+    protected final OWLClassW entityW = new OWLClassW();
 
     public RetrieveWithInferenceRunner(Logger logger, PersistenceFactory persistenceFactory,
                                        DataAccessor dataAccessor) {

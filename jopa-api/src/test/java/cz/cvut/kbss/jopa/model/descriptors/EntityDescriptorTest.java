@@ -427,7 +427,7 @@ class EntityDescriptorTest {
     }
 
     @Test
-    void includeInferredInheritedFromParentDescriptorCanBeOverridenInChildEntityDescriptor() throws Exception {
+    void includeInferredInheritedFromParentDescriptorCanBeOverriddenInChildEntityDescriptor() throws Exception {
         when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
         when(parentAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(parentAtt.getJavaType()).thenReturn(RecursiveClass.class);

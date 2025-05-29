@@ -185,7 +185,7 @@ class OwlapiAdapterTest {
     private Axiom<?> initAxiomForContains(Assertion.AssertionType assType, boolean inferred) {
         final NamedResource individual = NamedResource.create(
                 "http://krizik.felk.cvut.cz/ontologies/jopa#IndividualOne");
-        Assertion assertion = null;
+        Assertion assertion;
         Value<?> value = switch (assType) {
             case CLASS -> {
                 assertion = Assertion.createClassAssertion(inferred);
@@ -445,7 +445,7 @@ class OwlapiAdapterTest {
     }
 
     @Test
-    void addTransactionalChangesRemovesAddAxiomsOverridenByRemoveSubjectPropertyChanges() throws Exception {
+    void addTransactionalChangesRemovesAddAxiomsOverriddenByRemoveSubjectPropertyChanges() throws Exception {
         final OWLNamedIndividual subject = factory.getOWLNamedIndividual(IRI.create(INDIVIDUAL.getIdentifier()));
         final OWLDataProperty property = factory.getOWLDataProperty(IRI.create(Generator.generateUri()));
         final MutableAddAxiom add = new MutableAddAxiom(ontology, factory.getOWLDataPropertyAssertionAxiom(property, subject, 117));

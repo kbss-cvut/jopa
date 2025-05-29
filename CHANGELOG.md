@@ -531,7 +531,7 @@ on an entity or its mapped superclass and the query will be available in the per
 
 ## 0.8.3 - 2016-07-12
 - Consistent handling of instances with the same identifier (i.e. the same individual). Only single instance with a given
-identifier is allowed in one persistence context. But, persisting the same individual as instance of different classes in
+identifier is allowed in one persistence context. But persisting the same individual as instance of different classes in
 different persistence contexts is possible.
 
 ## 0.8.2 - 2016-07-04

@@ -96,7 +96,7 @@ public class DefaultPersistenceProviderResolver implements PersistenceProviderRe
     }
 
     /**
-     * Remove garbage collected cache keys & providers.
+     * Remove garbage collected cache keys and providers.
      */
     private void processQueue() {
         CacheKeyReference ref;

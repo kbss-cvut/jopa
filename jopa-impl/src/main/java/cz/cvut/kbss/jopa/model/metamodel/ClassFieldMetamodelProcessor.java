@@ -147,7 +147,7 @@ class ClassFieldMetamodelProcessor<X> {
 
 
     /**
-     * Do a bottom top search of hierarchy in order to find annotated accessor belonging to given field. This is used
+     * Do a bottom top search of hierarchy to find annotated accessor belonging to given field. This is used
      * when a property annotation (
      * {@link OWLDataProperty,OWLObjectProperty,OWLAnnotationProperty) is declared on method, not on field.
      */

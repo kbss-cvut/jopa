@@ -31,14 +31,14 @@ public class OntologyStorageProperties {
     /**
      * URI of the ontology.
      * <p>
-     * Logical URI is not required, since for example for Sesame storages there is no logical
+     * Logical URI is not required, since, for example, for RDF4J storages there is no logical
      * URI, there is just the physical URI of the repository and multiple contexts in it.
      * <p>
      * However, OWLAPI based storages require logical URI.
      */
     private final URI ontologyUri;
     /**
-     * URI of the physical storage, e. g. OWLDB database, OWLIM storage, file
+     * URI of the physical storage, e.g., OWLDB database, GraphDB storage, file
      */
     private final URI physicalUri;
     /**
@@ -46,7 +46,7 @@ public class OntologyStorageProperties {
      */
     private final String driver;
     /**
-     * User name for the storage, if necessary
+     * Username for the storage, if necessary
      */
     private final String username;
     /**

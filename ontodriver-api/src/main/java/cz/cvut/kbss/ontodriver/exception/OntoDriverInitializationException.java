@@ -19,22 +19,11 @@ package cz.cvut.kbss.ontodriver.exception;
 
 /**
  * Represents exception raised during the driver initialization.
- *
  */
 public class OntoDriverInitializationException extends OntoDriverRuntimeException {
 
-    private static final long serialVersionUID = 9036747807320681068L;
-
-    public OntoDriverInitializationException() {
-        super();
-    }
-
     public OntoDriverInitializationException(String message) {
         super(message);
-    }
-
-    public OntoDriverInitializationException(Throwable cause) {
-        super(cause);
     }
 
     public OntoDriverInitializationException(String message, Throwable cause) {

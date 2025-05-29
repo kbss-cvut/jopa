@@ -92,7 +92,7 @@ public class DatatypeTransformer {
     /**
      * Converts the specified wrapper class to its corresponding primitive class.
      * <p>
-     * If the class parameter is a wrapper type, the equivalent primitive type will be returned (e.g. int.class for
+     * If the class parameter is a wrapper type, the equivalent primitive type will be returned (e.g., int.class for
      * Integer.class) In all other cases, the return value is null.
      *
      * @param cls - the class to convert

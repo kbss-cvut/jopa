@@ -474,7 +474,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     /**
-     * This method calculates the changes that were to the registered entities and adds these changes into the given
+     * This method calculates the changes to the registered entities and adds these changes into the given
      * change set for future commit to the ontology.
      */
     void calculateChanges() {

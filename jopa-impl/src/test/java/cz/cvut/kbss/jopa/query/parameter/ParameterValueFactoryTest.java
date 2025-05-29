@@ -187,7 +187,7 @@ class ParameterValueFactoryTest {
     }
 
     @Test
-    void createOffsetDateTimeValueCreatesTempralParameter() {
+    void createOffsetDateTimeValueCreatesTemporalParameter() {
         final OffsetDateTime offsetDateTime = OffsetDateTime.now();
         final ParameterValue value = sut.create(offsetDateTime);
         assertThat(value, instanceOf(TemporalParameterValue.class));

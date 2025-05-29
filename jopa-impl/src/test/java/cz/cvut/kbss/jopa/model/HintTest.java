@@ -102,14 +102,13 @@ public class HintTest {
 
     @Test
     void applyUsesDefaultValueWhenProvidedValueIsEmptyString() {
-        final Boolean defaultValue = Boolean.TRUE;
-        final TestHint sut = spy(new TestHint(defaultValue, new Object[][]{
+        final TestHint sut = spy(new TestHint(true, new Object[][]{
                 {Boolean.TRUE.toString(), Boolean.TRUE},
                 {Boolean.FALSE.toString(), Boolean.FALSE},
                 }));
         sut.initialize();
         sut.apply("", query, statement);
-        verify(sut).applyToQuery(defaultValue, query, statement);
+        verify(sut).applyToQuery(true, query, statement);
     }
 
     @Test

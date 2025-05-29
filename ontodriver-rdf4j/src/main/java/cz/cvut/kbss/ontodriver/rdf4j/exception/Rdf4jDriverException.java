@@ -26,9 +26,6 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
  */
 public class Rdf4jDriverException extends OntoDriverException {
 
-    public Rdf4jDriverException() {
-    }
-
     public Rdf4jDriverException(String message) {
         super(message);
     }

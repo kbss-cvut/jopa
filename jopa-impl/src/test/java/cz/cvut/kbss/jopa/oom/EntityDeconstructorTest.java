@@ -170,10 +170,10 @@ class EntityDeconstructorTest {
         assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
         assertTrue(res.getAssertions().contains(
                 Assertion.createDataPropertyAssertion(strAttAIdentifier, Generators.LANG, false)));
-        // The entity class + the declared types
+        // The entity class and the declared types
         res.getAssertions().stream().filter(a -> a.getType() == AssertionType.CLASS).forEach(a -> {
             final List<Value<?>> cls = res.getAssertionValues(a);
-            // The entity class + the declared types
+            // The entity class and the declared types
             assertEquals(1, cls.size());
             assertEquals(OWLClassA.getClassIri(), cls.get(0).stringValue());
         });

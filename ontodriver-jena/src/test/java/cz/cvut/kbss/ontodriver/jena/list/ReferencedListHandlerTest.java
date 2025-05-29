@@ -444,7 +444,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestHelper {
         verify(connectorMock).remove(lastNodeIri, HAS_NEXT_PROPERTY, RDF.nil, null);
         final ArgumentCaptor<List<Statement>> addedCaptor = ArgumentCaptor.forClass(List.class);
         verify(connectorMock, atLeast(1)).add(addedCaptor.capture(), isNull());
-        // Added nodes with values + terminal
+        // Added nodes with values and terminal
         assertEquals(addedItems.size() * 2 + 1, addedCaptor.getValue().size());
         for (Statement stmt : addedCaptor.getValue()) {
             if (stmt.getPredicate().equals(HAS_CONTENT_PROPERTY)) {
