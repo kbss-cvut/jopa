@@ -41,11 +41,13 @@ public interface TransactionalChange {
      * The most typical case is a subject-property remove change overriding an existing add axiom asserting the
      * specified property value.
      * <p>
-     * Note that a remove change need not be overriden by an add change, because if applied in a sequence, the addition
+     * Note that a remove change need not be overridden by an add change, because if applied in a sequence, the addition
      * occurs after removal.
      *
-     * @param existing Possibly overriden existing transactional change
+     * @param existing Possibly overridden existing transactional change
      * @return {@code true} if this change overrides the specified one, {@code false} otherwise
      */
-    default boolean overrides(TransactionalChange existing) {return false;}
+    default boolean overrides(TransactionalChange existing) {
+        return false;
+    }
 }

@@ -43,7 +43,7 @@ class MainAxiomLoader {
     MainAxiomLoader(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
         this.snapshot = snapshot;
-        this.ontology = snapshot.getOntology();
+        this.ontology = snapshot.ontology();
     }
 
     Collection<Axiom<?>> findAxioms(AxiomDescriptor descriptor) {

@@ -26,8 +26,6 @@ import java.io.Serializable;
  */
 public class OntoDriverException extends Exception implements Serializable {
 
-    private static final long serialVersionUID = 5057709405049286475L;
-
     public OntoDriverException() {
     }
 

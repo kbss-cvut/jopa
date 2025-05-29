@@ -20,10 +20,11 @@ package cz.cvut.kbss.jopa.query.soql;
 import cz.cvut.kbss.jopa.query.sparql.SparqlConstants;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SoqlAttribute extends SoqlParameter {
+class SoqlAttribute extends SoqlParameter {
 
     private static final String TRIPLE_END = " . ";
 
@@ -117,14 +118,13 @@ public class SoqlAttribute extends SoqlParameter {
         }
     }
 
-    public String getBasicGraphPattern(String rootVariable) {
-        StringBuilder buildTP = new StringBuilder(rootVariable).append(' ');
+    public List<String> getBasicGraphPattern(String rootVariable) {
+        List<String> bgps = new ArrayList<>();
         if (isInstanceOf()) {
-            buildTP.append(SoqlConstants.RDF_TYPE).append(' ')
-                   .append(toIri(getFirstNode())).append(TRIPLE_END);
+            bgps.add(rootVariable + " " + SoqlConstants.RDF_TYPE + " " + toIri(getFirstNode()) + TRIPLE_END);
         } else {
             if (isObject()) {
-                return "";
+                return List.of();
             }
             SoqlNode pointer = getFirstNode().getChild();
             StringBuilder buildParam = new StringBuilder("?");
@@ -140,13 +140,14 @@ public class SoqlAttribute extends SoqlParameter {
                     param = SoqlUtils.soqlVariableToSparqlVariable(value);
                 }
             }
-            buildTP.append(toIri(pointer)).append(' ').append(param).append(TRIPLE_END);
+            bgps.add(rootVariable + " " + toIri(pointer) + " " + param + TRIPLE_END);
             while (pointer.hasChild()) {
                 SoqlNode newPointer = pointer.getChild();
                 if (newPointer.getIri().isEmpty()) {
                     break;
                 }
-                buildTP.append('?').append(pointer.getValue())
+                StringBuilder buildTP = new StringBuilder("?");
+                buildTP.append(pointer.getValue())
                        .append(' ').append(toIri(newPointer)).append(' ');
                 buildParam.append(newPointer.getCapitalizedValue());
                 if (newPointer.hasChild()) {
@@ -159,10 +160,11 @@ public class SoqlAttribute extends SoqlParameter {
                     }
                 }
                 buildTP.append(TRIPLE_END);
+                bgps.add(buildTP.toString());
                 pointer = newPointer;
             }
         }
-        return buildTP.toString();
+        return bgps;
     }
 
     private static String toIri(SoqlNode node) {

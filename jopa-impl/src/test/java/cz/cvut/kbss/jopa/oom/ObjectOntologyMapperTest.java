@@ -34,6 +34,7 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
@@ -166,8 +167,7 @@ class ObjectOntologyMapperTest {
         this.etAMock = mocks.forOwlClassA().entityType();
         when(descriptorFactoryMock.createForEntityLoading(loadingParameters, etAMock)).thenReturn(axiomDescriptor);
         when(descriptorFactoryMock.createForFieldLoading(IDENTIFIER, mocks.forOwlClassA().typesSpec(),
-                aDescriptor, mocks.forOwlClassA().entityType())).thenReturn(
-                axiomDescriptor);
+                aDescriptor, mocks.forOwlClassA().entityType())).thenReturn(axiomDescriptor);
         entityA.setTypes(null);
         this.mapper = new ObjectOntologyMapperImpl(uowMock, connectionMock);
         TestEnvironmentUtils.setMock(mapper,
@@ -439,6 +439,16 @@ class ObjectOntologyMapperTest {
     }
 
     @Test
+    void loadEntityDoesNotPutIntoSecondLevelCacheWhenBypassCache() throws Exception {
+        final Collection<Axiom<?>> axiomsForA = getAxiomsForEntityA();
+        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(axiomsForA);
+        loadingParameters.bypassCache();
+        final OWLClassA result = mapper.loadEntity(loadingParameters);
+        assertNotNull(result);
+        verify(cacheMock, never()).add(IDENTIFIER, result, new Descriptors(loadingParameters.getDescriptor(), loadStateRegistry.get(result)));
+    }
+
+    @Test
     void loadEntityPutsIntoSecondLevelCacheThenEntityAndEntitiesItReferences() throws Exception {
         final Collection<Axiom<?>> axiomsForA = getAxiomsForEntityA();
         final URI identifier = Generators.createIndividualIdentifier();
@@ -659,5 +669,34 @@ class ObjectOntologyMapperTest {
         assertEquals(IDENTIFIER, proxy.getIdentifier());
         assertEquals(OWLClassA.class, proxy.getType());
         verify(connectionMock, never()).find(any());
+    }
+
+    @Test
+    void loadFieldValueRemovesExplicitAxiomsWhenAttributeMappingHasIncludeExplicitFalse() throws Exception {
+        final Attribute<OWLClassA, String> strAtt = mocks.forOwlClassA().stringAttribute();
+        final AxiomDescriptor allDescriptor = new AxiomDescriptor(NamedResource.create(IDENTIFIER));
+        final Assertion inferredStr = Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), true);
+        allDescriptor.addAssertion(inferredStr);
+        when(descriptorFactoryMock.createForFieldLoading(IDENTIFIER, strAtt, aDescriptor, etAMock)).thenReturn(allDescriptor);
+        final Collection<Axiom<?>> allAxioms = new ArrayList<>(List.of(
+                new AxiomImpl<>(NamedResource.create(IDENTIFIER), inferredStr, new Value<>("inferred")),
+                new AxiomImpl<>(NamedResource.create(IDENTIFIER), inferredStr, new Value<>("asserted"))
+        ));
+        when(connectionMock.find(allDescriptor)).thenReturn(allAxioms);
+        final AxiomDescriptor assertedDescriptor = new AxiomDescriptor(NamedResource.create(IDENTIFIER));
+        assertedDescriptor.addAssertion(Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false));
+        when(descriptorFactoryMock.createForAssertedFieldLoading(IDENTIFIER, strAtt, aDescriptor, etAMock)).thenReturn(assertedDescriptor);
+        final Collection<Axiom<?>> assertedAxioms = List.of(
+                new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("asserted"))
+        );
+        when(connectionMock.find(assertedDescriptor)).thenReturn(assertedAxioms);
+        when(strAtt.includeExplicit()).thenReturn(false);
+        mapper.loadFieldValue(entityA, strAtt, aDescriptor);
+
+        verify(descriptorFactoryMock).createForFieldLoading(IDENTIFIER, strAtt, aDescriptor, etAMock);
+        verify(descriptorFactoryMock).createForAssertedFieldLoading(IDENTIFIER, strAtt, aDescriptor, etAMock);
+        verify(entityConstructorMock).setFieldValue(entityA, strAtt,
+                List.of(new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), true), new Value<>("inferred"))),
+                mocks.forOwlClassA().entityType(), aDescriptor);
     }
 }

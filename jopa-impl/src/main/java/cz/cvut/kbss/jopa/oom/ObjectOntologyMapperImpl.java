@@ -28,6 +28,7 @@ import cz.cvut.kbss.jopa.oom.exception.EntityDeconstructionException;
 import cz.cvut.kbss.jopa.oom.exception.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
+import cz.cvut.kbss.jopa.sessions.ReadOnlyUnitOfWork;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
@@ -144,7 +145,9 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         if (result != null) {
             final LoadStateDescriptor<T> loadStateDescriptor = uow.getLoadStateRegistry().get(result);
             assert loadStateDescriptor != null;
-            getCache().add(loadingParameters.getIdentifier(), result, new Descriptors(loadingParameters.getDescriptor(), loadStateDescriptor));
+            if (!loadingParameters.shouldBypassCache()) {
+                getCache().add(loadingParameters.getIdentifier(), result, new Descriptors(loadingParameters.getDescriptor(), loadStateDescriptor));
+            }
         }
         return result;
     }
@@ -182,12 +185,15 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             entityBuilder.setQueryAttributeFieldValue(entity, queryAttribute, et);
             return;
         }
-
-        final AxiomDescriptor axiomDescriptor =
-                descriptorFactory.createForFieldLoading(identifier, fieldSpec, descriptor, et);
         try {
-            final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
-            entityBuilder.setFieldValue(entity, fieldSpec, axioms, et, descriptor);
+            final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(identifier, fieldSpec, descriptor, et);
+            final Collection<Axiom<?>> allAxioms = storageConnection.find(axiomDescriptor);
+            if (!fieldSpec.includeExplicit()) {
+                final AxiomDescriptor assertedDescriptor = descriptorFactory.createForAssertedFieldLoading(identifier, fieldSpec, descriptor, et);
+                final Collection<Axiom<?>> assertedAxioms = storageConnection.find(assertedDescriptor);
+                EntityInstanceLoader.removeAxioms(allAxioms, assertedAxioms);
+            }
+            entityBuilder.setFieldValue(entity, fieldSpec, allAxioms, et, descriptor);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         } catch (IllegalArgumentException e) {
@@ -225,9 +231,9 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         try {
             final Set<PendingAssertion> pas = pendingReferences.removeAndGetPendingAssertionsWith(instance);
             for (PendingAssertion pa : pas) {
-                final AxiomValueDescriptor desc = new AxiomValueDescriptor(pa.getOwner());
-                desc.addAssertionValue(pa.getAssertion(), new Value<>(identifier));
-                desc.setAssertionContext(pa.getAssertion(), pa.getContext());
+                final AxiomValueDescriptor desc = new AxiomValueDescriptor(pa.owner());
+                desc.addAssertionValue(pa.assertion(), new Value<>(identifier));
+                desc.setAssertionContext(pa.assertion(), pa.context());
                 storageConnection.persist(desc);
             }
             final Set<PendingReferenceRegistry.PendingListReference> pLists =
@@ -264,8 +270,24 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             // This prevents endless cycles in bidirectional relationships
             return cls.cast(existing);
         } else {
-            return loadEntityInternal(new LoadingParameters<>(cls, identifier, descriptor));
+            // setup loading params
+            LoadingParameters<T> params = initEntityLoadingParameters(cls, identifier, descriptor);
+            return loadEntityInternal(params);
         }
+    }
+
+    private <T> LoadingParameters<T> initEntityLoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor) {
+        LoadingParameters<T> params = new LoadingParameters<>(cls, identifier, descriptor);
+
+        // TODO:
+        // This is necessary when loading object properties (singular and plural)
+        // The solution is not ideal. I think that LoadingParams
+        // should be propagated to this method by loading appropriate methods.
+        if (uow instanceof ReadOnlyUnitOfWork) {
+            // this prevents caching of entities loaded by ReadOnlyUOW
+            params.bypassCache();
+        }
+        return params;
     }
 
     @Override

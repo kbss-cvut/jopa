@@ -60,6 +60,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -185,7 +186,7 @@ class SingularAnnotationPropertyStrategyTest {
         strategy.buildAxiomValuesFromInstance(n, builder);
 
         final Value<?> val = getValueForAssertion(builder, annotationWithUriForN());
-        assertTrue(val.getValue() instanceof NamedResource);
+        assertInstanceOf(NamedResource.class, val.getValue());
         assertEquals(uri, ((NamedResource) val.getValue()).getIdentifier());
     }
 

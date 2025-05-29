@@ -92,9 +92,9 @@ class EpistemicAxiomRemoverTest {
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         final OntologySnapshot snapshot = TestUtils.initRealOntology(null);
-        this.ontology = spy(snapshot.getOntology());
-        this.manager = spy(snapshot.getOntologyManager());
-        this.dataFactory = snapshot.getDataFactory();
+        this.ontology = spy(snapshot.ontology());
+        this.manager = spy(snapshot.ontologyManager());
+        this.dataFactory = snapshot.dataFactory();
         final OntologySnapshot snapshotToUse = new OntologySnapshot(ontology, manager, dataFactory, null);
         this.axiomRemover = new EpistemicAxiomRemover(adapterMock, snapshotToUse);
         this.individual = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));

@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.oom.exception.EntityReconstructionException;
@@ -91,6 +92,7 @@ abstract class EntityInstanceLoader {
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
+            removeAssertedForInferredOnlyFields(axioms, loadingParameters, et);
             return axioms.isEmpty() ? null : entityBuilder.reconstructEntity(
                     new EntityConstructor.EntityConstructionParameters<>(identifier, et, descriptor, loadingParameters.isForceEager()),
                     axioms);
@@ -132,7 +134,7 @@ abstract class EntityInstanceLoader {
         visited.put(instance, null);
         handlers.forEach(h -> h.accept(new Pair<>(instance, et)));
         et.getAttributes().stream().filter(Attribute::isAssociation).forEach(att -> {
-            final Class<?> cls = att.isCollection() ? ((PluralAttribute) att).getElementType()
+            final Class<?> cls = att.isCollection() ? ((PluralAttribute<?, ?, ?>) att).getElementType()
                                                                              .getJavaType() : att.getJavaType();
             if (!metamodel.isEntityType(cls)) {
                 return;
@@ -147,6 +149,43 @@ abstract class EntityInstanceLoader {
                 }
             }
         });
+    }
+
+    /**
+     * If any of the specified entity type's fields does not include explicit values, remove such axioms from the
+     * specified collection of all axioms.
+     *
+     * @param allAxioms         All axioms representing an entity
+     * @param loadingParameters Entity loading parameters
+     * @param et                Entity type
+     */
+    private <T, U extends T> void removeAssertedForInferredOnlyFields(Collection<Axiom<?>> allAxioms, LoadingParameters<T> loadingParameters,
+                                                                      IdentifiableEntityType<U> et) throws OntoDriverException {
+        for (FieldSpecification<? super U, ?> fs : et.getFieldSpecifications()) {
+            if (fs.includeExplicit()) {
+                continue;
+            }
+            final AxiomDescriptor desc = descriptorFactory.createForAssertedFieldLoading(loadingParameters.getIdentifier(), fs, loadingParameters.getDescriptor(), et);
+            final Collection<Axiom<?>> asserted = storageConnection.find(desc);
+            // Ensure entity class assertion axiom is not removed, we need it for entity reconstruction
+            asserted.removeIf(ax -> MappingUtils.isEntityClassAssertion(ax, et));
+            removeAxioms(allAxioms, asserted);
+        }
+    }
+
+    /**
+     * Removes axioms that are present in the second collection from the first collection.
+     * <p>
+     * Only subject, assertion property and value are compared, assertion inference status is ignored.
+     *
+     * @param allAxioms Axioms from which to remove
+     * @param toRemove  Axioms to remove
+     */
+    static void removeAxioms(Collection<Axiom<?>> allAxioms, Collection<Axiom<?>> toRemove) {
+        allAxioms.removeIf(ax -> toRemove.stream().anyMatch(axToRemove ->
+                Objects.equals(ax.getSubject(), axToRemove.getSubject())
+                        && Objects.equals(axToRemove.getAssertion().getIdentifier(), ax.getAssertion().getIdentifier())
+                        && Objects.equals(ax.getValue(), axToRemove.getValue())));
     }
 
     abstract static class EntityInstanceLoaderBuilder {

@@ -42,9 +42,13 @@ public class AttributeModificationValidator {
      */
     public static void verifyCanModify(FieldSpecification<?, ?> fieldSpec) {
         Objects.requireNonNull(fieldSpec);
-        if (fieldSpec instanceof AbstractAttribute && ((AbstractAttribute<?, ?>) fieldSpec).isLexicalForm()) {
+        if (fieldSpec instanceof AbstractAttribute<?, ?> aa && aa.isLexicalForm()) {
             throw new AttributeModificationForbiddenException("Field " + fieldSpec +
                     " is configured to contain lexical form of literals and cannot be modified.");
+        }
+        if (!fieldSpec.includeExplicit()) {
+            throw new AttributeModificationForbiddenException("Field " + fieldSpec +
+                    " is configured to contain only inferred values and cannot be modified.");
         }
     }
 }

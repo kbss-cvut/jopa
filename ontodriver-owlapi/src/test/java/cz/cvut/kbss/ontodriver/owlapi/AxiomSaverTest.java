@@ -21,9 +21,9 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
-import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.AddAxiom;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLAnnotationValue;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLIndividual;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.net.URI;
@@ -40,8 +52,13 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.semanticweb.owlapi.util.OWLAPIStreamUtils.asSet;
 
 @ExtendWith(MockitoExtension.class)
@@ -69,9 +86,9 @@ public class AxiomSaverTest {
     @BeforeEach
     public void setUp() throws Exception {
         final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
-        this.ontology = spy(snapshot.getOntology());
-        this.manager = spy(snapshot.getOntologyManager());
-        this.dataFactory = snapshot.getDataFactory();
+        this.ontology = spy(snapshot.ontology());
+        this.manager = spy(snapshot.ontologyManager());
+        this.dataFactory = snapshot.dataFactory();
         final OntologySnapshot snapshotToUse = new OntologySnapshot(ontology, manager, dataFactory, reasonerMock);
         this.axiomSaver = new AxiomSaver(adapterMock, snapshotToUse);
         this.descriptor = new AxiomValueDescriptor(SUBJECT);
@@ -111,7 +128,7 @@ public class AxiomSaverTest {
         verify(adapterMock, atLeastOnce()).addTransactionalChanges(changesCaptor.capture());
         final List<?> changes = changesCaptor.getValue();
         for (Object ch : changes) {
-            assertTrue(ch instanceof MutableAddAxiom);
+            assertInstanceOf(MutableAddAxiom.class, ch);
         }
     }
 

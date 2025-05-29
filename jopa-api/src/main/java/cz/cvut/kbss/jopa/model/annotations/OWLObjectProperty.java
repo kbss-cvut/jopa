@@ -27,15 +27,16 @@ import java.lang.annotation.Target;
 
 /**
  * Marks an attribute mapped to an OWL object property.
- *
+ * <p>
  * The Java type of such attributes is either another entity or a valid identifier type.
- *
- * Note that for use with RDF(S), attributes annotated with this annotation are expected to reference other RDF resources.
+ * <p>
+ * Note that for use with RDF(S), attributes annotated with this annotation are expected to reference other RDF
+ * resources.
  */
 @Documented
 @Property
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD,ElementType.METHOD})
+@Target({ElementType.FIELD, ElementType.METHOD})
 public @interface OWLObjectProperty {
 
     /**

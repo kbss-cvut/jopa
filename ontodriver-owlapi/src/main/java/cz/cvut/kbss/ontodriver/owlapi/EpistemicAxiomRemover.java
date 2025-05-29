@@ -58,8 +58,8 @@ class EpistemicAxiomRemover {
     EpistemicAxiomRemover(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.owlapiAdapter = adapter;
         this.snapshot = snapshot;
-        this.ontology = snapshot.getOntology();
-        this.dataFactory = snapshot.getDataFactory();
+        this.ontology = snapshot.ontology();
+        this.dataFactory = snapshot.dataFactory();
     }
 
     void remove(AbstractAxiomDescriptor descriptor) {

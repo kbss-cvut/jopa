@@ -23,12 +23,13 @@ import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 
 import java.net.URI;
@@ -426,4 +427,14 @@ public interface EntityManager extends AutoCloseable {
      * @return Metamodel instance
      */
     Metamodel getMetamodel();
+
+    /**
+     * Creates a {@link Descriptor} for instances of the specified entity class.
+     *
+     * @param cls Entity class to create descriptor for
+     * @return Entity descriptor
+     */
+    default Descriptor createDescriptor(Class<?> cls) {
+        return new EntityDescriptor();
+    }
 }

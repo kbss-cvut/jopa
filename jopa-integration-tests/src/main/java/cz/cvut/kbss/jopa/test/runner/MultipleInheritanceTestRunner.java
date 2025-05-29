@@ -43,7 +43,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public abstract class MultipleInheritanceTestRunner extends BaseRunner {
-    protected OWLClassWithUnProperties classWithUnProperties;
+
+    protected final OWLClassWithUnProperties classWithUnProperties;
 
     public MultipleInheritanceTestRunner(Logger logger, PersistenceFactory persistenceFactory, DataAccessor dataAccessor) {
         super(logger, persistenceFactory, dataAccessor);

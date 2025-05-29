@@ -74,7 +74,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class ChangeTrackingUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
+public class ChangeTrackingUnitOfWorkTest extends ReadWriteUnitOfWorkTest {
 
     @BeforeEach
     protected void setUp() throws Exception {

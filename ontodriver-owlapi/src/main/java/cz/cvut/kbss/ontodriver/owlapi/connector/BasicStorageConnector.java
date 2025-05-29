@@ -44,6 +44,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -59,7 +60,7 @@ import java.util.stream.Collectors;
  * Default file-based storage connector.
  * <p>
  * Each call to {@link #getOntologySnapshot()} returns a new snapshot of the current state of the ontology. The changes
- * are the applied to a shared ontology, which represents the current state of the underlying storage.
+ * are then applied to the shared ontology, which represents the current state of the underlying storage.
  * <p>
  * Note: This connector currently does not handle concurrent updates.
  */
@@ -77,6 +78,8 @@ public class BasicStorageConnector extends AbstractConnector {
     private OWLReasonerFactory reasonerFactory;
 
     private OWLOntologyIRIMapper iriMapper;
+
+    private boolean isVolatile;
 
     BasicStorageConnector(DriverConfiguration configuration) throws OwlapiDriverException {
         super(configuration);
@@ -131,14 +134,23 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     private void tryCreatingOntology(IRI ontologyIri) throws OwlapiDriverException {
-        LOG.trace("Creating new ontology in {}.", configuration.getStorageProperties().getPhysicalURI());
         try {
             this.ontology = ontologyManager.createOntology(ontologyIri);
+            if (isConfiguredToUseVolatileStorage()) {
+                this.isVolatile = true;
+                LOG.debug("Using volatile storage. Ontology will not be stored.");
+                return;
+            }
+            LOG.trace("Creating new ontology in {}.", configuration.getStorageProperties().getPhysicalURI());
             ontology.saveOntology(IRI.create(configuration.getStorageProperties().getPhysicalURI()));
         } catch (OWLOntologyCreationException | OWLOntologyStorageException e) {
             throw new OwlapiDriverException(
                     "Unable to create ontology in " + configuration.getStorageProperties().getPhysicalURI(), e);
         }
+    }
+
+    private boolean isConfiguredToUseVolatileStorage() {
+        return configuration.is(OwlapiConfigParam.USE_VOLATILE_STORAGE);
     }
 
     private void initializeReasonerFactory() {
@@ -253,7 +265,7 @@ public class BasicStorageConnector extends AbstractConnector {
     public void closeSnapshot(OntologySnapshot snapshot) {
         ensureOpen();
         assert snapshot != null;
-        ontologyManager.removeOntology(snapshot.getOntology());
+        ontologyManager.removeOntology(snapshot.ontology());
     }
 
     @Override
@@ -283,11 +295,35 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     private void writeToFile() throws OntologyStorageException {
+        if (isVolatile) {
+            return;
+        }
         try {
             ontologyManager.saveOntology(ontology, IRI.create(configuration.getStorageProperties().getPhysicalURI()));
         } catch (OWLOntologyStorageException e) {
             throw new OntologyStorageException(
                     "Error when saving ontology to " + configuration.getStorageProperties().getPhysicalURI(), e);
         }
+    }
+
+    /**
+     * Writes the current state of the ontology to a file given by the specified path.
+     * <p>
+     * This method is mainly for debugging purposes, allowing to output the current state of the ontology to a file.
+     *
+     * @param targetPath Target file path
+     * @throws OntologyStorageException When unable to write to the file
+     */
+    public void writeToFile(String targetPath) throws OntologyStorageException {
+        ensureOpen();
+        WRITE.lock();
+        try {
+            ontologyManager.saveOntology(ontology, IRI.create(new File(targetPath).toURI()));
+        } catch (OWLOntologyStorageException e) {
+            throw new OntologyStorageException("Error when saving ontology to " + targetPath, e);
+        } finally {
+            WRITE.unlock();
+        }
+
     }
 }

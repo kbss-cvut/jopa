@@ -110,9 +110,9 @@ class OwlapiAdapterTest {
     @BeforeEach
     void setUp() throws Exception {
         final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
-        this.ontology = spy(snapshot.getOntology());
-        this.factory = snapshot.getDataFactory();
-        this.ontologySnapshot = new OntologySnapshot(ontology, snapshot.getOntologyManager(), factory, reasonerMock);
+        this.ontology = spy(snapshot.ontology());
+        this.factory = snapshot.dataFactory();
+        this.ontologySnapshot = new OntologySnapshot(ontology, snapshot.ontologyManager(), factory, reasonerMock);
         when(connectorMock.getOntologySnapshot()).thenReturn(ontologySnapshot);
 
         this.sut = spy(new OwlapiAdapter(connectorMock));
@@ -185,7 +185,7 @@ class OwlapiAdapterTest {
     private Axiom<?> initAxiomForContains(Assertion.AssertionType assType, boolean inferred) {
         final NamedResource individual = NamedResource.create(
                 "http://krizik.felk.cvut.cz/ontologies/jopa#IndividualOne");
-        Assertion assertion = null;
+        Assertion assertion;
         Value<?> value = switch (assType) {
             case CLASS -> {
                 assertion = Assertion.createClassAssertion(inferred);
@@ -243,7 +243,7 @@ class OwlapiAdapterTest {
             default:
                 throw new IllegalArgumentException(ax.getAssertion().toString());
         }
-        ontologySnapshot.getOntologyManager().addAxiom(ontology, owlAxiom);
+        ontologySnapshot.ontologyManager().addAxiom(ontology, owlAxiom);
     }
 
     @Test
@@ -445,7 +445,7 @@ class OwlapiAdapterTest {
     }
 
     @Test
-    void addTransactionalChangesRemovesAddAxiomsOverridenByRemoveSubjectPropertyChanges() throws Exception {
+    void addTransactionalChangesRemovesAddAxiomsOverriddenByRemoveSubjectPropertyChanges() throws Exception {
         final OWLNamedIndividual subject = factory.getOWLNamedIndividual(IRI.create(INDIVIDUAL.getIdentifier()));
         final OWLDataProperty property = factory.getOWLDataProperty(IRI.create(Generator.generateUri()));
         final MutableAddAxiom add = new MutableAddAxiom(ontology, factory.getOWLDataPropertyAssertionAxiom(property, subject, 117));

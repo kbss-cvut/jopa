@@ -176,10 +176,10 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
     public void removePropertyValues(Collection<SubjectPredicateContext> spc) {
         ensureOpen();
         spc.forEach(s -> {
-            if (s.getContexts().isEmpty()) {
-                remove(s.getSubject(), s.getPredicate(), null, null);
+            if (s.contexts().isEmpty()) {
+                remove(s.subject(), s.predicate(), null, null);
             } else {
-                s.getContexts().forEach(ctx -> remove(s.getSubject(), s.getPredicate(), null, ctx));
+                s.contexts().forEach(ctx -> remove(s.subject(), s.predicate(), null, ctx));
             }
         });
         transactionalChanges.removePropertyValues(spc);

@@ -17,7 +17,7 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
-public class SoqlGroupParameter extends SoqlParameter {
+class SoqlGroupParameter extends SoqlParameter {
 
     private SoqlAttribute attribute;
 

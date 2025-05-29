@@ -25,8 +25,8 @@ import java.net.URL;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IdentifierTransformerTest {
 
@@ -36,21 +36,21 @@ class IdentifierTransformerTest {
     @Test
     void transformUriToUri() {
         final Object res = IdentifierTransformer.transformToIdentifier(IDENTIFIER, URI.class);
-        assertTrue(res instanceof URI);
+        assertInstanceOf(URI.class, res);
         assertEquals(STR_IDENTIFIER, res.toString());
     }
 
     @Test
     void transformUriToString() {
         final Object res = IdentifierTransformer.transformToIdentifier(IDENTIFIER, String.class);
-        assertTrue(res instanceof String);
+        assertInstanceOf(String.class, res);
         assertEquals(STR_IDENTIFIER, res);
     }
 
     @Test
     void transformUriToUrl() {
         final Object res = IdentifierTransformer.transformToIdentifier(IDENTIFIER, URL.class);
-        assertTrue(res instanceof URL);
+        assertInstanceOf(URL.class, res);
         assertEquals(STR_IDENTIFIER, res.toString());
     }
 

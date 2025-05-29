@@ -24,9 +24,6 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
  */
 public class OwlapiDriverException extends OntoDriverException {
 
-    public OwlapiDriverException() {
-    }
-
     public OwlapiDriverException(String message) {
         super(message);
     }

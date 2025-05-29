@@ -19,8 +19,6 @@ package cz.cvut.kbss.ontodriver.exception;
 
 public class UnassignableIdentifierException extends OntoDriverRuntimeException {
 
-    private static final long serialVersionUID = -5325132033820448113L;
-
     public UnassignableIdentifierException(Throwable cause) {
         super(cause);
     }

@@ -26,6 +26,6 @@ public class MappedSuperclassListener {
     @PrePersist
     @PreUpdate
     void combinedListener(QMappedSuperclass instance) {
-        System.out.println("combined prePresist and preUpdate listener");
+        System.out.println("combined prePersist and preUpdate listener");
     }
 }

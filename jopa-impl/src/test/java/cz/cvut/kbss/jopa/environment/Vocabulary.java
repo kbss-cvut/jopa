@@ -97,6 +97,7 @@ public class Vocabulary {
     public static final String p_p_hasPhone = ATTRIBUTE_BASE + "hasPhone";
     public static final String p_p_gender = ATTRIBUTE_BASE + "gender";
     public static final String p_p_phoneNumber = ATTRIBUTE_BASE + "phoneNumber";
+    public static final String p_p_phoneBrand = ATTRIBUTE_BASE + "phoneBrand";
 
     private Vocabulary() {
         throw new AssertionError();

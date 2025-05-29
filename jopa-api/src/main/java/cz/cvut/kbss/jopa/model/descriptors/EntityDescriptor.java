@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
+import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -126,7 +127,7 @@ public class EntityDescriptor extends AbstractDescriptor {
         Objects.requireNonNull(attribute);
         final Descriptor attDescriptor = getAttributeDescriptor(attribute);
         return attDescriptor.overridesAssertionContext() || !assertionsInSubjectContext ?
-               attDescriptor.getContexts() : getContexts();
+                attDescriptor.getContexts() : getContexts();
     }
 
     @Override
@@ -141,7 +142,7 @@ public class EntityDescriptor extends AbstractDescriptor {
                 if (attSpec.isCollection()) {
                     result = new ObjectPropertyCollectionDescriptor(contexts, att);
                 } else {
-                    result = new EntityDescriptor(contexts);
+                    result = IdentifierUtils.isResourceIdentifierType(attSpec.getJavaType()) ? new FieldDescriptor(contexts, att) : new EntityDescriptor(contexts);
                 }
             } else {
                 result = new FieldDescriptor(contexts, att);
@@ -193,7 +194,7 @@ public class EntityDescriptor extends AbstractDescriptor {
         result = 31 * result + fieldDescriptors.entrySet().stream()
                                                .map(e -> e.getKey().hashCode() ^
                                                        (e.getValue() == this ? 0 :
-                                                        e.getValue().hashCode())).reduce(0, Integer::sum);
+                                                               e.getValue().hashCode())).reduce(0, Integer::sum);
         return result;
     }
 }

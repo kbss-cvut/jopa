@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 public class InferenceConnectorFactoryTest extends ConnectorFactoryTestBase {
 
@@ -45,6 +45,6 @@ public class InferenceConnectorFactoryTest extends ConnectorFactoryTestBase {
         final ConnectorFactory factory = connectorFactory(configuration);
         final StorageConnector connector = factory.createConnector();
         final InferredStorageConnector result = factory.createInferredConnector(connector);
-        assertTrue(result instanceof SnapshotStorageConnectorWithInference);
+        assertInstanceOf(SnapshotStorageConnectorWithInference.class, result);
     }
 }

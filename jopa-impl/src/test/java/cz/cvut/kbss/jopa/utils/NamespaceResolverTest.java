@@ -61,4 +61,10 @@ class NamespaceResolverTest {
         final String urn = "urn:jopa:model:test-class";
         assertEquals(urn, sut.resolveFullIri(urn));
     }
+
+    @Test
+    void resolveNamespaceReturnsArgumentWhenArgumentEndsWithColon() {
+        final String argument = "prefix:";
+        assertEquals(argument, sut.resolveFullIri(argument));
+    }
 }

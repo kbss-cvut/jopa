@@ -70,11 +70,6 @@ class FunctionNode extends SoqlNode {
     }
 
     @Override
-    public boolean requiresFilterExpression() {
-        return true;
-    }
-
-    @Override
     public String toFilterExpression(String filterParam, String filterValue) {
         return SoqlFunctionTranslator.getSparqlFunction(functionName) + "(" + child.toFilterExpression(filterParam,
                                                                                                        filterValue) + ")";

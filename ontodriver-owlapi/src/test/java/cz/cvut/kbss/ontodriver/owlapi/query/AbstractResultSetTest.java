@@ -26,7 +26,7 @@ import org.semanticweb.owlapi.model.OWLObject;
 
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,14 +42,14 @@ class AbstractResultSetTest {
     void createResultSetReturnAskResultSetForAskQuery() {
         final QueryResult<OWLObject> qr = mock(QueryResult.class);
         final ResultSet result = AbstractResultSet.createResultSet(qr, statement, ASK_QUERY);
-        assertTrue(result instanceof AskResultSet);
+        assertInstanceOf(AskResultSet.class, result);
     }
 
     @Test
     void createResultSetReturnSelectResultSetForSelectQuery() {
         final QueryResult<OWLObject> qr = initSelectResult();
         final ResultSet result = AbstractResultSet.createResultSet(qr, statement, SELECT_QUERY);
-        assertTrue(result instanceof SelectResultSet);
+        assertInstanceOf(SelectResultSet.class, result);
     }
 
     private QueryResult<OWLObject> initSelectResult() {

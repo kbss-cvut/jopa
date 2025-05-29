@@ -29,7 +29,7 @@ public class StringEnumConverterTest {
     public void convertToAxiomValueTransformsEnumValueToString() {
         final StringEnumConverter<OWLClassM.Severity> sut = new StringEnumConverter<>(OWLClassM.Severity.class);
         final Object result = sut.convertToAxiomValue(OWLClassM.Severity.HIGH);
-        assertTrue(result instanceof String);
+        assertInstanceOf(String.class, result);
         assertEquals(OWLClassM.Severity.HIGH.toString(), result);
     }
 

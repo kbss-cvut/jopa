@@ -28,7 +28,7 @@ import java.util.Objects;
  * Checks whether the provided collection contains the same entities as the expected one.
  * <p>
  * The membership check is done based on entity URIs.
- *
+ * <p>
  * Item order is not significant in the comparison, but the total number of items is.
  */
 public class ContainsSameEntities extends TypeSafeMatcher<Collection<? extends HasUri>> {

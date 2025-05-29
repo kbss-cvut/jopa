@@ -57,7 +57,7 @@ public class ReferencedListIteratorTest extends OwlapiListIteratorBase {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        final OWLNamedIndividual individual = snapshot.getDataFactory()
+        final OWLNamedIndividual individual = snapshot.dataFactory()
                                                       .getOWLNamedIndividual(IRI.create(ListTestHelper.SUBJECT.getIdentifier()));
         this.testHelper = new ReferencedListTestHelper(snapshot, individual, ListTestHelper.SUBJECT.toString());
         this.descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST,
@@ -83,8 +83,8 @@ public class ReferencedListIteratorTest extends OwlapiListIteratorBase {
     }
 
     private void initMultilingualStringList(List<Translations> list) {
-        final OWLDataFactory dataFactory = snapshot.getDataFactory();
-        final OWLOntology ontology = snapshot.getOntology();
+        final OWLDataFactory dataFactory = snapshot.dataFactory();
+        final OWLOntology ontology = snapshot.ontology();
         final OWLObjectProperty hasList = dataFactory.getOWLObjectProperty(IRI.create(HAS_LIST_PROPERTY));
         final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(HAS_NEXT_PROPERTY));
         final OWLDataProperty hasContent = dataFactory.getOWLDataProperty(IRI.create(HAS_CONTENT_PROPERTY));
@@ -94,10 +94,10 @@ public class ReferencedListIteratorTest extends OwlapiListIteratorBase {
         OWLNamedIndividual previousNode = dataFactory.getOWLNamedIndividual(SUBJECT);
         OWLNamedIndividual node = dataFactory.getOWLNamedIndividual(IRI.create(sequenceNodeBase + i));
         for (Translations mls : list) {
-            snapshot.getOntologyManager()
+            snapshot.ontologyManager()
                     .addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(next, previousNode, node));
             for (Map.Entry<String, String> e : mls.getValue().entrySet()) {
-                snapshot.getOntologyManager()
+                snapshot.ontologyManager()
                         .addAxiom(ontology, dataFactory.getOWLDataPropertyAssertionAxiom(hasContent, node, dataFactory.getOWLLiteral(e.getValue(), e.getKey())));
             }
             previousNode = node;
@@ -137,7 +137,7 @@ public class ReferencedListIteratorTest extends OwlapiListIteratorBase {
         sut.next();
         final List<TransactionalChange> result = sut.replaceNode(newMls);
         final BiConsumer<String, String> axiomPresenceCheck = (lang, val) -> assertTrue(result.stream().anyMatch(change -> {
-            final List<OWLOntologyChange> ontologyChanges = change.toOwlChanges(snapshot.getOntology());
+            final List<OWLOntologyChange> ontologyChanges = change.toOwlChanges(snapshot.ontology());
             for (OWLOntologyChange c : ontologyChanges) {
                 final OWLAxiom ax = c.getAxiom();
                 assert ax instanceof OWLDataPropertyAssertionAxiom;

@@ -32,6 +32,7 @@ import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.MetamodelUtils;
+import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,7 @@ import java.util.stream.Collectors;
 
 public class MetamodelImpl implements Metamodel, MetamodelProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Metamodel.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MetamodelImpl.class);
 
     private Map<Class<?>, ManagedType<?>> typeMap;
     private Map<Class<?>, EntityType<?>> entities;
@@ -61,6 +62,8 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
 
     private NamedQueryManager namedQueryManager;
     private ResultSetMappingManager resultSetMappingManager;
+
+    private NamespaceResolver namespaceResolver;
 
     private final Configuration configuration;
 
@@ -89,13 +92,18 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         final MetamodelBuilder metamodelBuilder = new MetamodelBuilder(configuration);
         metamodelBuilder.buildMetamodel(classFinder);
 
-        this.typeMap = metamodelBuilder.getTypeMap();
-        this.entities = metamodelBuilder.getEntities();
-        this.inferredClasses = metamodelBuilder.getInferredClasses();
+        initFromMetamodelBuilder(metamodelBuilder);
         this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
         this.resultSetMappingManager = metamodelBuilder.getResultSetMappingManager();
         this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
         new StaticMetamodelInitializer(this).initializeStaticMetamodel();
+    }
+
+    private void initFromMetamodelBuilder(MetamodelBuilder metamodelBuilder) {
+        this.typeMap = metamodelBuilder.getTypeMap();
+        this.entities = metamodelBuilder.getEntities();
+        this.inferredClasses = metamodelBuilder.getInferredClasses();
+        this.namespaceResolver = metamodelBuilder.getNamespaceResolver();
     }
 
     /**
@@ -127,7 +135,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         // Unwrap parent from generated subclass if necessary
         final Class<?> actualCls = MetamodelUtils.getEntityClass(cls);
         if (!isEntityType(actualCls)) {
-            throw new IllegalArgumentException(actualCls.getName() + " is not a known entity in this persistence unit.");
+            throw new IllegalArgumentException(actualCls.getName() + " is not a known entity class in this persistence unit.");
         }
         return (IdentifiableEntityType<X>) entities.get(actualCls);
     }
@@ -246,5 +254,14 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     public <X> Class<? extends X> getEntityReferenceProxy(Class<X> cls) {
         assert isEntityType(cls);
         return (Class<? extends X>) referenceProxyClasses.computeIfAbsent(cls, c -> new EntityReferenceProxyGenerator().generate(cls));
+    }
+
+    /**
+     * Gets namespace resolver containing namespaces detected for this persistence unit.
+     *
+     * @return NamespaceResolver
+     */
+    public NamespaceResolver getNamespaceResolver() {
+        return namespaceResolver;
     }
 }

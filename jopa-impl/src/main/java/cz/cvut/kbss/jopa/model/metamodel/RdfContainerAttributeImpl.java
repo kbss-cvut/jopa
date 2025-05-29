@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.annotations.RDFContainerType;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
+import cz.cvut.kbss.ontodriver.model.InferenceMode;
 
 public class RdfContainerAttributeImpl<X, C, E> extends AbstractPluralAttribute<X, C, E> implements RDFContainerAttribute<X, C, E> {
 
@@ -104,14 +105,8 @@ public class RdfContainerAttributeImpl<X, C, E> extends AbstractPluralAttribute<
         }
 
         @Override
-        public RDFContainerAttributeBuilder<X, C, E> inferred(boolean inferred) {
-            super.inferred(inferred);
-            return this;
-        }
-
-        @Override
-        public RDFContainerAttributeBuilder<X, C, E> includeExplicit(boolean includeExplicit) {
-            super.includeExplicit(includeExplicit);
+        public RDFContainerAttributeBuilder<X, C, E> inferenceMode(InferenceMode inferenceMode) {
+            super.inferenceMode(inferenceMode);
             return this;
         }
 

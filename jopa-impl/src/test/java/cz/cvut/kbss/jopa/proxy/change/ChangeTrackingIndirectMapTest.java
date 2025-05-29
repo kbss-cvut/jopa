@@ -148,7 +148,7 @@ class ChangeTrackingIndirectMapTest {
 
     @Test
     void valuesReturnsInternalMapValues() {
-        assertEquals(backupMap.values().size(), sut.values().size());
+        assertEquals(backupMap.size(), sut.size());
         assertTrue(backupMap.values().containsAll(sut.values()));
     }
 

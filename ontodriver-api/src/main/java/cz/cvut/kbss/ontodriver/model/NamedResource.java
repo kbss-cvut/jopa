@@ -22,11 +22,9 @@ import java.net.URI;
 import java.util.Objects;
 
 /**
- * Represents named resources, i.e. resources identified by a URI.
+ * Represents named resources, i.e., resources identified by a URI.
  */
 public class NamedResource implements Serializable {
-
-    private static final long serialVersionUID = 5932515448919851871L;
 
     private final URI identifier;
 

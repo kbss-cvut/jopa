@@ -50,10 +50,10 @@ class InferredSimpleListIterator extends SimpleListIterator {
     InferredSimpleListIterator(ListDescriptor descriptor, OntologySnapshot snapshot,
                                AxiomAdapter axiomAdapter) {
         super(descriptor, snapshot, axiomAdapter);
-        if (snapshot.getReasoner() == null) {
+        if (snapshot.reasoner() == null) {
             throw new ReasonerNotAvailableException();
         }
-        this.reasoner = snapshot.getReasoner();
+        this.reasoner = snapshot.reasoner();
     }
 
     @Override

@@ -22,7 +22,11 @@ import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
-import cz.cvut.kbss.ontodriver.jena.connector.*;
+import cz.cvut.kbss.ontodriver.jena.connector.ConnectorFactory;
+import cz.cvut.kbss.ontodriver.jena.connector.InferenceConnectorFactory;
+import cz.cvut.kbss.ontodriver.jena.connector.ReadCommittedConnectorFactory;
+import cz.cvut.kbss.ontodriver.jena.connector.SharedStorageConnector;
+import cz.cvut.kbss.ontodriver.jena.connector.SnapshotConnectorFactory;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -55,7 +59,12 @@ import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JenaDriverTest {
 
@@ -84,7 +93,7 @@ public class JenaDriverTest {
         this.driver = new JenaDriver(storageProps, properties);
         assertNotNull(driver);
         assertTrue(driver.isOpen());
-        assertTrue(getConnectorFactory() instanceof ReadCommittedConnectorFactory);
+        assertInstanceOf(ReadCommittedConnectorFactory.class, getConnectorFactory());
     }
 
     private ConnectorFactory getConnectorFactory() throws Exception {
@@ -99,7 +108,7 @@ public class JenaDriverTest {
         this.driver = new JenaDriver(storageProps, properties);
         assertNotNull(driver);
         assertTrue(driver.isOpen());
-        assertTrue(getConnectorFactory() instanceof SnapshotConnectorFactory);
+        assertInstanceOf(SnapshotConnectorFactory.class, getConnectorFactory());
     }
 
     @Test
@@ -108,7 +117,7 @@ public class JenaDriverTest {
         this.driver = new JenaDriver(storageProps, properties);
         assertNotNull(driver);
         assertTrue(driver.isOpen());
-        assertTrue(getConnectorFactory() instanceof InferenceConnectorFactory);
+        assertInstanceOf(InferenceConnectorFactory.class, getConnectorFactory());
     }
 
     @Test
@@ -162,11 +171,12 @@ public class JenaDriverTest {
     }
 
     @Test
-    public void driverCreatesAutoCommitConnectionsWhenConfiguredTo() {
+    public void driverCreatesAutoCommitConnectionsWhenConfiguredTo() throws Exception {
         properties.put(OntoDriverProperties.CONNECTION_AUTO_COMMIT, Boolean.TRUE.toString());
         this.driver = new JenaDriver(storageProps, properties);
-        final JenaConnection connection = driver.acquireConnection();
-        assertTrue(connection.isAutoCommit());
+        try (JenaConnection connection = driver.acquireConnection()) {
+            assertTrue(connection.isAutoCommit());
+        }
     }
 
     @Test
@@ -220,9 +230,11 @@ public class JenaDriverTest {
                   .add(createStatement(createResource(subject.toString()), RDF.type, createResource(type.toString())));
         driver.setDataset(newDataset);
 
-        final JenaConnection connection = driver.acquireConnection();
-        final Set<Axiom<URI>> types = connection.types()
-                                                .getTypes(NamedResource.create(subject), Collections.emptySet(), false);
+        final Set<Axiom<URI>> types;
+        try (JenaConnection connection = driver.acquireConnection()) {
+            types = connection.types()
+                              .getTypes(NamedResource.create(subject), Collections.emptySet(), false);
+        }
         assertEquals(1, types.size());
         assertEquals(type, types.iterator().next().getValue().getValue());
     }
@@ -231,11 +243,12 @@ public class JenaDriverTest {
     public void setDatasetThrowsJenaDriverExceptionWhenTryingToReplaceDatasetInTransaction() throws Exception {
         this.driver = new JenaDriver(storageProps, properties);
         assertNotNull(driver);
-        final JenaConnection connection = driver.acquireConnection();
-        final SharedStorageConnector centralConnector = connection.unwrap(SharedStorageConnector.class);
-        centralConnector.begin();
-        final JenaDriverException ex = assertThrows(JenaDriverException.class,
-                () -> driver.setDataset(DatasetFactory.create()));
-        assertThat(ex.getCause(), instanceOf(IllegalStateException.class));
+        try (JenaConnection connection = driver.acquireConnection()) {
+            final SharedStorageConnector centralConnector = connection.unwrap(SharedStorageConnector.class);
+            centralConnector.begin();
+            final JenaDriverException ex = assertThrows(JenaDriverException.class,
+                    () -> driver.setDataset(DatasetFactory.create()));
+            assertThat(ex.getCause(), instanceOf(IllegalStateException.class));
+        }
     }
 }

@@ -20,18 +20,24 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.accessors.DataSourceStub;
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.Arguments;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.*;
@@ -74,5 +80,27 @@ public class ServerSessionTest {
     public void unwrapCallThroughToStorageAccessorIfClassDoesNotMatch() {
         final StorageAccessor sa = session.unwrap(StorageAccessor.class);
         assertNotNull(sa);
+    }
+
+    static Stream<Arguments> unitOfWorkModeProvider() {
+        return Stream.of(
+                Arguments.of(JOPAPersistenceProperties.TRANSACTION_MODE, "read_only", ReadOnlyUnitOfWork.class),
+                Arguments.of(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, "immediate", ChangeTrackingUnitOfWork.class),
+                Arguments.of(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, "on_commit", OnCommitChangePropagatingUnitOfWork.class),
+                Arguments.of(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, "invalid_mode", ChangeTrackingUnitOfWork.class),
+                Arguments.of("", "", ChangeTrackingUnitOfWork.class)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("unitOfWorkModeProvider")
+    void acquireUnitOfWorkReturnsCorrectType(String property, String transactionMode,
+                                             Class<AbstractUnitOfWork> expectedUOWClass) {
+        Configuration config = new Configuration();
+        config.set(property, transactionMode);
+
+        UnitOfWork uow = session.acquireUnitOfWork(config);
+
+        assertInstanceOf(expectedUOWClass, uow);
     }
 }

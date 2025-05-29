@@ -57,9 +57,9 @@ public class PendingReferenceRegistryTest {
         final Set<PendingAssertion> pending = assertions.get(object);
         assertEquals(1, pending.size());
         final PendingAssertion pa = pending.iterator().next();
-        assertEquals(owner, pa.getOwner());
-        assertEquals(assertion, pa.getAssertion());
-        assertNull(pa.getContext());
+        assertEquals(owner, pa.owner());
+        assertEquals(assertion, pa.assertion());
+        assertNull(pa.context());
     }
 
     @Test
@@ -72,9 +72,9 @@ public class PendingReferenceRegistryTest {
         final Set<PendingAssertion> pending = assertions.get(object);
         assertEquals(1, pending.size());
         final PendingAssertion pa = pending.iterator().next();
-        assertEquals(owner, pa.getOwner());
-        assertEquals(assertion, pa.getAssertion());
-        assertEquals(context, pa.getContext());
+        assertEquals(owner, pa.owner());
+        assertEquals(assertion, pa.assertion());
+        assertEquals(context, pa.context());
     }
 
     @SuppressWarnings("unchecked")
@@ -121,7 +121,7 @@ public class PendingReferenceRegistryTest {
         final Map<Object, Set<PendingAssertion>> result = getPendingAssertions();
         assertEquals(1, result.get(object).size());
         final PendingAssertion pa = result.get(object).iterator().next();
-        assertNotEquals(owner, pa.getOwner());
+        assertNotEquals(owner, pa.owner());
     }
 
     @Test

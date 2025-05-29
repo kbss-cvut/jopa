@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 public class CreateOperationsTest extends CreateOperationsRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CreateOperationsRunner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CreateOperationsTest.class);
 
     public CreateOperationsTest() {
         super(LOG, new JenaPersistenceFactory(), new JenaDataAccessor());

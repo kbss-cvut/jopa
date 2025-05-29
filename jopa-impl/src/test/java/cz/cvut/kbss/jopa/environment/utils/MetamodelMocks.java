@@ -371,6 +371,8 @@ public class MetamodelMocks {
     private Identifier<Phone, URI> idPhone;
     @Mock
     private SingularAttributeImpl<Phone, String> phoneNumberAtt;
+    @Mock
+    private SingularAttributeImpl<Phone, String> phoneBrandAtt;
 
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.openMocks(this);
@@ -411,7 +413,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOwlClassWMocks(etW, wSetStringAtt, wListStringAtt, wCollectionStringAtt, wSetQueryStringAtt, wListQueryStringAtt, idW);
         MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, qaEntityQueryAtt,
                                                         qaEntityAtt, etA, idQA);
-        MetamodelFactory.initPhoneMocks(etPhone, phoneNumberAtt, idPhone);
+        MetamodelFactory.initPhoneMocks(etPhone, phoneNumberAtt, phoneBrandAtt, idPhone);
         MetamodelFactory.initPersonMocks(etPerson, personUsernameAtt, personGenderAtt, personAgeAtt, personPhoneAtt,
                                          etPhone, personTypes, idPerson);
     }
@@ -1085,6 +1087,10 @@ public class MetamodelMocks {
 
         public SingularAttributeImpl<Phone, String> numberAttribute() {
             return MetamodelMocks.this.phoneNumberAtt;
+        }
+
+        public SingularAttributeImpl<Phone, String> brandAttribute() {
+            return MetamodelMocks.this.phoneBrandAtt;
         }
     }
 

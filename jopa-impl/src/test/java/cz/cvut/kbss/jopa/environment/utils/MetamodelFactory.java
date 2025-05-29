@@ -184,6 +184,7 @@ public class MetamodelFactory {
         when(id.getDeclaringType()).thenReturn(et);
         when(id.getName()).thenReturn(idField.getName());
         when(id.isGenerated()).thenReturn(generated);
+        when(id.includeExplicit()).thenReturn(true);
         when(et.getFieldSpecification(idField.getName())).thenReturn(id);
     }
 
@@ -199,7 +200,9 @@ public class MetamodelFactory {
         when(attMock.isNonEmpty()).thenReturn(attInfo.nonEmpty);
         when(attMock.getPersistentAttributeType()).thenReturn(attInfo.type);
         when(attMock.getConverter()).thenReturn(attInfo.converter);
+        when(attMock.includeExplicit()).thenReturn(true);
         when(attMock.isCollection()).thenReturn(Collection.class.isAssignableFrom(attInfo.field.getType()));
+        when(attMock.getJavaMember()).thenReturn(attInfo.field);
         if (attMock instanceof SingularAttributeImpl) {
             initSingularAttribute((SingularAttributeImpl) attMock, attInfo);
         } else {
@@ -274,6 +277,8 @@ public class MetamodelFactory {
         when(typesMock.getElementType()).thenReturn(attInfo.elementType);
         when(typesMock.isCollection()).thenReturn(true);
         when(typesMock.getFetchType()).thenReturn(FetchType.EAGER);
+        when(typesMock.includeExplicit()).thenReturn(true);
+        when(typesMock.getJavaField()).thenReturn(attInfo.field);
         when(etMock.getFieldSpecification(attInfo.field.getName())).thenReturn(typesMock);
         when(etMock.getTypes()).thenReturn(typesMock);
     }
@@ -310,6 +315,7 @@ public class MetamodelFactory {
         when(propsMock.getDeclaringType()).thenReturn(etMock);
         when(propsMock.getPropertyIdentifierType()).thenReturn(propertyType);
         when(propsMock.getPropertyValueType()).thenReturn(valueType);
+        when(propsMock.getJavaField()).thenReturn(attInfo.field);
         when(etMock.getFieldSpecification(propsMock.getName())).thenReturn(propsMock);
         when(etMock.getProperties()).thenReturn(propsMock);
     }
@@ -345,6 +351,7 @@ public class MetamodelFactory {
         when(rdfSeqMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(rdfSeqMock.getDeclaringType()).thenReturn(etMock);
         when(rdfSeqMock.getJavaType()).thenReturn(List.class);
+        when(rdfSeqMock.getJavaMember()).thenReturn(OWLClassC.getRdfSeqField());
         when(rdfSeqMock.getCascadeTypes())
                 .thenReturn(OWLClassC.getRdfSeqField().getAnnotation(OWLObjectProperty.class).cascade());
 
@@ -866,11 +873,13 @@ public class MetamodelFactory {
     }
 
     public static void initPhoneMocks(IdentifiableEntityType<Phone> etMock, SingularAttributeImpl phoneNumberAttMock,
+                                      SingularAttributeImpl phoneBrandAttMock,
                                       Identifier idMock) throws NoSuchFieldException, SecurityException {
         initEntityType(etMock, Phone.class, EntityLifecycleListenerManager.empty());
         when(etMock.getAttributes()).thenReturn(Collections.singleton(phoneNumberAttMock));
         when(etMock.getFieldSpecifications()).thenReturn(Set.of(phoneNumberAttMock, idMock));
         initAttribute(etMock, phoneNumberAttMock, new AttributeInfo(Phone.class.getDeclaredField("number"), Attribute.PersistentAttributeType.DATA));
+        initAttribute(etMock, phoneBrandAttMock, new AttributeInfo(Phone.class.getDeclaredField("brand"), Attribute.PersistentAttributeType.DATA));
         initIdentifier(etMock, idMock, Phone.class.getDeclaredField("uri"), false);
     }
 

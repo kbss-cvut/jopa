@@ -25,7 +25,7 @@ import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import java.lang.reflect.Field;
 
 /**
- * Plural query attributes can contain multiple values or references, ie. they must be a collection.
+ * Plural query attributes can contain multiple values or references, i.e., they must be a collection.
  *
  * @param <X> The represented type that contains the attribute
  * @param <C> The type of the collection

@@ -41,10 +41,10 @@ public class InferredAxiomLoader implements AxiomLoader {
 
     InferredAxiomLoader(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
-        this.reasoner = snapshot.getReasoner();
-        this.ontology = snapshot.getOntology();
-        this.dataFactory = snapshot.getDataFactory();
-        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory());
+        this.reasoner = snapshot.reasoner();
+        this.ontology = snapshot.ontology();
+        this.dataFactory = snapshot.dataFactory();
+        this.axiomAdapter = new AxiomAdapter(snapshot.dataFactory());
     }
 
     @Override

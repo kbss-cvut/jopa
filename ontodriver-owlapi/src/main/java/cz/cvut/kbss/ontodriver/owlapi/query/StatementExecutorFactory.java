@@ -31,7 +31,7 @@ public class StatementExecutorFactory {
         this.connector = connector;
     }
 
-    public StatementExecutor getStatementExecutor(Statement.StatementOntology ontology) {
+    StatementExecutor getStatementExecutor(Statement.StatementOntology ontology) {
         assert ontology != null;
 
         return switch (ontology) {

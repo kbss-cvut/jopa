@@ -56,7 +56,7 @@ public class Rdf4jStatementTest {
         when(executorMock.executeSelectQuery(any())).thenReturn(mock(TupleQueryResult.class));
         final ResultSet rs = statement.executeQuery(SELECT_ENTITY_QUERY);
         assertNotNull(rs);
-        assertTrue(rs instanceof SelectResultSet);
+        assertInstanceOf(SelectResultSet.class, rs);
         verify(executorMock).executeSelectQuery(QuerySpecification.query(SELECT_ENTITY_QUERY));
     }
 
@@ -65,7 +65,7 @@ public class Rdf4jStatementTest {
         when(executorMock.executeBooleanQuery(any())).thenReturn(true);
         final ResultSet rs = statement.executeQuery(ASK_BOOLEAN_QUERY);
         assertNotNull(rs);
-        assertTrue(rs instanceof AskResultSet);
+        assertInstanceOf(AskResultSet.class, rs);
         verify(executorMock).executeBooleanQuery(QuerySpecification.query(ASK_BOOLEAN_QUERY));
     }
 
@@ -109,7 +109,7 @@ public class Rdf4jStatementTest {
         when(executorMock.executeBooleanQuery(any())).thenReturn(true);
         final ResultSet rs = statement.executeQuery(askWithPrefix);
         assertNotNull(rs);
-        assertTrue(rs instanceof AskResultSet);
+        assertInstanceOf(AskResultSet.class, rs);
         verify(executorMock).executeBooleanQuery(QuerySpecification.query(askWithPrefix));
     }
 }

@@ -20,7 +20,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.config;
 public abstract class Rdf4jOntoDriverProperties {
 
     /**
-     * Specifies whether a in-memory storage should be used for local RDF4J repositories.
+     * Specifies whether an in-memory storage should be used for local RDF4J repositories.
      * <p>
      * When set to true, any local RDF4J repositories that are created by the driver are created as only MemoryStores
      * without any persistent backend. Repositories accessed over the Internet or already existing locally are not
@@ -43,9 +43,9 @@ public abstract class Rdf4jOntoDriverProperties {
     /**
      * Specifies how many requested assertions suffice to perform load all.
      * <p>
-     * More specifically, if the number of assertions requested by an {@link cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor}
-     * is low enough, the statements for them will be loaded by asking RDF4J for statements with subject and property
-     * bound.
+     * More specifically, if the number of assertions requested by an
+     * {@link cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor} is low enough, the statements for them will be loaded
+     * by asking RDF4J for statements with subject and property bound.
      * <p>
      * Otherwise, statements will be loaded using only subject bound and will be filtered according to the assertions.
      * This will in most cases have better performance than loading with bound property.
@@ -56,11 +56,13 @@ public abstract class Rdf4jOntoDriverProperties {
      * Path to repository configuration file.
      * <p>
      * The configuration file is a Turtle file corresponding to the repository config file schema defined by RDF4J. See
-     * for example <a href="http://docs.rdf4j.org/server-workbench-console/#_repository_configuration_templates_advanced">
+     * for example <a
+     * href="http://docs.rdf4j.org/server-workbench-console/#_repository_configuration_templates_advanced">
      * http://docs.rdf4j.org/server-workbench-console/#_repository_configuration_templates_advanced</a>
      * <p>
      * Sample configuration files are available in the RDF4J GitHub repo:
-     * <a href="https://github.com/eclipse/rdf4j/tree/master/repository/api/src/main/resources/org/eclipse/rdf4j/repository/config">
+     * <a
+     * href="https://github.com/eclipse/rdf4j/tree/master/repository/api/src/main/resources/org/eclipse/rdf4j/repository/config">
      * https://github.com/eclipse/rdf4j/tree/master/repository/api/src/main/resources/org/eclipse/rdf4j/repository/config</a>
      * <p>
      * The config file can be present on the classpath (if the value starts with the {@code classpath:} prefix) or can
@@ -70,10 +72,10 @@ public abstract class Rdf4jOntoDriverProperties {
      * Note that the config applies only to embedded repositories created by the driver, repositories on a RDF4J server
      * to which the driver just connects must preexist and the configuration does not apply to them. The physical URI
      * specified in configuration must correspond to the URI of the repository in the config file, i.e., for memory
-     * store, the repository ID must be the same. For a native store, the physical URI must be in the form {@code
-     * /local-path/repositories/repository-id}, where {@code local-path} will be used for initialization of a local
-     * {@link org.eclipse.rdf4j.repository.manager.RepositoryManager} and {@code repository-id} must again correspond to
-     * the repository ID in the configuration file.
+     * store, the repository ID must be the same. For a native store, the physical URI must be in the form
+     * {@code /local-path/repositories/repository-id}, where {@code local-path} will be used for initialization of a
+     * local {@link org.eclipse.rdf4j.repository.manager.RepositoryManager} and {@code repository-id} must again
+     * correspond to the repository ID in the configuration file.
      */
     public static final String REPOSITORY_CONFIG = "cz.cvut.kbss.ontodriver.rdf4j.repository-config";
 
@@ -92,7 +94,8 @@ public abstract class Rdf4jOntoDriverProperties {
      * <p>
      * Normally, RDF4J stores inferred statements in the context of the statement from which they were inferred.
      * However, if one uses SPIN rules or custom inference rules
-     * <a href="https://rdf4j.org/documentation/programming/repository/#custom-inferencing">https://rdf4j.org/documentation/programming/repository/#custom-inferencing</a>,
+     * <a
+     * href="https://rdf4j.org/documentation/programming/repository/#custom-inferencing">https://rdf4j.org/documentation/programming/repository/#custom-inferencing</a>,
      * their results will be stored in the default context. Setting this parameter to {@code true} will cause the
      * statement loading to use the default context for loading inferred assertions.
      * <p>
@@ -129,7 +132,7 @@ public abstract class Rdf4jOntoDriverProperties {
 
     /**
      * RDF4J transaction isolation level.
-     *
+     * <p>
      * See {@link org.eclipse.rdf4j.common.transaction.IsolationLevels} for acceptable values.
      */
     public static final String TRANSACTION_ISOLATION_LEVEL = "cz.cvut.kbss.ontodriver.rdf4j.transaction-isolation";

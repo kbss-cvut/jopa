@@ -504,7 +504,7 @@ public class ReferencedListHandlerTest {
         sut.updateList(descriptor);
         verify(connector).removeStatements(Set.of(nilTerminal));
         verify(connector, atLeast(1)).addStatements(anyCollection());
-        // Added nodes with values + terminal
+        // Added nodes with values and terminal
         assertEquals(addedItems.size() * 2 + 1, added.size());
         for (Statement stmt : added) {
             if (stmt.getPredicate().equals(nodeContentProperty)) {

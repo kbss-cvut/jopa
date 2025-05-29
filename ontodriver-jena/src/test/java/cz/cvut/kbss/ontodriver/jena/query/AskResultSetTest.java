@@ -25,7 +25,11 @@ import java.util.NoSuchElementException;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Only getBoolean, getString and getObject with compatible type are supported, other get value methods are unsupported
@@ -94,7 +98,7 @@ public class AskResultSetTest {
     public void getObjectByIndexReturnsResultBoxed() {
         resultSet.next();
         final Object result = resultSet.getObject(0);
-        assertTrue(result instanceof Boolean);
+        assertInstanceOf(Boolean.class, result);
         assertTrue((Boolean) result);
     }
 
@@ -102,7 +106,7 @@ public class AskResultSetTest {
     public void getObjectByVariableReturnsResultBoxed() {
         resultSet.next();
         final Object result = resultSet.getObject("result");
-        assertTrue(result instanceof Boolean);
+        assertInstanceOf(Boolean.class, result);
         assertTrue((Boolean) result);
     }
 

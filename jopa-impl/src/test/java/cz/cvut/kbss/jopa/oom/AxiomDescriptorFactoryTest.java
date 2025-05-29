@@ -73,7 +73,7 @@ import static org.mockito.Mockito.when;
 
 class AxiomDescriptorFactoryTest {
 
-    private static final URI CONTEXT = URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne");
+    private static final URI CONTEXT = URI.create("https://onto.fel.cvut.cz/ontologies/jopa/contextOne");
     private static final URI ID = URI.create(Vocabulary.INDIVIDUAL_BASE + "X");
 
     private static URI stringAttAUri;
@@ -640,5 +640,18 @@ class AxiomDescriptorFactoryTest {
 
         @RDFContainer(type = RDFContainerType.SEQ)
         private List<Integer> literalSequence;
+    }
+
+    @Test
+    void createForAssertedFieldLoadingOverridesInferredSettingOfField() {
+        final AxiomDescriptor result = sut.createForAssertedFieldLoading(ID,
+                metamodelMocks.forOwlClassF().stringAttribute(), descriptor, metamodelMocks.forOwlClassF()
+                                                                                           .entityType());
+        assertTrue(metamodelMocks.forOwlClassF().stringAttribute().isInferred());
+        final Optional<Assertion> assertion = result.getAssertions().stream().filter(a -> a.getIdentifier()
+                                                                                           .equals(URI.create(Vocabulary.p_f_stringAttribute)))
+                                                    .findAny();
+        assertTrue(assertion.isPresent());
+        assertFalse(assertion.get().isInferred());
     }
 }

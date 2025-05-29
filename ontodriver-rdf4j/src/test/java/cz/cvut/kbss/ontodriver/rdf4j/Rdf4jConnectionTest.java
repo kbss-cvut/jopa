@@ -100,7 +100,7 @@ public class Rdf4jConnectionTest {
     public void testCreateStatement() throws Exception {
         final Statement res = connection.createStatement();
         assertNotNull(res);
-        assertTrue(res instanceof Rdf4jStatement);
+        assertInstanceOf(Rdf4jStatement.class, res);
     }
 
     @Test
@@ -114,7 +114,7 @@ public class Rdf4jConnectionTest {
         final PreparedStatement res = connection
                 .prepareStatement("SELECT ?x ? y ?z WHERE { ?x ?y ?z . }");
         assertNotNull(res);
-        assertTrue(res instanceof Rdf4jPreparedStatement);
+        assertInstanceOf(Rdf4jPreparedStatement.class, res);
     }
 
     @Test

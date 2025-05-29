@@ -10,11 +10,11 @@
     <parent>
         <artifactId>jopa-all</artifactId>
         <groupId>cz.cvut.kbss.jopa</groupId>
-        <version>2.3.1</version>
+        <version>2.4.0</version>
     </parent>
 
     <properties>
-        <rdf4j.version>5.1.2</rdf4j.version>
+        <rdf4j.version>5.1.3</rdf4j.version>
     </properties>
 
     <dependencies>
@@ -109,4 +109,9 @@
             <version>${rdf4j.version}</version>
         </dependency>
     </dependencies>
+
+    <scm>
+        <url>https://github.com/kbss-cvut/jopa</url>
+        <connection>scm:git:git://github.com/kbss-cvut/jopa.git</connection>
+    </scm>
 </project>

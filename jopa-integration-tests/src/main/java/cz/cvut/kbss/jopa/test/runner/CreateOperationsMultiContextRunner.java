@@ -27,6 +27,9 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -367,5 +370,17 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         assertEquals(2, result.getSimpleSet().size());
         assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA.getUri())));
         assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA2.getUri())));
+    }
+
+    @Test
+    void persistSupportsContextsDefinedByContextAnnotation() throws Exception {
+        this.em = getEntityManager("persistSupportsContextsDefinedByContextAnnotation", true);
+        final ClassInContext entity = new ClassInContext("Test entity");
+        transactional(() -> em.persist(entity));
+
+        verifyStatementsPresent(List.of(
+                new Quad(entity.getId(), URI.create(RDF.TYPE), URI.create(ClassInContext.getClassIri()), URI.create("https://example.com/context")),
+                new Quad(entity.getId(), URI.create(RDFS.LABEL), entity.getLabel(), TestEnvironment.PERSISTENCE_LANGUAGE, URI.create("https://example.com/context"))
+        ), em);
     }
 }

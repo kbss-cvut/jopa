@@ -83,9 +83,10 @@ public class TestEnvironment {
     public static void removeOldTestFiles(File file) {
         if (file.exists() && DELETE_ONTOLOGY_FILE) {
             if (file.isDirectory() && file.listFiles() != null) {
-                for (File c : file.listFiles())
+                for (File c : file.listFiles()) {
                     removeOldTestFiles(c);
-                assert file.delete();
+                }
+                file.delete();
             } else {
                 if (!file.delete()) {
                     throw new IllegalStateException("Unable to delete file " + file);

@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>2.3.1</version>
+    <version>2.4.0</version>
     <artifactId>jopa-all</artifactId>
     <packaging>pom</packaging>
     <name>JOPA</name>
@@ -310,9 +310,14 @@
     </organization>
 
     <scm>
-        <url>https://github.com/kbss-cvut/jopa.git</url>
-        <connection>scm:git:https://github.com/kbss-cvut/jopa.git</connection>
+        <url>https://github.com/kbss-cvut/jopa</url>
+        <connection>scm:git:git://github.com/kbss-cvut/jopa.git</connection>
     </scm>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/kbss-cvut/jopa/issues</url>
+    </issueManagement>
 
     <distributionManagement>
         <repository>

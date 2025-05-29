@@ -98,9 +98,9 @@ public class ReferencedListHandlerTest {
     @BeforeEach
     public void setUp() throws Exception {
         final OntologySnapshot realSnapshot = TestUtils.initRealOntology(reasonerMock);
-        this.ontology = spy(realSnapshot.getOntology());
-        this.manager = spy(realSnapshot.getOntologyManager());
-        this.dataFactory = realSnapshot.getDataFactory();
+        this.ontology = spy(realSnapshot.ontology());
+        this.manager = spy(realSnapshot.ontologyManager());
+        this.dataFactory = realSnapshot.dataFactory();
         this.individual = dataFactory.getOWLNamedIndividual(IRI.create(ListTestHelper.SUBJECT.getIdentifier()));
         this.descriptor = new ReferencedListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT, ListTestHelper.HAS_CONTENT);
         this.valueDescriptor = createDescriptor();

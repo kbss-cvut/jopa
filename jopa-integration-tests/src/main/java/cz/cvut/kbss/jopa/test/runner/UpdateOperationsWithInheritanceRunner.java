@@ -127,7 +127,7 @@ public abstract class UpdateOperationsWithInheritanceRunner extends BaseInherita
         em.getTransaction().commit();
 
         final OWLClassU result = findRequired(OWLClassU.class, entityU.getUri());
-        assertTrue(result.getOwlClassS() instanceof OWLClassU);
+        assertInstanceOf(OWLClassU.class, result.getOwlClassS());
         assertEquals(newReference.getUri(), result.getOwlClassS().getUri());
         assertNotNull(em.find(OWLClassS.class, entityT.getUri()));
     }

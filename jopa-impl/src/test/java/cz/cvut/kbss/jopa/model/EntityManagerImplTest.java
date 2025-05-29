@@ -33,7 +33,6 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityLifecycleListenerManager;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
@@ -48,6 +47,7 @@ import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -104,7 +104,7 @@ class EntityManagerImplTest {
     @Mock
     private MetamodelImpl metamodelMock;
 
-    private ServerSession serverSessionMock;
+    private EntityDescriptorFactory descriptorFactory;
 
     private MetamodelMocks mocks;
 
@@ -113,13 +113,17 @@ class EntityManagerImplTest {
     @BeforeEach
     void setUp() throws Exception {
         final Configuration config = new Configuration();
-        this.serverSessionMock = spy(new ServerSessionStub(metamodelMock, connectorMock));
+        final ServerSession serverSessionMock = spy(new ServerSessionStub(metamodelMock, connectorMock));
         this.uow = spy(new ChangeTrackingUnitOfWork(serverSessionMock, config));
         doReturn(uow).when(serverSessionMock).acquireUnitOfWork(any());
         when(emfMock.getMetamodel()).thenReturn(metamodelMock);
+        when(emfMock.getServerSession()).thenReturn(serverSessionMock);
+        final NamespaceResolver nsResolver = new NamespaceResolver();
+        this.descriptorFactory = new DefaultEntityDescriptorFactory(metamodelMock, nsResolver);
+        when(metamodelMock.getNamespaceResolver()).thenReturn(nsResolver);
         this.mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
-        this.em = new EntityManagerImpl(emfMock, config, serverSessionMock);
+        this.em = new EntityManagerImpl(emfMock, config, descriptorFactory);
     }
 
     @Test
@@ -143,7 +147,7 @@ class EntityManagerImplTest {
         j.setOwlClassA(new LazyLoadingSetProxy<>(j, mocks.forOwlClassJ().setAttribute(), uow));
 
         em.merge(j);
-        verify(uow).mergeDetached(j, new EntityDescriptor());
+        verify(uow).mergeDetached(eq(j), any(EntityDescriptor.class));
     }
 
     @Test
@@ -433,6 +437,8 @@ class EntityManagerImplTest {
         when(attOne.getJavaField()).thenReturn(CascadeCycleOne.class.getDeclaredField("two"));
         when(attOne.getName()).thenReturn("two");
         when(attOne.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(attOne.getJavaType()).thenReturn(CascadeCycleTwo.class);
+        when(attOne.getJavaMember()).thenReturn(CascadeCycleOne.class.getDeclaredField("two"));
         when(etOne.getAttributes()).thenReturn(Collections.singleton(attOne));
         when(etOne.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
         final IdentifiableEntityType<CascadeCycleTwo> etTwo = mock(IdentifiableEntityType.class);
@@ -445,6 +451,8 @@ class EntityManagerImplTest {
         when(attTwo.getJavaField()).thenReturn(CascadeCycleTwo.class.getDeclaredField("one"));
         when(attTwo.getName()).thenReturn("one");
         when(attTwo.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(attTwo.getJavaType()).thenReturn(CascadeCycleOne.class);
+        when(attTwo.getJavaMember()).thenReturn(CascadeCycleTwo.class.getDeclaredField("one"));
         when(etTwo.getAttributes()).thenReturn(Collections.singleton(attTwo));
         when(etTwo.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
         when(metamodelMock.entity(CascadeCycleOne.class)).thenReturn(etOne);
@@ -662,7 +670,7 @@ class EntityManagerImplTest {
 
     @Test
     void entityManagerIsAutoCloseable() {
-        try (final EntityManager em = new EntityManagerImpl(emfMock, new Configuration(Collections.emptyMap()), serverSessionMock)) {
+        try (final EntityManager em = new EntityManagerImpl(emfMock, new Configuration(Collections.emptyMap()), descriptorFactory)) {
             assertTrue(em.isOpen());
         }
         verify(emfMock).entityManagerClosed(any(AbstractEntityManager.class));
@@ -688,18 +696,19 @@ class EntityManagerImplTest {
         uow.getLoadStateRegistry()
            .put(lazyOriginal, LoadStateDescriptorFactory.createNotLoaded(lazyOriginal, mocks.forOwlClassJ()
                                                                                             .entityType()));
-        when(connectorMock.find(new LoadingParameters<>(OWLClassJ.class, lazyOriginal.getUri(), new EntityDescriptor()))).thenReturn(lazyOriginal);
+        when(connectorMock.find(new LoadingParameters<>(OWLClassJ.class, lazyOriginal.getUri(), descriptorFactory.createDescriptor(OWLClassJ.class)))).thenReturn(lazyOriginal);
         final OWLClassJ loadedOriginal = new OWLClassJ(lazyOriginal.getUri());
         final OWLClassA a = Generators.generateOwlClassAInstance();
         loadedOriginal.setOwlClassA(Collections.singleton(a));
         uow.getLoadStateRegistry()
            .put(loadedOriginal, LoadStateDescriptorFactory.createAllLoaded(lazyOriginal, mocks.forOwlClassJ()
                                                                                               .entityType()));
-        final LoadingParameters<OWLClassJ> refreshLoadParams = new LoadingParameters<>(OWLClassJ.class, lazyOriginal.getUri(), new EntityDescriptor(), true);
+        final LoadingParameters<OWLClassJ> refreshLoadParams = new LoadingParameters<>(OWLClassJ.class, lazyOriginal.getUri(), descriptorFactory.createDescriptor(OWLClassJ.class), true);
         refreshLoadParams.bypassCache();
         when(connectorMock.find(refreshLoadParams)).thenReturn(loadedOriginal);
-        final LoadingParameters<OWLClassA> refreshALoadParams = new LoadingParameters<>(OWLClassA.class, a.getUri(), new ObjectPropertyCollectionDescriptor(mocks.forOwlClassJ()
-                                                                                                                                                                 .setAttribute()), true);
+        final LoadingParameters<OWLClassA> refreshALoadParams = new LoadingParameters<>(OWLClassA.class, a.getUri(), descriptorFactory.createDescriptor(OWLClassJ.class)
+                                                                                                                                      .getAttributeDescriptor(mocks.forOwlClassJ()
+                                                                                                                                                                   .setAttribute()), true);
         refreshALoadParams.bypassCache();
         when(connectorMock.find(refreshALoadParams)).thenReturn(a);
 
@@ -716,7 +725,7 @@ class EntityManagerImplTest {
         uow.getLoadStateRegistry()
            .put(lazyOriginal, LoadStateDescriptorFactory.createNotLoaded(lazyOriginal, mocks.forOwlClassJ()
                                                                                             .entityType()));
-        when(connectorMock.find(new LoadingParameters<>(OWLClassJ.class, lazyOriginal.getUri(), new EntityDescriptor()))).thenReturn(lazyOriginal);
+        when(connectorMock.find(any(LoadingParameters.class))).thenReturn(lazyOriginal);
         final OWLClassJ toRemove = em.find(OWLClassJ.class, lazyOriginal.getUri());
         final OWLClassA a = Generators.generateOwlClassAInstance();
         uow.getLoadStateRegistry()
@@ -725,11 +734,11 @@ class EntityManagerImplTest {
             final OWLClassJ target = inv.getArgument(0);
             target.setOwlClassA(new HashSet<>(Set.of(a)));
             return null;
-        }).when(connectorMock).loadFieldValue(toRemove, mocks.forOwlClassJ().setAttribute(), new EntityDescriptor());
+        }).when(connectorMock)
+          .loadFieldValue(eq(toRemove), eq(mocks.forOwlClassJ().setAttribute()), any(Descriptor.class));
 
         em.remove(toRemove);
-        verify(connectorMock).remove(toRemove.getUri(), OWLClassJ.class, new EntityDescriptor());
-        verify(connectorMock).remove(a.getUri(), OWLClassA.class, new ObjectPropertyCollectionDescriptor(mocks.forOwlClassJ()
-                                                                                                              .setAttribute()));
+        verify(connectorMock).remove(eq(toRemove.getUri()), eq(OWLClassJ.class), any(Descriptor.class));
+        verify(connectorMock).remove(eq(a.getUri()), eq(OWLClassA.class), any(Descriptor.class));
     }
 }

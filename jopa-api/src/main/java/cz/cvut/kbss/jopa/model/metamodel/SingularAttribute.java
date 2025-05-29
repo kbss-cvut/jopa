@@ -20,24 +20,23 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.UnusedJPA;
 
 /**
- * Instances of the type SingularAttribute represents persistent single-valued
- * properties or fields.
+ * Instances of the type SingularAttribute represents persistent single-valued properties or fields.
  *
- * @param <X>
- *            The type containing the represented attribute
- * @param <T>
- *            The type of the represented attribute
+ * @param <X> The type containing the represented attribute
+ * @param <T> The type of the represented attribute
  */
 public interface SingularAttribute<X, T> extends Attribute<X, T>, Bindable<T> {
 
     /**
-     * Is the attribute an id attribute. This method will return true if the
-     * attribute is an attribute that corresponds to a simple id, an embedded
-     * id, or an attribute of an id class.
+     * Is the attribute an id attribute.
+     * <p>
+     * Always returns false, as identifiers are represented by {@link Identifier} attributes.
      *
-     * @return boolean indicating whether the attribute is an id
+     * @return {@code false}
      */
-    boolean isId();
+    default boolean isId() {
+        return false;
+    }
 
     /**
      * Is the attribute a version attribute.

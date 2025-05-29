@@ -21,7 +21,6 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
@@ -30,7 +29,6 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
-import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
@@ -57,7 +55,6 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     private static final Object MAP_VALUE = new Object();
 
     private final EntityManagerFactoryImpl emf;
-    private final ServerSession serverSession;
 
     private boolean open;
 
@@ -65,21 +62,24 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     private UnitOfWork persistenceContext;
     private final Configuration configuration;
 
+    private final EntityDescriptorFactory descriptorFactory;
+
     private Map<Object, Object> cascadingRegistry = new IdentityHashMap<>();
 
-    EntityManagerImpl(EntityManagerFactoryImpl emf, Configuration configuration, ServerSession serverSession) {
+    EntityManagerImpl(EntityManagerFactoryImpl emf, Configuration configuration,
+                      EntityDescriptorFactory descriptorFactory) {
         this.emf = emf;
-        this.serverSession = serverSession;
         this.configuration = configuration;
+        this.descriptorFactory = descriptorFactory;
 
         this.transaction = new EntityTransactionWrapper(this);
-
         this.open = true;
     }
 
     @Override
     public void persist(final Object entity) {
-        final Descriptor d = new EntityDescriptor();
+        Objects.requireNonNull(entity);
+        final Descriptor d = descriptorFactory.createDescriptor(entity.getClass());
         persist(entity, d);
     }
 
@@ -163,7 +163,8 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     @Override
     public <T> T merge(final T entity) {
-        final Descriptor d = new EntityDescriptor();
+        Objects.requireNonNull(entity);
+        final Descriptor d = descriptorFactory.createDescriptor(entity.getClass());
         return merge(entity, d);
     }
 
@@ -281,7 +282,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     @Override
     public <T> T find(Class<T> cls, Object identifier) {
-        final EntityDescriptor d = new EntityDescriptor();
+        final Descriptor d = descriptorFactory.createDescriptor(cls);
         return find(cls, identifier, d);
     }
 
@@ -310,7 +311,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
             Objects.requireNonNull(entityClass);
             Objects.requireNonNull(identifier);
 
-            return getReference(entityClass, identifier, new EntityDescriptor());
+            return getReference(entityClass, identifier, descriptorFactory.createDescriptor(entityClass));
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
@@ -413,8 +414,8 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     /**
-     * This method loads the entity if it is lazy loaded.
-     * If the entity is not a {@link LazyLoadingProxy}, nothing happens
+     * This method loads the entity if it is lazy loaded. If the entity is not a {@link LazyLoadingProxy}, nothing
+     * happens
      *
      * @param entity - the entity to check and load
      * @return the lazy loaded entity or the original
@@ -480,7 +481,8 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         CriteriaParameterFiller parameterFiller = new CriteriaParameterFiller();
         String soqlQuery = query.translateQuery(parameterFiller);
         LOG.debug("CriteriaQuery translate to SOQL query: {}", soqlQuery);
-        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(soqlQuery, query.getResultType());
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory()
+                                                                  .createQuery(soqlQuery, query.getResultType());
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
         parameterFiller.setValuesToRegisteredParameters(q);
@@ -607,7 +609,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     @Override
     public UnitOfWork getCurrentPersistenceContext() {
         if (persistenceContext == null) {
-            this.persistenceContext = serverSession.acquireUnitOfWork(configuration);
+            this.persistenceContext = emf.getServerSession().acquireUnitOfWork(configuration);
         }
         return persistenceContext;
     }
@@ -625,12 +627,12 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
 
     @Override
     public void transactionStarted(EntityTransaction t) {
-        serverSession.transactionStarted(t, this);
+        emf.getServerSession().transactionStarted(t, this);
     }
 
     @Override
     public void transactionFinished(EntityTransaction t) {
-        this.serverSession.transactionFinished(t);
+        emf.getServerSession().transactionFinished(t);
     }
 
     @Override
@@ -648,5 +650,10 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         Objects.requireNonNull(propertyName);
         Objects.requireNonNull(value);
         configuration.set(propertyName, value.toString());
+    }
+
+    @Override
+    public Descriptor createDescriptor(Class<?> cls) {
+        return descriptorFactory.createDescriptor(cls);
     }
 }

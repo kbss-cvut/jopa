@@ -55,7 +55,7 @@ public abstract class ConnectorFactoryTestBase {
         final ConnectorFactory factory = connectorFactory(configuration);
         final StorageConnector connector = factory.createConnector();
         final InferredStorageConnector result = factory.createInferredConnector(connector);
-        assertTrue(result instanceof DummyInferredStorageConnector);
+        assertInstanceOf(DummyInferredStorageConnector.class, result);
     }
 
     @Test

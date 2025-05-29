@@ -59,6 +59,10 @@ public class NamespaceResolver {
     public void registerNamespace(String prefix, String namespace) {
         Objects.requireNonNull(prefix);
         Objects.requireNonNull(namespace);
+        if (namespaces.containsKey(prefix) && !namespaces.get(prefix).equals(namespace)) {
+            LOG.warn("Prefix '{}' is already registered with a different namespace which will be overridden: '{}'.", prefix, namespaces.get(prefix));
+        }
+        LOG.trace("Registering prefix '{}' for namespace '{}'.", prefix, namespace);
         namespaces.put(prefix, namespace);
     }
 
@@ -72,7 +76,7 @@ public class NamespaceResolver {
     public String resolveFullIri(String iri) {
         Objects.requireNonNull(iri);
         final int colonIndex = iri.indexOf(':');
-        if (colonIndex == -1) {
+        if (colonIndex == -1 || colonIndex == iri.length() - 1) {
             return iri;
         }
         if (iri.charAt(colonIndex + 1) == '/') {

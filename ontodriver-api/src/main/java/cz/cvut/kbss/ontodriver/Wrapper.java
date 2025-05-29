@@ -35,7 +35,7 @@ public interface Wrapper {
      * implement the interface, then an {@link OntoDriverException} is thrown.
      *
      * @param cls The type of the required result
-     * @param <T> The type of the class modelled by this Class object
+     * @param <T> The type of the class modeled by this Class object
      * @return An object implementing the interface
      * @throws OntoDriverException If no matching object is found
      */

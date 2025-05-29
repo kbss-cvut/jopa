@@ -70,8 +70,8 @@ class ReferencedListIterator<T> extends OwlapiListIterator<T> {
     final ReferencedListDescriptor descriptor;
 
     ReferencedListIterator(ReferencedListDescriptor descriptor, OntologySnapshot snapshot, AxiomAdapter axiomAdapter) {
-        this.ontology = snapshot.getOntology();
-        this.dataFactory = snapshot.getDataFactory();
+        this.ontology = snapshot.ontology();
+        this.dataFactory = snapshot.dataFactory();
         this.descriptor = descriptor;
         this.hasNextProperty = dataFactory.getOWLObjectProperty(IRI.create(descriptor.getNextNode().getIdentifier()));
         this.hasContentProperty = assertionToOwlProperty(descriptor.getNodeContent());

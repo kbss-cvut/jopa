@@ -1,5 +1,12 @@
 # JOPA - Change Log
 
+## 2.4.0 - 2025-05-29
+- Add support for a read-only `EntityManager` which will can be used to optimize read-only transactions (Feature #84).
+- Add support for static repository context declaration using the `@Context` annotation (Feature #104).
+- Implement `includeExplicit` attribute of `@Inferred` - it is now possible to exclude explicit (asserted) values from attribute (Enhancement #190).
+- Add support for an in-memory OWLAPI storage (Enhancement #330).
+- Dependency updates: Jena 5.4.0, RDF4J 5.1.3.
+
 ## 2.3.1 - 2025-04-07
 - Ensure change tracking proxies are unwrapped on entity detach.
 
@@ -531,7 +538,7 @@ on an entity or its mapped superclass and the query will be available in the per
 
 ## 0.8.3 - 2016-07-12
 - Consistent handling of instances with the same identifier (i.e. the same individual). Only single instance with a given
-identifier is allowed in one persistence context. But, persisting the same individual as instance of different classes in
+identifier is allowed in one persistence context. But persisting the same individual as instance of different classes in
 different persistence contexts is possible.
 
 ## 0.8.2 - 2016-07-04

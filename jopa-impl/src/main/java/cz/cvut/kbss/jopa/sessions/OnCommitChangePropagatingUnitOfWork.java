@@ -33,7 +33,7 @@ import java.net.URI;
 
 public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
 
-    OnCommitChangePropagatingUnitOfWork(AbstractSession parent, Configuration configuration) {
+    public OnCommitChangePropagatingUnitOfWork(AbstractSession parent, Configuration configuration) {
         super(parent, configuration);
     }
 

@@ -131,23 +131,23 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterSimpleSubpath(SoqlParser.SimpleSubpathContext ctx) {
-        if(ctx.simpleSubpath() == null) {
+        if (ctx.simpleSubpath() == null) {
             return;
         }
 
-        if(ctx.getChildCount() == 1) {
+        if (ctx.getChildCount() == 1) {
             return;
         }
 
         // node was already processed by parent
-        if(ctx.getParent() instanceof SoqlParser.SimpleSubpathContext) {
+        if (ctx.getParent() instanceof SoqlParser.SimpleSubpathContext) {
             return;
         }
 
         SoqlNode owner = linkSimpleSubpath(ctx);
 
         // don't add top level references multiple times
-        if(!owner.hasChild() && objectTypes.containsKey(owner.getValue())) {
+        if (!owner.hasChild() && objectTypes.containsKey(owner.getValue())) {
             return;
         }
 
@@ -204,7 +204,7 @@ public class SoqlQueryListener implements SoqlListener {
     public void enterSelectClause(SoqlParser.SelectClauseContext ctx) {
         this.typeDef = SparqlConstants.SELECT;
 
-        if(ctx.DISTINCT() != null) {
+        if (ctx.DISTINCT() != null) {
             this.isSelectedParamDistinct = true;
         }
     }
@@ -247,13 +247,13 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterAggregateExpression(SoqlParser.AggregateExpressionContext ctx) {
-        if(ctx.COUNT() != null) {
+        if (ctx.COUNT() != null) {
             isSelectedParamCount = true;
-            if(ctx.DISTINCT() != null) {
+            if (ctx.DISTINCT() != null) {
                 isSelectedParamDistinct = true;
             }
 
-            if(ctx.simpleSubpath() != null) {
+            if (ctx.simpleSubpath() != null) {
                 this.projectedVariable = ctx.simpleSubpath().getText();
             }
         }
@@ -340,7 +340,7 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     private SoqlAttribute createSyntheticAttributeForEntityId() {
-        if(attrPointer.getFirstNode().hasChild()) {
+        if (attrPointer.getFirstNode().hasChild()) {
             attrPointer.getFirstNode().getChild().setChild(null);
             return new SoqlAttribute(attrPointer.getFirstNode().getChild());
         }
@@ -454,7 +454,7 @@ public class SoqlQueryListener implements SoqlListener {
     public void enterFromClause(SoqlParser.FromClauseContext ctx) {
         String entityName = ctx.entityName().getText();
         String identificationVariable = ctx.IDENTIFICATION_VARIABLE().getText();
-                objectTypes.put(identificationVariable, entityName);
+        objectTypes.put(identificationVariable, entityName);
         SoqlNode node = new AttributeNode(entityName);
         setObjectIri(node);
         SoqlAttribute myAttr = new SoqlAttribute(node);
@@ -628,22 +628,6 @@ public class SoqlQueryListener implements SoqlListener {
 
     }
 
-    private SoqlNode linkContextNodes(ParserRuleContext ctx) {
-        SoqlNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
-        SoqlNode currentNode = firstNode;
-        for (int i = 2; i < ctx.getChildCount(); i += 2) {
-            SoqlNode prevNode = currentNode;
-            currentNode = new AttributeNode(prevNode, ctx.getChild(i).getText());
-            prevNode.setChild(currentNode);
-        }
-        setIris(firstNode);
-        if (currentNode.getIri().isEmpty()) {
-            currentNode.getParent().setChild(null);
-            this.isInObjectIdentifierExpression = true;
-        }
-        return firstNode;
-    }
-
     private SoqlNode linkObjectPathExpression(ParserRuleContext ctx) {
         SoqlNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
         SoqlNode currentNode = firstNode;
@@ -699,10 +683,6 @@ public class SoqlQueryListener implements SoqlListener {
     //Methods to help parse tree
     private String getOwnerFromParam(ParserRuleContext ctx) {
         return ctx.getChild(0).getChild(0).getText();
-    }
-
-    private String getAttributeFromParam(ParserRuleContext ctx) {
-        return ctx.getChild(2).getChild(0).getText();
     }
 
     private String getOrderingBy(ParserRuleContext ctx) {
@@ -785,7 +765,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     private String getSelectParameter(SoqlAttribute attribute) {
         SoqlNode firstNode = attribute.getFirstNode();
-        if(!firstNode.hasChild()) {
+        if (!firstNode.hasChild()) {
             return rootVariable;
         }
 
@@ -846,7 +826,7 @@ public class SoqlQueryListener implements SoqlListener {
         while (it.hasNext()) {
             final SoqlAttribute current = it.next();
             if (current.isInstanceOf() || current.isOrderBy() || current.isGroupBy()) {
-                attributesPart.append(processAttribute(current));
+                processAttribute(current).forEach(attributesPart::append);
                 it.remove();
             }
         }
@@ -872,10 +852,8 @@ public class SoqlQueryListener implements SoqlListener {
                 if (myAttr.requiresFilter()) {
                     toFilter.add(myAttr);
                 }
-                final String bgp = processAttribute(myAttr);
-                if (attributesPart.indexOf(bgp) == -1) {
-                    attributesPart.append(bgp);
-                }
+                final List<String> bgps = processAttribute(myAttr);
+                bgps.stream().filter(bgp -> attributesPart.indexOf(bgp) == -1).forEach(attributesPart::append);
             }
         }
         attributesPart.append(processAllFilters(toFilter, toInvFilter));
@@ -913,7 +891,7 @@ public class SoqlQueryListener implements SoqlListener {
         }
         buildInvFilter.append("FILTER NOT EXISTS { ");
         for (SoqlAttribute attr : toInvFilter) {
-            buildInvFilter.append(processAttribute(attr));
+            processAttribute(attr).forEach(buildInvFilter::append);
             if (attr.requiresFilter()) {
                 toFilter.add(attr);
             }
@@ -922,7 +900,7 @@ public class SoqlQueryListener implements SoqlListener {
         return buildInvFilter.toString();
     }
 
-    private String processAttribute(SoqlAttribute attr) {
+    private List<String> processAttribute(SoqlAttribute attr) {
         return attr.getBasicGraphPattern(rootVariable);
     }
 

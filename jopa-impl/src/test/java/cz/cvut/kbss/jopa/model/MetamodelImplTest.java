@@ -600,7 +600,7 @@ class MetamodelImplTest {
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                                                          () -> m.entity(ClassWithUriTypes.class));
         assertThat(ex.getMessage(), containsString(
-                ClassWithUriTypes.class.getName() + " is not a known entity in this persistence unit."));
+                ClassWithUriTypes.class.getName() + " is not a known entity class in this persistence unit."));
     }
 
     @Test

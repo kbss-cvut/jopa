@@ -96,7 +96,7 @@ public class SelectResultSetTest {
         when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createBNode());
 
         resultSet.next();
-        assertTrue(resultSet.getObject("x") instanceof String);
+        assertInstanceOf(String.class, resultSet.getObject("x"));
     }
 
     @Test

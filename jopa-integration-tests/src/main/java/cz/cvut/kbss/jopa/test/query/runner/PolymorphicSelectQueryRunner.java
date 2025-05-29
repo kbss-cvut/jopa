@@ -36,7 +36,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
@@ -60,7 +64,7 @@ public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
                   .setParameter("hasName", URI.create(RDFS.LABEL))
                   .setParameter("name", t.getName(), "en").getSingleResult();
         assertNotNull(result);
-        assertTrue(result instanceof OWLClassT);
+        assertInstanceOf(OWLClassT.class, result);
         verifyEntityTAttributes(t, (OWLClassT) result);
     }
 
@@ -81,7 +85,7 @@ public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
                   .setParameter("hasName", URI.create(RDFS.LABEL))
                   .setParameter("name", t.getName(), "en").getSingleResult();
         assertNotNull(result);
-        assertTrue(result instanceof OWLClassT);
+        assertInstanceOf(OWLClassT.class, result);
         verifyEntityTAttributes(t, (OWLClassT) result);
     }
 
@@ -108,7 +112,7 @@ public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
             for (OWLClassSParent tt : result) {
                 if (t.getUri().equals(tt.getUri())) {
                     found = true;
-                    assertTrue(tt instanceof OWLClassT);
+                    assertInstanceOf(OWLClassT.class, tt);
                     verifyEntityTAttributes(t, (OWLClassT) tt);
                     break;
                 }

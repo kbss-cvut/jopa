@@ -74,8 +74,8 @@ class ContainerHandlerTest {
     @BeforeEach
     void setUp() throws Exception {
         this.ontologySnapshot = TestUtils.initRealOntology(null);
-        this.ontology = ontologySnapshot.getOntology();
-        this.dataFactory = ontologySnapshot.getDataFactory();
+        this.ontology = ontologySnapshot.ontology();
+        this.dataFactory = ontologySnapshot.dataFactory();
         this.sut = new ContainerHandler(owlapiAdapter, ontologySnapshot);
     }
 
@@ -91,8 +91,8 @@ class ContainerHandlerTest {
                 <https://example.com/hasIsolationLevels/container> rdf:_3 "3"^^xsd:int .
                 """.formatted(owner.toString(), property.getIdentifier());
         StringDocumentSource source = new StringDocumentSource(ttl);
-        OWLOntology loaded = ontologySnapshot.getOntologyManager().loadOntologyFromOntologyDocument(source);
-        ontologySnapshot.getOntologyManager().addAxioms(ontology, loaded.axioms());
+        OWLOntology loaded = ontologySnapshot.ontologyManager().loadOntologyFromOntologyDocument(source);
+        ontologySnapshot.ontologyManager().addAxioms(ontology, loaded.axioms());
 
         final List<Axiom<?>> result = sut.readContainer(ContainerDescriptor.seqDescriptor(owner, property));
         assertNotNull(result);
@@ -114,8 +114,8 @@ class ContainerHandlerTest {
                  rdf:_1 "1"^^xsd:int .
                 ] .""".formatted(owner.toString(), property.getIdentifier());
         StringDocumentSource source = new StringDocumentSource(ttl);
-        OWLOntology loaded = ontologySnapshot.getOntologyManager().loadOntologyFromOntologyDocument(source);
-        ontologySnapshot.getOntologyManager().addAxioms(ontology, loaded.axioms());
+        OWLOntology loaded = ontologySnapshot.ontologyManager().loadOntologyFromOntologyDocument(source);
+        ontologySnapshot.ontologyManager().addAxioms(ontology, loaded.axioms());
 
         final List<Axiom<?>> result = sut.readContainer(ContainerDescriptor.seqDescriptor(owner, property));
         assertNotNull(result);
@@ -141,8 +141,8 @@ class ContainerHandlerTest {
                 rdf:_2 a owl:ObjectProperty .
                 """.formatted(owner.toString(), property.getIdentifier());
         StringDocumentSource source = new StringDocumentSource(ttl);
-        OWLOntology loaded = ontologySnapshot.getOntologyManager().loadOntologyFromOntologyDocument(source);
-        ontologySnapshot.getOntologyManager().addAxioms(ontology, loaded.axioms());
+        OWLOntology loaded = ontologySnapshot.ontologyManager().loadOntologyFromOntologyDocument(source);
+        ontologySnapshot.ontologyManager().addAxioms(ontology, loaded.axioms());
 
         final List<Axiom<?>> result = sut.readContainer(ContainerDescriptor.seqDescriptor(owner, property));
         assertNotNull(result);
@@ -163,8 +163,8 @@ class ContainerHandlerTest {
                 <%s> <%s> <https://example.com/hasIsolationLevels/anotherObject> .
                 """.formatted(owner.toString(), property.getIdentifier(), owner.toString(), property.getIdentifier());
         StringDocumentSource source = new StringDocumentSource(ttl);
-        OWLOntology loaded = ontologySnapshot.getOntologyManager().loadOntologyFromOntologyDocument(source);
-        ontologySnapshot.getOntologyManager().addAxioms(ontology, loaded.axioms());
+        OWLOntology loaded = ontologySnapshot.ontologyManager().loadOntologyFromOntologyDocument(source);
+        ontologySnapshot.ontologyManager().addAxioms(ontology, loaded.axioms());
 
         assertThrows(IntegrityConstraintViolatedException.class, () -> sut.readContainer(ContainerDescriptor.seqDescriptor(owner, property)));
     }
@@ -181,8 +181,8 @@ class ContainerHandlerTest {
                 <https://example.com/hasIsolationLevels/container> rdf:_2 "2"^^xsd:int .
                 """.formatted(owner.toString(), property.getIdentifier());
         StringDocumentSource source = new StringDocumentSource(ttl);
-        OWLOntology loaded = ontologySnapshot.getOntologyManager().loadOntologyFromOntologyDocument(source);
-        ontologySnapshot.getOntologyManager().addAxioms(ontology, loaded.axioms());
+        OWLOntology loaded = ontologySnapshot.ontologyManager().loadOntologyFromOntologyDocument(source);
+        ontologySnapshot.ontologyManager().addAxioms(ontology, loaded.axioms());
 
         final List<Axiom<?>> result = sut.readContainer(ContainerDescriptor.seqDescriptor(owner, property));
         assertNotNull(result);
@@ -251,8 +251,8 @@ class ContainerHandlerTest {
                 <%s> a owl:ObjectProperty .
                 """.formatted(owner.toString(), property.getIdentifier(), property.getIdentifier());
         StringDocumentSource source = new StringDocumentSource(ttl);
-        OWLOntology loaded = ontologySnapshot.getOntologyManager().loadOntologyFromOntologyDocument(source);
-        ontologySnapshot.getOntologyManager().addAxioms(ontology, loaded.axioms());
+        OWLOntology loaded = ontologySnapshot.ontologyManager().loadOntologyFromOntologyDocument(source);
+        ontologySnapshot.ontologyManager().addAxioms(ontology, loaded.axioms());
 
         final ContainerValueDescriptor<Integer> update = ContainerValueDescriptor.seqValueDescriptor(owner, property);
         IntStream.range(1, 5).forEach(update::addValue);
@@ -276,8 +276,8 @@ class ContainerHandlerTest {
                 <%s> a owl:ObjectProperty .
                 """.formatted(owner.toString(), property.getIdentifier(), property.getIdentifier());
         StringDocumentSource source = new StringDocumentSource(ttl);
-        OWLOntology loaded = ontologySnapshot.getOntologyManager().loadOntologyFromOntologyDocument(source);
-        ontologySnapshot.getOntologyManager().addAxioms(ontology, loaded.axioms());
+        OWLOntology loaded = ontologySnapshot.ontologyManager().loadOntologyFromOntologyDocument(source);
+        ontologySnapshot.ontologyManager().addAxioms(ontology, loaded.axioms());
 
         final ContainerValueDescriptor<Integer> descriptor = ContainerValueDescriptor.seqValueDescriptor(owner, property);
         IntStream.range(1, 10).filter(i -> i % 2 == 0).forEach(descriptor::addValue);
@@ -300,8 +300,8 @@ class ContainerHandlerTest {
                 <%s> a owl:ObjectProperty .
                 """.formatted(owner.toString(), property.getIdentifier(), property.getIdentifier());
         StringDocumentSource source = new StringDocumentSource(ttl);
-        OWLOntology loaded = ontologySnapshot.getOntologyManager().loadOntologyFromOntologyDocument(source);
-        ontologySnapshot.getOntologyManager().addAxioms(ontology, loaded.axioms());
+        OWLOntology loaded = ontologySnapshot.ontologyManager().loadOntologyFromOntologyDocument(source);
+        ontologySnapshot.ontologyManager().addAxioms(ontology, loaded.axioms());
 
         sut.updateContainer(ContainerValueDescriptor.seqValueDescriptor(owner, property));
         assertTrue(ontology.getABoxAxioms(Imports.INCLUDED).isEmpty());

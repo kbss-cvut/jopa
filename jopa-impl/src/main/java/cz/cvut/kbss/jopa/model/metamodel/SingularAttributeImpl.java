@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
+import cz.cvut.kbss.ontodriver.model.InferenceMode;
 
 public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> implements SingularAttribute<X, Y> {
 
@@ -31,11 +32,6 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
     @Override
     public Type<Y> getType() {
         return type;
-    }
-
-    @Override
-    public boolean isId() {
-        return false;
     }
 
     @Override
@@ -95,14 +91,8 @@ public class SingularAttributeImpl<X, Y> extends AbstractAttribute<X, Y> impleme
         }
 
         @Override
-        public SingularAttributeBuilder<X, Y> inferred(boolean inferred) {
-            super.inferred(inferred);
-            return this;
-        }
-
-        @Override
-        public SingularAttributeBuilder<X, Y> includeExplicit(boolean includeExplicit) {
-            super.includeExplicit(includeExplicit);
+        public SingularAttributeBuilder<X, Y> inferenceMode(InferenceMode inferenceMode) {
+            super.inferenceMode(inferenceMode);
             return this;
         }
 

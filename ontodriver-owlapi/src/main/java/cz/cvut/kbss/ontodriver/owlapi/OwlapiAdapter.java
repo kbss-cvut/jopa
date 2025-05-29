@@ -106,15 +106,15 @@ public class OwlapiAdapter {
     }
 
     private OWLReasoner reasoner() {
-        return ontologySnapshot.getReasoner();
+        return ontologySnapshot.reasoner();
     }
 
     private OWLOntology ontology() {
-        return ontologySnapshot.getOntology();
+        return ontologySnapshot.ontology();
     }
 
     private OWLDataFactory dataFactory() {
-        return ontologySnapshot.getDataFactory();
+        return ontologySnapshot.dataFactory();
     }
 
     List<URI> getContexts() {

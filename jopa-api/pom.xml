@@ -6,7 +6,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>2.3.1</version>
+        <version>2.4.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -21,4 +21,9 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+
+    <scm>
+        <url>https://github.com/kbss-cvut/jopa</url>
+        <connection>scm:git:git://github.com/kbss-cvut/jopa.git</connection>
+    </scm>
 </project>

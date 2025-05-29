@@ -26,7 +26,7 @@ import java.util.Iterator;
 
 /**
  * Represents a snapshot of the main dataset.
- *
+ * <p>
  * Can be used to apply transactional changes and be thrown away in case the transaction is rolled back.
  */
 class SnapshotStorage extends LocalStorage {

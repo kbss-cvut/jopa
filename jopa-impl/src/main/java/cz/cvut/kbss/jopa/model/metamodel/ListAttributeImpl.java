@@ -107,18 +107,6 @@ public class ListAttributeImpl<X, V> extends AbstractPluralAttribute<X, List<V>,
         }
 
         @Override
-        public ListAttributeBuilder<X, V> inferred(boolean inferred) {
-            super.inferred(inferred);
-            return this;
-        }
-
-        @Override
-        public ListAttributeBuilder<X, V> includeExplicit(boolean includeExplicit) {
-            super.includeExplicit(includeExplicit);
-            return this;
-        }
-
-        @Override
         public ListAttributeBuilder<X, V> converter(ConverterWrapper converter) {
             super.converter(converter);
             return this;

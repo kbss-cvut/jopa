@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
@@ -86,9 +87,9 @@ public class SimpleListHandlerTest {
     @BeforeEach
     public void setUp() throws Exception {
         final OntologySnapshot realSnapshot = TestUtils.initRealOntology(reasonerMock);
-        this.ontology = spy(realSnapshot.getOntology());
-        this.manager = spy(realSnapshot.getOntologyManager());
-        this.dataFactory = realSnapshot.getDataFactory();
+        this.ontology = spy(realSnapshot.ontology());
+        this.manager = spy(realSnapshot.ontologyManager());
+        this.dataFactory = realSnapshot.dataFactory();
         this.individual = dataFactory.getOWLNamedIndividual(IRI.create(ListTestHelper.SUBJECT.getIdentifier()));
         this.descriptor = new SimpleListDescriptorImpl(ListTestHelper.SUBJECT, ListTestHelper.HAS_LIST, ListTestHelper.HAS_NEXT);
         this.valueDescriptor = createDescriptor();
@@ -207,7 +208,7 @@ public class SimpleListHandlerTest {
         assertEquals(1, args.size());
         final AddAxiom ax = (AddAxiom) args.get(0);
         final OWLAxiom axiom = ax.getAxiom();
-        assertTrue(axiom instanceof OWLObjectPropertyAssertionAxiom);
+        assertInstanceOf(OWLObjectPropertyAssertionAxiom.class, axiom);
         final OWLObjectProperty property = axiom.objectPropertiesInSignature().iterator().next();
         assertEquals(ListTestHelper.HAS_LIST.getIdentifier(), property.getIRI().toURI());
         final OWLIndividual value = ((OWLObjectPropertyAssertionAxiom) axiom).getObject();
@@ -227,7 +228,7 @@ public class SimpleListHandlerTest {
         for (int i = 0; i < args.size(); i++) {
             final AddAxiom ax = (AddAxiom) args.get(i);
             final OWLAxiom axiom = ax.getAxiom();
-            assertTrue(axiom instanceof OWLObjectPropertyAssertionAxiom);
+            assertInstanceOf(OWLObjectPropertyAssertionAxiom.class, axiom);
             final OWLObjectPropertyAssertionAxiom assertionAxiom = (OWLObjectPropertyAssertionAxiom) axiom;
             if (i == 0) {
                 assertEquals(ListTestHelper.SUBJECT.getIdentifier(),

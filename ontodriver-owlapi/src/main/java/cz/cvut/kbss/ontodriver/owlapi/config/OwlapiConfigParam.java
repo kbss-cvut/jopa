@@ -26,7 +26,8 @@ public enum OwlapiConfigParam implements ConfigurationParameter {
 
     MAPPING_FILE_LOCATION(OwlapiOntoDriverProperties.MAPPING_FILE_LOCATION),
     IRI_MAPPING_DELIMITER(OwlapiOntoDriverProperties.IRI_MAPPING_DELIMITER),
-    WRITE_ON_COMMIT(OwlapiOntoDriverProperties.WRITE_ON_COMMIT);
+    WRITE_ON_COMMIT(OwlapiOntoDriverProperties.WRITE_ON_COMMIT),
+    USE_VOLATILE_STORAGE(OwlapiOntoDriverProperties.USE_VOLATILE_STORAGE);
 
     private final String name;
 

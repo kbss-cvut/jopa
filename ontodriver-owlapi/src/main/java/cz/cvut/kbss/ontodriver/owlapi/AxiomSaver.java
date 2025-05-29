@@ -47,8 +47,8 @@ class AxiomSaver {
     AxiomSaver(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
         this.snapshot = snapshot;
-        this.ontology = snapshot.getOntology();
-        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory());
+        this.ontology = snapshot.ontology();
+        this.axiomAdapter = new AxiomAdapter(snapshot.dataFactory());
     }
 
     void persist(AxiomValueDescriptor descriptor) {

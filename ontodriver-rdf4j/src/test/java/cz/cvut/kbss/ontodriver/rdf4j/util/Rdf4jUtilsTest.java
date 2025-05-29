@@ -87,7 +87,7 @@ class Rdf4jUtilsTest {
         final Literal literal = Rdf4jUtils.createLiteral(Severity.MEDIUM, LANG, vf);
         assertNotNull(literal);
         assertEquals(Severity.MEDIUM.toString(), literal.stringValue());
-        assertEquals(literal.getDatatype(), XSD.STRING);
+        assertEquals(XSD.STRING, literal.getDatatype());
     }
 
     @Test

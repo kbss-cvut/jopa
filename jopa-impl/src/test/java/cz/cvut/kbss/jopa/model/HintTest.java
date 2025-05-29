@@ -72,8 +72,8 @@ public class HintTest {
         sut.initialize();
         assertTrue(sut.valueMap.containsKey(Boolean.toString(true).toUpperCase(Locale.ROOT)));
         assertTrue(sut.valueMap.containsKey(Boolean.toString(false).toUpperCase(Locale.ROOT)));
-        assertEquals(sut.valueMap.get(Boolean.toString(true).toUpperCase(Locale.ROOT)), Boolean.TRUE);
-        assertEquals(sut.valueMap.get(Boolean.toString(false).toUpperCase(Locale.ROOT)), Boolean.FALSE);
+        assertEquals(Boolean.TRUE, sut.valueMap.get(Boolean.toString(true).toUpperCase(Locale.ROOT)));
+        assertEquals(Boolean.FALSE, sut.valueMap.get(Boolean.toString(false).toUpperCase(Locale.ROOT)));
         assertNull(sut.valueArray);
         assertNull(sut.defaultValue);
     }
@@ -102,14 +102,13 @@ public class HintTest {
 
     @Test
     void applyUsesDefaultValueWhenProvidedValueIsEmptyString() {
-        final Boolean defaultValue = Boolean.TRUE;
-        final TestHint sut = spy(new TestHint(defaultValue, new Object[][]{
+        final TestHint sut = spy(new TestHint(true, new Object[][]{
                 {Boolean.TRUE.toString(), Boolean.TRUE},
                 {Boolean.FALSE.toString(), Boolean.FALSE},
                 }));
         sut.initialize();
         sut.apply("", query, statement);
-        verify(sut).applyToQuery(defaultValue, query, statement);
+        verify(sut).applyToQuery(true, query, statement);
     }
 
     @Test
