@@ -25,8 +25,9 @@ import java.lang.annotation.Target;
 
 /**
  * Specifies the identifier of an entity.
- *
- * The basic identifier types that have to be supported are {@link java.net.URI}, {@link java.net.URL} and {@link String}.
+ * <p>
+ * The basic identifier types that have to be supported are {@link java.net.URI}, {@link java.net.URL} and
+ * {@link String}.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

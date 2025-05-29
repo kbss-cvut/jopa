@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 /**
  * Used in conjunction with the {@link EntityResult} annotation to map columns specified in the SELECT list of a SPARQL
  * query to the properties or fields of an entity class.
- *
+ * <p>
  * Note that if variable is not bound in result row, the field is skipped (its value is not set).
  * <p>
  * Example:

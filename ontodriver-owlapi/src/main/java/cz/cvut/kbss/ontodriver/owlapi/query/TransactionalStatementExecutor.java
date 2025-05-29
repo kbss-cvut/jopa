@@ -36,9 +36,9 @@ class TransactionalStatementExecutor implements StatementExecutor {
     private final OWLReasoner reasoner;
 
     public TransactionalStatementExecutor(OntologySnapshot snapshot) {
-        this.ontology = snapshot.getOntology();
-        this.ontologyManager = snapshot.getOntologyManager();
-        this.reasoner = snapshot.getReasoner();
+        this.ontology = snapshot.ontology();
+        this.ontologyManager = snapshot.ontologyManager();
+        this.reasoner = snapshot.reasoner();
     }
 
     @Override

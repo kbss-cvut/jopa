@@ -54,9 +54,9 @@ abstract class ListTestHelper {
     final OWLNamedIndividual individual;
 
     ListTestHelper(OntologySnapshot snapshot, OWLNamedIndividual individual) {
-        this.ontology = snapshot.getOntology();
-        this.manager = snapshot.getOntologyManager();
-        this.dataFactory = snapshot.getDataFactory();
+        this.ontology = snapshot.ontology();
+        this.manager = snapshot.ontologyManager();
+        this.dataFactory = snapshot.dataFactory();
         this.individual = individual;
     }
 

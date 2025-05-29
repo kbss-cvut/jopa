@@ -75,9 +75,9 @@ public class PropertiesHandlerTest {
     public void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
-        this.ontology = snapshot.getOntology();
-        this.manager = snapshot.getOntologyManager();
-        this.dataFactory = snapshot.getDataFactory();
+        this.ontology = snapshot.ontology();
+        this.manager = snapshot.ontologyManager();
+        this.dataFactory = snapshot.dataFactory();
         this.propertiesHandler = new PropertiesHandler(adapterMock, snapshot);
     }
 

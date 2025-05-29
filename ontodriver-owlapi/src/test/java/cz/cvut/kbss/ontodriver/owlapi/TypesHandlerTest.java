@@ -41,6 +41,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
@@ -78,7 +79,7 @@ public class TypesHandlerTest {
     void getTypesLoadsExplicitTypesFromOntology() throws Exception {
         final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
         final Set<URI> types = initTypes();
-        addClassAssertionsToOntology(types, snapshot.getOntology(), snapshot.getOntologyManager());
+        addClassAssertionsToOntology(types, snapshot.ontology(), snapshot.ontologyManager());
         final Set<Axiom<URI>> result = new TypesHandler(adapterMock, snapshot)
                 .getTypes(INDIVIDUAL, Collections.emptySet(), false);
 
@@ -132,7 +133,7 @@ public class TypesHandlerTest {
         final List<?> addChanges = captor.getValue();
         assertEquals(typeUris.size(), addChanges.size());
         for (Object change : addChanges) {
-            assertTrue(change instanceof MutableAddAxiom);
+            assertInstanceOf(MutableAddAxiom.class, change);
             final MutableAddAxiom ax = (MutableAddAxiom) change;
             final OWLClassAssertionAxiom clsAxiom = (OWLClassAssertionAxiom) ax.getAxiom();
             assertTrue(typeUris.contains(clsAxiom.getClassExpression().asOWLClass().getIRI().toURI()));
@@ -150,7 +151,7 @@ public class TypesHandlerTest {
         final List<?> removeChanges = captor.getValue();
         assertEquals(typeUris.size(), removeChanges.size());
         for (Object change : removeChanges) {
-            assertTrue(change instanceof MutableRemoveAxiom);
+            assertInstanceOf(MutableRemoveAxiom.class, change);
             final MutableRemoveAxiom ax = (MutableRemoveAxiom) change;
             final OWLClassAssertionAxiom clsAxiom = (OWLClassAssertionAxiom) ax.getAxiom();
             assertTrue(typeUris.contains(clsAxiom.getClassExpression().asOWLClass().getIRI().toURI()));
@@ -162,11 +163,11 @@ public class TypesHandlerTest {
     void getTypesLoadsTypesFromImportedOntologiesAsWell() throws Exception {
         final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
         final Set<URI> types = initTypes();
-        final OWLOntologyManager manager = snapshot.getOntologyManager();
+        final OWLOntologyManager manager = snapshot.ontologyManager();
         final OWLOntology imported = manager.createOntology(IRI.create(Generator.generateUri()));
-        manager.applyChange(new AddImport(snapshot.getOntology(),
+        manager.applyChange(new AddImport(snapshot.ontology(),
                 dataFactory.getOWLImportsDeclaration(imported.getOntologyID().getOntologyIRI().get())));
-        addClassAssertionsToOntology(types, snapshot.getOntology(), snapshot.getOntologyManager());
+        addClassAssertionsToOntology(types, snapshot.ontology(), snapshot.ontologyManager());
         final URI typeInImport = Generator.generateUri();
         addClassAssertionsToOntology(Collections.singleton(typeInImport), imported, manager);
         final Set<Axiom<URI>> result = new TypesHandler(adapterMock, snapshot).getTypes(INDIVIDUAL, null, false);

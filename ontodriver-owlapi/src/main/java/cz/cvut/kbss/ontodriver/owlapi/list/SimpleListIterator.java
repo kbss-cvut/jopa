@@ -50,8 +50,8 @@ class SimpleListIterator extends OwlapiListIterator<NamedResource> {
 
 
     SimpleListIterator(ListDescriptor descriptor, OntologySnapshot snapshot, AxiomAdapter axiomAdapter) {
-        this.ontology = snapshot.getOntology();
-        this.dataFactory = snapshot.getDataFactory();
+        this.ontology = snapshot.ontology();
+        this.dataFactory = snapshot.dataFactory();
         this.previousProperty = dataFactory
                 .getOWLObjectProperty(IRI.create(descriptor.getListProperty().getIdentifier()));
         this.hasNextProperty = dataFactory.getOWLObjectProperty(IRI.create(descriptor.getNextNode().getIdentifier()));

@@ -105,7 +105,7 @@ class DatatypeTransformerTest {
     void transformCastsValueWithoutTransformerWhenValueIsAssignableToTargetType() {
         final Integer value = 117;
         final Number result = DatatypeTransformer.transform(value, Number.class);
-        assertSame(result, value);
+        assertSame(value, result);
     }
 
     @Test

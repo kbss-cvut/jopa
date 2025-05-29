@@ -394,9 +394,8 @@ class AbstractIdentifiableTypeTest {
     void getAttributeResolvesGenericAttributeFromSupertype() {
         final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericType> parent = new AbstractEntityType<>(MetamodelBuilderTest.ClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ClassWithGenericType.class.getAnnotation(OWLClass.class)
                                                                                                                                                                                                                                .iri()));
-        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithGenericType.class, MetamodelBuilderTest.ConcreteClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithGenericType.class.getAnnotation(OWLClass.class)
-                                                                                                                                                                                                                                                                                                               .iri()));
-        child.setSupertypes(Set.of(parent));
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType>
+                child = createConcreteClassWithGenericTypeAbstractIdentifiableType(parent);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassA> att = mock(AbstractAttribute.class);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
@@ -408,13 +407,20 @@ class AbstractIdentifiableTypeTest {
         assertEquals(att, result);
     }
 
+    private static AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType> createConcreteClassWithGenericTypeAbstractIdentifiableType(
+            AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericType> parent) {
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithGenericType.class, MetamodelBuilderTest.ConcreteClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithGenericType.class.getAnnotation(OWLClass.class)
+                                                                                                                                                                                                                                                                                                               .iri()));
+        child.setSupertypes(Set.of(parent));
+        return child;
+    }
+
     @Test
     void getAttributesIncludesGenericAttributes() {
         final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericType> parent = new AbstractEntityType<>(MetamodelBuilderTest.ClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ClassWithGenericType.class.getAnnotation(OWLClass.class)
                                                                                                                                                                                                                                .iri()));
-        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithGenericType.class, MetamodelBuilderTest.ConcreteClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithGenericType.class.getAnnotation(OWLClass.class)
-                                                                                                                                                                                                                                                                                                               .iri()));
-        child.setSupertypes(Set.of(parent));
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType>
+                child = createConcreteClassWithGenericTypeAbstractIdentifiableType(parent);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassA> att = mock(AbstractAttribute.class);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
@@ -430,9 +436,8 @@ class AbstractIdentifiableTypeTest {
     void getAttributeOfGenericSupertypeReturnsFirstAvailableTypedGenericAttribute() {
         final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericType> parent = new AbstractEntityType<>(MetamodelBuilderTest.ClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ClassWithGenericType.class.getAnnotation(OWLClass.class)
                                                                                                                                                                                                                                .iri()));
-        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithGenericType.class, MetamodelBuilderTest.ConcreteClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithGenericType.class.getAnnotation(OWLClass.class)
-                                                                                                                                                                                                                                                                                                               .iri()));
-        child.setSupertypes(Set.of(parent));
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType>
+                child = createConcreteClassWithGenericTypeAbstractIdentifiableType(parent);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassA> att = mock(AbstractAttribute.class);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
@@ -450,9 +455,8 @@ class AbstractIdentifiableTypeTest {
     void getAttributesOfGenericSupertypeIncludesFirstAvailableTypedGenericAttribute() {
         final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericType> parent = new AbstractEntityType<>(MetamodelBuilderTest.ClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ClassWithGenericType.class.getAnnotation(OWLClass.class)
                                                                                                                                                                                                                                .iri()));
-        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithGenericType.class, MetamodelBuilderTest.ConcreteClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithGenericType.class.getAnnotation(OWLClass.class)
-                                                                                                                                                                                                                                                                                                               .iri()));
-        child.setSupertypes(Set.of(parent));
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType>
+                child = createConcreteClassWithGenericTypeAbstractIdentifiableType(parent);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassA> att = mock(AbstractAttribute.class);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
@@ -472,9 +476,8 @@ class AbstractIdentifiableTypeTest {
     void getFieldSpecificationResolvesGenericAttributeFromSupertype() {
         final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericType> parent = new AbstractEntityType<>(MetamodelBuilderTest.ClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ClassWithGenericType.class.getAnnotation(OWLClass.class)
                                                                                                                                                                                                                                .iri()));
-        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithGenericType.class, MetamodelBuilderTest.ConcreteClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithGenericType.class.getAnnotation(OWLClass.class)
-                                                                                                                                                                                                                                                                                                               .iri()));
-        child.setSupertypes(Set.of(parent));
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType>
+                child = createConcreteClassWithGenericTypeAbstractIdentifiableType(parent);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassA> att = mock(AbstractAttribute.class);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
@@ -490,9 +493,8 @@ class AbstractIdentifiableTypeTest {
     void getFieldSpecificationInSupertypeReturnsFirstAvailableTypedGenericAttribute() {
         final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericType> parent = new AbstractEntityType<>(MetamodelBuilderTest.ClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ClassWithGenericType.class.getAnnotation(OWLClass.class)
                                                                                                                                                                                                                                .iri()));
-        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithGenericType.class, MetamodelBuilderTest.ConcreteClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithGenericType.class.getAnnotation(OWLClass.class)
-                                                                                                                                                                                                                                                                                                               .iri()));
-        child.setSupertypes(Set.of(parent));
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType>
+                child = createConcreteClassWithGenericTypeAbstractIdentifiableType(parent);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassA> att = mock(AbstractAttribute.class);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         parent.addDeclaredGenericAttribute("boss", MetamodelBuilderTest.ConcreteClassWithGenericType.class, att);
@@ -508,9 +510,8 @@ class AbstractIdentifiableTypeTest {
     void getFieldSpecificationsIncludesGenericAttributes() {
         final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericType> parent = new AbstractEntityType<>(MetamodelBuilderTest.ClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ClassWithGenericType.class.getAnnotation(OWLClass.class)
                                                                                                                                                                                                                                .iri()));
-        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithGenericType.class, MetamodelBuilderTest.ConcreteClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithGenericType.class.getAnnotation(OWLClass.class)
-                                                                                                                                                                                                                                                                                                               .iri()));
-        child.setSupertypes(Set.of(parent));
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType>
+                child = createConcreteClassWithGenericTypeAbstractIdentifiableType(parent);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassA> att = mock(AbstractAttribute.class);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         final Identifier<MetamodelBuilderTest.ClassWithGenericType, URI> identifier = mock(Identifier.class);
@@ -528,9 +529,8 @@ class AbstractIdentifiableTypeTest {
     void getFieldSpecificationsInSupertypeIncludesFirstAvailableTypedGenericAttribute() {
         final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericType> parent = new AbstractEntityType<>(MetamodelBuilderTest.ClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ClassWithGenericType.class.getAnnotation(OWLClass.class)
                                                                                                                                                                                                                                .iri()));
-        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithGenericType.class, MetamodelBuilderTest.ConcreteClassWithGenericType.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithGenericType.class.getAnnotation(OWLClass.class)
-                                                                                                                                                                                                                                                                                                               .iri()));
-        child.setSupertypes(Set.of(parent));
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithGenericType>
+                child = createConcreteClassWithGenericTypeAbstractIdentifiableType(parent);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassA> att = mock(AbstractAttribute.class);
         final AbstractAttribute<MetamodelBuilderTest.ClassWithGenericType, OWLClassB> attII = mock(AbstractAttribute.class);
         final Identifier<MetamodelBuilderTest.ClassWithGenericType, URI> identifier = mock(Identifier.class);
@@ -547,9 +547,8 @@ class AbstractIdentifiableTypeTest {
     @Test
     void getQueryAttributeResolvesGenericAttributeFromSupertype() {
         final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute> parent = new MappedSuperclassTypeImpl<>(MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute.class);
-        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class.getAnnotation(OWLClass.class)
-                                                                                                                                                                                                                                                                                                                           .iri()));
-        child.setSupertypes(Set.of(parent));
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute>
+                child = createConcreteClassWithQueryAttributeAbstractIdentifiableType(parent);
         final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassA> att = mock(AbstractQueryAttribute.class);
         final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassB> attII = mock(AbstractQueryAttribute.class);
         parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, att);
@@ -562,12 +561,19 @@ class AbstractIdentifiableTypeTest {
         assertTrue(child.hasQueryAttribute("related"));
     }
 
-    @Test
-    void getQueryAttributeInSupertypeReturnsFirstAvailableTypedGenericQueryAttribute() {
-        final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute> parent = new MappedSuperclassTypeImpl<>(MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute.class);
+    private static AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute> createConcreteClassWithQueryAttributeAbstractIdentifiableType(
+            AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute> parent) {
         final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class.getAnnotation(OWLClass.class)
                                                                                                                                                                                                                                                                                                                            .iri()));
         child.setSupertypes(Set.of(parent));
+        return child;
+    }
+
+    @Test
+    void getQueryAttributeInSupertypeReturnsFirstAvailableTypedGenericQueryAttribute() {
+        final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute> parent = new MappedSuperclassTypeImpl<>(MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute.class);
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute>
+                child = createConcreteClassWithQueryAttributeAbstractIdentifiableType(parent);
         final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassA> att = mock(AbstractQueryAttribute.class);
         final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassB> attII = mock(AbstractQueryAttribute.class);
         parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, att);
@@ -583,9 +589,8 @@ class AbstractIdentifiableTypeTest {
     @Test
     void getQueryAttributesIncludesGenericQueryAttributes() {
         final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute> parent = new MappedSuperclassTypeImpl<>(MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute.class);
-        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class.getAnnotation(OWLClass.class)
-                                                                                                                                                                                                                                                                                                                           .iri()));
-        child.setSupertypes(Set.of(parent));
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute>
+                child = createConcreteClassWithQueryAttributeAbstractIdentifiableType(parent);
         final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassA> att = mock(AbstractQueryAttribute.class);
         final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassB> attII = mock(AbstractQueryAttribute.class);
         parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, att);
@@ -600,9 +605,8 @@ class AbstractIdentifiableTypeTest {
     @Test
     void getQueryAttributesIncludesFirstAvailableTypedGenericQueryAttribute() {
         final AbstractIdentifiableType<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute> parent = new MappedSuperclassTypeImpl<>(MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute.class);
-        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute> child = new ConcreteEntityType<>(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, IRI.create(MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class.getAnnotation(OWLClass.class)
-                                                                                                                                                                                                                                                                                                                           .iri()));
-        child.setSupertypes(Set.of(parent));
+        final AbstractIdentifiableType<MetamodelBuilderTest.ConcreteClassWithQueryAttribute>
+                child = createConcreteClassWithQueryAttributeAbstractIdentifiableType(parent);
         final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassA> att = mock(AbstractQueryAttribute.class);
         final AbstractQueryAttribute<MetamodelBuilderTest.ClassWithGenericTypeAndQueryAttribute, OWLClassB> attII = mock(AbstractQueryAttribute.class);
         parent.addDeclaredGenericQueryAttribute("related", MetamodelBuilderTest.ConcreteClassWithQueryAttribute.class, att);

@@ -191,7 +191,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         OWLClassJ merged = em.merge(entityJ);
 
         for (final OWLClassA a : merged.getOwlClassA()) {
-            assertEquals(a.getStringAttribute(), "NEWVALUE");
+            assertEquals("NEWVALUE", a.getStringAttribute());
         }
         em.getTransaction().commit();
     }
@@ -1243,7 +1243,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         persist(entityAA);
 
         Object propertyBeforeUpdate = findRequired(OWLClassAA.class, entityAA.getUri()).getDynamicProperty();
-        assertEquals(propertyBeforeUpdate, "Hello, world!");
+        assertEquals("Hello, world!", propertyBeforeUpdate);
 
         em.getTransaction().begin();
         entityAA.setDynamicProperty(1234L);

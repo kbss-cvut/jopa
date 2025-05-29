@@ -98,12 +98,6 @@ public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor
     @Override
     public void visit(OWLDataHasValue arg0) {
         notSupported(arg0);
-        //IntegrityConstraintParser.ensureDataProperty(arg0.getProperty());
-        //
-        // set.add(IntegrityConstraintFactoryImpl
-        // .datatypeParticipationConstraint(subjClass, arg0
-        // .getProperty().asOWLDataProperty(), f
-        // .getOWLDataOneOf(arg0.getValue()), 1, 1));
     }
 
     @Override

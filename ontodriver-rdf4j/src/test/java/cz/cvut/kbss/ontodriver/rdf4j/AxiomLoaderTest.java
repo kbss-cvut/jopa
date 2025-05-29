@@ -135,7 +135,7 @@ class AxiomLoaderTest {
 
     private String selectIndividualWithEnoughProperties() {
         for (String individual : generatedData.individuals) {
-            if (generatedData.values.get(individual).keySet().size() > Constants.DEFAULT_LOAD_ALL_THRESHOLD) {
+            if (generatedData.values.get(individual).size() > Constants.DEFAULT_LOAD_ALL_THRESHOLD) {
                 return individual;
             }
         }

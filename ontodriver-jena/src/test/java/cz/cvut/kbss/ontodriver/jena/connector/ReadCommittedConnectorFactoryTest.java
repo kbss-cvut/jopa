@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -32,7 +33,7 @@ public class ReadCommittedConnectorFactoryTest extends ConnectorFactoryTestBase 
         final DriverConfiguration configuration = StorageTestUtil.createConfiguration("test:uri");
         final ConnectorFactory factory = connectorFactory(configuration);
         final StorageConnector connector = factory.createConnector();
-        assertTrue(connector instanceof ChangeTrackingStorageConnector);
+        assertInstanceOf(ChangeTrackingStorageConnector.class, connector);
         assertNotNull(getCentralConnector(factory));
         assertTrue(getCentralConnector(factory).isOpen());
     }

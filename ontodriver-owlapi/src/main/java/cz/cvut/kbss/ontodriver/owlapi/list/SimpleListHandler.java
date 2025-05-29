@@ -47,9 +47,9 @@ public class SimpleListHandler {
 
     public SimpleListHandler(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.owlapiAdapter = adapter;
-        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory());
+        this.axiomAdapter = new AxiomAdapter(snapshot.dataFactory());
         this.snapshot = snapshot;
-        this.ontology = snapshot.getOntology();
+        this.ontology = snapshot.ontology();
     }
 
     public List<Axiom<NamedResource>> loadList(SimpleListDescriptor descriptor) {

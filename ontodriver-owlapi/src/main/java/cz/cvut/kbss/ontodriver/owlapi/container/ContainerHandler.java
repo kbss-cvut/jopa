@@ -65,10 +65,10 @@ public class ContainerHandler {
 
     public ContainerHandler(OwlapiAdapter owlapiAdapter, OntologySnapshot snapshot) {
         this.owlapiAdapter = owlapiAdapter;
-        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory());
+        this.axiomAdapter = new AxiomAdapter(snapshot.dataFactory());
         this.snapshot = snapshot;
-        this.ontology = snapshot.getOntology();
-        this.dataFactory = snapshot.getDataFactory();
+        this.ontology = snapshot.ontology();
+        this.dataFactory = snapshot.dataFactory();
     }
 
     /**
@@ -145,8 +145,8 @@ public class ContainerHandler {
         final OWLObjectProperty property = dataFactory.getOWLObjectProperty(IRI.create(descriptor.getProperty()
                                                                                                  .getIdentifier()));
         final List<? extends OWLIndividual> containerCandidates;
-        if (includeInferred && snapshot.getReasoner() != null) {
-            containerCandidates = snapshot.getReasoner().getObjectPropertyValues(owner, property).entities().toList();
+        if (includeInferred && snapshot.reasoner() != null) {
+            containerCandidates = snapshot.reasoner().getObjectPropertyValues(owner, property).entities().toList();
         } else {
             containerCandidates = EntitySearcher.getObjectPropertyValues(owner, property, ontology)
                                                 .toList();

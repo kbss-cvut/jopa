@@ -34,9 +34,9 @@ import java.util.Arrays;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,7 +59,7 @@ class ConstructorResultMapperTest {
         mapper.addParameterMapper(paramMapper);
 
         final Object result = mapper.map(resultRow, uowMock);
-        assertTrue(result instanceof OWLClassA);
+        assertInstanceOf(OWLClassA.class, result);
         assertEquals(uri, ((OWLClassA) result).getUri());
         verify(paramMapper).map(resultRow, uowMock);
     }
@@ -78,7 +78,7 @@ class ConstructorResultMapperTest {
         mapper.addParameterMapper(stringMapper);
 
         final Object result = mapper.map(resultRow, uowMock);
-        assertTrue(result instanceof OWLClassA);
+        assertInstanceOf(OWLClassA.class, result);
         assertEquals(uri, ((OWLClassA) result).getUri());
         assertEquals(string, ((OWLClassA) result).getStringAttribute());
     }
@@ -95,7 +95,7 @@ class ConstructorResultMapperTest {
         mapper.addParameterMapper(stringMapper);
 
         final Object result = mapper.map(resultRow, uowMock);
-        assertTrue(result instanceof OWLClassA);
+        assertInstanceOf(OWLClassA.class, result);
         assertEquals(uri, ((OWLClassA) result).getUri());
         assertNull(((OWLClassA) result).getStringAttribute());
     }
@@ -123,7 +123,7 @@ class ConstructorResultMapperTest {
         mapper.addParameterMapper(wrongMapper);
 
         final Object result = mapper.map(resultRow, uowMock);
-        assertTrue(result instanceof WithPrivateConstructor);
+        assertInstanceOf(WithPrivateConstructor.class, result);
         assertEquals(uri, ((WithPrivateConstructor) result).uri);
     }
 
@@ -170,7 +170,7 @@ class ConstructorResultMapperTest {
         mapper.addParameterMapper(stringMapper);
 
         final Object result = mapper.map(resultRow, uowMock);
-        assertTrue(result instanceof OWLClassA);
+        assertInstanceOf(OWLClassA.class, result);
         assertEquals(uri, ((OWLClassA) result).getUri());
         assertEquals(strValue.getValue(), ((OWLClassA) result).getStringAttribute());
     }

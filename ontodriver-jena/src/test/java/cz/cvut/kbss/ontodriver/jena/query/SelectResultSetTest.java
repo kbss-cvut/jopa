@@ -408,7 +408,7 @@ class SelectResultSetTest {
     void getObjectByIndexReturnsLiteralValue() {
         saveValueAndExecuteQuery(117);
         final Object result = selectResult.getObject(2);
-        assertTrue(result instanceof Integer);
+        assertInstanceOf(Integer.class, result);
         assertEquals(117, result);
     }
 
@@ -418,7 +418,7 @@ class SelectResultSetTest {
         this.selectResult = resultFor(QUERY);
         selectResult.next();
         final Object result = selectResult.getObject(1);
-        assertTrue(result instanceof URI);
+        assertInstanceOf(URI.class, result);
         assertEquals(URI.create(RDF.type.getURI()), result);
     }
 
@@ -429,7 +429,7 @@ class SelectResultSetTest {
         this.selectResult = resultFor(QUERY);
         selectResult.next();
         final Object result = selectResult.getObject(2);
-        assertTrue(result instanceof String);
+        assertInstanceOf(String.class, result);
         assertEquals(resource.getId().getLabelString(), result);
     }
 
@@ -437,7 +437,7 @@ class SelectResultSetTest {
     void getObjectByVariableReturnsLiteralValue() {
         saveValueAndExecuteQuery(117);
         final Object result = selectResult.getObject("z");
-        assertTrue(result instanceof Integer);
+        assertInstanceOf(Integer.class, result);
         assertEquals(117, result);
     }
 

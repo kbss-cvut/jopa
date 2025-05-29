@@ -77,7 +77,7 @@ public final class QueryTestEnvironment {
         assert em != null;
         assert contexts != null && !contexts.isEmpty();
         final Map<Class<?>, List<?>> map = generate();
-        LOG.debug("Persisting test data...");
+        LOG.debug("Persisting test data into contexts {}...", contexts);
         final int contextCount = contexts.size();
         final Map<URI, Map<Class<?>, List<?>>> contextMap = new HashMap<>();
         for (Entry<Class<?>, List<?>> e : map.entrySet()) {

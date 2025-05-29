@@ -231,9 +231,9 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         try {
             final Set<PendingAssertion> pas = pendingReferences.removeAndGetPendingAssertionsWith(instance);
             for (PendingAssertion pa : pas) {
-                final AxiomValueDescriptor desc = new AxiomValueDescriptor(pa.getOwner());
-                desc.addAssertionValue(pa.getAssertion(), new Value<>(identifier));
-                desc.setAssertionContext(pa.getAssertion(), pa.getContext());
+                final AxiomValueDescriptor desc = new AxiomValueDescriptor(pa.owner());
+                desc.addAssertionValue(pa.assertion(), new Value<>(identifier));
+                desc.setAssertionContext(pa.assertion(), pa.context());
                 storageConnection.persist(desc);
             }
             final Set<PendingReferenceRegistry.PendingListReference> pLists =
@@ -271,18 +271,23 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             return cls.cast(existing);
         } else {
             // setup loading params
-            LoadingParameters<T> params = new LoadingParameters<>(cls, identifier, descriptor);
-
-            // TODO:
-            // This is necessary when loading object properties (singular and plural)
-            // The solution is not ideal. I think that LoadingParams
-            // should be propagated to this method by loading appropriate methods.
-            if (uow instanceof ReadOnlyUnitOfWork) {
-                // this prevents caching of entities loaded by ReadOnlyUOW
-                params.bypassCache();
-            }
+            LoadingParameters<T> params = initEntityLoadingParameters(cls, identifier, descriptor);
             return loadEntityInternal(params);
         }
+    }
+
+    private <T> LoadingParameters<T> initEntityLoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor) {
+        LoadingParameters<T> params = new LoadingParameters<>(cls, identifier, descriptor);
+
+        // TODO:
+        // This is necessary when loading object properties (singular and plural)
+        // The solution is not ideal. I think that LoadingParams
+        // should be propagated to this method by loading appropriate methods.
+        if (uow instanceof ReadOnlyUnitOfWork) {
+            // this prevents caching of entities loaded by ReadOnlyUOW
+            params.bypassCache();
+        }
+        return params;
     }
 
     @Override

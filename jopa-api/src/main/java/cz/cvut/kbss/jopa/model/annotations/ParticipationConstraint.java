@@ -32,16 +32,16 @@ public @interface ParticipationConstraint {
     String owlObjectIRI();
 
     /**
-     * cardinality
+     * Minimal cardinality.
      *
      * @return minimal cardinality
      */
     int min() default 0;
 
     /**
-     * cardinality
-     *
-     * negative integer means positive infinity
+     * Maximal cardinality.
+     * <p>
+     * Negative integer means positive infinity
      *
      * @return maximal cardinality
      */

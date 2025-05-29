@@ -18,7 +18,6 @@
 package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 
 import java.net.URI;
@@ -109,10 +108,6 @@ class EntityCache {
         assert cls != null;
         assert identifier != null;
         assert descriptor != null;
-//
-//        if (descriptor instanceof ObjectPropertyCollectionDescriptor) {
-//            throw new IllegalArgumentException("ObjectPropertyCollectionDescriptor is not cacheable");
-//        }
 
         final Set<URI> contexts =
                 descriptor.getContexts().isEmpty() ? Collections.singleton(defaultContext) : descriptor.getContexts();

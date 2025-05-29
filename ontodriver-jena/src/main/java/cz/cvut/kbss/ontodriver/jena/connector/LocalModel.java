@@ -141,12 +141,12 @@ class LocalModel {
     void removePropertyValues(Collection<SubjectPredicateContext> toRemove) {
         removedSubjectPredicateStatements.addAll(toRemove);
         toRemove.forEach(spc -> {
-            if (spc.getContexts().isEmpty()) {
+            if (spc.contexts().isEmpty()) {
                 added.getDefaultModel().remove(added.getDefaultModel()
-                                                    .listStatements(spc.getSubject(), spc.getPredicate(), (RDFNode) null));
+                                                    .listStatements(spc.subject(), spc.predicate(), (RDFNode) null));
             } else {
-                spc.getContexts().forEach(c -> added.getNamedModel(c).remove(added.getNamedModel(c)
-                                                                                  .listStatements(spc.getSubject(), spc.getPredicate(), (RDFNode) null)));
+                spc.contexts().forEach(c -> added.getNamedModel(c).remove(added.getNamedModel(c)
+                                                                               .listStatements(spc.subject(), spc.predicate(), (RDFNode) null)));
             }
         });
     }

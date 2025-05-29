@@ -43,8 +43,8 @@ class ExplicitAxiomLoader implements AxiomLoader {
 
     ExplicitAxiomLoader(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
-        this.ontology = snapshot.getOntology();
-        this.dataFactory = snapshot.getDataFactory();
+        this.ontology = snapshot.ontology();
+        this.dataFactory = snapshot.dataFactory();
         this.axiomAdapter = new AxiomAdapter(dataFactory);
     }
 

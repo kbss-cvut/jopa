@@ -265,7 +265,7 @@ public class BasicStorageConnector extends AbstractConnector {
     public void closeSnapshot(OntologySnapshot snapshot) {
         ensureOpen();
         assert snapshot != null;
-        ontologyManager.removeOntology(snapshot.getOntology());
+        ontologyManager.removeOntology(snapshot.ontology());
     }
 
     @Override

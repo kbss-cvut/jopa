@@ -31,7 +31,7 @@ public class SimpleListIteratorTest extends OwlapiListIteratorBase {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        final OWLNamedIndividual individual = snapshot.getDataFactory().getOWLNamedIndividual(IRI.create(SUBJECT));
+        final OWLNamedIndividual individual = snapshot.dataFactory().getOWLNamedIndividual(IRI.create(SUBJECT));
         this.testHelper = new SimpleListTestHelper(snapshot, individual);
         this.descriptor = new SimpleListDescriptorImpl(NamedResource.create(SUBJECT), ListTestHelper.HAS_LIST,
                 ListTestHelper.HAS_NEXT);

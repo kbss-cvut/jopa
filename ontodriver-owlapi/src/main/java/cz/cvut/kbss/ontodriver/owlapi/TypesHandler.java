@@ -45,9 +45,9 @@ class TypesHandler {
     TypesHandler(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
         this.snapshot = snapshot;
-        this.ontology = snapshot.getOntology();
-        this.dataFactory = snapshot.getDataFactory();
-        this.reasoner = snapshot.getReasoner();
+        this.ontology = snapshot.ontology();
+        this.dataFactory = snapshot.dataFactory();
+        this.reasoner = snapshot.reasoner();
     }
 
     Set<Axiom<URI>> getTypes(NamedResource subject, Collection<URI> contexts, boolean includeInferred) {

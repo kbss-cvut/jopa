@@ -33,6 +33,7 @@ import java.time.OffsetDateTime;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -77,7 +78,7 @@ class VariableResultMapperTest {
         when(resultRow.getObject(NAME)).thenReturn(value);
         final VariableResultMapper mapper = new VariableResultMapper(WithTypeCast.getVariableMapping());
         final Object result = mapper.map(resultRow, uowMock);
-        assertTrue(result instanceof Number);
+        assertInstanceOf(Number.class, result);
         assertEquals(value, result);
     }
 
@@ -98,7 +99,7 @@ class VariableResultMapperTest {
         when(resultRow.getObject(NAME)).thenReturn(value);
         final VariableResultMapper mapper = new VariableResultMapper(WithTypeTransform.getVariableMapping());
         final Object result = mapper.map(resultRow, uowMock);
-        assertTrue(result instanceof URI);
+        assertInstanceOf(URI.class, result);
         assertEquals(URI.create(value), result);
     }
 

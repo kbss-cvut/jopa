@@ -86,9 +86,9 @@ public class BasicStorageConnectorTest {
         assertNotNull(connector);
         assertTrue(connector.isOpen());
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
-        assertNotNull(snapshot.getOntology());
-        assertNotNull(snapshot.getOntologyManager());
-        assertNotNull(snapshot.getDataFactory());
+        assertNotNull(snapshot.ontology());
+        assertNotNull(snapshot.ontologyManager());
+        assertNotNull(snapshot.dataFactory());
     }
 
     private URI initOntology(Set<OWLAxiom> axioms, boolean anonymous) throws Exception {
@@ -131,7 +131,7 @@ public class BasicStorageConnectorTest {
         final OntologySnapshot snapshotOne = connector.getOntologySnapshot();
         final OntologySnapshot snapshotTwo = connector.getOntologySnapshot();
 
-        assertNotSame(snapshotOne.getOntology(), snapshotTwo.getOntology());
+        assertNotSame(snapshotOne.ontology(), snapshotTwo.ontology());
     }
 
     @Test
@@ -162,14 +162,14 @@ public class BasicStorageConnectorTest {
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
         final OWLClass cls = addClassToOntology(snapshot);
         final OntologySnapshot result = connector.getOntologySnapshot();
-        assertTrue(result.getOntology().containsClassInSignature(cls.getIRI()));
+        assertTrue(result.ontology().containsClassInSignature(cls.getIRI()));
     }
 
     private OWLClass addClassToOntology(OntologySnapshot snapshot) {
-        final OWLClass cls = snapshot.getDataFactory().getOWLClass(
+        final OWLClass cls = snapshot.dataFactory().getOWLClass(
                 IRI.create("http://krizik.felk.cvut.cz/ontologies/jopa#OWClassA"));
-        final OWLAxiom classDeclaration = snapshot.getDataFactory().getOWLDeclarationAxiom(cls);
-        final MutableAddAxiom add = new MutableAddAxiom(snapshot.getOntology(), classDeclaration);
+        final OWLAxiom classDeclaration = snapshot.dataFactory().getOWLDeclarationAxiom(cls);
+        final MutableAddAxiom add = new MutableAddAxiom(snapshot.ontology(), classDeclaration);
 
         connector.applyChanges(Collections.singletonList(add));
         return cls;
@@ -185,7 +185,7 @@ public class BasicStorageConnectorTest {
 
         this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
         final OntologySnapshot res = connector.getOntologySnapshot();
-        assertTrue(res.getOntology().containsClassInSignature(cls.getIRI()));
+        assertTrue(res.ontology().containsClassInSignature(cls.getIRI()));
     }
 
     @Test
@@ -194,7 +194,7 @@ public class BasicStorageConnectorTest {
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, ONTOLOGY_URI);
         this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
-        assertTrue(snapshot.getOntology().getOntologyID().isAnonymous());
+        assertTrue(snapshot.ontology().getOntologyID().isAnonymous());
     }
 
     @Test
@@ -204,7 +204,7 @@ public class BasicStorageConnectorTest {
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, ONTOLOGY_URI);
         this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
-        final Set<OWLAxiom> transactionalAxioms = snapshot.getOntology().axioms().collect(Collectors.toSet());
+        final Set<OWLAxiom> transactionalAxioms = snapshot.ontology().axioms().collect(Collectors.toSet());
         assertTrue(transactionalAxioms.containsAll(axioms));
     }
 
@@ -214,8 +214,8 @@ public class BasicStorageConnectorTest {
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, ONTOLOGY_URI);
         this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
-        final OWLOntology transactionalOntology = snapshot.getOntology();
-        final OWLOntologyManager manager = snapshot.getOntologyManager(); // We know this is the root manager
+        final OWLOntology transactionalOntology = snapshot.ontology();
+        final OWLOntologyManager manager = snapshot.ontologyManager(); // We know this is the root manager
         assertTrue(manager.contains(transactionalOntology));
         connector.closeSnapshot(snapshot);
         assertFalse(manager.contains(transactionalOntology));
@@ -233,7 +233,7 @@ public class BasicStorageConnectorTest {
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, ONTOLOGY_URI);
         this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
-        final Stream<OWLOntology> imports = snapshot.getOntology().imports();
+        final Stream<OWLOntology> imports = snapshot.ontology().imports();
         final Optional<OWLOntology> imported =
                 imports.filter(imp -> imp.getOntologyID().getOntologyIRI().orElse(IRI.create(""))
                                          .equals(importedOntoIri)).findAny();
@@ -248,7 +248,7 @@ public class BasicStorageConnectorTest {
         final IRI clsIri = IRI.create(Generator.generateUri());
         final IRI individual = IRI.create(Generator.generateUri());
         connector.executeRead(snapshot -> {
-            assertFalse(snapshot.getOntology().containsClassInSignature(clsIri));
+            assertFalse(snapshot.ontology().containsClassInSignature(clsIri));
             return null;
         });
         final OWLDataFactory df = manager.getOWLDataFactory();
@@ -259,7 +259,7 @@ public class BasicStorageConnectorTest {
 
         connector.reloadData();
         connector.executeRead(snapshot -> {
-            assertTrue(snapshot.getOntology().containsClassInSignature(clsIri));
+            assertTrue(snapshot.ontology().containsClassInSignature(clsIri));
             return null;
         });
     }
@@ -271,10 +271,10 @@ public class BasicStorageConnectorTest {
         assertNotNull(connector);
         assertTrue(connector.isOpen());
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
-        assertNotNull(snapshot.getOntology());
-        assertTrue(snapshot.getOntology().getOntologyID().isAnonymous());
-        assertNotNull(snapshot.getOntologyManager());
-        assertNotNull(snapshot.getDataFactory());
+        assertNotNull(snapshot.ontology());
+        assertTrue(snapshot.ontology().getOntologyID().isAnonymous());
+        assertNotNull(snapshot.ontologyManager());
+        assertNotNull(snapshot.dataFactory());
     }
 
     @Test

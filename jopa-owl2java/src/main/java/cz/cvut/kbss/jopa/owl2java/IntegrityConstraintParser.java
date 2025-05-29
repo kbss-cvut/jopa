@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class IntegrityConstraintParser implements OWLAxiomVisitor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IntegrityConstraintParser.class);
 
     private final IntegrityConstraintSet integrityConstraintSet = new IntegrityConstraintSet();
 
@@ -127,11 +127,6 @@ public class IntegrityConstraintParser implements OWLAxiomVisitor {
 
     @Override
     public void visit(OWLFunctionalDataPropertyAxiom axiom) {
-        // ic.addAll(processParticipationConstraint(f.getOWLThing(), f
-        // .getOWLDataMaxCardinality(1, axiom.getProperty())));
-
-        // processParticipationConstraint(f.getOWLThing(), f
-        // .getOWLDataMaxCardinality(1, axiom.getProperty()));
         notSupported(axiom);
     }
 
@@ -164,11 +159,6 @@ public class IntegrityConstraintParser implements OWLAxiomVisitor {
 
     @Override
     public void visit(OWLFunctionalObjectPropertyAxiom axiom) {
-        // ic.addAll(processParticipationConstraint(f.getOWLThing(), f
-        // .getOWLObjectMaxCardinality(1, axiom.getProperty())));
-
-        // processParticipationConstraint(f.getOWLThing(), f
-        // .getOWLObjectMaxCardinality(1, axiom.getProperty()));
         notSupported(axiom);
     }
 
@@ -184,8 +174,6 @@ public class IntegrityConstraintParser implements OWLAxiomVisitor {
             OWLClass clz = Utils.ensureClass(axiom.getRange());
 
             opRanges.put(op, clz);
-//            processSubClassConstraintCandidate(f.getOWLThing(),
-//                OWLManager.getOWLDataFactory().getOWLObjectAllValuesFrom(op, clz));
         } catch (UnsupportedICException e) {
             notSupported(axiom);
         }
@@ -218,31 +206,11 @@ public class IntegrityConstraintParser implements OWLAxiomVisitor {
 
     @Override
     public void visit(OWLObjectPropertyDomainAxiom axiom) {
-        // OWLObjectProperty op = ensureObjectProperty(axiom.getProperty());
-        // OWLClass clz = ensureClass(axiom.getDomain());
-        // Set<ObjectDomainConstraint> c = odConstraints.get(op);
-        // if (c == null) {
-        // c = new HashSet<ObjectDomainConstraint>();
-        // odConstraints.put(op, c);
-        // }
-        //
-        // c.add(IntegrityConstraintFactoryImpl
-        // .ObjectPropertyDomainConstraint(op, clz));
         notSupported(axiom);
     }
 
     @Override
     public void visit(OWLDataPropertyDomainAxiom axiom) {
-        // OWLDataProperty op = ensureDataProperty(axiom.getProperty());
-        // OWLClass clz = ensureClass(axiom.getDomain());
-        // Set<DataDomainConstraint> c = ddConstraints.get(op);
-        // if (c == null) {
-        // c = new HashSet<DataDomainConstraint>();
-        // ddConstraints.put(op, c);
-        // }
-        //
-        // c.add(IntegrityConstraintFactoryImpl.DataPropertyDomainConstraint(op,
-        // clz));
         notSupported(axiom);
     }
 
@@ -282,32 +250,6 @@ public class IntegrityConstraintParser implements OWLAxiomVisitor {
     @Override
     public void visit(final OWLDeclarationAxiom axiom) {
         notSupported(axiom);
-//        axiom.getEntity().accept(new OWLEntityVisitor() {
-//
-//            public void visit(OWLAnnotationProperty property) {
-//                ctx.annotationProperties.add(property);
-//            }
-//
-//            public void visit(OWLDatatype datatype) {
-//                notSupported(axiom);
-//            }
-//
-//            public void visit(OWLNamedIndividual individual) {
-//                notSupported(axiom);
-//            }
-//
-//            public void visit(OWLDataProperty property) {
-//                ctx.dataProperties.add(property);
-//            }
-//
-//            public void visit(OWLObjectProperty property) {
-//                ctx.objectProperties.add(property);
-//            }
-//
-//            public void visit(OWLClass cls) {
-//                ctx.classes.add(cls);
-//            }
-//        });
     }
 
     private static void notSupported(final OWLObject o) {

@@ -22,7 +22,7 @@ import java.lang.annotation.*;
 
 /**
  * Specifies that the class is an entity class and maps to an ontological class (RDFS or OWL).
- *
+ * <p>
  * This annotation is applied to the entity class.
  */
 @Documented

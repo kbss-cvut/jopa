@@ -33,7 +33,7 @@ import java.util.Map;
 
 public class TypedQueryTest extends TypedQueryRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(QueryTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TypedQueryTest.class);
 
     private static EntityManager em;
 

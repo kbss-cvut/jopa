@@ -156,12 +156,12 @@ public class SharedStorageConnector extends AbstractStorageConnector {
     public void removePropertyValues(Collection<SubjectPredicateContext> spc) {
         ensureTransactionalState();
         spc.forEach(s -> {
-            if (s.getContexts().isEmpty()) {
+            if (s.contexts().isEmpty()) {
                 storage.remove(storage.getDefaultGraph()
-                                      .listStatements(s.getSubject(), s.getPredicate(), (RDFNode) null), null);
+                                      .listStatements(s.subject(), s.predicate(), (RDFNode) null), null);
             } else {
-                s.getContexts().forEach(c -> storage.remove(storage.getNamedGraph(c)
-                                                                   .listStatements(s.getSubject(), s.getPredicate(), (RDFNode) null), c));
+                s.contexts().forEach(c -> storage.remove(storage.getNamedGraph(c)
+                                                                .listStatements(s.subject(), s.predicate(), (RDFNode) null), c));
             }
         });
     }

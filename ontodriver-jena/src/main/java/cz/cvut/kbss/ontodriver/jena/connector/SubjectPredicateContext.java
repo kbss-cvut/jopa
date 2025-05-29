@@ -21,7 +21,6 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -29,49 +28,10 @@ import java.util.Set;
  * <p>
  * Used to indicate what property values to remove from the repository.
  */
-public final class SubjectPredicateContext {
-
-    private final Resource subject;
-
-    private final Property predicate;
-
-    private final Set<String> contexts;
-
-    public SubjectPredicateContext(Resource subject, Property predicate, Set<String> contexts) {
-        assert subject != null;
-        assert contexts != null;
-
-        this.subject = subject;
-        this.predicate = predicate;
-        this.contexts = contexts;
-    }
-
-    public Resource getSubject() {
-        return subject;
-    }
-
-    public Property getPredicate() {
-        return predicate;
-    }
-
-    public Set<String> getContexts() {
-        return contexts;
-    }
+public record SubjectPredicateContext(Resource subject, Property predicate, Set<String> contexts) {
 
     public boolean matches(Statement s, String context) {
         return subject.equals(s.getSubject()) && predicate.equals(s.getPredicate()) &&
                 (contexts.isEmpty() || contexts.contains(context));
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {return true;}
-        if (!(o instanceof SubjectPredicateContext that)) {return false;}
-        return subject.equals(that.subject) && Objects.equals(predicate, that.predicate) && contexts.equals(that.contexts);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(subject, predicate, contexts);
     }
 }

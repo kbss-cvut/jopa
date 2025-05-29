@@ -40,11 +40,11 @@ class InferredReferencedListIterator<T> extends ReferencedListIterator<T> {
     InferredReferencedListIterator(ReferencedListDescriptor descriptor, OntologySnapshot snapshot,
                                    AxiomAdapter axiomAdapter) {
         super(descriptor, snapshot, axiomAdapter);
-        this.reasoner = snapshot.getReasoner();
+        this.reasoner = snapshot.reasoner();
         if (reasoner == null) {
             throw new ReasonerNotAvailableException();
         }
-        this.currentNode = OwlapiUtils.getIndividual(descriptor.getListOwner(), snapshot.getDataFactory());
+        this.currentNode = OwlapiUtils.getIndividual(descriptor.getListOwner(), snapshot.dataFactory());
     }
 
     @Override

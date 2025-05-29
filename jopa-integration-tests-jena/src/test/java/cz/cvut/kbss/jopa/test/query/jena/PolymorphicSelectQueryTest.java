@@ -33,7 +33,7 @@ import java.util.Map;
 
 public class PolymorphicSelectQueryTest extends PolymorphicSelectQueryRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(QueryTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PolymorphicSelectQueryTest.class);
 
     private static EntityManager em;
 

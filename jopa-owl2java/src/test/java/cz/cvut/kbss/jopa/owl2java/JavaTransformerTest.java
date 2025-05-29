@@ -84,7 +84,7 @@ class JavaTransformerTest {
         final ContextDefinition context = new ContextDefinition();
         context.add(dataFactory.getOWLClass(iri));
         final ObjectModel result = sut.generateVocabulary(ontology, context);
-        final JDefinedClass vocabClass = result.getCodeModel()._getClass(Constants.VOCABULARY_CLASS);
+        final JDefinedClass vocabClass = result.codeModel()._getClass(Constants.VOCABULARY_CLASS);
         assertNotNull(vocabClass);
         final Map<String, JFieldVar> fields = vocabClass.fields();
         assertTrue(fields.keySet().stream().anyMatch(n -> n.endsWith("navrzeny_term")));
@@ -100,7 +100,7 @@ class JavaTransformerTest {
         context.parse();
         final ObjectModel result = sut.generateModel(ontology, context);
         final JDefinedClass resultClass =
-                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+                result.codeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
         assertNotNull(resultClass);
         assertNotNull(resultClass.getMethod("toString", new JType[0]));
     }
@@ -115,7 +115,7 @@ class JavaTransformerTest {
         context.parse();
         final ObjectModel result = sut.generateModel(ontology, context);
         final JDefinedClass resultClass =
-                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+                result.codeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
         //Check the presence of fields with @Id and @Type annotation
         checkHasFieldWithName(resultClass, "id");
         checkHasFieldWithName(resultClass, "types");
@@ -144,12 +144,12 @@ class JavaTransformerTest {
         context.parse();
         final ObjectModel result = sut.generateModel(ontology, context);
         final JDefinedClass resultClass1 =
-                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className1);
+                result.codeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className1);
         //Check the presence of fields with @Id and @Type annotation
         checkHasFieldWithName(resultClass1, "id");
         checkHasFieldWithName(resultClass1, "types");
         final JDefinedClass resultClass2 =
-                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className2);
+                result.codeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className2);
         // Check the absence of fields with @Id and @Type annotation
         checkHasNoFieldWithName(resultClass2, "id");
         checkHasNoFieldWithName(resultClass2, "types");
@@ -166,7 +166,7 @@ class JavaTransformerTest {
         final ContextDefinition context = generateAxiomsForLangStrings(className, fieldName);
         final ObjectModel result = sut.generateModel(ontology, context);
         final JDefinedClass resultClass =
-                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+                result.codeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
         assertNotNull(resultClass);
         final JFieldVar resultField = resultClass.fields().get(fieldName);
         assertNotNull(resultField);
@@ -201,7 +201,7 @@ class JavaTransformerTest {
         final ContextDefinition context = generateAxiomsForLangStrings(className, fieldName);
         final ObjectModel result = sut.generateModel(ontology, context);
         final JDefinedClass resultClass =
-                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+                result.codeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
         assertNotNull(resultClass);
         final JFieldVar resultField = resultClass.fields().get(fieldName);
         assertNotNull(resultField);
@@ -222,7 +222,7 @@ class JavaTransformerTest {
         context.parse();
         final ObjectModel result = sut.generateModel(ontology, context);
         final JDefinedClass resultClass =
-                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+                result.codeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
         assertThat(resultClass.javadoc().toString(), containsString(expectedComment));
     }
 
@@ -239,7 +239,7 @@ class JavaTransformerTest {
         context.parse();
         final ObjectModel result = sut.generateModel(ontology, context);
         final JDefinedClass resultClass =
-                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+                result.codeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
         assertThat(resultClass.javadoc().toString(), containsString(expectedComment));
     }
 
@@ -257,7 +257,7 @@ class JavaTransformerTest {
         context.parse();
         final ObjectModel result = sut.generateModel(ontology, context);
         final JDefinedClass resultClass =
-                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
+                result.codeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + className);
         final Map<String, JFieldVar> fields = resultClass.fields();
         assertThat(fields, not(hasKey(Constants.LABEL_FIELD_NAME)));
         assertThat(fields, not(hasKey(Constants.DESCRIPTION_FIELD_NAME)));
@@ -271,7 +271,7 @@ class JavaTransformerTest {
         context.parse();
         final ObjectModel result = sut.generateModel(ontology, context);
         final JDefinedClass resultClass =
-                result.getCodeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + "Thing");
+                result.codeModel()._getClass(Constants.MODEL_PACKAGE + Constants.PACKAGE_SEPARATOR + "Thing");
         assertNull(resultClass);
     }
 
@@ -290,7 +290,7 @@ class JavaTransformerTest {
         context.parse();
 
         final ObjectModel result = sut.generateModel(ontology, context);
-        final Iterator<JDefinedClass> classIterator = result.getCodeModel()._package(Constants.MODEL_PACKAGE).classes();
+        final Iterator<JDefinedClass> classIterator = result.codeModel()._package(Constants.MODEL_PACKAGE).classes();
         final List<JDefinedClass> classes = new ArrayList<>();
         while (classIterator.hasNext()) {
             classes.add(classIterator.next());
@@ -316,7 +316,7 @@ class JavaTransformerTest {
         final OWLOntology merged = new OWLOntologyMerger(ontologyManager).createMergedOntology(ontologyManager, null);
 
         final ObjectModel result = sut.generateVocabulary(merged, context);
-        final JDefinedClass vocabClass = result.getCodeModel()._getClass(Constants.VOCABULARY_CLASS);
+        final JDefinedClass vocabClass = result.codeModel()._getClass(Constants.VOCABULARY_CLASS);
         assertNotNull(vocabClass);
         final Map<String, JFieldVar> fields = vocabClass.fields();
         assertThat(fields.keySet(), hasItem("s_c_Person"));
@@ -334,7 +334,7 @@ class JavaTransformerTest {
         final OWLOntology merged = new OWLOntologyMerger(ontologyManager).createMergedOntology(ontologyManager, null);
 
         final ObjectModel result = sut.generateVocabulary(merged, context);
-        final JDefinedClass vocabClass = result.getCodeModel()._getClass(Constants.VOCABULARY_CLASS);
+        final JDefinedClass vocabClass = result.codeModel()._getClass(Constants.VOCABULARY_CLASS);
         assertNotNull(vocabClass);
         final Map<String, JFieldVar> fields = vocabClass.fields();
         assertThat(fields.keySet(), hasItem("ONTOLOGY_IRI_TEST"));
@@ -361,7 +361,7 @@ class JavaTransformerTest {
         context.parse();
 
         final ObjectModel result = sut.generateModel(merged, context);
-        final Iterator<JDefinedClass> classIterator = result.getCodeModel()._package(Constants.MODEL_PACKAGE).classes();
+        final Iterator<JDefinedClass> classIterator = result.codeModel()._package(Constants.MODEL_PACKAGE).classes();
         final List<JDefinedClass> classes = new ArrayList<>();
         while (classIterator.hasNext()) {
             classes.add(classIterator.next());
@@ -383,7 +383,7 @@ class JavaTransformerTest {
         context.add(dataFactory.getOWLClass(personIri));
 
         final ObjectModel result = sut.generateVocabulary(ontology, context);
-        final JDefinedClass vocabClass = result.getCodeModel()._getClass(Constants.VOCABULARY_CLASS);
+        final JDefinedClass vocabClass = result.codeModel()._getClass(Constants.VOCABULARY_CLASS);
         assertNotNull(vocabClass);
         final Map<String, JFieldVar> fields = vocabClass.fields();
         assertThat(fields.keySet(), hasItem("s_c_test_Person"));
@@ -404,7 +404,7 @@ class JavaTransformerTest {
         context.parse();
 
         final ObjectModel result = sut.generateModel(ontology, context);
-        final Iterator<JDefinedClass> classIterator = result.getCodeModel()._package(Constants.MODEL_PACKAGE).classes();
+        final Iterator<JDefinedClass> classIterator = result.codeModel()._package(Constants.MODEL_PACKAGE).classes();
         final List<JDefinedClass> classes = new ArrayList<>();
         while (classIterator.hasNext()) {
             classes.add(classIterator.next());

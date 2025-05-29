@@ -92,7 +92,7 @@ import static cz.cvut.kbss.jopa.owl2java.Constants.VOCABULARY_CLASS;
 
 public class JavaTransformer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JavaTransformer.class);
 
     private static final String PREFIX_STRING = "s_";
     private static final String PREFIX_CLASS = "c_";

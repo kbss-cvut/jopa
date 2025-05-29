@@ -156,7 +156,7 @@ class ClassFieldMetamodelProcessorTest {
 
         final ArgumentCaptor<AbstractAttribute> captor = ArgumentCaptor.forClass(AbstractAttribute.class);
         verify(baseMock).addDeclaredAttribute(eq(field.getName()), captor.capture());
-        assertEquals(captor.getValue().getIRI().toString(), Vocabulary.ATTRIBUTE_BASE + "name");
+        assertEquals(Vocabulary.ATTRIBUTE_BASE + "name", captor.getValue().getIRI().toString());
     }
 
 

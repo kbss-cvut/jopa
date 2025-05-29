@@ -36,6 +36,6 @@ class CharacterConverterTest {
     public void toAttributeThrowsWhenValueIsTooLong() {
         DatatypeMappingException thrown = assertThrows(DatatypeMappingException.class, () -> converter.convertToAttribute("abc"));
 
-        assertEquals(thrown.getMessage(), "Unable to map literal abc to java.lang.Character, because its length is greater than 1");
+        assertEquals("Unable to map literal abc to java.lang.Character, because its length is greater than 1", thrown.getMessage());
     }
 }

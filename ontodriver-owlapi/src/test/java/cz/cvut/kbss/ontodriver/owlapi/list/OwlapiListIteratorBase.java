@@ -48,7 +48,7 @@ abstract class OwlapiListIteratorBase {
 
     public void setUp() throws Exception {
         this.snapshot = TestUtils.initRealOntology(null);
-        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory());
+        this.axiomAdapter = new AxiomAdapter(snapshot.dataFactory());
     }
 
     abstract OwlapiListIterator<NamedResource> iterator();
@@ -93,9 +93,9 @@ abstract class OwlapiListIteratorBase {
 
     protected void applyChanges(List<TransactionalChange> changes) {
         final List<OWLOntologyChange> toApply = changes.stream()
-                                                       .flatMap(o -> o.toOwlChanges(snapshot.getOntology()).stream())
+                                                       .flatMap(o -> o.toOwlChanges(snapshot.ontology()).stream())
                                                        .collect(Collectors.toList());
-        snapshot.getOntologyManager().applyChanges(toApply);
+        snapshot.ontologyManager().applyChanges(toApply);
     }
 
     @Test

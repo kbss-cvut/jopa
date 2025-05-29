@@ -29,36 +29,8 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class OntologySnapshot {
-
-    private final OWLOntology ontology;
-    private final OWLOntologyManager ontologyManager;
-    private final OWLDataFactory dataFactory;
-    private final OWLReasoner reasoner;
-
-    public OntologySnapshot(OWLOntology ontology, OWLOntologyManager ontologyManager, OWLDataFactory dataFactory,
-                            OWLReasoner reasoner) {
-        this.ontology = ontology;
-        this.ontologyManager = ontologyManager;
-        this.dataFactory = dataFactory;
-        this.reasoner = reasoner;
-    }
-
-    public OWLOntology getOntology() {
-        return ontology;
-    }
-
-    public OWLOntologyManager getOntologyManager() {
-        return ontologyManager;
-    }
-
-    public OWLDataFactory getDataFactory() {
-        return dataFactory;
-    }
-
-    public OWLReasoner getReasoner() {
-        return reasoner;
-    }
+public record OntologySnapshot(OWLOntology ontology, OWLOntologyManager ontologyManager, OWLDataFactory dataFactory,
+                               OWLReasoner reasoner) {
 
     /**
      * Applies the specified changes to this ontology snapshot.

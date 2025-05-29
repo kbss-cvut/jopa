@@ -72,8 +72,8 @@ public class HintTest {
         sut.initialize();
         assertTrue(sut.valueMap.containsKey(Boolean.toString(true).toUpperCase(Locale.ROOT)));
         assertTrue(sut.valueMap.containsKey(Boolean.toString(false).toUpperCase(Locale.ROOT)));
-        assertEquals(sut.valueMap.get(Boolean.toString(true).toUpperCase(Locale.ROOT)), Boolean.TRUE);
-        assertEquals(sut.valueMap.get(Boolean.toString(false).toUpperCase(Locale.ROOT)), Boolean.FALSE);
+        assertEquals(Boolean.TRUE, sut.valueMap.get(Boolean.toString(true).toUpperCase(Locale.ROOT)));
+        assertEquals(Boolean.FALSE, sut.valueMap.get(Boolean.toString(false).toUpperCase(Locale.ROOT)));
         assertNull(sut.valueArray);
         assertNull(sut.defaultValue);
     }

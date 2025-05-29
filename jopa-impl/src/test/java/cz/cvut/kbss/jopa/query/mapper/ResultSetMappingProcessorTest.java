@@ -64,10 +64,10 @@ public class ResultSetMappingProcessorTest {
         assertEquals(MAPPING_NAME, rowMapper.getName());
         final List<SparqlResultMapper> rowMappers = rowMapper.getRowMappers();
         assertEquals(2, rowMappers.size());
-        assertTrue(rowMappers.get(0) instanceof VariableResultMapper);
+        assertInstanceOf(VariableResultMapper.class, rowMappers.get(0));
         assertEquals("x", ((VariableResultMapper) rowMappers.get(0)).getName());
         assertEquals(void.class, ((VariableResultMapper) rowMappers.get(0)).getTargetType());
-        assertTrue(rowMappers.get(1) instanceof VariableResultMapper);
+        assertInstanceOf(VariableResultMapper.class, rowMappers.get(1));
         assertEquals("y", ((VariableResultMapper) rowMappers.get(1)).getName());
         assertEquals(URI.class, ((VariableResultMapper) rowMappers.get(1)).getTargetType());
     }
@@ -138,7 +138,7 @@ public class ResultSetMappingProcessorTest {
         final SparqlResultMapper mapper = manager.getMapper(MAPPING_NAME);
         final ResultRowMapper rowMapper = (ResultRowMapper) mapper;
         assertEquals(1, rowMapper.getRowMappers().size());
-        assertTrue(rowMapper.getRowMappers().get(0) instanceof EntityResultMapper);
+        assertInstanceOf(EntityResultMapper.class, rowMapper.getRowMappers().get(0));
         final EntityResultMapper<OWLClassA> etMapper = (EntityResultMapper<OWLClassA>) rowMapper.getRowMappers().get(0);
         assertEquals(etA, etMapper.getEntityType());
         final FieldResultMapper uriMapper = etMapper.getFieldMappers().get(0);
@@ -191,7 +191,7 @@ public class ResultSetMappingProcessorTest {
         processor.buildMapper(getMapping(WithIncompleteEntityMapping.class));
         final ResultRowMapper rowMapper = (ResultRowMapper) processor.getManager().getMapper(MAPPING_NAME);
         assertEquals(1, rowMapper.getRowMappers().size());
-        assertTrue(rowMapper.getRowMappers().get(0) instanceof EntityResultMapper);
+        assertInstanceOf(EntityResultMapper.class, rowMapper.getRowMappers().get(0));
         final EntityResultMapper<OWLClassM> etMapper = (EntityResultMapper<OWLClassM>) rowMapper.getRowMappers().get(0);
         assertEquals(etM, etMapper.getEntityType());
         final List<FieldResultMapper> fieldMappers = etMapper.getFieldMappers();
@@ -226,7 +226,7 @@ public class ResultSetMappingProcessorTest {
         processor.buildMapper(getMapping(WithIncompleteEntityMapping.class));
         final ResultRowMapper rowMapper = (ResultRowMapper) processor.getManager().getMapper(MAPPING_NAME);
         assertEquals(1, rowMapper.getRowMappers().size());
-        assertTrue(rowMapper.getRowMappers().get(0) instanceof EntityResultMapper);
+        assertInstanceOf(EntityResultMapper.class, rowMapper.getRowMappers().get(0));
         final EntityResultMapper<OWLClassM> etMapper = (EntityResultMapper<OWLClassM>) rowMapper.getRowMappers().get(0);
         final Optional<FieldResultMapper> frMapper = etMapper.getFieldMappers().stream()
                                                              .filter(fm -> fm.getFieldSpecification().equals(pluralAtt))
@@ -243,7 +243,7 @@ public class ResultSetMappingProcessorTest {
         processor.buildMapper(mapping);
         final ResultRowMapper rowMapper = (ResultRowMapper) processor.getManager().getMapper(MAPPING_NAME);
         assertEquals(1, rowMapper.getRowMappers().size());
-        assertTrue(rowMapper.getRowMappers().get(0) instanceof EntityResultMapper);
+        assertInstanceOf(EntityResultMapper.class, rowMapper.getRowMappers().get(0));
         final EntityResultMapper<OWLClassA> etMapper = (EntityResultMapper<OWLClassA>) rowMapper.getRowMappers().get(0);
         final TypesSpecification<OWLClassA, ?> typesSpec = metamodelMocks.forOwlClassA().typesSpec();
         final Optional<FieldResultMapper> frMapper = etMapper.getFieldMappers().stream()
@@ -263,12 +263,12 @@ public class ResultSetMappingProcessorTest {
 
         final ResultRowMapper rowMapper = (ResultRowMapper) processor.getManager().getMapper(MAPPING_NAME);
         assertEquals(1, rowMapper.getRowMappers().size());
-        assertTrue(rowMapper.getRowMappers().get(0) instanceof EntityResultMapper);
+        assertInstanceOf(EntityResultMapper.class, rowMapper.getRowMappers().get(0));
         final EntityResultMapper<OWLClassD> etMapper = (EntityResultMapper<OWLClassD>) rowMapper.getRowMappers().get(0);
         final Optional<FieldResultMapper> frMapper = etMapper.getFieldMappers().stream()
                                                              .filter(fm -> fm.getVariableName().equals("y")).findAny();
         assertTrue(frMapper.isPresent());
-        assertTrue(frMapper.get() instanceof ObjectPropertyFieldResultMapper);
+        assertInstanceOf(ObjectPropertyFieldResultMapper.class, frMapper.get());
     }
 
     @SparqlResultSetMapping(name = MAPPING_NAME, entities = {
@@ -292,13 +292,13 @@ public class ResultSetMappingProcessorTest {
 
         final ResultRowMapper rowMapper = (ResultRowMapper) processor.getManager().getMapper(MAPPING_NAME);
         assertEquals(1, rowMapper.getRowMappers().size());
-        assertTrue(rowMapper.getRowMappers().get(0) instanceof EntityResultMapper);
+        assertInstanceOf(EntityResultMapper.class, rowMapper.getRowMappers().get(0));
         final EntityResultMapper<OWLClassD> etMapper = (EntityResultMapper<OWLClassD>) rowMapper.getRowMappers().get(0);
         final Optional<FieldResultMapper> frMapper = etMapper.getFieldMappers().stream()
                                                              .filter(fm -> fm.getVariableName().equals("owlClassA"))
                                                              .findAny();
         assertTrue(frMapper.isPresent());
-        assertTrue(frMapper.get() instanceof ObjectPropertyFieldResultMapper);
+        assertInstanceOf(ObjectPropertyFieldResultMapper.class, frMapper.get());
     }
 
     @SparqlResultSetMapping(name = MAPPING_NAME, entities = {

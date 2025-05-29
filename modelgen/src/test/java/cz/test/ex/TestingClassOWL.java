@@ -49,9 +49,6 @@ public class TestingClassOWL {
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
     private Set<String> setAttribute;
 
-//    @Types
-//    private Set rawTypes;
-
     public URI getUri() {
         return uri;
     }

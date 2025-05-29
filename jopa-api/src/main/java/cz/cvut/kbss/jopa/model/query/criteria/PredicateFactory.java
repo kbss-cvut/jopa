@@ -23,6 +23,7 @@ public interface PredicateFactory {
 
     /**
      * Create a conjunction of the given boolean expressions.
+     *
      * @param x boolean expression
      * @param y boolean expression
      * @return and predicate
@@ -31,6 +32,7 @@ public interface PredicateFactory {
 
     /**
      * Create a conjunction of the given restriction predicates. A conjunction of zero predicates is true.
+     *
      * @param restrictions zero or more restriction predicates
      * @return and predicate
      */
@@ -38,6 +40,7 @@ public interface PredicateFactory {
 
     /**
      * Create a disjunction of the given boolean expressions.
+     *
      * @param x boolean expression
      * @param y boolean expression
      * @return or predicate
@@ -46,6 +49,7 @@ public interface PredicateFactory {
 
     /**
      * Create a disjunction of the given restriction predicates. A disjunction of zero predicates is false.
+     *
      * @param restrictions zero or more restriction predicates
      * @return or predicate
      */
@@ -53,6 +57,7 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing the arguments for equality.
+     *
      * @param x expression
      * @param y expression
      * @return equality predicate
@@ -61,6 +66,7 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing the arguments for equality.
+     *
      * @param x expression
      * @param y object
      * @return equality predicate
@@ -69,8 +75,9 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing the arguments for equality.
-     * @param x expression
-     * @param y string
+     *
+     * @param x           expression
+     * @param y           string
      * @param languageTag string
      * @return equality predicate
      */
@@ -78,6 +85,7 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing the arguments for inequality.
+     *
      * @param x expression
      * @param y expression
      * @return inequality predicate
@@ -86,6 +94,7 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing the arguments for inequality.
+     *
      * @param x expression
      * @param y object
      * @return inequality predicate
@@ -94,6 +103,7 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing whether the first argument is greater than the second.
+     *
      * @param x expression
      * @param y expression
      * @return greaterThan predicate
@@ -102,6 +112,7 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing whether the first argument is greater than the second.
+     *
      * @param x expression
      * @param y value
      * @return greaterThan predicate
@@ -110,6 +121,7 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing whether the first argument is greater than or equal to the second.
+     *
      * @param x expression
      * @param y expression
      * @return greaterThanOrEqual predicate
@@ -119,6 +131,7 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing whether the first argument is greater than or equal to the second.
+     *
      * @param x expression
      * @param y value
      * @return greaterThanOrEqual predicate
@@ -127,6 +140,7 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing whether the first argument is less than the second.
+     *
      * @param x expression
      * @param y expression
      * @return lessThan predicate
@@ -135,6 +149,7 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing whether the first argument is less than the second.
+     *
      * @param x expression
      * @param y value
      * @return lessThan predicate
@@ -143,6 +158,7 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing whether the first argument is less than or equal to the second.
+     *
      * @param x expression
      * @param y expression
      * @return lessThanOrEqual predicate
@@ -151,6 +167,7 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing whether the first argument is less than or equal to the second.
+     *
      * @param x expression
      * @param y value
      * @return lessThanOrEqual predicate
@@ -159,7 +176,8 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing whether the expression satisfies the given pattern.
-     * @param x string expression
+     *
+     * @param x       string expression
      * @param pattern string expression
      * @return like predicate
      */
@@ -167,7 +185,8 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing whether the expression satisfies the given pattern.
-     * @param x string expression
+     *
+     * @param x       string expression
      * @param pattern string
      * @return like predicate
      */
@@ -175,7 +194,8 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing whether the expression does not satisfy the given pattern.
-     * @param x string expression
+     *
+     * @param x       string expression
      * @param pattern string expression
      * @return like predicate
      */
@@ -183,7 +203,8 @@ public interface PredicateFactory {
 
     /**
      * Create a predicate for testing whether the expression does not satisfy the given pattern.
-     * @param x string expression
+     *
+     * @param x       string expression
      * @param pattern string
      * @return like predicate
      */
@@ -191,9 +212,10 @@ public interface PredicateFactory {
 
     /**
      * Creates a predicate that tests whether an element is a member of a collection.
-     *
+     * <p>
      * If the collection is empty, the predicate will be false.
-     * @param elem Element
+     *
+     * @param elem       Element
      * @param collection Expression
      * @return is-member predicate
      */
@@ -201,9 +223,10 @@ public interface PredicateFactory {
 
     /**
      * Creates a predicate that tests whether an element is not a member of a collection.
-     *
+     * <p>
      * If the collection is empty, the predicate will be true.
-     * @param elem Element
+     *
+     * @param elem       Element
      * @param collection Expression
      * @return is-member predicate
      */
@@ -211,6 +234,7 @@ public interface PredicateFactory {
 
     /**
      * Create a negation of the given restriction.
+     *
      * @param restriction restriction expression
      * @return not predicate
      */
@@ -218,6 +242,7 @@ public interface PredicateFactory {
 
     /**
      * Create predicate to test whether given expression is contained in a list of values.
+     *
      * @param expression - to be tested against list of values
      * @return in predicate
      */
@@ -225,25 +250,29 @@ public interface PredicateFactory {
 
     /**
      * Create predicate to test whether given expression is not contained in a list of values.
-     * @param expression  - to be tested against list of values
+     *
+     * @param expression - to be tested against list of values
      * @return not in predicate
      */
     <T> In<T> notIn(Expression<? extends T> expression);
 
     /**
      * Interface used to build in predicates.
+     *
      * @param <T>
      */
     interface In<T> extends Predicate {
 
         /**
          * Return the expression to be tested against the list of values.
+         *
          * @return expression
          */
         Expression<T> getExpression();
 
         /**
          * Add to list of values to be tested against.
+         *
          * @param value - value
          * @return in predicate
          */

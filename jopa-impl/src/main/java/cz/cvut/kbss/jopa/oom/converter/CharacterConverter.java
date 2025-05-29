@@ -35,7 +35,7 @@ public class CharacterConverter implements ConverterWrapper<Character, Object> {
 
     @Override
     public Character convertToAttribute(Object value) {
-        assert value != null && value instanceof String;
+        assert value instanceof String;
 
         if(((String) value).length() > 1) {
             throw new DatatypeMappingException("Unable to map literal " + value + " to " + Character.class.getCanonicalName() + ", because its length is greater than 1");

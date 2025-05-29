@@ -44,9 +44,9 @@ public class ReferencedListHandler {
 
     public ReferencedListHandler(OwlapiAdapter owlapiAdapter, OntologySnapshot snapshot) {
         this.owlapiAdapter = owlapiAdapter;
-        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory());
+        this.axiomAdapter = new AxiomAdapter(snapshot.dataFactory());
         this.snapshot = snapshot;
-        this.ontology = snapshot.getOntology();
+        this.ontology = snapshot.ontology();
     }
 
     public List<Axiom<?>> loadList(ReferencedListDescriptor descriptor) {

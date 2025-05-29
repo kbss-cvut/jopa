@@ -71,9 +71,9 @@ class MainAxiomLoaderTest {
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
-        this.ontology = snapshot.getOntology();
-        this.manager = snapshot.getOntologyManager();
-        this.dataFactory = snapshot.getDataFactory();
+        this.ontology = snapshot.ontology();
+        this.manager = snapshot.ontologyManager();
+        this.dataFactory = snapshot.dataFactory();
         this.sut = new MainAxiomLoader(adapterMock, snapshot);
         this.individual = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
         manager.applyChange(new AddAxiom(ontology, dataFactory.getOWLDeclarationAxiom(individual)));

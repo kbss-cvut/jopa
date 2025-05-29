@@ -344,13 +344,15 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     /**
-     * Retrieves object with the specified identifier. A reference is not retrieved! The method is implemented via the
-     * {@code readObject} and has exactly the same behaviour.
+     * Retrieves an object with the specified identifier.
+     * <p>
+     * A reference is not retrieved! The method is implemented via the {@code readObject} and has exactly the same
+     * behavior.
      *
      * @param cls        The type of the returned object
      * @param identifier Instance identifier
      * @param descriptor Entity descriptor
-     * @param <T>
+     * @param <T>        Entity type
      * @return The retrieved object or {@code null} if there is no object with the specified identifier in the specified
      * repository
      */

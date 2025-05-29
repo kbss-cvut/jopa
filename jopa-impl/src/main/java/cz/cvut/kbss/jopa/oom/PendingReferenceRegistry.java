@@ -135,7 +135,7 @@ class PendingReferenceRegistry {
             LOG.trace("Removing pending assertions for subject {}.", subject);
         }
         for (Set<PendingAssertion> pending : pendingAssertions.values()) {
-            pending.removeIf(item -> item.getOwner().equals(subject));
+            pending.removeIf(item -> item.owner().equals(subject));
         }
         pendingAssertions.entrySet().removeIf(e -> e.getValue().isEmpty());
         removePendingListReferences(desc -> desc.getListOwner().equals(subject));
@@ -171,7 +171,7 @@ class PendingReferenceRegistry {
             LOG.trace("Removing pending assertions {} for subject {}.", assertion, subject);
         }
         for (Set<PendingAssertion> pending : pendingAssertions.values()) {
-            pending.removeIf(item -> item.getOwner().equals(subject) && item.getAssertion().equals(assertion));
+            pending.removeIf(item -> item.owner().equals(subject) && item.assertion().equals(assertion));
         }
         pendingAssertions.entrySet().removeIf(e -> e.getValue().isEmpty());
         removePendingListReferences(

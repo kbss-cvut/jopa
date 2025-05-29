@@ -52,7 +52,7 @@ class ResultSetIteratorTest {
     void hasNextThrowsResultSetIterationExceptionWhenResultSetThrowsOntoDriverException() throws Exception {
         when(resultSet.hasNext()).thenThrow(OntoDriverException.class);
         final ResultSetIterationException result = assertThrows(ResultSetIterationException.class, () -> sut.hasNext());
-        assertTrue(result.getCause() instanceof OntoDriverException);
+        assertInstanceOf(OntoDriverException.class, result.getCause());
     }
 
     @Test
@@ -60,7 +60,7 @@ class ResultSetIteratorTest {
         when(resultSet.hasNext()).thenReturn(true);
         final ResultRow row = sut.next();
         assertNotNull(row);
-        assertTrue(row instanceof DelegatingResultRow);
+        assertInstanceOf(DelegatingResultRow.class, row);
     }
 
     @Test
@@ -75,7 +75,7 @@ class ResultSetIteratorTest {
         when(resultSet.hasNext()).thenReturn(true);
         doThrow(OntoDriverException.class).when(resultSet).next();
         final ResultSetIterationException result = assertThrows(ResultSetIterationException.class, () -> sut.next());
-        assertTrue(result.getCause() instanceof OntoDriverException);
+        assertInstanceOf(OntoDriverException.class, result.getCause());
     }
 
     @Test

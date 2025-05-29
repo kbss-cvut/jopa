@@ -50,21 +50,21 @@ class LiveOntologyStatementExecutor implements StatementExecutor {
     }
 
     private QueryResult<OWLObject> execute(QuerySpecification query, OntologySnapshot snapshot) {
-        if (snapshot.getReasoner() == null) {
+        if (snapshot.reasoner() == null) {
             throw new ReasonerNotAvailableException("Cannot execute query without a reasoner.");
         }
         final OWLReasoner reasonerToUse =
-                query.isDisableInference() ? getNoInferenceReasoner(snapshot) : snapshot.getReasoner();
+                query.isDisableInference() ? getNoInferenceReasoner(snapshot) : snapshot.reasoner();
         // Flush the reasoner to have the latest ontology state for query execution
         reasonerToUse.flush();
-        final OWLAPIv3OWL2Ontology ont = new OWLAPIv3OWL2Ontology(snapshot.getOntologyManager(),
-                                                                  snapshot.getOntology(), reasonerToUse);
+        final OWLAPIv3OWL2Ontology ont = new OWLAPIv3OWL2Ontology(snapshot.ontologyManager(),
+                                                                  snapshot.ontology(), reasonerToUse);
 
         return OWL2QueryEngine.exec(query.getQuery(), ont);
     }
 
     private static OWLReasoner getNoInferenceReasoner(OntologySnapshot snapshot) {
-        return new NoOpReasoner(snapshot.getOntology());
+        return new NoOpReasoner(snapshot.ontology());
     }
 
     @Override
