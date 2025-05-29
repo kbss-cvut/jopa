@@ -1,5 +1,12 @@
 # JOPA - Change Log
 
+## 2.4.0 - 2025-05-29
+- Add support for a read-only `EntityManager` which will can be used to optimize read-only transactions (Feature #84).
+- Add support for static repository context declaration using the `@Context` annotation (Feature #104).
+- Implement `includeExplicit` attribute of `@Inferred` - it is now possible to exclude explicit (asserted) values from attribute (Enhancement #190).
+- Add support for an in-memory OWLAPI storage (Enhancement #330).
+- Dependency updates: Jena 5.4.0, RDF4J 5.1.3.
+
 ## 2.3.1 - 2025-04-07
 - Ensure change tracking proxies are unwrapped on entity detach.
 
