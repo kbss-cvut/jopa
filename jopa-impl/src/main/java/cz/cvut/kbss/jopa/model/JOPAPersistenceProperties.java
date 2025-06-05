@@ -123,7 +123,7 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
     public static final String TRANSACTION_MODE = "cz.cvut.kbss.jopa.transactionMode";
 
     /**
-     * Whether a second level cache should be used for the read-only mode. Expected values: (true, false).
+     * Whether the second level cache should be used for the read-only mode. Expected values: (true, false).
      */
     public static final String CACHE_ENABLED_READ_ONLY = "cz.cvut.jopa.readOnly.cache.enable";
 

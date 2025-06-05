@@ -44,6 +44,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -86,8 +87,11 @@ abstract class EntityInstanceLoader {
     <U extends T, T> U loadInstance(LoadingParameters<T> loadingParameters, IdentifiableEntityType<U> et) {
         final URI identifier = loadingParameters.getIdentifier();
         final Descriptor descriptor = loadingParameters.getDescriptor();
-        if (isCached(loadingParameters, et)) {
-            return loadCached(et, identifier, descriptor);
+        if (!loadingParameters.shouldBypassCache()) {
+            final Optional<U> cached = loadCached(et, identifier, descriptor);
+            if (cached.isPresent()) {
+                return cached.get();
+            }
         }
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
         try {
@@ -103,17 +107,12 @@ abstract class EntityInstanceLoader {
         }
     }
 
-    <T> boolean isCached(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
-        return !loadingParameters.shouldBypassCache() &&
-                cache.contains(et.getJavaType(), loadingParameters.getIdentifier(), loadingParameters.getDescriptor());
-    }
-
-    <T> T loadCached(EntityType<T> et, URI identifier, Descriptor descriptor) {
-        final T cached = cache.get(et.getJavaType(), identifier, descriptor);
-        recursivelyProcessCachedEntityReferences(cached, et, new IdentityHashMap<>(), List.of(
+    <T> Optional<T> loadCached(EntityType<T> et, URI identifier, Descriptor descriptor) {
+        final Optional<T> cached = Optional.ofNullable(cache.get(et.getJavaType(), identifier, descriptor));
+        cached.ifPresent(inst -> recursivelyProcessCachedEntityReferences(inst, et, new IdentityHashMap<>(), List.of(
                 pair -> loadStateRegistry.put(pair.first(), getLoadStatDescriptor(pair.first(), pair.second())),
                 pair -> entityBuilder.populateQueryAttributes(pair.first(), (EntityType<Object>) pair.second())
-        ));
+        )));
         return cached;
     }
 
@@ -135,7 +134,7 @@ abstract class EntityInstanceLoader {
         handlers.forEach(h -> h.accept(new Pair<>(instance, et)));
         et.getAttributes().stream().filter(Attribute::isAssociation).forEach(att -> {
             final Class<?> cls = att.isCollection() ? ((PluralAttribute<?, ?, ?>) att).getElementType()
-                                                                             .getJavaType() : att.getJavaType();
+                                                                                      .getJavaType() : att.getJavaType();
             if (!metamodel.isEntityType(cls)) {
                 return;
             }
@@ -159,7 +158,8 @@ abstract class EntityInstanceLoader {
      * @param loadingParameters Entity loading parameters
      * @param et                Entity type
      */
-    private <T, U extends T> void removeAssertedForInferredOnlyFields(Collection<Axiom<?>> allAxioms, LoadingParameters<T> loadingParameters,
+    private <T, U extends T> void removeAssertedForInferredOnlyFields(Collection<Axiom<?>> allAxioms,
+                                                                      LoadingParameters<T> loadingParameters,
                                                                       IdentifiableEntityType<U> et) throws OntoDriverException {
         for (FieldSpecification<? super U, ?> fs : et.getFieldSpecifications()) {
             if (fs.includeExplicit()) {
