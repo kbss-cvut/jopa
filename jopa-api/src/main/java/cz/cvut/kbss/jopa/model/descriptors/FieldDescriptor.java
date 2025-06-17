@@ -47,6 +47,13 @@ public class FieldDescriptor extends AbstractDescriptor {
         this.contexts.addAll(Objects.requireNonNull(contexts));
     }
 
+    protected FieldDescriptor(Set<URI> contexts, boolean assertionsInSubjectContext, String language,
+                              boolean hasLanguage,
+                              boolean includeInferred, Field field) {
+        super(contexts, assertionsInSubjectContext, language, hasLanguage, includeInferred);
+        this.field = field;
+    }
+
     @Override
     public Collection<Descriptor> getAttributeDescriptors() {
         return Collections.singleton(this);
@@ -102,6 +109,11 @@ public class FieldDescriptor extends AbstractDescriptor {
     }
 
     @Override
+    public FieldDescriptor copy() {
+        return new FieldDescriptor(contexts, assertionsInSubjectContext, getLanguage(), hasLanguage(), includeInferred(), field);
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
@@ -111,12 +123,9 @@ public class FieldDescriptor extends AbstractDescriptor {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) {return true;}
+        if (!super.equals(obj)) {return false;}
+        if (getClass() != obj.getClass()) {return false;}
         FieldDescriptor other = (FieldDescriptor) obj;
         return field.equals(other.field);
     }

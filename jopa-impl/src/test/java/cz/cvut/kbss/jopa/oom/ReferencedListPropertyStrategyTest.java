@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassP;
 import cz.cvut.kbss.jopa.environment.OneOfEnum;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
@@ -135,8 +136,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
                             refListMock.getHasContentsPropertyIRI()
                                        .toURI(), refListMock.isInferred()),
                     new Value<>(NamedResource.create(a.getUri())));
-            when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, a.getUri(),
-                    descriptor.getAttributeDescriptor(refListMock))).thenReturn(a);
+            when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(a.getUri()), any(Descriptor.class))).thenReturn(a);
             axioms.add(content);
             previous = nodeUri;
             i++;

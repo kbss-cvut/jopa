@@ -345,6 +345,7 @@ public class MetamodelFactory {
         when(rdfSeqMock.getIRI()).thenReturn(IRI.create(OWLClassC.getRdfSeqField()
                                                                  .getAnnotation(OWLObjectProperty.class).iri()));
         when(rdfSeqMock.getBindableJavaType()).thenReturn(OWLClassA.class);
+        when(rdfSeqMock.getElementType()).thenReturn(etAMock);
         when(rdfSeqMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(rdfSeqMock.isCollection()).thenReturn(Boolean.TRUE);
         when(rdfSeqMock.isAssociation()).thenReturn(true);

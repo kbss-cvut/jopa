@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.environment.OneOfEnum;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
@@ -84,8 +85,8 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     @Test
     void buildsInstanceFieldFromAxioms() {
         final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(IDENTIFIER),
-                                              Assertion.createObjectPropertyAssertion(simpleList.getIRI().toURI(),
-                                                                                      false), new Value<>(
+                Assertion.createObjectPropertyAssertion(simpleList.getIRI().toURI(),
+                        false), new Value<>(
                 Generators.createIndividualIdentifier()));
         final List<OWLClassA> entitiesA = generateList();
         final Collection<Axiom<NamedResource>> axioms = buildAxiomsForList(simpleList, entitiesA);
@@ -111,9 +112,8 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
                     Assertion.createObjectPropertyAssertion(la.getHasNextPropertyIRI().toURI(), false),
                     new Value<>(NamedResource.create(item.getUri())));
             axioms.add(a);
-            when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, item.getUri(),
-                                                         descriptor.getAttributeDescriptor(simpleList))).thenReturn(
-                    item);
+            when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(item.getUri()), any(Descriptor.class)))
+                    .thenReturn(item);
             previous = item.getUri();
         }
         return axioms;
@@ -125,8 +125,8 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         final SimpleListPropertyStrategy<OWLClassP> strategy =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
         final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(IDENTIFIER),
-                                              Assertion.createObjectPropertyAssertion(simpleList.getIRI().toURI(),
-                                                                                      false), new Value<>(
+                Assertion.createObjectPropertyAssertion(simpleList.getIRI().toURI(),
+                        false), new Value<>(
                 Generators.createIndividualIdentifier()));
         final List<OWLClassA> as = generateList();
         final Collection<Axiom<NamedResource>> axioms = buildAxiomsForList(simpleList, as);
@@ -145,9 +145,9 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     @Test
     void addsValueFromAxiomAndVerifiesCorrectDescriptorWasCreated() {
         final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(IDENTIFIER),
-                                                        Assertion.createObjectPropertyAssertion(simpleList.getIRI()
-                                                                                                          .toURI(),
-                                                                                                false), new Value<>(
+                Assertion.createObjectPropertyAssertion(simpleList.getIRI()
+                                                                  .toURI(),
+                        false), new Value<>(
                 NamedResource.create(Generators.createIndividualIdentifier())));
         final Collection<Axiom<NamedResource>> axioms = Collections.emptyList();
         when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class)))
@@ -201,9 +201,9 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         assertEquals(IDENTIFIER, res.getListOwner().getIdentifier());
         final Field simpleListField = OWLClassC.getSimpleListField();
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class).iri(),
-                     res.getListProperty().getIdentifier().toString());
+                res.getListProperty().getIdentifier().toString());
         assertEquals(simpleListField.getAnnotation(Sequence.class).hasNextPropertyIRI(),
-                     res.getNextNode().getIdentifier().toString());
+                res.getNextNode().getIdentifier().toString());
         assertTrue(res.getValues().isEmpty());
     }
 
@@ -216,9 +216,9 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         assertEquals(IDENTIFIER, res.getListOwner().getIdentifier());
         final Field simpleListField = OWLClassC.getSimpleListField();
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class).iri(),
-                     res.getListProperty().getIdentifier().toString());
+                res.getListProperty().getIdentifier().toString());
         assertEquals(simpleListField.getAnnotation(Sequence.class).hasNextPropertyIRI(),
-                     res.getNextNode().getIdentifier().toString());
+                res.getNextNode().getIdentifier().toString());
         assertTrue(res.getValues().isEmpty());
     }
 

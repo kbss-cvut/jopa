@@ -239,8 +239,8 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
                 final Class<?> fieldValueClass = fieldValue.getClass();
 
                 if (IndirectWrapperHelper.requiresIndirectWrapper(fieldValue)) {
-                    // register objects if possible
-                    Descriptor fieldDescriptor = super.getDescriptor(original).getAttributeDescriptor(fs);
+                    // Unwrap descriptor in case it is an object property collection
+                    final Descriptor fieldDescriptor = super.getDescriptor(original).getAttributeDescriptor(fs).unwrap();
                     if (fs.isCollection()) {
                         newValue = this.registerExistingObjects((Collection<Object>) fieldValue, fieldDescriptor);
                     } else {
