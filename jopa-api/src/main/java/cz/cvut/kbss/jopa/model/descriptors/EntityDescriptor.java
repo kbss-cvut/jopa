@@ -89,24 +89,24 @@ public class EntityDescriptor extends AbstractDescriptor {
         Objects.requireNonNull(attribute);
         Objects.requireNonNull(descriptor);
         verifyDescriptorType(attribute, descriptor);
-        if (attribute instanceof PluralAttribute<?, ?, ?> pluralAtt &&
-                pluralAtt.getElementType().getPersistenceType() == Type.PersistenceType.ENTITY &&
-                descriptor instanceof EntityDescriptor entityDescriptor) {
-            fieldDescriptors.put(attribute.getJavaField(), new ObjectPropertyCollectionDescriptor(pluralAtt, entityDescriptor));
+        if (isPluralReference(attribute) && descriptor instanceof EntityDescriptor entityDescriptor) {
+            fieldDescriptors.put(attribute.getJavaField(), new ObjectPropertyCollectionDescriptor(attribute, entityDescriptor));
         } else {
             fieldDescriptors.put(attribute.getJavaField(), descriptor);
         }
         return this;
     }
 
+    private static boolean isPluralReference(FieldSpecification<?, ?> attribute) {
+        return attribute instanceof PluralAttribute<?, ?, ?> pluralAtt &&
+                pluralAtt.getElementType().getPersistenceType() == Type.PersistenceType.ENTITY;
+    }
+
     private void verifyDescriptorType(FieldSpecification<?, ?> attribute, Descriptor descriptor) {
-        if (attribute instanceof PluralAttribute<?, ?, ?> pluralAtt &&
-                pluralAtt.getElementType().getPersistenceType() == Type.PersistenceType.ENTITY &&
-                !(descriptor instanceof EntityDescriptor) &&
-                !(descriptor instanceof ObjectPropertyCollectionDescriptor)) {
+        if (isPluralReference(attribute) && !(descriptor instanceof EntityDescriptor) && !(descriptor instanceof ObjectPropertyCollectionDescriptor)) {
             throw new IllegalArgumentException(EntityDescriptor.class.getSimpleName() + " must be used for plural attributes with entity type value.");
-        } else if (attribute instanceof Attribute<?, ?> && !attribute.isCollection() &&
-                ((Attribute<?, ?>) attribute).getPersistentAttributeType() == PersistentAttributeType.OBJECT &&
+        } else if (attribute instanceof Attribute<?, ?> att && !attribute.isCollection() &&
+                att.getPersistentAttributeType() == PersistentAttributeType.OBJECT &&
                 !IdentifierUtils.isResourceIdentifierType(attribute.getJavaType()) &&
                 !(descriptor instanceof EntityDescriptor)) {
             throw new IllegalArgumentException(EntityDescriptor.class.getSimpleName() + " must be used for singular attributes with entity type value.");
