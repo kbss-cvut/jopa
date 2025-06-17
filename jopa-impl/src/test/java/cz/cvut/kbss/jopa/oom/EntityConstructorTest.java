@@ -243,7 +243,7 @@ class EntityConstructorTest {
     }
 
     @Test
-    void testReconstructEntityWithObjectProperty() throws Exception {
+    void testReconstructEntityWithObjectProperty() {
         final Set<Axiom<?>> axiomsD = getAxiomsForD();
         final Descriptor fieldDesc = new EntityDescriptor();
         descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDesc);
