@@ -42,7 +42,8 @@ public class DefaultEntityDescriptorFactory implements EntityDescriptorFactory {
 
     private <T> Descriptor createDescriptorImpl(Class<T> cls, URI propagatedCtx, Map<Class<?>, Descriptor> visited) {
         if (visited.containsKey(cls)) {
-            return visited.get(cls);
+            // Copy to prevent cycles in equals/hashCode of Descriptor
+            return visited.get(cls).copy();
         }
         final Optional<Context> clsContext = resolveContext(cls);
         final EntityDescriptor result = clsContext.map(ctx -> new EntityDescriptor(Set.of(contextUri(ctx))))

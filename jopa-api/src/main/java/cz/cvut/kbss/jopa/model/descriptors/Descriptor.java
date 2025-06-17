@@ -248,4 +248,22 @@ public interface Descriptor {
      * @see #includeInferred()
      */
     Descriptor enableInference();
+
+    /**
+     * Creates a copy of this descriptor.
+     *
+     * @return New descriptor with identical values
+     */
+    Descriptor copy();
+
+    /**
+     * Unwraps this descriptor if it wraps another descriptor (such as in the case of a collection descriptor).
+     * <p>
+     * If there is nothing to unwrap, the descriptor returns itself.
+     *
+     * @return Unwrapped descriptor
+     */
+    default Descriptor unwrap() {
+        return this;
+    }
 }

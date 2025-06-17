@@ -46,6 +46,7 @@ import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -64,6 +65,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
@@ -321,5 +323,22 @@ class PluralObjectPropertyStrategyTest {
         sut.lazilyAddAxiomValue(axiom);
         verify(mapperMock, never()).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any());
         assertTrue(sut.hasValue());
+    }
+
+    @Test
+    void addValueFromAxiomUsesEntityDescriptorToGetInstanceFromCacheOrOntology() {
+        final PluralObjectPropertyStrategy<?, OWLClassJ> sut = strategy();
+        final URI aReference = Generators.createIndividualIdentifier();
+        final OWLClassA aInstance = new OWLClassA(aReference);
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class)))
+                .thenReturn(aInstance);
+        final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID),
+                Assertion.createObjectPropertyAssertion(
+                        URI.create(Vocabulary.P_HAS_A), false), new Value<>(NamedResource.create(aReference)));
+
+        sut.addAxiomValue(axiom);
+        final ArgumentCaptor<Descriptor> captor = ArgumentCaptor.forClass(Descriptor.class);
+        verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), captor.capture());
+        assertInstanceOf(EntityDescriptor.class, captor.getValue());
     }
 }

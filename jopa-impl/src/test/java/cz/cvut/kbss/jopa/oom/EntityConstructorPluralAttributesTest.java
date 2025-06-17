@@ -56,6 +56,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -122,10 +123,7 @@ public class EntityConstructorPluralAttributesTest {
 
     private void prepareMapperMockForSimpleListLoad() {
         for (Entry<URI, OWLClassA> e : LIST_CONTENT.entrySet()) {
-            when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, e.getKey(),
-                    descriptor.getAttributeDescriptor(
-                            simpleListMock))).thenReturn(
-                    e.getValue());
+            when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(e.getKey()), any(Descriptor.class))).thenReturn(e.getValue());
         }
         final Collection<Axiom<NamedResource>> listAxioms = initSimpleListAxioms();
         when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class))).thenReturn(listAxioms);

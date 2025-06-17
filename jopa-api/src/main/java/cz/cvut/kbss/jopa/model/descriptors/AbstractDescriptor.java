@@ -58,6 +58,15 @@ public abstract class AbstractDescriptor implements Descriptor {
         this.assertionsInSubjectContext = assertionsInSubjectContext;
     }
 
+    protected AbstractDescriptor(Set<URI> contexts, boolean assertionsInSubjectContext, String language, boolean hasLanguage,
+                              boolean includeInferred) {
+        this.assertionsInSubjectContext = assertionsInSubjectContext;
+        this.language = language;
+        this.hasLanguage = hasLanguage;
+        this.includeInferred = includeInferred;
+        this.contexts.addAll(contexts);
+    }
+
     @Override
     public Set<URI> getContexts() {
         return Collections.unmodifiableSet(contexts);

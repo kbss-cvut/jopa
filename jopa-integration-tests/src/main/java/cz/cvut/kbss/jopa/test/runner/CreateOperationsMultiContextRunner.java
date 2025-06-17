@@ -264,7 +264,7 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         transactional(() -> {
             em.persist(entityF, fDescriptor);
             for (OWLClassA a : entityF.getSimpleSet()) {
-                em.persist(a, setDescriptor.getElementDescriptor());
+                em.persist(a, setDescriptor.unwrap());
             }
         });
 

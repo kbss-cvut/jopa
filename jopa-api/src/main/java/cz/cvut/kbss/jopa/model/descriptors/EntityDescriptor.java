@@ -20,7 +20,9 @@ package cz.cvut.kbss.jopa.model.descriptors;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 
 import java.lang.reflect.Field;
@@ -74,13 +76,41 @@ public class EntityDescriptor extends AbstractDescriptor {
         this.fieldDescriptors = new HashMap<>();
     }
 
+    protected EntityDescriptor(Set<URI> contexts, boolean assertionsInSubjectContext, String language,
+                               boolean hasLanguage,
+                               boolean includeInferred, Map<Field, Descriptor> fieldDescriptors) {
+        super(contexts, assertionsInSubjectContext, language, hasLanguage, includeInferred);
+        this.fieldDescriptors = new HashMap<>(fieldDescriptors.size());
+        fieldDescriptors.forEach((f, d) -> this.fieldDescriptors.put(f, d.copy()));
+    }
+
     @Override
     public EntityDescriptor addAttributeDescriptor(FieldSpecification<?, ?> attribute, Descriptor descriptor) {
         Objects.requireNonNull(attribute);
         Objects.requireNonNull(descriptor);
-
-        fieldDescriptors.put(attribute.getJavaField(), descriptor);
+        verifyDescriptorType(attribute, descriptor);
+        if (attribute instanceof PluralAttribute<?, ?, ?> pluralAtt &&
+                pluralAtt.getElementType().getPersistenceType() == Type.PersistenceType.ENTITY &&
+                descriptor instanceof EntityDescriptor entityDescriptor) {
+            fieldDescriptors.put(attribute.getJavaField(), new ObjectPropertyCollectionDescriptor(pluralAtt, entityDescriptor));
+        } else {
+            fieldDescriptors.put(attribute.getJavaField(), descriptor);
+        }
         return this;
+    }
+
+    private void verifyDescriptorType(FieldSpecification<?, ?> attribute, Descriptor descriptor) {
+        if (attribute instanceof PluralAttribute<?, ?, ?> pluralAtt &&
+                pluralAtt.getElementType().getPersistenceType() == Type.PersistenceType.ENTITY &&
+                !(descriptor instanceof EntityDescriptor) &&
+                !(descriptor instanceof ObjectPropertyCollectionDescriptor)) {
+            throw new IllegalArgumentException(EntityDescriptor.class.getSimpleName() + " must be used for plural attributes with entity type value.");
+        } else if (attribute instanceof Attribute<?, ?> && !attribute.isCollection() &&
+                ((Attribute<?, ?>) attribute).getPersistentAttributeType() == PersistentAttributeType.OBJECT &&
+                !IdentifierUtils.isResourceIdentifierType(attribute.getJavaType()) &&
+                !(descriptor instanceof EntityDescriptor)) {
+            throw new IllegalArgumentException(EntityDescriptor.class.getSimpleName() + " must be used for singular attributes with entity type value.");
+        }
     }
 
     @Override
@@ -154,6 +184,11 @@ public class EntityDescriptor extends AbstractDescriptor {
         }
         result.setIncludeInferred(includeInferred());
         return result;
+    }
+
+    @Override
+    public EntityDescriptor copy() {
+        return new EntityDescriptor(contexts, assertionsInSubjectContext, getLanguage(), hasLanguage(), includeInferred(), fieldDescriptors);
     }
 
     @Override
