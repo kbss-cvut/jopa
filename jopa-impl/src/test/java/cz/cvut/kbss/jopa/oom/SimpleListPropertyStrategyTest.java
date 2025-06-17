@@ -85,8 +85,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     @Test
     void buildsInstanceFieldFromAxioms() {
         final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(IDENTIFIER),
-                Assertion.createObjectPropertyAssertion(simpleList.getIRI().toURI(),
-                        false), new Value<>(
+                Assertion.createObjectPropertyAssertion(simpleList.getIRI().toURI(), false), new Value<>(
                 Generators.createIndividualIdentifier()));
         final List<OWLClassA> entitiesA = generateList();
         final Collection<Axiom<NamedResource>> axioms = buildAxiomsForList(simpleList, entitiesA);
@@ -125,9 +124,8 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         final SimpleListPropertyStrategy<OWLClassP> strategy =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
         final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(IDENTIFIER),
-                Assertion.createObjectPropertyAssertion(simpleList.getIRI().toURI(),
-                        false), new Value<>(
-                Generators.createIndividualIdentifier()));
+                Assertion.createObjectPropertyAssertion(simpleList.getIRI()
+                                                                  .toURI(), false), new Value<>(Generators.createIndividualIdentifier()));
         final List<OWLClassA> as = generateList();
         final Collection<Axiom<NamedResource>> axioms = buildAxiomsForList(simpleList, as);
         when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class))).thenReturn(axioms);
@@ -145,23 +143,19 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     @Test
     void addsValueFromAxiomAndVerifiesCorrectDescriptorWasCreated() {
         final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(IDENTIFIER),
-                Assertion.createObjectPropertyAssertion(simpleList.getIRI()
-                                                                  .toURI(),
-                        false), new Value<>(
+                Assertion.createObjectPropertyAssertion(simpleList.getIRI().toURI(), false), new Value<>(
                 NamedResource.create(Generators.createIndividualIdentifier())));
         final Collection<Axiom<NamedResource>> axioms = Collections.emptyList();
         when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class)))
                 .thenReturn(axioms);
 
         strategy.addAxiomValue(ax);
-        final ArgumentCaptor<SimpleListDescriptor> captor = ArgumentCaptor
-                .forClass(SimpleListDescriptor.class);
+        final ArgumentCaptor<SimpleListDescriptor> captor = ArgumentCaptor.forClass(SimpleListDescriptor.class);
         verify(mapperMock).loadSimpleList(captor.capture());
         final SimpleListDescriptor res = captor.getValue();
         assertEquals(IDENTIFIER, res.getListOwner().getIdentifier());
         assertEquals(simpleList.getIRI().toURI(), res.getListProperty().getIdentifier());
-        assertEquals(simpleList.getHasNextPropertyIRI().toURI(), res
-                .getNextNode().getIdentifier());
+        assertEquals(simpleList.getHasNextPropertyIRI().toURI(), res.getNextNode().getIdentifier());
         assertNull(res.getContext());
     }
 
@@ -176,12 +170,10 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class)
                                     .iri(), res.getListProperty().getIdentifier().toString());
         assertEquals(simpleListField.getAnnotation(Sequence.class)
-                                    .hasNextPropertyIRI(), res.getNextNode().getIdentifier()
-                                                              .toString());
+                                    .hasNextPropertyIRI(), res.getNextNode().getIdentifier().toString());
         assertEquals(c.getSimpleList().size(), res.getValues().size());
         for (int i = 0; i < c.getSimpleList().size(); i++) {
-            assertEquals(c.getSimpleList().get(i).getUri(), res.getValues()
-                                                               .get(i).getIdentifier());
+            assertEquals(c.getSimpleList().get(i).getUri(), res.getValues().get(i).getIdentifier());
         }
     }
 
