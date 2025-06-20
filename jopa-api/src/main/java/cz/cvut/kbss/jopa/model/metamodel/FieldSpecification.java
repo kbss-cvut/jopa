@@ -22,14 +22,14 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 
 /**
  * Specifies a field of a managed type.
+ *
  * @param <X> Declaring class
  * @param <E> Type of the field
  */
 public interface FieldSpecification<X, E> {
 
     /**
-     * Return the managed type representing the type in which the attribute was
-     * declared.
+     * Return the managed type representing the type in which the attribute was declared.
      *
      * @return declaring type
      */
@@ -87,4 +87,13 @@ public interface FieldSpecification<X, E> {
      * @return boolean indicating whether the attribute is collection-valued
      */
     boolean isCollection();
+
+    /**
+     * Whether the attribute is mapped to an ontological property.
+     *
+     * @return {@code true} if the attribute is mapped to an ontological property, {@code false} otherwise
+     */
+    default boolean isMappedAttribute() {
+        return false;
+    }
 }
