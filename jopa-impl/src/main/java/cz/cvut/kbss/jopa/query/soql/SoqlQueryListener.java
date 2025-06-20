@@ -727,6 +727,7 @@ public class SoqlQueryListener implements SoqlListener {
         }
         //not implemented case of 3 or more fragments (chained SoqlNodes)
         node.setIri(att.getIRI().toString());
+        node.setAttribute(att);
         if (node.hasChild()) {
             final Type<?> type = resolveBindableType(att);
             if (type.getPersistenceType() != Type.PersistenceType.ENTITY) {
