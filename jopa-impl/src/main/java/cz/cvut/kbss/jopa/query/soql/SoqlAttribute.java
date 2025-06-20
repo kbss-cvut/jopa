@@ -130,7 +130,7 @@ class SoqlAttribute extends SoqlParameter {
     }
 
     private List<String> buildTriplePatterns(String rootVariable) {
-        final List<String> bgps = new ArrayList<>();
+        final List<String> triplePatterns = new ArrayList<>();
         StringBuilder buildParam = new StringBuilder("?");
         buildParam.append(getFirstNode().getValue());
         SoqlNode pointer = getFirstNode();
@@ -140,13 +140,15 @@ class SoqlAttribute extends SoqlParameter {
             if (newPointer.getIri().isEmpty()) {
                 break;
             }
-            final String variable = bgps.isEmpty() ? rootVariable : "?" + pointer.getValue();
+            final String variable = triplePatterns.isEmpty() ? rootVariable : "?" + pointer.getValue();
             buildParam.append(newPointer.getCapitalizedValue());
             final String param = buildTriplePatternObject(newPointer, buildParam);
-            bgps.add(variable + " " + toIri(newPointer) + " " + param + TRIPLE_END);
+            final TriplePatternEnhancer triplePatternEnhancer = TriplePatternEnhancer.create(newPointer.getAttribute());
+            triplePatterns.addAll(triplePatternEnhancer.getTriplePatterns(variable, toIri(newPointer), param));
             pointer = newPointer;
         } while (pointer.hasChild());
-        return bgps;
+
+        return triplePatterns;
     }
 
     private String buildTriplePatternObject(SoqlNode newPointer, StringBuilder buildParam) {

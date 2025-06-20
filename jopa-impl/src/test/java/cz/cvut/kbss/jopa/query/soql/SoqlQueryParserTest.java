@@ -28,7 +28,9 @@ import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryParser;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -853,6 +855,16 @@ public class SoqlQueryParserTest {
                 "?x " + strUri(Vocabulary.p_p_hasPhone) + " ?phone . " +
                 "?phone " + strUri(Vocabulary.p_p_phoneNumber) + " ?phoneNumber . " +
                 "?phone " + strUri(Vocabulary.p_p_phoneBrand) + " ?brand . }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryExtractsItemsFromRdfContainer() {
+        final String soql = "SELECT c FROM OWLClassC c WHERE :param MEMBER OF c.rdfSeq";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassC) + " . " +
+                "?x " + strUri(Vocabulary.P_HAS_RDF_SEQ) + " ?rdfContainer . " +
+                "?rdfContainer ?hasElement ?param . " +
+                "FILTER (STRSTARTS(STR(?hasElement), \"" + RDF.NAMESPACE + "_\")) }";
         parseAndAssertEquality(soql, expectedSparql);
     }
 }

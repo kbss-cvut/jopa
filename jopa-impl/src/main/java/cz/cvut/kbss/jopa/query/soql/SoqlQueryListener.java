@@ -717,6 +717,7 @@ public class SoqlQueryListener implements SoqlListener {
         }
         if (entityType.getTypes() != null && entityType.getTypes().getName().equals(node.getValue())) {
             node.setIri(SparqlConstants.RDF_TYPE_SHORTCUT);
+            node.setAttribute(entityType.getTypes());
             return;
         }
         final Attribute<?, ?> att;
