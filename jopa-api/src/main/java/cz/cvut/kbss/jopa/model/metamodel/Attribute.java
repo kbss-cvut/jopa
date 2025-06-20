@@ -163,4 +163,9 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
      * @return Array of participation constraints
      */
     ParticipationConstraint[] getConstraints();
+
+    @Override
+    default boolean isMappedAttribute() {
+        return true;
+    }
 }
