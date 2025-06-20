@@ -17,14 +17,14 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 abstract class SoqlNode implements FilterableExpression {
 
     SoqlNode parent;
     SoqlNode child;
 
-    private Attribute<?, ?> attribute;
+    private FieldSpecification<?, ?> attribute;
 
     SoqlNode() {
     }
@@ -53,11 +53,11 @@ abstract class SoqlNode implements FilterableExpression {
         this.parent = parent;
     }
 
-    public Attribute<?, ?> getAttribute() {
+    public FieldSpecification<?, ?> getAttribute() {
         return attribute;
     }
 
-    public void setAttribute(Attribute<?, ?> attribute) {
+    public void setAttribute(FieldSpecification<?, ?> attribute) {
         this.attribute = attribute;
     }
 
