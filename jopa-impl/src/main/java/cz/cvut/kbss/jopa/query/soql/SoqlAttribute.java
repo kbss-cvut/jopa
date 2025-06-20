@@ -119,52 +119,48 @@ class SoqlAttribute extends SoqlParameter {
     }
 
     public List<String> getBasicGraphPattern(String rootVariable) {
-        List<String> bgps = new ArrayList<>();
         if (isInstanceOf()) {
-            bgps.add(rootVariable + " " + SoqlConstants.RDF_TYPE + " " + toIri(getFirstNode()) + TRIPLE_END);
+            return List.of(rootVariable + " " + SoqlConstants.RDF_TYPE + " " + toIri(getFirstNode()) + TRIPLE_END);
         } else {
             if (isObject()) {
                 return List.of();
             }
-            SoqlNode pointer = getFirstNode().getChild();
-            StringBuilder buildParam = new StringBuilder("?");
-            buildParam.append(getFirstNode().getValue());
-            buildParam.append(pointer.getCapitalizedValue());
-            String param;
-            if (pointer.hasChild() || value == null) {
-                param = "?" + pointer.getValue();
-            } else {
-                if (requiresFilter()) {
-                    param = buildParam.toString();
-                } else {
-                    param = SoqlUtils.soqlVariableToSparqlVariable(value);
-                }
+            return buildTriplePatterns(rootVariable);
+        }
+    }
+
+    private List<String> buildTriplePatterns(String rootVariable) {
+        final List<String> bgps = new ArrayList<>();
+        StringBuilder buildParam = new StringBuilder("?");
+        buildParam.append(getFirstNode().getValue());
+        SoqlNode pointer = getFirstNode();
+
+        do {
+            SoqlNode newPointer = pointer.getChild();
+            if (newPointer.getIri().isEmpty()) {
+                break;
             }
-            bgps.add(rootVariable + " " + toIri(pointer) + " " + param + TRIPLE_END);
-            while (pointer.hasChild()) {
-                SoqlNode newPointer = pointer.getChild();
-                if (newPointer.getIri().isEmpty()) {
-                    break;
-                }
-                StringBuilder buildTP = new StringBuilder("?");
-                buildTP.append(pointer.getValue())
-                       .append(' ').append(toIri(newPointer)).append(' ');
-                buildParam.append(newPointer.getCapitalizedValue());
-                if (newPointer.hasChild()) {
-                    buildTP.append('?').append(pointer.getChild().getValue());
-                } else {
-                    if (requiresFilter()) {
-                        buildTP.append(buildParam);
-                    } else {
-                        buildTP.append(SoqlUtils.soqlVariableToSparqlVariable(value));
-                    }
-                }
-                buildTP.append(TRIPLE_END);
-                bgps.add(buildTP.toString());
-                pointer = newPointer;
+            final String variable = bgps.isEmpty() ? rootVariable : "?" + pointer.getValue();
+            buildParam.append(newPointer.getCapitalizedValue());
+            final String param = buildTriplePatternObject(newPointer, buildParam);
+            bgps.add(variable + " " + toIri(newPointer) + " " + param + TRIPLE_END);
+            pointer = newPointer;
+        } while (pointer.hasChild());
+        return bgps;
+    }
+
+    private String buildTriplePatternObject(SoqlNode newPointer, StringBuilder buildParam) {
+        final String param;
+        if (newPointer.hasChild() || value == null) {
+            param = "?" + newPointer.getValue();
+        } else {
+            if (requiresFilter()) {
+                param = buildParam.toString();
+            } else {
+                param = SoqlUtils.soqlVariableToSparqlVariable(value);
             }
         }
-        return bgps;
+        return param;
     }
 
     private static String toIri(SoqlNode node) {
