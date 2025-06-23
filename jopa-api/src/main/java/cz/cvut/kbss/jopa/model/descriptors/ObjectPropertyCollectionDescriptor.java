@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -54,6 +55,7 @@ public class ObjectPropertyCollectionDescriptor extends FieldDescriptor {
 
     ObjectPropertyCollectionDescriptor(FieldSpecification<?, ?> attribute, EntityDescriptor elementDescriptor) {
         super(attribute);
+        assert elementDescriptor != null;
         this.elementDescriptor = elementDescriptor;
     }
 
@@ -61,6 +63,7 @@ public class ObjectPropertyCollectionDescriptor extends FieldDescriptor {
                                                  boolean hasLanguage, boolean includeInferred, Field field,
                                                  EntityDescriptor elementDescriptor) {
         super(contexts, assertionsInSubjectContext, language, hasLanguage, includeInferred, field);
+        assert elementDescriptor != null;
         this.elementDescriptor = elementDescriptor;
     }
 
@@ -131,13 +134,12 @@ public class ObjectPropertyCollectionDescriptor extends FieldDescriptor {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {return true;}
-        if (!super.equals(obj)) {return false;}
-        if (getClass() != obj.getClass()) {return false;}
-        ObjectPropertyCollectionDescriptor other = (ObjectPropertyCollectionDescriptor) obj;
-        if (elementDescriptor == null) {
-            return other.elementDescriptor == null;
-        } else {return elementDescriptor.equals(other.elementDescriptor);}
+    protected boolean equals(Object other, Map<VisitedPair, Boolean> visited) {
+        return super.equalsImpl(other) && elementDescriptor.equals(((ObjectPropertyCollectionDescriptor) other).elementDescriptor, visited);
+    }
+
+    @Override
+    protected int hashCode(Map<Object, Boolean> visited) {
+        return 31 * super.hashCodeImpl() + elementDescriptor.hashCode();
     }
 }

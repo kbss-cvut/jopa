@@ -21,7 +21,12 @@ import cz.cvut.kbss.jopa.exceptions.AmbiguousContextException;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Defines base descriptor, which is used to specify context information for entities and their fields.
@@ -58,8 +63,9 @@ public abstract class AbstractDescriptor implements Descriptor {
         this.assertionsInSubjectContext = assertionsInSubjectContext;
     }
 
-    protected AbstractDescriptor(Set<URI> contexts, boolean assertionsInSubjectContext, String language, boolean hasLanguage,
-                              boolean includeInferred) {
+    protected AbstractDescriptor(Set<URI> contexts, boolean assertionsInSubjectContext, String language,
+                                 boolean hasLanguage,
+                                 boolean includeInferred) {
         this.assertionsInSubjectContext = assertionsInSubjectContext;
         this.language = language;
         this.hasLanguage = hasLanguage;
@@ -149,13 +155,17 @@ public abstract class AbstractDescriptor implements Descriptor {
 
     @Override
     public boolean equals(Object o) {
+        return equalsImpl(o);
+    }
+
+    protected boolean equalsImpl(Object o) {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof AbstractDescriptor that)) {
+        if (o == null || !getClass().equals(o.getClass())) {
             return false;
         }
-
+        final AbstractDescriptor that = (AbstractDescriptor) o;
         if (hasLanguage != that.hasLanguage) {
             return false;
         }
@@ -165,8 +175,16 @@ public abstract class AbstractDescriptor implements Descriptor {
         return Objects.equals(contexts, that.contexts) && Objects.equals(language, that.language);
     }
 
+    protected boolean equals(Object other, Map<VisitedPair, Boolean> visited) {
+        return equalsImpl(other);
+    }
+
     @Override
     public int hashCode() {
+        return hashCodeImpl();
+    }
+
+    protected int hashCodeImpl() {
         int result = contexts.hashCode();
         result = 31 * result + (language != null ? language.hashCode() : 0);
         result = 31 * result + (hasLanguage ? 1 : 0);
@@ -174,8 +192,30 @@ public abstract class AbstractDescriptor implements Descriptor {
         return result;
     }
 
+    protected int hashCode(Map<Object, Boolean> visited) {
+        return hashCodeImpl();
+    }
+
     @Override
     public String toString() {
         return contexts.isEmpty() ? "default_context" : contexts.toString();
+    }
+
+    protected static class VisitedPair {
+        final Object a, b;
+
+        VisitedPair(Object a, Object b) {
+            this.a = a;
+            this.b = b;
+        }
+
+        public boolean equals(Object o) {
+            if (!(o instanceof VisitedPair p)) {return false;}
+            return a == p.a && b == p.b;
+        }
+
+        public int hashCode() {
+            return System.identityHashCode(a) * 31 + System.identityHashCode(b);
+        }
     }
 }

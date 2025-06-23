@@ -470,4 +470,28 @@ class EntityDescriptorTest {
 
         assertThrows(IllegalArgumentException.class, () -> sut.addAttributeDescriptor(pluralAtt, elementDescriptor));
     }
+
+    @Test
+    void equalsHandlesRecursiveReferences() throws Exception {
+        when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeDescriptor(parentAtt, sut);
+
+        final EntityDescriptor other = new EntityDescriptor();
+        other.addAttributeDescriptor(parentAtt, other);
+
+        assertEquals(sut, other);
+    }
+
+    @Test
+    void hashCodeHandlesRecursiveReferences() throws Exception {
+        when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeDescriptor(parentAtt, sut);
+
+        final EntityDescriptor other = new EntityDescriptor();
+        other.addAttributeDescriptor(parentAtt, other);
+
+        assertEquals(sut.hashCode(), other.hashCode());
+    }
 }
