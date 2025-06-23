@@ -89,7 +89,7 @@ public class EntityDescriptor extends AbstractDescriptor {
     public EntityDescriptor addAttributeDescriptor(FieldSpecification<?, ?> attribute, Descriptor descriptor) {
         Objects.requireNonNull(attribute);
         Objects.requireNonNull(descriptor);
-        verifyDescriptorType(attribute, descriptor);
+
         if (isPluralReference(attribute) && descriptor instanceof EntityDescriptor entityDescriptor) {
             fieldDescriptors.put(attribute.getJavaField(), new ObjectPropertyCollectionDescriptor(attribute, entityDescriptor));
         } else {
@@ -101,17 +101,6 @@ public class EntityDescriptor extends AbstractDescriptor {
     private static boolean isPluralReference(FieldSpecification<?, ?> attribute) {
         return attribute instanceof PluralAttribute<?, ?, ?> pluralAtt &&
                 pluralAtt.getElementType().getPersistenceType() == Type.PersistenceType.ENTITY;
-    }
-
-    private void verifyDescriptorType(FieldSpecification<?, ?> attribute, Descriptor descriptor) {
-        if (isPluralReference(attribute) && !(descriptor instanceof EntityDescriptor) && !(descriptor instanceof ObjectPropertyCollectionDescriptor)) {
-            throw new IllegalArgumentException(EntityDescriptor.class.getSimpleName() + " must be used for plural attributes with entity type value.");
-        } else if (attribute instanceof Attribute<?, ?> att && !attribute.isCollection() &&
-                att.getPersistentAttributeType() == PersistentAttributeType.OBJECT &&
-                !IdentifierUtils.isResourceIdentifierType(attribute.getJavaType()) &&
-                !(descriptor instanceof EntityDescriptor)) {
-            throw new IllegalArgumentException(EntityDescriptor.class.getSimpleName() + " must be used for singular attributes with entity type value.");
-        }
     }
 
     @Override
@@ -248,6 +237,7 @@ public class EntityDescriptor extends AbstractDescriptor {
         return 31 * super.hashCodeImpl() + fieldDescriptors.entrySet().stream()
                                                            .map(e -> e.getKey().hashCode() ^
                                                                    (e.getValue() == this ? 0 :
-                                                                           e.getValue().hashCode())).reduce(0, Integer::sum);
+                                                                           e.getValue().hashCode()))
+                                                           .reduce(0, Integer::sum);
     }
 }

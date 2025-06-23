@@ -448,7 +448,6 @@ class EntityDescriptorTest {
         final PluralAttribute pluralAtt = mock(PluralAttribute.class);
         final Type et = mock(Type.class);
         when(pluralAtt.getElementType()).thenReturn(et);
-        when(pluralAtt.isCollection()).thenReturn(true);
         when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
         final EntityDescriptor sut = new EntityDescriptor();
         final EntityDescriptor elementDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -457,18 +456,6 @@ class EntityDescriptorTest {
         final Descriptor result = sut.getAttributeDescriptor(pluralAtt);
         assertInstanceOf(ObjectPropertyCollectionDescriptor.class, result);
         assertEquals(elementDescriptor, result.unwrap());
-    }
-
-    @Test
-    void addAttributeDescriptorThrowsIllegalArgumentExceptionWhenFieldDescriptorIsProvidedForObjectProperty() {
-        final PluralAttribute pluralAtt = mock(PluralAttribute.class);
-        final Type et = mock(Type.class);
-        when(pluralAtt.getElementType()).thenReturn(et);
-        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
-        final EntityDescriptor sut = new EntityDescriptor();
-        final FieldDescriptor elementDescriptor = new FieldDescriptor(pluralAtt);
-
-        assertThrows(IllegalArgumentException.class, () -> sut.addAttributeDescriptor(pluralAtt, elementDescriptor));
     }
 
     @Test
