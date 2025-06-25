@@ -17,7 +17,12 @@
  */
 package cz.cvut.kbss.jopa.test.query.runner;
 
-import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassC;
+import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassJ;
+import cz.cvut.kbss.jopa.test.OWLClassM;
+import cz.cvut.kbss.jopa.test.OWLClassT;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
@@ -26,6 +31,7 @@ import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -36,7 +42,11 @@ import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.conta
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class SoqlRunner extends BaseQueryRunner {
 
@@ -93,7 +103,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
         final int intThreshold = QueryTestEnvironment.getData(OWLClassT.class).size() / 2;
         final List<OWLClassT> result = getEntityManager()
                 .createQuery("SELECT t FROM OWLClassT t WHERE NOT t.owlClassA = :a AND t.intAttribute < :intAtt",
-                             OWLClassT.class)
+                        OWLClassT.class)
                 .setParameter("a", unexpected.getOwlClassA().getUri())
                 .setParameter("intAtt", intThreshold).getResultList();
         assertFalse(result.isEmpty());
@@ -118,7 +128,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
         final OWLClassT sample = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassT.class));
         final List<OWLClassT> result = getEntityManager()
                 .createQuery("SELECT t FROM OWLClassT t WHERE t.owlClassA = :a AND t.intAttribute <= :intAtt",
-                             OWLClassT.class)
+                        OWLClassT.class)
                 .setParameter("a", sample.getOwlClassA().getUri())
                 .setParameter("intAtt", sample.getIntAttribute()).getResultList();
         assertFalse(result.isEmpty());
@@ -145,7 +155,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
         final OWLClassT sample = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassT.class));
         final List<OWLClassT> result = getEntityManager()
                 .createQuery("SELECT t FROM OWLClassT t WHERE t.owlClassA = :a OR t.intAttribute <= :intAtt",
-                             OWLClassT.class)
+                        OWLClassT.class)
                 .setParameter("a", sample.getOwlClassA().getUri())
                 .setParameter("intAtt", sample.getIntAttribute()).getResultList();
         assertFalse(result.isEmpty());
@@ -161,7 +171,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
         final OWLClassD expected = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassD.class));
         final OWLClassD result = getEntityManager()
                 .createQuery("SELECT d FROM OWLClassD d WHERE d.owlClassA.stringAttribute = :stringAtt",
-                             OWLClassD.class)
+                        OWLClassD.class)
                 .setParameter("stringAtt", expected.getOwlClassA().getStringAttribute(), "en").getSingleResult();
         assertEquals(expected.getUri(), result.getUri());
         assertEquals(expected.getOwlClassA().getUri(), result.getOwlClassA().getUri());
@@ -182,7 +192,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
                                                              .collect(Collectors.toList());
         final List<OWLClassD> result =
                 getEntityManager().createQuery("SELECT d FROM OWLClassD d WHERE d.owlClassA IN :aInstances",
-                                               OWLClassD.class)
+                                          OWLClassD.class)
                                   .setParameter("aInstances", matching)
                                   .getResultList();
         assertThat(result, containsSameEntities(expected));
@@ -226,7 +236,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
         final OWLClassA instance = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
         final List<OWLClassA> result =
                 getEntityManager().createQuery("SELECT a FROM OWLClassA a WHERE UPPER(a.stringAttribute) LIKE :value",
-                                               OWLClassA.class)
+                                          OWLClassA.class)
                                   .setParameter("value", instance.getStringAttribute().substring(0, 3)
                                                                  .toUpperCase(Locale.ROOT) + ".+")
                                   .getResultList();
@@ -238,11 +248,30 @@ public abstract class SoqlRunner extends BaseQueryRunner {
     public void testSelectByAbsoluteValueOfAnInteger() {
         final List<OWLClassM> instances = QueryTestEnvironment.getData(OWLClassM.class);
         final int value = Math.abs(Generators.randomInt());
-        final List<OWLClassM> matching = instances.stream().filter(m -> Math.abs(m.getIntAttribute()) <= value).toList();
+        final List<OWLClassM> matching = instances.stream().filter(m -> Math.abs(m.getIntAttribute()) <= value)
+                                                  .toList();
         final List<OWLClassM> result = getEntityManager().createQuery("SELECT m FROM OWLClassM m WHERE ABS(m.intAttribute) <= :value", OWLClassM.class)
-                .setParameter("value", value)
-                .getResultList();
+                                                         .setParameter("value", value)
+                                                         .getResultList();
         assertEquals(matching.size(), result.size());
         matching.forEach(m -> assertTrue(result.stream().anyMatch(rm -> rm.getKey().equals(m.getKey()))));
+    }
+
+    /**
+     * Enhancement #335
+     */
+    @Test
+    public void testSelectByMemberOfRdfContainer() {
+        final OWLClassC cInstance = new OWLClassC(Generators.generateUri());
+        final List<OWLClassA> aInstances = QueryTestEnvironment.getData(OWLClassA.class);
+        cInstance.setRdfBag(new ArrayList<>(aInstances.subList(2, aInstances.size() - 1)));
+        getEntityManager().getTransaction().begin();
+        getEntityManager().persist(cInstance);
+        getEntityManager().getTransaction().commit();
+        final List<OWLClassC> result = getEntityManager().createQuery("SELECT c FROM OWLClassC c WHERE :a MEMBER OF c.rdfBag", OWLClassC.class)
+                                                         .setParameter("a", cInstance.getRdfBag().iterator().next())
+                                                         .getResultList();
+        assertFalse(result.isEmpty());
+        assertTrue(result.stream().anyMatch(c -> c.getUri().equals(cInstance.getUri())));
     }
 }

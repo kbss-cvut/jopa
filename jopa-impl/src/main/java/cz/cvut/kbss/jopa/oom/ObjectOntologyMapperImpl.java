@@ -260,20 +260,20 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         if (orig != null) {
             return orig;
         }
-        if (getCache().contains(cls, identifier, descriptor)) {
-            return defaultInstanceLoader.loadCached(getEntityType(cls), identifier, descriptor);
-        } else if (instanceRegistry.containsKey(identifier)) {
-            final Object existing = instanceRegistry.get(identifier);
-            if (!cls.isAssignableFrom(existing.getClass())) {
-                throw individualAlreadyManaged(identifier);
+        return defaultInstanceLoader.loadCached(getEntityType(cls), identifier, descriptor).orElseGet(() -> {
+            if (instanceRegistry.containsKey(identifier)) {
+                final Object existing = instanceRegistry.get(identifier);
+                if (!cls.isAssignableFrom(existing.getClass())) {
+                    throw individualAlreadyManaged(identifier);
+                }
+                // This prevents endless cycles in bidirectional relationships
+                return cls.cast(existing);
+            } else {
+                // setup loading params
+                LoadingParameters<T> params = initEntityLoadingParameters(cls, identifier, descriptor);
+                return loadEntityInternal(params);
             }
-            // This prevents endless cycles in bidirectional relationships
-            return cls.cast(existing);
-        } else {
-            // setup loading params
-            LoadingParameters<T> params = initEntityLoadingParameters(cls, identifier, descriptor);
-            return loadEntityInternal(params);
-        }
+        });
     }
 
     private <T> LoadingParameters<T> initEntityLoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor) {

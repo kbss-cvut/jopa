@@ -148,10 +148,10 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         transactional(() -> {
             em.persist(instance, cDescriptor);
             if (instance.getSimpleList() != null) {
-                instance.getSimpleList().forEach(a -> em.persist(a, listDescriptor.getElementDescriptor()));
+                instance.getSimpleList().forEach(a -> em.persist(a, listDescriptor.unwrap()));
             }
             if (instance.getReferencedList() != null) {
-                instance.getReferencedList().forEach(a -> em.persist(a, listDescriptor.getElementDescriptor()));
+                instance.getReferencedList().forEach(a -> em.persist(a, listDescriptor.unwrap()));
             }
         });
     }

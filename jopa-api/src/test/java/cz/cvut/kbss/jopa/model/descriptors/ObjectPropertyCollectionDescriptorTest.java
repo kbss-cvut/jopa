@@ -48,4 +48,15 @@ class ObjectPropertyCollectionDescriptorTest {
         @OWLObjectProperty(iri = "http://onto.fel.cvut.cz/ontologies/jopa/test/reference")
         private Set<TestClass> testClass;
     }
+
+    @Test
+    void addAttributeContextAddsSpecifiedContextToElementDescriptor() throws Exception {
+        final URI contextOne = URI.create("http://onto.fel.cvut.cz/ontologies/jopa/test");
+        final URI contextTwo = URI.create("http://onto.fel.cvut.cz/ontologies/jopa/test2");
+        final FieldSpecification<?, ?> refFs = mock(FieldSpecification.class);
+        when(refFs.getJavaField()).thenReturn(WithReference.class.getDeclaredField("testClass"));
+        final ObjectPropertyCollectionDescriptor descriptor = new ObjectPropertyCollectionDescriptor(Set.of(contextOne), refFs);
+        descriptor.addContext(contextTwo);
+        assertEquals(Set.of(contextOne, contextTwo), descriptor.unwrap().getContexts());
+    }
 }

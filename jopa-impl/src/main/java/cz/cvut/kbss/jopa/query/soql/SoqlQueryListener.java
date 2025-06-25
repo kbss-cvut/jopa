@@ -717,6 +717,7 @@ public class SoqlQueryListener implements SoqlListener {
         }
         if (entityType.getTypes() != null && entityType.getTypes().getName().equals(node.getValue())) {
             node.setIri(SparqlConstants.RDF_TYPE_SHORTCUT);
+            node.setAttribute(entityType.getTypes());
             return;
         }
         final Attribute<?, ?> att;
@@ -727,6 +728,7 @@ public class SoqlQueryListener implements SoqlListener {
         }
         //not implemented case of 3 or more fragments (chained SoqlNodes)
         node.setIri(att.getIRI().toString());
+        node.setAttribute(att);
         if (node.hasChild()) {
             final Type<?> type = resolveBindableType(att);
             if (type.getPersistenceType() != Type.PersistenceType.ENTITY) {

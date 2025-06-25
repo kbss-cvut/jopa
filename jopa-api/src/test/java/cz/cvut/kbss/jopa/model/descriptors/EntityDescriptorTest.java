@@ -19,6 +19,8 @@ package cz.cvut.kbss.jopa.model.descriptors;
 
 import cz.cvut.kbss.jopa.exceptions.AmbiguousContextException;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.Type;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -32,10 +34,12 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -225,7 +229,7 @@ class EntityDescriptorTest {
         dOne.addAttributeDescriptor(intAtt, new FieldDescriptor(CONTEXT_TWO, intAtt));
         assertFalse(dOne.getAttributeDescriptors().isEmpty());
         assertEquals(Collections.singleton(CONTEXT_TWO),
-                     dOne.getAttributeDescriptors().iterator().next().getContexts());
+                dOne.getAttributeDescriptors().iterator().next().getContexts());
     }
 
     @Test
@@ -437,5 +441,44 @@ class EntityDescriptorTest {
         final Descriptor attDesc = sut.getAttributeDescriptor(parentAtt);
         attDesc.enableInference();
         assertTrue(attDesc.includeInferred());
+    }
+
+    @Test
+    void addAttributeDescriptorWrapsEntityDescriptorInObjectPropertyCollectionDescriptorWhenAttributeIsObjectPropertyCollection() {
+        final PluralAttribute pluralAtt = mock(PluralAttribute.class);
+        final Type et = mock(Type.class);
+        when(pluralAtt.getElementType()).thenReturn(et);
+        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
+        final EntityDescriptor sut = new EntityDescriptor();
+        final EntityDescriptor elementDescriptor = new EntityDescriptor(CONTEXT_ONE);
+
+        sut.addAttributeDescriptor(pluralAtt, elementDescriptor);
+        final Descriptor result = sut.getAttributeDescriptor(pluralAtt);
+        assertInstanceOf(ObjectPropertyCollectionDescriptor.class, result);
+        assertEquals(elementDescriptor, result.unwrap());
+    }
+
+    @Test
+    void equalsHandlesRecursiveReferences() throws Exception {
+        when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeDescriptor(parentAtt, sut);
+
+        final EntityDescriptor other = new EntityDescriptor();
+        other.addAttributeDescriptor(parentAtt, other);
+
+        assertEquals(sut, other);
+    }
+
+    @Test
+    void hashCodeHandlesRecursiveReferences() throws Exception {
+        when(parentAtt.getJavaField()).thenReturn(RecursiveClass.class.getDeclaredField("parent"));
+        final EntityDescriptor sut = new EntityDescriptor();
+        sut.addAttributeDescriptor(parentAtt, sut);
+
+        final EntityDescriptor other = new EntityDescriptor();
+        other.addAttributeDescriptor(parentAtt, other);
+
+        assertEquals(sut.hashCode(), other.hashCode());
     }
 }

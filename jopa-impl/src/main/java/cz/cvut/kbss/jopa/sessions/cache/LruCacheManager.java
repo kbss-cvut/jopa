@@ -46,7 +46,7 @@ public class LruCacheManager implements CacheManager {
     /**
      * Default cache size limit in number of entries.
      */
-    public static final int DEFAULT_CAPACITY = 512;
+    public static final int DEFAULT_CAPACITY = 8192;
 
     private final int capacity;
 

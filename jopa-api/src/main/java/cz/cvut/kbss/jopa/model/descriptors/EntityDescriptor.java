@@ -20,7 +20,9 @@ package cz.cvut.kbss.jopa.model.descriptors;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 
 import java.lang.reflect.Field;
@@ -28,6 +30,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -74,13 +77,30 @@ public class EntityDescriptor extends AbstractDescriptor {
         this.fieldDescriptors = new HashMap<>();
     }
 
+    protected EntityDescriptor(Set<URI> contexts, boolean assertionsInSubjectContext, String language,
+                               boolean hasLanguage,
+                               boolean includeInferred, Map<Field, Descriptor> fieldDescriptors) {
+        super(contexts, assertionsInSubjectContext, language, hasLanguage, includeInferred);
+        this.fieldDescriptors = new HashMap<>(fieldDescriptors.size());
+        fieldDescriptors.forEach((f, d) -> this.fieldDescriptors.put(f, d.copy()));
+    }
+
     @Override
     public EntityDescriptor addAttributeDescriptor(FieldSpecification<?, ?> attribute, Descriptor descriptor) {
         Objects.requireNonNull(attribute);
         Objects.requireNonNull(descriptor);
 
-        fieldDescriptors.put(attribute.getJavaField(), descriptor);
+        if (isPluralReference(attribute) && descriptor instanceof EntityDescriptor entityDescriptor) {
+            fieldDescriptors.put(attribute.getJavaField(), new ObjectPropertyCollectionDescriptor(attribute, entityDescriptor));
+        } else {
+            fieldDescriptors.put(attribute.getJavaField(), descriptor);
+        }
         return this;
+    }
+
+    private static boolean isPluralReference(FieldSpecification<?, ?> attribute) {
+        return attribute instanceof PluralAttribute<?, ?, ?> pluralAtt &&
+                pluralAtt.getElementType().getPersistenceType() == Type.PersistenceType.ENTITY;
     }
 
     @Override
@@ -157,44 +177,67 @@ public class EntityDescriptor extends AbstractDescriptor {
     }
 
     @Override
+    public EntityDescriptor copy() {
+        return new EntityDescriptor(contexts, assertionsInSubjectContext, getLanguage(), hasLanguage(), includeInferred(), fieldDescriptors);
+    }
+
+    @Override
     public boolean equals(Object o) {
-        if (this == o) {
+        return equals(o, new HashMap<>());
+    }
+
+    @Override
+    protected boolean equals(Object other, Map<VisitedPair, Boolean> visited) {
+        if (this == other) {
             return true;
         }
-        if (!(o instanceof EntityDescriptor that)) {
+        if (!(other instanceof EntityDescriptor that)) {
             return false;
         }
-        if (!super.equals(o)) {
-            return false;
+        final VisitedPair pair = new VisitedPair(this, that);
+        if (visited.containsKey(pair)) {
+            return visited.get(pair);
         }
+        visited.put(pair, Boolean.TRUE);
+        boolean result = super.equalsImpl(other) && fieldDescriptors.size() == that.fieldDescriptors.size();
 
-        if (fieldDescriptors.size() != that.fieldDescriptors.size()) {
-            return false;
-        }
         for (Entry<Field, Descriptor> e : fieldDescriptors.entrySet()) {
             if (e.getValue() == null) {
                 if (that.fieldDescriptors.containsKey(e.getKey()) && that.fieldDescriptors.get(e.getKey()) != null) {
-                    return false;
+                    result = false;
+                    break;
                 }
             } else {
-                if (e.getValue() == this && that.fieldDescriptors.get(e.getKey()) == that) {
-                    continue;
-                }
-                if (!e.getValue().equals(that.fieldDescriptors.get(e.getKey()))) {
-                    return false;
+                if (!(e.getValue() instanceof AbstractDescriptor)) {
+                    if (!e.getValue().equals(that.fieldDescriptors.get(e.getKey()))) {
+                        result = false;
+                        break;
+                    }
+                } else if (!((AbstractDescriptor) e.getValue()).equals(that.fieldDescriptors.get(e.getKey()), visited)) {
+                    result = false;
+                    break;
                 }
             }
         }
-        return true;
+        visited.put(pair, result);
+        return result;
     }
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + fieldDescriptors.entrySet().stream()
-                                               .map(e -> e.getKey().hashCode() ^
-                                                       (e.getValue() == this ? 0 :
-                                                               e.getValue().hashCode())).reduce(0, Integer::sum);
-        return result;
+        return this.hashCode(new IdentityHashMap<>());
+    }
+
+    @Override
+    protected int hashCode(Map<Object, Boolean> visited) {
+        if (visited.containsKey(this)) {
+            return 0;
+        }
+        visited.put(this, Boolean.TRUE);
+        return 31 * super.hashCodeImpl() + fieldDescriptors.entrySet().stream()
+                                                           .map(e -> e.getKey().hashCode() ^
+                                                                   (e.getValue() == this ? 0 :
+                                                                           e.getValue().hashCode()))
+                                                           .reduce(0, Integer::sum);
     }
 }

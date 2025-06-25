@@ -66,14 +66,18 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
             // with the 'else' branch behavior?
             values.add(attribute.getConverter().convertToAttribute(valueIdentifier));
         } else {
-            final Object value = mapper.getEntityFromCacheOrOntology(elementType, valueIdentifier.getIdentifier(),
-                    entityDescriptor.getAttributeDescriptor(attribute));
+            final Object value = mapper.getEntityFromCacheOrOntology(elementType, valueIdentifier.getIdentifier(), getDescriptorForRetrieval());
             if (value != null) {
                 values.add(value);
             } else {
                 LOG.trace("Value of axiom {} could not be loaded as entity filling attribute {}.", ax, attribute);
             }
         }
+    }
+
+    private Descriptor getDescriptorForRetrieval() {
+        // Unwrap the descriptor to get the descriptor for the elements
+        return entityDescriptor.getAttributeDescriptor(attribute).unwrap();
     }
 
     @Override

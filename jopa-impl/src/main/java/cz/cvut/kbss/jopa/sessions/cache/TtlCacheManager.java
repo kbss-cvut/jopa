@@ -42,7 +42,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * Manages the second level cache shared by all persistence contexts.
  * <p>
- * This implementation of CacheManager uses cache-wide locking, i. e. the whole cache is locked when an entity is being
+ * This implementation of CacheManager uses cache-wide locking, i.e., the whole cache is locked when an entity is being
  * put in it, no matter that only one context is affected by the change.
  * <p>
  * This cache is swept regularly by a dedicated thread, which removes all entries whose time-to-live (TTL) has

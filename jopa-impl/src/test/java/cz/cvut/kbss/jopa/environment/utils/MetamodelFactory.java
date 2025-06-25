@@ -190,6 +190,7 @@ public class MetamodelFactory {
 
     private static <X> void initAttribute(IdentifiableEntityType<X> etMock, AbstractAttribute attMock,
                                           AttributeInfo attInfo) {
+        when(attMock.isMappedAttribute()).thenReturn(true);
         when(etMock.getFieldSpecification(attInfo.field.getName())).thenReturn(attMock);
         when(etMock.getAttribute(attInfo.field.getName())).thenReturn(attMock);
         when(attMock.getName()).thenReturn(attInfo.field.getName());
@@ -345,13 +346,16 @@ public class MetamodelFactory {
         when(rdfSeqMock.getIRI()).thenReturn(IRI.create(OWLClassC.getRdfSeqField()
                                                                  .getAnnotation(OWLObjectProperty.class).iri()));
         when(rdfSeqMock.getBindableJavaType()).thenReturn(OWLClassA.class);
+        when(rdfSeqMock.getElementType()).thenReturn(etAMock);
         when(rdfSeqMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(rdfSeqMock.isCollection()).thenReturn(Boolean.TRUE);
+        when(rdfSeqMock.isCollection()).thenReturn(true);
         when(rdfSeqMock.isAssociation()).thenReturn(true);
         when(rdfSeqMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(rdfSeqMock.getDeclaringType()).thenReturn(etMock);
         when(rdfSeqMock.getJavaType()).thenReturn(List.class);
         when(rdfSeqMock.getJavaMember()).thenReturn(OWLClassC.getRdfSeqField());
+        when(rdfSeqMock.isRdfContainer()).thenReturn(true);
+        when(rdfSeqMock.isMappedAttribute()).thenReturn(true);
         when(rdfSeqMock.getCascadeTypes())
                 .thenReturn(OWLClassC.getRdfSeqField().getAnnotation(OWLObjectProperty.class).cascade());
 

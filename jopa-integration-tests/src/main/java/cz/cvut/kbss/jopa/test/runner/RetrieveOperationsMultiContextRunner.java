@@ -93,7 +93,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
         for (OWLClassA a : entityC.getSimpleList()) {
-            em.persist(a, listDescriptor.getElementDescriptor());
+            em.persist(a, listDescriptor.unwrap());
         }
         em.getTransaction().commit();
 
@@ -120,7 +120,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
         for (OWLClassA a : entityC.getReferencedList()) {
-            em.persist(a, listDescriptor.getElementDescriptor());
+            em.persist(a, listDescriptor.unwrap());
         }
         em.getTransaction().commit();
 

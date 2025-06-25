@@ -226,6 +226,7 @@ class DefaultEntityDescriptorFactoryTest {
         when(att.getBindableJavaType()).thenReturn(SimpleWithNamespacedContext.class);
         when(att.isCollection()).thenReturn(true);
         when(att.getJavaMember()).thenReturn(WithPluralReference.class.getDeclaredField("reference"));
+        when(att.getElementType()).thenReturn(referencedType);
         when(rootType.getAttributes()).thenReturn(Set.of(att));
         when(metamodel.entity(WithPluralReference.class)).thenReturn(rootType);
         when(metamodel.entity(SimpleWithNamespacedContext.class)).thenReturn(referencedType);

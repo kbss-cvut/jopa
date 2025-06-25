@@ -23,6 +23,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -45,6 +46,13 @@ public class FieldDescriptor extends AbstractDescriptor {
     public FieldDescriptor(Set<URI> contexts, FieldSpecification<?, ?> attribute) {
         this(attribute);
         this.contexts.addAll(Objects.requireNonNull(contexts));
+    }
+
+    protected FieldDescriptor(Set<URI> contexts, boolean assertionsInSubjectContext, String language,
+                              boolean hasLanguage,
+                              boolean includeInferred, Field field) {
+        super(contexts, assertionsInSubjectContext, language, hasLanguage, includeInferred);
+        this.field = field;
     }
 
     @Override
@@ -102,22 +110,17 @@ public class FieldDescriptor extends AbstractDescriptor {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + field.hashCode();
-        return result;
+    public FieldDescriptor copy() {
+        return new FieldDescriptor(contexts, assertionsInSubjectContext, getLanguage(), hasLanguage(), includeInferred(), field);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        FieldDescriptor other = (FieldDescriptor) obj;
-        return field.equals(other.field);
+    protected boolean equals(Object other, Map<VisitedPair, Boolean> visited) {
+        return super.equalsImpl(other) && field.equals(((FieldDescriptor) other).field);
+    }
+
+    @Override
+    protected int hashCode(Map<Object, Boolean> visited) {
+        return 31 * super.hashCodeImpl() + field.hashCode();
     }
 }

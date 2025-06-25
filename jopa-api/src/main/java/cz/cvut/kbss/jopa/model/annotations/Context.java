@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.model.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -12,6 +13,7 @@ import java.lang.annotation.Target;
  * When used on a type, it is applied to all attributes of the type. When used on an attribute, it is applied to the
  * attribute values (the attribute assertions themselves are still stored in the subject's context).
  */
+@Inherited
 @Documented
 @Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

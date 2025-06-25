@@ -243,7 +243,7 @@ class EntityConstructorTest {
     }
 
     @Test
-    void testReconstructEntityWithObjectProperty() throws Exception {
+    void testReconstructEntityWithObjectProperty() {
         final Set<Axiom<?>> axiomsD = getAxiomsForD();
         final Descriptor fieldDesc = new EntityDescriptor();
         descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDesc);
@@ -262,7 +262,7 @@ class EntityConstructorTest {
         verify(mapperMock).registerInstance(ID, res);
     }
 
-    private Set<Axiom<?>> getAxiomsForD() throws Exception {
+    private Set<Axiom<?>> getAxiomsForD() {
         final Set<Axiom<?>> axioms = new HashSet<>();
         axioms.add(getClassAssertionAxiomForType(ID, OWLClassD.getClassIri()));
         final Axiom<NamedResource> opAssertion = createObjectPropertyAxiomForD();
@@ -322,7 +322,7 @@ class EntityConstructorTest {
     }
 
     @Test
-    void reconstructsEntityWithObjectPropertyWhereRangeDoesNotMatch() throws Exception {
+    void reconstructsEntityWithObjectPropertyWhereRangeDoesNotMatch() {
         final Set<Axiom<?>> axioms = getAxiomsForD();
         final Descriptor fieldDescriptor = new EntityDescriptor();
         descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDescriptor);
@@ -335,7 +335,7 @@ class EntityConstructorTest {
     }
 
     @Test
-    void throwsExceptionWhenObjectPropertyCardinalityRestrictionIsNotMet() throws Exception {
+    void throwsExceptionWhenObjectPropertyCardinalityRestrictionIsNotMet() {
         final Set<Axiom<?>> axioms = getAxiomsForD();
         final OWLClassA entityA = new OWLClassA();
         entityA.setUri(ID_TWO);
@@ -369,9 +369,9 @@ class EntityConstructorTest {
     }
 
     @Test
-    void testSetFieldValue_ObjectProperty() throws Exception {
+    void testSetFieldValue_ObjectProperty() {
         final Set<Axiom<?>> axioms = new HashSet<>();
-        final Descriptor fieldDesc = mock(Descriptor.class);
+        final EntityDescriptor fieldDesc = mock(EntityDescriptor.class);
         descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDesc);
         axioms.add(createObjectPropertyAxiomForD());
         final OWLClassD entityD = new OWLClassD();
@@ -432,7 +432,7 @@ class EntityConstructorTest {
 
     @Test
     void testSetFieldValue_ObjectPropertySet() throws Exception {
-        final Descriptor desc = mock(Descriptor.class);
+        final EntityDescriptor desc = mock(EntityDescriptor.class);
         final Set<OWLClassA> set = initEntities(desc);
         descriptor.addAttributeDescriptor(mocks.forOwlClassJ().setAttribute(), desc);
         final Collection<Axiom<?>> axioms = initAxiomsForReferencedSet(set);
