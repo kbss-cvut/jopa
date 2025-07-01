@@ -3,7 +3,7 @@
 ### 2.4.1 - 2025-06-25
 - Prevent race condition when getting objects from second-level cache (Bug #329).
 - Improve cache hit/miss ration by using the correct descriptor type for plural attribute elements (Bug #333).
-- Support RDF collections in SOQL (typically `MEMBER OF`clauses) (Enhancement #335).
+- Support RDF containers in SOQL (typically `MEMBER OF` clauses) (Enhancement #335).
 
 ## 2.4.0 - 2025-05-29
 - Add support for a read-only `EntityManager` which can be used to optimize read-only transactions (Feature #84).

@@ -39,6 +39,7 @@ public final class QueryTestEnvironment {
     private static final String BASE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA_";
     public static final String COMMON_TYPE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA";
     private static final String BASE_B = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB_";
+    private static final String BASE_C = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC_";
     private static final String BASE_D = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD_";
 
     private static final URI NULL_CONTEXT = URI.create("http://NullContext");
@@ -205,6 +206,28 @@ public final class QueryTestEnvironment {
             b.setUri(URI.create(BASE_B + randomNum));
             b.setStringAttribute("strAtt" + randomNum);
             lst.add(b);
+            randomNum++;
+        }
+        return lst;
+    }
+
+    public static List<OWLClassC> generateOwlClassCInstances(List<OWLClassA> aList) {
+        final List<OWLClassC> lst = new ArrayList<>(ITEM_COUNT);
+        int randomNum = Generators.randomInt(1000);
+        for (int i = 0; i < ITEM_COUNT; i++) {
+            final List<OWLClassA> subList = new ArrayList<>();
+            for (int j = 0; j < aList.size(); j++) {
+                if (Generators.randomBoolean() || j == i) {
+                    subList.add(aList.get(j));
+                }
+            }
+            final OWLClassC c = new OWLClassC();
+            c.setUri(URI.create(BASE_C + randomNum));
+            c.setRdfBag(subList);
+            c.setRdfCollection(subList);
+            c.setSimpleList(subList);
+            c.setReferencedList(subList);
+            lst.add(c);
             randomNum++;
         }
         return lst;
