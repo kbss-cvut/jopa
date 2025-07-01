@@ -139,7 +139,11 @@ public class StorageConnector implements Closeable, Rdf4jConnectionProvider {
 
     private Repository connectToRemote(String repoUri, int attempts) {
         try {
-            return new RemoteRepositoryWrapper((HTTPRepository) manager.getRepository(RepositoryProvider.getRepositoryIdOfRepository(repoUri)), configuration);
+            final HTTPRepository httpRepo = (HTTPRepository) manager.getRepository(RepositoryProvider.getRepositoryIdOfRepository(repoUri));
+            if (httpRepo == null) {
+                throw new RepositoryNotFoundException("Repository " + RepositoryProvider.getRepositoryIdOfRepository(repoUri) + " not found on server.");
+            }
+            return new RemoteRepositoryWrapper(httpRepo, configuration);
         } catch (RepositoryException e) {
             if (attempts < maxReconnectAttempts) {
                 LOG.warn("Unable to connect to repository {}. Error is: {}. Retrying...", repoUri, e.getMessage());
