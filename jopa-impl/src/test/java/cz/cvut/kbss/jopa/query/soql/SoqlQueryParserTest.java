@@ -30,7 +30,6 @@ import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -627,7 +626,7 @@ public class SoqlQueryParserTest {
 
     private void parseAndAssertEquality(String soql, String expectedSparql) {
         final QueryHolder holder = sut.parseQuery(soql);
-        assertEquals(expectedSparql, holder.getQuery());
+        assertEquals(expectedSparql.trim(), holder.getQuery().trim());
     }
 
     @Test
@@ -865,6 +864,22 @@ public class SoqlQueryParserTest {
                 "?x " + strUri(Vocabulary.P_HAS_RDF_SEQ) + " ?rdfContainer . " +
                 "?rdfContainer ?hasElement ?param . " +
                 "FILTER (STRSTARTS(STR(?hasElement), \"" + RDF.NAMESPACE + "_\")) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryUsesDefaultAscendingOrdering() {
+        final String soql = "SELECT p FROM Person p WHERE p.age > :age ORDER BY p.age";
+        final String expectedSparql =
+                "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } ORDER BY ASC(?pAge)";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryCorrectlyInterpretsOrdering() {
+        final String soql = "SELECT p FROM Person p ORDER BY p.age ASC";
+        final String expectedSparql =
+                "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x <" + Vocabulary.p_p_age + "> ?age . } ORDER BY ASC(?age)";
         parseAndAssertEquality(soql, expectedSparql);
     }
 }
