@@ -882,4 +882,13 @@ public class SoqlQueryParserTest {
                 "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x <" + Vocabulary.p_p_age + "> ?age . } ORDER BY ASC(?age)";
         parseAndAssertEquality(soql, expectedSparql);
     }
+
+    @Test
+    void parseQueryExtractsItemsFromRdfList() {
+        final String soql = "SELECT c FROM OWLClassC c WHERE :param MEMBER OF c.rdfCollection";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassC) + " . " +
+                "?x " + strUri(Vocabulary.P_HAS_RDF_COLLECTION) + "/(" + strUri(RDF.REST) + "*/" + strUri(RDF.FIRST) + ")* ?param . " +
+                "FILTER (!isBlank(?param)) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
 }
