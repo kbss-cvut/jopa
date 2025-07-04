@@ -34,6 +34,9 @@ class TriplePatternEnhancer {
         if (attribute.isMappedAttribute() && attribute.isCollection() && ((PluralAttribute<?, ?, ?>) attribute).isRdfContainer()) {
             return new RdfContainerTriplePatternEnhancer();
         }
+        if (attribute.isMappedAttribute() && attribute.isCollection() && ((PluralAttribute<?, ?, ?>) attribute).isRDFCollection()) {
+            return new RdfCollectionTriplePatternEnhancer();
+        }
         return new TriplePatternEnhancer();
     }
 }

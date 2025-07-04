@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.RDFCollection;
 import cz.cvut.kbss.jopa.model.annotations.RDFContainer;
 import cz.cvut.kbss.jopa.model.annotations.RDFContainerType;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
@@ -47,6 +48,10 @@ public class OWLClassC implements HasUri {
     @Sequence(type = SequenceType.simple)
     @OWLObjectProperty(iri = Vocabulary.P_HAS_SIMPLE_LIST)
     private List<OWLClassA> simpleList;
+
+    @RDFCollection
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_RDF_COLLECTION)
+    private List<OWLClassA> rdfCollection;
 
     @RDFContainer(type = RDFContainerType.SEQ)
     @OWLObjectProperty(iri = Vocabulary.P_HAS_RDF_SEQ, fetch = FetchType.EAGER)
@@ -83,6 +88,14 @@ public class OWLClassC implements HasUri {
         return simpleList;
     }
 
+    public List<OWLClassA> getRdfCollection() {
+        return rdfCollection;
+    }
+
+    public void setRdfCollection(List<OWLClassA> rdfCollection) {
+        this.rdfCollection = rdfCollection;
+    }
+
     public List<OWLClassA> getRdfSeq() {
         return rdfSeq;
     }
@@ -101,6 +114,10 @@ public class OWLClassC implements HasUri {
 
     public static Field getSimpleListField() throws NoSuchFieldException, SecurityException {
         return OWLClassC.class.getDeclaredField(SIMPLE_LIST_FIELD);
+    }
+
+    public static Field getRdfCollectionField() throws NoSuchFieldException, SecurityException {
+        return OWLClassC.class.getDeclaredField("rdfCollection");
     }
 
     public static Field getRdfSeqField() throws NoSuchFieldException, SecurityException {

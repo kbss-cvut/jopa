@@ -58,6 +58,7 @@ import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.MappedSuperclassTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.RDFCollectionAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.RdfContainerAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SetAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
@@ -115,6 +116,8 @@ public class MetamodelMocks {
     private ListAttributeImpl<OWLClassC, OWLClassA> cReferencedList;
     @Mock
     private ListAttributeImpl<OWLClassC, OWLClassA> cSimpleList;
+    @Mock
+    private RDFCollectionAttribute<OWLClassC, OWLClassA> cRdfCollection;
     @Mock
     private RdfContainerAttributeImpl<OWLClassC, List<OWLClassA>, OWLClassA> cRdfSeq;
 
@@ -380,7 +383,7 @@ public class MetamodelMocks {
         MetamodelClassInitializer.initMetamodelClassOWLClassA(aStringAtt, aTypes, idA);
         MetamodelFactory.initOWLClassBMocks(etB, bStringAtt, bProperties, idB);
         MetamodelClassInitializer.initMetamodelClassOWLClassB(bStringAtt, bProperties, idB);
-        MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, cRdfSeq, etA, idC);
+        MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, cRdfCollection, cRdfSeq, etA, idC);
         MetamodelClassInitializer.initMetamodelClassOWLClassC(cSimpleList, cReferencedList, cRdfSeq, idC);
         MetamodelFactory.initOWLClassDMocks(etD, dOwlClassAAtt, etA, idD);
         MetamodelClassInitializer.initMetamodelClassOWLClassD(dOwlClassAAtt, idD);
@@ -608,6 +611,10 @@ public class MetamodelMocks {
 
         public ListAttributeImpl<OWLClassC, OWLClassA> simpleListAtt() {
             return MetamodelMocks.this.cSimpleList;
+        }
+
+        public RDFCollectionAttribute<OWLClassC, OWLClassA> rdfCollectionAtt() {
+            return MetamodelMocks.this.cRdfCollection;
         }
 
         public RdfContainerAttributeImpl<OWLClassC, List<OWLClassA>, OWLClassA> rdfSeqAtt() {

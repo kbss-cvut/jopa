@@ -78,6 +78,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.MappedSuperclassTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.RDFCollectionAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.RdfContainerAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttributeImpl;
@@ -323,6 +324,7 @@ public class MetamodelFactory {
 
     public static void initOWLClassCMocks(IdentifiableEntityType<OWLClassC> etMock,
                                           ListAttributeImpl simpleListMock, ListAttributeImpl refListMock,
+                                          RDFCollectionAttribute rdfCollectionMock,
                                           RdfContainerAttributeImpl rdfSeqMock,
                                           IdentifiableEntityType<OWLClassA> etAMock, Identifier idMock)
             throws NoSuchFieldException, SecurityException {
@@ -336,6 +338,26 @@ public class MetamodelFactory {
         initListAttribute(etMock, refListMock, new AttributeInfo(OWLClassC.getRefListField(), Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.LIST)
                                                                                                                                        .elementType(OWLClassA.class)
                                                                                                                                        .valueType(etAMock));
+        when(etMock.getAttribute(OWLClassC.getRdfCollectionField().getName())).thenReturn(rdfCollectionMock);
+        when(rdfCollectionMock.getJavaField()).thenReturn(OWLClassC.getRdfCollectionField());
+        when(rdfCollectionMock.getFetchType()).thenReturn(FetchType.EAGER);
+        when(rdfCollectionMock.getCollectionType()).thenReturn(CollectionType.LIST);
+        when(rdfCollectionMock.getCollectionType()).thenReturn(CollectionType.LIST);
+        when(rdfCollectionMock.getName()).thenReturn(OWLClassC.getRdfCollectionField().getName());
+        when(etMock.getFieldSpecification(rdfCollectionMock.getName())).thenReturn(rdfCollectionMock);
+        when(rdfCollectionMock.getIRI()).thenReturn(IRI.create(OWLClassC.getRdfCollectionField()
+                                                                                       .getAnnotation(OWLObjectProperty.class).iri()));
+        when(rdfCollectionMock.getBindableJavaType()).thenReturn(OWLClassA.class);
+        when(rdfCollectionMock.getElementType()).thenReturn(etAMock);
+        when(rdfCollectionMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(rdfCollectionMock.isCollection()).thenReturn(true);
+        when(rdfCollectionMock.isAssociation()).thenReturn(true);
+        when(rdfCollectionMock.isRDFCollection()).thenReturn(true);
+        when(rdfCollectionMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(rdfCollectionMock.getDeclaringType()).thenReturn(etMock);
+        when(rdfCollectionMock.getJavaType()).thenReturn(List.class);
+        when(rdfCollectionMock.isMappedAttribute()).thenReturn(true);
+
         when(etMock.getAttribute(OWLClassC.getRdfSeqField().getName())).thenReturn(rdfSeqMock);
         when(rdfSeqMock.getJavaField()).thenReturn(OWLClassC.getRdfSeqField());
         when(rdfSeqMock.getFetchType()).thenReturn(FetchType.EAGER);
