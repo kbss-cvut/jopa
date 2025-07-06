@@ -511,21 +511,26 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
 
     @Test
     void selectByMemberOfRdfContainer() {
-        final List<OWLClassC> allCs = QueryTestEnvironment.generateOwlClassCInstances(QueryTestEnvironment.getData(OWLClassA.class));
-        getEntityManager().getTransaction().begin();
-        allCs.forEach(getEntityManager()::persist);
-        getEntityManager().getTransaction().commit();
+        runSelectByMemberOf("rdfBag");
+    }
+
+    private void runSelectByMemberOf(String attName) {
+        final List<OWLClassC> allCs = QueryTestEnvironment.generateOwlClassCInstances(getEntityManager());
         final OWLClassA sample = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
-        final List<OWLClassC> owners = allCs.stream()
-                                                           .filter(c -> c.getRdfBag().stream().anyMatch(a -> a.getUri()
-                                                                                                              .equals(sample.getUri())))
-                                                           .toList();
+        final List<OWLClassC> owners = allCs.stream().filter(c -> c.getRdfBag().stream()
+                                                                   .anyMatch(a -> a.getUri().equals(sample.getUri())))
+                                            .toList();
         final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         final CriteriaQuery<OWLClassC> query = cb.createQuery(OWLClassC.class);
         final Root<OWLClassC> root = query.from(OWLClassC.class);
-        query.select(root).where(cb.isMember(sample, root.getAttr("rdfBag")));
+        query.select(root).where(cb.isMember(sample, root.getAttr(attName)));
 
         final List<OWLClassC> result = getEntityManager().createQuery(query).getResultList();
         assertThat(result, containsSameEntities(owners));
+    }
+
+    @Test
+    void selectByMemberOfRdfCollection() {
+        runSelectByMemberOf("rdfCollection");
     }
 }

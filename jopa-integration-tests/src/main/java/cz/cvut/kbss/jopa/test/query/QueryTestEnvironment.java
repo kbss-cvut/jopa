@@ -211,9 +211,14 @@ public final class QueryTestEnvironment {
         return lst;
     }
 
-    public static List<OWLClassC> generateOwlClassCInstances(List<OWLClassA> aList) {
+    public static List<OWLClassC> generateOwlClassCInstances(EntityManager em) {
+        if (data.containsKey(OWLClassC.class)) {
+            return (List<OWLClassC>) data.get(OWLClassC.class);
+        }
+        final List<OWLClassA> aList = getData(OWLClassA.class);
         final List<OWLClassC> lst = new ArrayList<>(ITEM_COUNT);
         int randomNum = Generators.randomInt(1000);
+        em.getTransaction().begin();
         for (int i = 0; i < ITEM_COUNT; i++) {
             final List<OWLClassA> subList = new ArrayList<>();
             for (int j = 0; j < aList.size(); j++) {
@@ -228,8 +233,11 @@ public final class QueryTestEnvironment {
             c.setSimpleList(subList);
             c.setReferencedList(subList);
             lst.add(c);
+            em.persist(c);
             randomNum++;
         }
+        em.getTransaction().commit();
+        data.put(OWLClassC.class, lst);
         return lst;
     }
 
