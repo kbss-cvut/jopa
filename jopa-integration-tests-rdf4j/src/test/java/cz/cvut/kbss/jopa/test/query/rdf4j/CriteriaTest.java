@@ -45,7 +45,7 @@ public class CriteriaTest extends CriteriaRunner {
     static void setUpBeforeClass() {
         final Rdf4jPersistenceFactory persistenceFactory = new Rdf4jPersistenceFactory();
         em = persistenceFactory.getEntityManager("CriteriaTests", false,
-                Collections.singletonMap(Rdf4jOntoDriverProperties.USE_INFERENCE, "true"));
+                Collections.singletonMap(Rdf4jOntoDriverProperties.USE_INFERENCE, "false"));
         QueryTestEnvironment.generateTestData(em);
         em.clear();
         em.getEntityManagerFactory().getCache().evictAll();

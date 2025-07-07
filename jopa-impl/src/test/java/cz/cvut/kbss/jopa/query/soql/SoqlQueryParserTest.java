@@ -901,4 +901,14 @@ public class SoqlQueryParserTest {
                 "}";
         parseAndAssertEquality(soql, expectedSparql);
     }
+
+    @Test
+    void parseQueryExtractsItemsFromOwlReferencedList() {
+        final String soql = "SELECT c FROM OWLClassC c WHERE :param MEMBER OF c.referencedList";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassC) + " . " +
+                "?x " + strUri(Vocabulary.P_HAS_REFERENCED_LIST) +
+                "/(" + strUri(SequencesVocabulary.s_p_hasNext) + "*/" + strUri(SequencesVocabulary.s_p_hasContents) + ") ?param . " +
+                "FILTER (!isBlank(?param)) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
 }

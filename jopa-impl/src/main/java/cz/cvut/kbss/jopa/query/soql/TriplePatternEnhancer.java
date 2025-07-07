@@ -46,6 +46,9 @@ class TriplePatternEnhancer {
                 final ListAttribute<?, ?> listAttribute = (ListAttribute<?, ?>) pluralAttribute;
                 if (listAttribute.getSequenceType() == SequenceType.simple) {
                     return new SimpleListTriplePatternEnhancer(listAttribute);
+                } else {
+                    assert listAttribute.getSequenceType() == SequenceType.referenced;
+                    return new ReferencedListTriplePatterEnhancer(listAttribute);
                 }
             }
         }

@@ -215,14 +215,16 @@ public final class QueryTestEnvironment {
         if (data.containsKey(OWLClassC.class)) {
             return (List<OWLClassC>) data.get(OWLClassC.class);
         }
+        final int mod = 3;
         final List<OWLClassA> aList = getData(OWLClassA.class);
-        final List<OWLClassC> lst = new ArrayList<>(ITEM_COUNT);
+        final List<OWLClassC> lst = new ArrayList<>(mod);
         int randomNum = Generators.randomInt(1000);
         em.getTransaction().begin();
-        for (int i = 0; i < ITEM_COUNT; i++) {
+        for (int i = 0; i < mod; i++) {
+            // Must not reuse A instances - lists then overlap which messes the results up
             final List<OWLClassA> subList = new ArrayList<>();
             for (int j = 0; j < aList.size(); j++) {
-                if (Generators.randomBoolean() || j == i) {
+                if (j % mod == i) {
                     subList.add(aList.get(j));
                 }
             }

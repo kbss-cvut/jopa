@@ -517,6 +517,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     private void runSelectByMemberOf(String attName) {
         final List<OWLClassC> allCs = QueryTestEnvironment.generateOwlClassCInstances(getEntityManager());
         final OWLClassA sample = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        // All attributes contain the same list of OWLClassA references
         final List<OWLClassC> owners = allCs.stream().filter(c -> c.getRdfBag().stream()
                                                                    .anyMatch(a -> a.getUri().equals(sample.getUri())))
                                             .toList();
@@ -525,7 +526,9 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         final Root<OWLClassC> root = query.from(OWLClassC.class);
         query.select(root).where(cb.isMember(sample, root.getAttr(attName)));
 
-        final List<OWLClassC> result = getEntityManager().createQuery(query).getResultList();
+        final TypedQuery<OWLClassC> tq = getEntityManager().createQuery(query);
+        final List<OWLClassC> result = tq.getResultList();
+        assertEquals(owners.size(), result.size());
         assertThat(result, containsSameEntities(owners));
     }
 
