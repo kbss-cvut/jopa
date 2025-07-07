@@ -64,7 +64,5 @@ public interface DataAccessor {
      * @param em EntityManager instance
      * @return String representing the contents of the repository serialized to RDF
      */
-    default String exportRepository(EntityManager em) {
-        throw new UnsupportedOperationException();
-    }
+    String exportRepository(EntityManager em);
 }
