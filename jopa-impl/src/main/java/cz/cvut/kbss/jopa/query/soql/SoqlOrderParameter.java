@@ -46,12 +46,6 @@ class SoqlOrderParameter extends SoqlParameter {
 
     public String getOrderByPart() {
         String param = attribute.requiresFilter() ? getAsParam().substring(1) : attribute.getValue().substring(1);
-        StringBuilder sb = new StringBuilder();
-        if (SoqlConstants.ASC.equals(orderingBy)) {
-            sb.append("?").append(param).append(' ');
-        } else {
-            sb.append(SoqlConstants.DESC).append("(?").append(param).append(") ");
-        }
-        return sb.toString();
+        return orderingBy + "(?" + param + ") ";
     }
 }

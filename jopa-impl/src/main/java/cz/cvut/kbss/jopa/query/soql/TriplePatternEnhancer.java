@@ -1,6 +1,9 @@
 package cz.cvut.kbss.jopa.query.soql;
 
+import cz.cvut.kbss.jopa.model.annotations.SequenceType;
+import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 
 import java.util.List;
@@ -31,9 +34,25 @@ class TriplePatternEnhancer {
      * @return Triple pattern enhancer
      */
     static TriplePatternEnhancer create(FieldSpecification<?, ?> attribute) {
-        if (attribute.isMappedAttribute() && attribute.isCollection() && ((PluralAttribute<?, ?, ?>) attribute).isRdfContainer()) {
-            return new RdfContainerTriplePatternEnhancer();
+        if (attribute.isMappedAttribute() && attribute.isCollection()) {
+            final PluralAttribute<?, ?, ?> pluralAttribute = (PluralAttribute<?, ?, ?>) attribute;
+            if (pluralAttribute.isRdfContainer()) {
+                return new RdfContainerTriplePatternEnhancer();
+            }
+            if (pluralAttribute.isRDFCollection()) {
+                return new RdfCollectionTriplePatternEnhancer();
+            }
+            if (pluralAttribute.getCollectionType() == CollectionType.LIST) {
+                final ListAttribute<?, ?> listAttribute = (ListAttribute<?, ?>) pluralAttribute;
+                if (listAttribute.getSequenceType() == SequenceType.simple) {
+                    return new SimpleListTriplePatternEnhancer(listAttribute);
+                } else {
+                    assert listAttribute.getSequenceType() == SequenceType.referenced;
+                    return new ReferencedListTriplePatterEnhancer(listAttribute);
+                }
+            }
         }
+
         return new TriplePatternEnhancer();
     }
 }

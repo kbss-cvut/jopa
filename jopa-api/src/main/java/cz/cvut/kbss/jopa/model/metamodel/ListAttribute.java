@@ -64,14 +64,4 @@ public interface ListAttribute<X, E> extends PluralAttribute<X, java.util.List<E
      */
     @NonJPA
     IRI getHasNextPropertyIRI();
-
-    /**
-     * Whether this list represents a <a href="https://www.w3.org/TR/rdf12-schema/#ch_collectionvocab">RDF
-     * collection</a>.
-     *
-     * @return {@code true} when this list attribute is an RDF collection, {@code false} otherwise
-     * @see cz.cvut.kbss.jopa.model.annotations.RDFCollection
-     */
-    @NonJPA
-    default boolean isRDFCollection() { return false; }
 }

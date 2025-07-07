@@ -39,6 +39,7 @@ public final class QueryTestEnvironment {
     private static final String BASE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA_";
     public static final String COMMON_TYPE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA";
     private static final String BASE_B = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB_";
+    private static final String BASE_C = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC_";
     private static final String BASE_D = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD_";
 
     private static final URI NULL_CONTEXT = URI.create("http://NullContext");
@@ -207,6 +208,38 @@ public final class QueryTestEnvironment {
             lst.add(b);
             randomNum++;
         }
+        return lst;
+    }
+
+    public static List<OWLClassC> generateOwlClassCInstances(EntityManager em) {
+        if (data.containsKey(OWLClassC.class)) {
+            return (List<OWLClassC>) data.get(OWLClassC.class);
+        }
+        final int mod = 3;
+        final List<OWLClassA> aList = getData(OWLClassA.class);
+        final List<OWLClassC> lst = new ArrayList<>(mod);
+        int randomNum = Generators.randomInt(1000);
+        em.getTransaction().begin();
+        for (int i = 0; i < mod; i++) {
+            // Must not reuse A instances - lists then overlap which messes the results up
+            final List<OWLClassA> subList = new ArrayList<>();
+            for (int j = 0; j < aList.size(); j++) {
+                if (j % mod == i) {
+                    subList.add(aList.get(j));
+                }
+            }
+            final OWLClassC c = new OWLClassC();
+            c.setUri(URI.create(BASE_C + randomNum));
+            c.setRdfBag(subList);
+            c.setRdfCollection(subList);
+            c.setSimpleList(subList);
+            c.setReferencedList(subList);
+            lst.add(c);
+            em.persist(c);
+            randomNum++;
+        }
+        em.getTransaction().commit();
+        data.put(OWLClassC.class, lst);
         return lst;
     }
 

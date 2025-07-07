@@ -570,7 +570,7 @@ public class SoqlQueryListener implements SoqlListener {
     @Override
     public void enterOrderByItem(SoqlParser.OrderByItemContext ctx) {
         SoqlNode firstNode = linkObjectPathExpression(ctx);
-        String orderingBy = getOrderingBy(ctx.getParent());
+        String orderingBy = getOrderingBy(ctx);
         SoqlOrderParameter orderParam = new SoqlOrderParameter(firstNode, orderingBy);
         boolean attrSet = false;
         for (SoqlAttribute attr : attributes) {

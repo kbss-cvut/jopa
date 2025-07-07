@@ -1,9 +1,14 @@
 # JOPA - Change Log
 
+### 2.4.2 - 2025-07-07
+- Fix an issue with handling `ORDER BY` in SOQL/Criteria API (Bug #343), default order is now `ASC`.
+- Support RDF collections and OWL lists in SOQL/Criteria API (Enhancement #339).
+- Natively handle `Locale` instances - store them as RDF simple literals (Enhancement #340).
+
 ### 2.4.1 - 2025-06-25
 - Prevent race condition when getting objects from second-level cache (Bug #329).
 - Improve cache hit/miss ration by using the correct descriptor type for plural attribute elements (Bug #333).
-- Support RDF collections in SOQL (typically `MEMBER OF`clauses) (Enhancement #335).
+- Support RDF containers in SOQL (typically `MEMBER OF` clauses) (Enhancement #335).
 
 ## 2.4.0 - 2025-05-29
 - Add support for a read-only `EntityManager` which can be used to optimize read-only transactions (Feature #84).

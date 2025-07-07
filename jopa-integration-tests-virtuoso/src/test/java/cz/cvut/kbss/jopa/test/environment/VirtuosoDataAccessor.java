@@ -27,7 +27,10 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.rio.RDFHandler;
+import org.eclipse.rdf4j.rio.trig.TriGWriter;
 
+import java.io.StringWriter;
 import java.net.URI;
 import java.util.Collection;
 
@@ -106,6 +109,17 @@ public class VirtuosoDataAccessor implements DataAccessor {
                 connection.clear();
             }
             connection.commit();
+        }
+    }
+
+    @Override
+    public String exportRepository(EntityManager em) {
+        final Repository repository = em.unwrap(Repository.class);
+        try (final RepositoryConnection connection = repository.getConnection()) {
+            final StringWriter strWriter = new StringWriter();
+            final RDFHandler writer = new TriGWriter(strWriter);
+            connection.export(writer);
+            return strWriter.toString();
         }
     }
 }

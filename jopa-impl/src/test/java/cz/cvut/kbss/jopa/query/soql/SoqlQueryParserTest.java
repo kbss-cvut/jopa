@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exception.SoqlException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
@@ -30,7 +31,6 @@ import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -627,7 +627,7 @@ public class SoqlQueryParserTest {
 
     private void parseAndAssertEquality(String soql, String expectedSparql) {
         final QueryHolder holder = sut.parseQuery(soql);
-        assertEquals(expectedSparql, holder.getQuery());
+        assertEquals(expectedSparql.trim(), holder.getQuery().trim());
     }
 
     @Test
@@ -865,6 +865,50 @@ public class SoqlQueryParserTest {
                 "?x " + strUri(Vocabulary.P_HAS_RDF_SEQ) + " ?rdfContainer . " +
                 "?rdfContainer ?hasElement ?param . " +
                 "FILTER (STRSTARTS(STR(?hasElement), \"" + RDF.NAMESPACE + "_\")) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryUsesDefaultAscendingOrdering() {
+        final String soql = "SELECT p FROM Person p WHERE p.age > :age ORDER BY p.age";
+        final String expectedSparql =
+                "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } ORDER BY ASC(?pAge)";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryCorrectlyInterpretsOrdering() {
+        final String soql = "SELECT p FROM Person p ORDER BY p.age ASC";
+        final String expectedSparql =
+                "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x <" + Vocabulary.p_p_age + "> ?age . } ORDER BY ASC(?age)";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryExtractsItemsFromRdfList() {
+        final String soql = "SELECT c FROM OWLClassC c WHERE :param MEMBER OF c.rdfCollection";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassC) + " . " +
+                "?x " + strUri(Vocabulary.P_HAS_RDF_COLLECTION) + "/(" + strUri(RDF.REST) + "*/" + strUri(RDF.FIRST) + ")* ?param . " +
+                "FILTER (!isBlank(?param)) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryExtractsItemsFromOwlSimpleList() {
+        final String soql = "SELECT c FROM OWLClassC c WHERE :param MEMBER OF c.simpleList";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassC) + " . " +
+                "?x " + strUri(Vocabulary.P_HAS_SIMPLE_LIST) + "/" + strUri(SequencesVocabulary.s_p_hasNext) + "* ?param . " +
+                "}";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryExtractsItemsFromOwlReferencedList() {
+        final String soql = "SELECT c FROM OWLClassC c WHERE :param MEMBER OF c.referencedList";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassC) + " . " +
+                "?x " + strUri(Vocabulary.P_HAS_REFERENCED_LIST) +
+                "/(" + strUri(SequencesVocabulary.s_p_hasNext) + "*/" + strUri(SequencesVocabulary.s_p_hasContents) + ") ?param . " +
+                "FILTER (!isBlank(?param)) }";
         parseAndAssertEquality(soql, expectedSparql);
     }
 }

@@ -25,12 +25,15 @@ import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
+import cz.cvut.kbss.jopa.vocabulary.XSD;
 import cz.cvut.kbss.ontodriver.model.Literal;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -114,5 +117,31 @@ public abstract class DataTypesRunner extends BaseRunner {
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(Float.NEGATIVE_INFINITY, result.getFloatAttribute());
         assertEquals(Double.POSITIVE_INFINITY, result.getDoubleAttribute());
+    }
+
+    @Test
+    void persistMapsLocaleToSimpleLiteral() throws Exception {
+        this.em = getEntityManager("persistMapsLocaleToSimpleLiteral", false);
+        entityM.setLocale(Locale.US);
+        persist(entityM);
+
+        verifyStatementsPresent(List.of(
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_locale), Literal.from(entityM.getLocale()
+                                                                                                              .toLanguageTag(), XSD.STRING), (String) null)
+        ), em);
+    }
+
+    @Test
+    void readMapsLocaleFromSimpleLiteral() throws Exception {
+        this.em = getEntityManager("readMapsLocaleFromSimpleLiteral", false);
+        final Locale locale = Locale.UK;
+        persistTestData(Arrays.asList(
+                new Quad(URI.create(entityM.getKey()), URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_M)),
+                new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_locale),
+                         new Literal(locale.toLanguageTag(), XSD.STRING))
+        ), em);
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(locale, result.getLocale());
     }
 }

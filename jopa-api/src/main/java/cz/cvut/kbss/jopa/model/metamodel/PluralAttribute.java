@@ -17,6 +17,8 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.NonJPA;
+
 /**
  * Instances of the type PluralAttribute represent persistent collection-valued attributes.
  *
@@ -46,5 +48,16 @@ public interface PluralAttribute<X, C, E> extends Attribute<X, C>, Bindable<E> {
      *
      * @return {@code true} if this plural attribute is an RDF container, {@code false} otherwise
      */
+    @NonJPA
     default boolean isRdfContainer() {return false;}
+
+    /**
+     * Whether this list represents a <a href="https://www.w3.org/TR/rdf12-schema/#ch_collectionvocab">RDF
+     * collection</a>.
+     *
+     * @return {@code true} when this list attribute is an RDF collection, {@code false} otherwise
+     * @see cz.cvut.kbss.jopa.model.annotations.RDFCollection
+     */
+    @NonJPA
+    default boolean isRDFCollection() { return false; }
 }

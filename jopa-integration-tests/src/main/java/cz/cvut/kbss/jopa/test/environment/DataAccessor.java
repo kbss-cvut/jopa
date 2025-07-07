@@ -57,4 +57,12 @@ public interface DataAccessor {
      * @throws Exception If storage access error occurs
      */
     void verifyDataNotPresent(Collection<Quad> data, EntityManager em) throws Exception;
+
+    /**
+     * Exports the contents of the repository managed by the specified entity manager.
+     *
+     * @param em EntityManager instance
+     * @return String representing the contents of the repository serialized to RDF
+     */
+    String exportRepository(EntityManager em);
 }

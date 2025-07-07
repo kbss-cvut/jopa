@@ -107,6 +107,9 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_multilingualReferencedList)
     private List<MultilingualString> multilingualReferencedList;
 
+    @OWLDataProperty(iri = Vocabulary.p_m_locale)
+    private Locale locale;
+
     public enum Severity {
         LOW, MEDIUM, HIGH
     }
@@ -288,6 +291,14 @@ public class OWLClassM {
         this.multilingualReferencedList = multilingualReferencedList;
     }
 
+    public Locale getLocale() {
+        return locale;
+    }
+
+    public void setLocale(Locale locale) {
+        this.locale = locale;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -313,6 +324,7 @@ public class OWLClassM {
                 ", annotationSimpleLiteral=" + annotationSimpleLiteral +
                 ", literalReferencedList=" + literalReferencedList +
                 ", multilingualReferencedList=" + multilingualReferencedList +
+                ", locale=" + locale +
                 '}';
     }
 

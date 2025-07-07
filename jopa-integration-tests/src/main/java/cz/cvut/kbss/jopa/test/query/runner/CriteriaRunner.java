@@ -18,13 +18,14 @@
 package cz.cvut.kbss.jopa.test.query.runner;
 
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.Root;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassA_;
+import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassJ;
 import cz.cvut.kbss.jopa.test.OWLClassM;
@@ -495,7 +496,8 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     @Test
     public void selectByTypeContainingMember() {
         final OWLClassA sample = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
-        final Optional<String> type = sample.getTypes().stream().filter(not(QueryTestEnvironment.COMMON_TYPE::equals)).findFirst();
+        final Optional<String> type = sample.getTypes().stream().filter(not(QueryTestEnvironment.COMMON_TYPE::equals))
+                                            .findFirst();
         assert type.isPresent();
         final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
@@ -505,5 +507,43 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         final List<OWLClassA> result = getEntityManager().createQuery(query).getResultList();
         assertFalse(result.isEmpty());
         result.forEach(r -> assertThat(r.getTypes(), hasItem(type.get())));
+    }
+
+    @Test
+    void selectByMemberOfRdfContainer() {
+        runSelectByMemberOf("rdfBag");
+    }
+
+    private void runSelectByMemberOf(String attName) {
+        final List<OWLClassC> allCs = QueryTestEnvironment.generateOwlClassCInstances(getEntityManager());
+        final OWLClassA sample = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        // All attributes contain the same list of OWLClassA references
+        final List<OWLClassC> owners = allCs.stream().filter(c -> c.getRdfBag().stream()
+                                                                   .anyMatch(a -> a.getUri().equals(sample.getUri())))
+                                            .toList();
+        final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassC> query = cb.createQuery(OWLClassC.class);
+        final Root<OWLClassC> root = query.from(OWLClassC.class);
+        query.select(root).where(cb.isMember(sample, root.getAttr(attName)));
+
+        final TypedQuery<OWLClassC> tq = getEntityManager().createQuery(query);
+        final List<OWLClassC> result = tq.getResultList();
+        assertEquals(owners.size(), result.size());
+        assertThat(result, containsSameEntities(owners));
+    }
+
+    @Test
+    void selectByMemberOfRdfCollection() {
+        runSelectByMemberOf("rdfCollection");
+    }
+
+    @Test
+    void selectByMemberOfSimpleList() {
+        runSelectByMemberOf("simpleList");
+    }
+
+    @Test
+    void selectByMemberOfReferencedList() {
+        runSelectByMemberOf("referencedList");
     }
 }
