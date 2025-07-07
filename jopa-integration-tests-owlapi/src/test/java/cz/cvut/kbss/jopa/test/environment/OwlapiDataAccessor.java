@@ -23,14 +23,29 @@ import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.formats.TrigDocumentFormat;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OwlapiDataAccessor implements DataAccessor {
 
@@ -108,7 +123,21 @@ public class OwlapiDataAccessor implements DataAccessor {
         final OWLDataFactory df = ontology.getOWLOntologyManager().getOWLDataFactory();
         EntitySearcher
                 .getDataPropertyValues(df.getOWLNamedIndividual(identifier.toString()), df.getOWLDataProperty(property),
-                                       ontology)
+                        ontology)
                 .forEach(lit -> assertEquals(df.getOWLDatatype(expectedDatatype), lit.getDatatype()));
+    }
+
+    @Override
+    public String exportRepository(EntityManager em) {
+        final OWLOntology ontology = em.unwrap(OWLOntology.class);
+        final ByteArrayOutputStream writer = new ByteArrayOutputStream();
+        final TrigDocumentFormat format = new TrigDocumentFormat();
+        format.asPrefixOWLDocumentFormat();
+        try {
+            ontology.getOWLOntologyManager().saveOntology(ontology, format, writer);
+        } catch (OWLOntologyStorageException e) {
+            throw new RuntimeException("Unable to export ontology.", e);
+        }
+        return writer.toString();
     }
 }
