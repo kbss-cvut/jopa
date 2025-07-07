@@ -287,7 +287,7 @@
             <name>Petr Křemen</name>
             <email>petr.kremen@fel.cvut.cz</email>
             <url>https://cs.fel.cvut.cz/en/people/kremep1</url>
-            <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group
+            <organization>Czech Technical University in Prague, Knowledge-based and Software Systems Group
             </organization>
             <organizationUrl>https://kbss.felk.cvut.cz</organizationUrl>
             <roles>
@@ -296,7 +296,7 @@
         <developer>
             <name>Martin Ledvinka</name>
             <email>martin.ledvinka@fel.cvut.cz</email>
-            <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group
+            <organization>Czech Technical University in Prague, Knowledge-based and Software Systems Group
             </organization>
             <organizationUrl>https://kbss.felk.cvut.cz</organizationUrl>
             <roles>
@@ -305,7 +305,7 @@
     </developers>
 
     <organization>
-        <name>Czech Technical University in Prague, Knowledge Based and Software Systems Group</name>
+        <name>Czech Technical University in Prague, Knowledge-based and Software Systems Group</name>
         <url>https://kbss.felk.cvut.cz</url>
     </organization>
 
