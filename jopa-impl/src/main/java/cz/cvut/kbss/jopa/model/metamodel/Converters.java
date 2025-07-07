@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.oom.converter.ToDoubleConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToFloatConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToIntegerConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLangStringConverter;
+import cz.cvut.kbss.jopa.oom.converter.ToLocaleConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLongConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToShortConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToStringConverter;
@@ -46,6 +47,7 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -84,6 +86,7 @@ public class Converters {
                 Map.entry(Instant.class, new InstantConverter()),
                 Map.entry(ZonedDateTime.class, new ZonedDateTimeConverter()),
                 Map.entry(Date.class, new DateConverter()),
+                Map.entry(Locale.class, new ToLocaleConverter()),
                 Map.entry(Short.class, new ToShortConverter()),
                 Map.entry(Integer.class, new ToIntegerConverter()),
                 Map.entry(Long.class, new ToLongConverter()),
