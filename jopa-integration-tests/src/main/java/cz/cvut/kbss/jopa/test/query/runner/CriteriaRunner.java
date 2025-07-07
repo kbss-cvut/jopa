@@ -533,4 +533,14 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     void selectByMemberOfRdfCollection() {
         runSelectByMemberOf("rdfCollection");
     }
+
+    @Test
+    void selectByMemberOfSimpleList() {
+        runSelectByMemberOf("simpleList");
+    }
+
+    @Test
+    void selectByMemberOfReferencedList() {
+        runSelectByMemberOf("referencedList");
+    }
 }

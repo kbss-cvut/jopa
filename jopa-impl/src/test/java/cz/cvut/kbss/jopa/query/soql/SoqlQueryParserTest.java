@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exception.SoqlException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
@@ -889,6 +890,15 @@ public class SoqlQueryParserTest {
         final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassC) + " . " +
                 "?x " + strUri(Vocabulary.P_HAS_RDF_COLLECTION) + "/(" + strUri(RDF.REST) + "*/" + strUri(RDF.FIRST) + ")* ?param . " +
                 "FILTER (!isBlank(?param)) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryExtractsItemsFromOwlSimpleList() {
+        final String soql = "SELECT c FROM OWLClassC c WHERE :param MEMBER OF c.simpleList";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassC) + " . " +
+                "?x " + strUri(Vocabulary.P_HAS_SIMPLE_LIST) + "/" + strUri(SequencesVocabulary.s_p_hasNext) + "* ?param . " +
+                "}";
         parseAndAssertEquality(soql, expectedSparql);
     }
 }
