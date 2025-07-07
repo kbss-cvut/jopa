@@ -23,14 +23,23 @@ import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.rdf.model.*;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.jena.rdf.model.ResourceFactory.*;
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -73,5 +82,13 @@ public class JenaDataAccessor implements DataAccessor {
         final Dataset ds = em.unwrap(Dataset.class);
         data.forEach(t -> assertFalse(doesQuadExist(t,
                 t.getContext() == null ? ds.getDefaultModel() : ds.getNamedModel(t.getContext().toString()))));
+    }
+
+    @Override
+    public String exportRepository(EntityManager em) {
+        final Dataset ds = em.unwrap(Dataset.class);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        RDFDataMgr.write(baos, ds, Lang.TRIG);
+        return baos.toString();
     }
 }
