@@ -1,5 +1,8 @@
 # JOPA - Change Log
 
+### 2.4.3 - 205-07-14
+- Fix an issue with parsing SPARQL with IRIs containing hashtag (Bug #348).
+
 ### 2.4.2 - 2025-07-07
 - Fix an issue with handling `ORDER BY` in SOQL/Criteria API (Bug #343), default order is now `ASC`.
 - Support RDF collections and OWL lists in SOQL/Criteria API (Enhancement #339).
