@@ -11,10 +11,14 @@ class RdfContainerTriplePatternEnhancer extends TriplePatternEnhancer {
 
     @Override
     List<String> getTriplePatterns(String subject, String predicate, String object) {
+        // Make variable names dependent on predicate to avoid collisions
+        final int predicateHash = predicate.hashCode();
+        final String containerVariable = "?rdfContainer" + predicateHash;
+        final String hasElementVariable = "?hasElement" + predicateHash;
         return List.of(
-                subject + " " + predicate + " ?rdfContainer . ",
-                "?rdfContainer ?hasElement " + object + " . ",
-                "FILTER (STRSTARTS(STR(?hasElement), \"" + RDF.NAMESPACE + "_\")) "
+                subject + " " + predicate + " " + containerVariable + " . ",
+                containerVariable + " " + hasElementVariable + " " + object + " . ",
+                "FILTER (STRSTARTS(STR(" + hasElementVariable + "), \"" + RDF.NAMESPACE + "_\")) "
         );
     }
 }

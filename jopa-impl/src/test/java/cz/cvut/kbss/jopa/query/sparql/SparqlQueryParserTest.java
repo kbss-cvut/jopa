@@ -452,4 +452,23 @@ public class SparqlQueryParserTest {
         assertNotNull(holder.getParameter("y"));
         assertNotNull(holder.getParameter("z"));
     }
+
+    /**
+     * Bug #348
+     */
+    @Test
+    void parseQueryDoesNotInterpretHashtagInIriAsComment() {
+        final String query = """
+                SELECT ?x WHERE {
+                  ?x a <https://onto.fel.cvut.cz/ontologies/jopa/types#OWLClassC> .
+                  ?x <https://onto.fel.cvut.cz/ontologies/jopa/attributes#hasRdfBag> ?rdfContainer .
+                  ?rdfContainer ?hasElement ?generatedName0 .
+                  FILTER (STRSTARTS(STR(?hasElement), "http://www.w3.org/1999/02/22-rdf-syntax-ns#_"))
+                  ?x <https://onto.fel.cvut.cz/ontologies/jopa/attributes#hasSimpleSequence>/<http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#hasNext>* ?generatedName1 .
+                }
+                """;
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertTrue(holder.hasParameter("generatedName0"));
+        assertTrue(holder.hasParameter("generatedName1"));
+    }
 }

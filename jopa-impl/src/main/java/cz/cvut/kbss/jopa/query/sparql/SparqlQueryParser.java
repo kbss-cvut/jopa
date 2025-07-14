@@ -65,7 +65,6 @@ public class SparqlQueryParser implements QueryParser {
         POSITIONAL, NAMED
     }
 
-
     @Override
     public SparqlQueryHolder parseQuery(String query) {
         this.query = query;
@@ -75,7 +74,11 @@ public class SparqlQueryParser implements QueryParser {
             final char c = query.charAt(i);
             switch (c) {
                 case '#':
-                    startComment(i, c);
+                    if (inUri || inDQString || inSQString) {
+                        currentWord.append(c);
+                    } else {
+                        startComment(i, c);
+                    }
                     break;
                 case '\'':
                     this.inSQString = inComment == inSQString; // ~ inComment ? inSQString : !inSQString
