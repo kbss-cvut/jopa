@@ -546,4 +546,23 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     void selectByMemberOfReferencedList() {
         runSelectByMemberOf("referencedList");
     }
+
+    @Test
+    void selectByMemberOfRdfContainerAndSimpleList() {
+        final List<OWLClassC> allCs = QueryTestEnvironment.generateOwlClassCInstances(getEntityManager());
+        final OWLClassA sample = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassA.class));
+        // All attributes contain the same list of OWLClassA references
+        final List<OWLClassC> owners = allCs.stream().filter(c -> c.getRdfBag().stream()
+                                                                   .anyMatch(a -> a.getUri().equals(sample.getUri())))
+                                            .toList();
+        final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassC> query = cb.createQuery(OWLClassC.class);
+        final Root<OWLClassC> root = query.from(OWLClassC.class);
+        query.select(root).where(cb.isMember(sample, root.getAttr("rdfBag")), cb.isMember(sample, root.getAttr("simpleList")));
+
+        final TypedQuery<OWLClassC> tq = getEntityManager().createQuery(query);
+        final List<OWLClassC> result = tq.getResultList();
+        assertEquals(owners.size(), result.size());
+        assertThat(result, containsSameEntities(owners));
+    }
 }
