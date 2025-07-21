@@ -22,11 +22,13 @@ import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassE;
-import cz.cvut.kbss.jopa.environment.OWLClassF;
+import cz.cvut.kbss.jopa.environment.OWLClassG;
+import cz.cvut.kbss.jopa.environment.OWLClassH;
 import cz.cvut.kbss.jopa.environment.OWLClassK;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassO;
 import cz.cvut.kbss.jopa.environment.OWLClassQ;
+import cz.cvut.kbss.jopa.environment.OWLClassWithQueryAttr;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
@@ -51,8 +53,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -63,7 +63,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -203,79 +202,6 @@ public class ChangeCalculatorTest {
         refAClone.setStringAttribute(testD.getOwlClassA().getStringAttribute());
         refAClone.setTypes(new HashSet<>(testD.getOwlClassA().getTypes()));
         testDClone.setOwlClassA(refAClone);
-    }
-
-    @Test
-    public void hasChangesOnNullReturnsFalse() {
-        assertFalse(sut.hasChanges(null, null));
-    }
-
-    @Test
-    public void hasChangeWithChangedDataPropertyValueReturnsTrue() {
-        testAClone.setStringAttribute("differentStringAttribute");
-        assertTrue(sut.hasChanges(testA, testAClone));
-    }
-
-    @Test
-    public void hasChangeWithoutChangeOnDataPropertyReturnsFalse() {
-        testAClone.setStringAttribute(testA.getStringAttribute());
-        assertFalse(sut.hasChanges(testA, testA));
-    }
-
-    @Test
-    public void hasChangeOnDifferentObjectPropertyValueReturnsTrue() {
-        final OWLClassA ref = new OWLClassA(Generators.createIndividualIdentifier());
-        ref.setStringAttribute(testA.getStringAttribute());
-        testDClone.setOwlClassA(ref);
-        assertTrue(sut.hasChanges(testD, testDClone));
-    }
-
-    @Test
-    public void hasChangeFromEmptyCollectionToNonEmptyReturnsTrue() {
-        testAClone.setTypes(typesCollection);
-        testA.setTypes(new HashSet<>());
-        assertTrue(sut.hasChanges(testA, testAClone));
-    }
-
-    @Test
-    public void hasChangeWhenAddedItemToCollectionReturnsTrue() {
-        testA.setTypes(typesCollection);
-        Set<String> changed = new HashSet<>();
-        Iterator<String> it = typesCollection.iterator();
-        it.next();
-        changed.add("111");
-        while (it.hasNext()) {
-            changed.add(it.next());
-        }
-        testAClone.setTypes(changed);
-        assertTrue(sut.hasChanges(testA, testAClone));
-    }
-
-    @Test
-    public void hasChangeWhenItemRemovedFromCollectionReturnsTrue() {
-        final Iterator<OWLClassA> it = testCClone.getReferencedList().iterator();
-        boolean removed = false;
-        while (it.hasNext()) {
-            it.next();
-            if (Generators.randomBoolean() || !removed) {
-                it.remove();
-                removed = true;
-            }
-        }
-        assertTrue(sut.hasChanges(testC, testCClone));
-    }
-
-    @Test
-    public void hasChangeOnDataPropertyWhenOriginalValueWasNullReturnsTrue() {
-        testA.setStringAttribute(null);
-        testAClone.setStringAttribute("someString");
-        assertTrue(sut.hasChanges(testA, testAClone));
-    }
-
-    @Test
-    public void hasChangeAttributeValueChangeOnReferenceReturnsFalse() {
-        testDClone.getOwlClassA().setStringAttribute("updatedString");
-        assertFalse(sut.hasChanges(testD, testDClone));
     }
 
     @Test
@@ -464,73 +390,6 @@ public class ChangeCalculatorTest {
     }
 
     @Test
-    public void twoSetsWithSameElementsButDifferentOrderHaveNoChanges() {
-        testA.setTypes(typesCollection);
-        testAClone.setStringAttribute(testA.getStringAttribute());
-        final List<String> lst = new ArrayList<>(typesCollection);
-        Collections.reverse(lst);
-        final Set<String> newTypes = new LinkedHashSet<>(lst);
-        testAClone.setTypes(newTypes);
-        assertNotEquals(typesCollection.iterator().next(), newTypes.iterator().next());
-        final boolean res = sut.hasChanges(testA, testAClone);
-        assertFalse(res);
-    }
-
-    @Test
-    public void twoSetsWithManagedElementsWithSameIdentifiersHaveNoChanges() {
-        final OWLClassF testF = new OWLClassF();
-        final OWLClassF cloneF = new OWLClassF();
-        initFAndClone(testF, cloneF);
-        final boolean res = sut.hasChanges(testF, cloneF);
-        assertFalse(res);
-    }
-
-    private void initFAndClone(OWLClassF orig, OWLClassF clone) {
-        final URI uri = URI.create(Vocabulary.INDIVIDUAL_BASE + "testF");
-        orig.setUri(uri);
-        clone.setUri(uri);
-        orig.setSimpleSet(new HashSet<>());
-        clone.setSimpleSet(new HashSet<>());
-        orig.getSimpleSet().add(testA);
-        testAClone.setStringAttribute(testA.getStringAttribute());
-        clone.getSimpleSet().add(testAClone);
-        final URI aUri = URI.create(Vocabulary.INDIVIDUAL_BASE + "testAA");
-        final OWLClassA extraA = new OWLClassA(aUri);
-        extraA.setStringAttribute("string");
-        orig.getSimpleSet().add(extraA);
-        final OWLClassA extraAClone = new OWLClassA(aUri);
-        extraAClone.setStringAttribute(extraA.getStringAttribute());
-        clone.getSimpleSet().add(extraAClone);
-    }
-
-    @Test
-    public void twoSetsWithManagedElementsOneElementReplacedWithNewWithoutIdHaveChanges() {
-        final OWLClassF testF = new OWLClassF();
-        final OWLClassF cloneF = new OWLClassF();
-        initFAndClone(testF, cloneF);
-        final OWLClassA added = new OWLClassA();
-        added.setStringAttribute("differentString");
-        // OWLClassA does not have generated id, but for purposes of this test, let's assume it does
-        final Iterator<OWLClassA> remove = cloneF.getSimpleSet().iterator();
-        remove.next();
-        remove.remove();
-        cloneF.getSimpleSet().add(added);
-        final boolean res = sut.hasChanges(testF, cloneF);
-        assertTrue(res);
-    }
-
-    @Test
-    public void hasChangesIgnoresTransientFieldChanges() {
-        final OWLClassO testOClone = new OWLClassO();
-        testOClone.setUri(testO.getUri());
-        testOClone.setStringAttribute(testO.getStringAttribute());
-        testOClone.setTransientField("Change!");
-
-        final boolean res = sut.hasChanges(testO, testOClone);
-        assertFalse(res);
-    }
-
-    @Test
     public void calculateChangesIgnoresTransientFieldChanges() {
         final OWLClassO testOClone = new OWLClassO();
         testOClone.setUri(testO.getUri());
@@ -612,15 +471,6 @@ public class ChangeCalculatorTest {
     }
 
     @Test
-    void hasChangesSkipsIdentifier() {
-        final OWLClassA original = Generators.generateOwlClassAInstance();
-        final OWLClassA clone = new OWLClassA(Generators.createIndividualIdentifier());
-        clone.setStringAttribute(original.getStringAttribute());
-        clone.setTypes(new HashSet<>(original.getTypes()));
-        assertFalse(sut.hasChanges(original, clone));
-    }
-
-    @Test
     void calculateChangesSkipsLazyLoadedCollectionValueWhenOriginalIsEmptyCollection() {
         final OWLClassC original = new OWLClassC(Generators.createIndividualIdentifier());
         original.setSimpleList(Collections.emptyList());
@@ -630,5 +480,31 @@ public class ChangeCalculatorTest {
         final ObjectChangeSet changeSet = createChangeSet(original, clone);
         assertFalse(sut.calculateChanges(changeSet));
         verify(uow, never()).loadEntityField(any(), any());
+    }
+
+    @Test
+    void calculateChangesSkipsQueryAttributes() {
+        final OWLClassWithQueryAttr original = new OWLClassWithQueryAttr();
+        original.setUri(Generators.createIndividualIdentifier());
+        final OWLClassWithQueryAttr clone = new OWLClassWithQueryAttr(original.getUri());
+        clone.setStringQueryAttribute("Changed");
+        final ObjectChangeSet changeSet = createChangeSet(original, clone);
+        assertFalse(sut.calculateChanges(changeSet));
+    }
+
+    @Test
+    void calculateChangesHandlesReferenceCycle() {
+        final OWLClassG original = new OWLClassG(Generators.createIndividualIdentifier());
+        final OWLClassH referenced = new OWLClassH(Generators.createIndividualIdentifier());
+        original.setOwlClassH(referenced);
+        referenced.setOwlClassG(original);
+
+        final OWLClassG clone = new OWLClassG(original.getUri());
+        final OWLClassH cloneReferenced = new OWLClassH(referenced.getUri());
+        clone.setOwlClassH(cloneReferenced);
+        cloneReferenced.setOwlClassG(clone);
+
+        final ObjectChangeSet changeSet = createChangeSet(original, clone);
+        assertFalse(sut.calculateChanges(changeSet));
     }
 }

@@ -40,6 +40,7 @@ import cz.cvut.kbss.jopa.test.OWLClassN;
 import cz.cvut.kbss.jopa.test.OWLClassO;
 import cz.cvut.kbss.jopa.test.OWLClassP;
 import cz.cvut.kbss.jopa.test.OWLClassU;
+import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr;
 import cz.cvut.kbss.jopa.test.OWLClassX;
 import cz.cvut.kbss.jopa.test.OWLClassZ;
 import cz.cvut.kbss.jopa.test.OWLClassZChild;
@@ -1252,5 +1253,26 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         Object propertyAfterUpdate = findRequired(OWLClassAA.class, entityAA.getUri()).getDynamicProperty();
         assertEquals(1234L, propertyAfterUpdate);
+    }
+
+    /**
+     * Bug #351
+     */
+    @Test
+    public void updateEntityWithQueryAttributeIgnoresChangesToQueryAttributeValues() {
+        this.em = getEntityManager("updateEntityWithQueryAttribute", false);
+
+        OWLClassWithQueryAttr entity = new OWLClassWithQueryAttr();
+        entity.setUri(URI.create("https://onto.fel.cvut.cz/ontologies/jopa/tests/entityWithQueryAttr"));
+        entity.setStringAttribute("EntityWithQueryAttrStringAttribute");
+        transactional(() -> em.persist(entity));
+
+        entity.setStringQueryAttribute("Different value");
+        entity.setStringAttribute("NewUpdatedStringAttribute");
+        transactional(() -> em.merge(entity));
+
+        final OWLClassWithQueryAttr result = findRequired(OWLClassWithQueryAttr.class, entity.getUri());
+        assertEquals("NewUpdatedStringAttribute", result.getStringAttribute());
+        assertEquals("NewUpdatedStringAttribute", result.getStringQueryAttribute());
     }
 }

@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+### 2.4.4 - 2025-07-21
+- Fix an issue with merging entities with unset/changed query attributes (Bug #351).
+- Dependency updates: Jena 5.5.0.
+
 ### 2.4.3 - 205-07-14
 - Fix an issue with parsing SPARQL with IRIs containing hashtag (Bug #348).
 
