@@ -26,9 +26,6 @@ import cz.cvut.kbss.jopa.utils.JOPALazyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -39,65 +36,12 @@ public class ChangeCalculator {
 
     private static final Logger LOG = LoggerFactory.getLogger(ChangeCalculator.class);
 
-    private final Map<Object, Object> visitedObjects;
-
     private final MetamodelProvider metamodelProvider;
     private final ChangeDetector changeDetector;
 
     public ChangeCalculator(MetamodelProvider metamodelProvider) {
         this.metamodelProvider = metamodelProvider;
         this.changeDetector = new ChangeDetectors(metamodelProvider);
-        visitedObjects = new IdentityHashMap<>();
-    }
-
-    /**
-     * Checks whether there are any changes to the clone.
-     * <p>
-     * It does an object value comparison, i.e. it compares each value of the clone against the original value and
-     * returns true if a change is found.
-     *
-     * @param original The original object.
-     * @param clone    The clone, whose changes we are looking for.
-     * @return True if there is a change (at least one) or false, if the values are identical.
-     */
-    public boolean hasChanges(Object original, Object clone) {
-        boolean res = hasChangesInternal(original, clone);
-        visitedObjects.clear();
-        return res;
-    }
-
-    /**
-     * This method does the actual check for changes. It is wrapped in the public method since the IdentityMap for
-     * visited objects has to be cleared after the whole check is done.
-     *
-     * @param original The original object.
-     * @param clone    The clone that may have changed.
-     * @return True if the clone is in different state than the original.
-     */
-    private boolean hasChangesInternal(Object original, Object clone) {
-        if (clone == null && original == null) {
-            return false;
-        }
-        if (clone == null || original == null) {
-            return true;
-        }
-        if (visitedObjects.containsKey(clone)) {
-            return false;
-        }
-        final Class<?> cls = clone.getClass();
-        for (FieldSpecification<?, ?> fs : getFields(cls)) {
-            if (fs instanceof Identifier<?, ?>) {
-                continue;
-            }
-            final Field f = fs.getJavaField();
-            final Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
-            final Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
-            final boolean valueChanged = valueChanged(origVal, clVal);
-            if (valueChanged) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private <X> Set<FieldSpecification<? super X, ?>> getFields(Class<X> cls) {
@@ -136,7 +80,7 @@ public class ChangeCalculator {
         Object clone = changeSet.getClone();
         boolean changesFound = false;
         for (FieldSpecification<?, ?> fs : getFields(clone.getClass())) {
-            if (fs instanceof Identifier<?, ?> || fs instanceof QueryAttribute<?,?>) {
+            if (fs instanceof Identifier<?, ?> || fs instanceof QueryAttribute<?, ?>) {
                 continue;
             }
             Object clVal = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), clone);
