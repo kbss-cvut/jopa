@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassK;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassO;
 import cz.cvut.kbss.jopa.environment.OWLClassQ;
+import cz.cvut.kbss.jopa.environment.OWLClassWithQueryAttr;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
@@ -630,5 +631,15 @@ public class ChangeCalculatorTest {
         final ObjectChangeSet changeSet = createChangeSet(original, clone);
         assertFalse(sut.calculateChanges(changeSet));
         verify(uow, never()).loadEntityField(any(), any());
+    }
+
+    @Test
+    void calculateChangesSkipsQueryAttributes() {
+        final OWLClassWithQueryAttr original = new OWLClassWithQueryAttr();
+        original.setUri(Generators.createIndividualIdentifier());
+        final OWLClassWithQueryAttr clone = new OWLClassWithQueryAttr(original.getUri());
+        clone.setStringQueryAttribute("Changed");
+        final ObjectChangeSet changeSet = createChangeSet(original, clone);
+        assertFalse(sut.calculateChanges(changeSet));
     }
 }
