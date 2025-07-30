@@ -7,7 +7,6 @@ class IriParameterValue extends AbstractParameterValue {
 
     private final IRI iri;
 
-
     public IriParameterValue(IRI iri) {this.iri = iri;}
 
     @Override
@@ -19,6 +18,4 @@ class IriParameterValue extends AbstractParameterValue {
     public String getQueryString() {
         return IdentifierTransformer.stringifyIri(iri);
     }
-
-
 }
