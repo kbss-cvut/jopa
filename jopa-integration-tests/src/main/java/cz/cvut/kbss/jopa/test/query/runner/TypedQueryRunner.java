@@ -49,6 +49,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -224,8 +226,8 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
             final OWLClassA toAssign = getEntityManager().find(OWLClassA.class, a.getUri());
             update.setOwlClassA(toAssign);
             final TypedQuery<URI> query = getEntityManager().createNativeQuery("SELECT ?a WHERE { ?d ?hasA ?a . }", URI.class)
-                                                                .setParameter("d", update.getUri())
-                                                                .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A));
+                                                            .setParameter("d", update.getUri())
+                                                            .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A));
             query.setHint(QueryHints.TARGET_ONTOLOGY, Statement.StatementOntology.TRANSACTIONAL.toString());
             final URI res = query.getSingleResult();
             assertEquals(a.getUri(), res);
@@ -387,5 +389,16 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                                                    .setParameter("x", entity.getUri())
                                                    .getSingleResult();
         assertEquals(entity.getUri(), result.getUri());
+    }
+
+    @Test
+    public void querySupportsSelectionByTypeExtractedAsIriFromMetamodelEntityType() {
+        final List<OWLClassA> entities = QueryTestEnvironment.getData(OWLClassA.class);
+        final List<OWLClassA> result = getEntityManager().createNativeQuery("SELECT ?x WHERE { ?x a ?type . }", OWLClassA.class)
+                                                         .setParameter("type", getEntityManager().getMetamodel()
+                                                                                                 .entity(OWLClassA.class)
+                                                                                                 .getIRI())
+                                                         .getResultList();
+        assertThat(result, containsSameEntities(entities));
     }
 }

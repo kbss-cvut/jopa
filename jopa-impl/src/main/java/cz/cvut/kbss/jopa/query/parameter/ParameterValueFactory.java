@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.query.parameter;
 
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.ontodriver.model.LangString;
 
@@ -85,40 +86,41 @@ public class ParameterValueFactory {
      */
     public ParameterValue create(Object value) {
         Objects.requireNonNull(value);
-        if (value instanceof URI) {
-            return new UriParameterValue((URI) value);
-        } else if (value instanceof URL) {
+        if (value instanceof URI uri) {
+            return new UriParameterValue(uri);
+        } else if (value instanceof URL url) {
             try {
-                return new UriParameterValue(((URL) value).toURI());
+                return new UriParameterValue(url.toURI());
             } catch (URISyntaxException e) {
                 throw new IllegalArgumentException("Unable to transform the specified URL to URI.", e);
             }
-        } else if (value instanceof Boolean) {
-            return new BooleanParameterValue((Boolean) value);
-        } else if (value instanceof Short) {
-            return new ShortParameterValue((Short) value);
-        } else if (value instanceof Integer) {
-            return new IntegerParameterValue((Integer) value);
-        } else if (value instanceof Long) {
-            return new LongParameterValue((Long) value);
-        } else if (value instanceof Double) {
-            return new DoubleParameterValue((Double) value);
-        } else if (value instanceof Float) {
-            return new FloatParameterValue((Float) value);
-        } else if (value instanceof TemporalAccessor) {
-            return new TemporalParameterValue((TemporalAccessor) value);
-        } else if (value instanceof Date) {
-            return new TemporalParameterValue(((Date) value).toInstant());
-        } else if (value instanceof TemporalAmount) {
-            return new DurationParameterValue((TemporalAmount) value);
+        } else if (value instanceof Boolean b) {
+            return new BooleanParameterValue(b);
+        } else if (value instanceof Short s) {
+            return new ShortParameterValue(s);
+        } else if (value instanceof Integer i) {
+            return new IntegerParameterValue(i);
+        } else if (value instanceof Long lng) {
+            return new LongParameterValue(lng);
+        } else if (value instanceof Double dbl) {
+            return new DoubleParameterValue(dbl);
+        } else if (value instanceof Float fl) {
+            return new FloatParameterValue(fl);
+        } else if (value instanceof TemporalAccessor tmpAccessor) {
+            return new TemporalParameterValue(tmpAccessor);
+        } else if (value instanceof Date date) {
+            return new TemporalParameterValue(date.toInstant());
+        } else if (value instanceof TemporalAmount temporalAmount) {
+            return new DurationParameterValue(temporalAmount);
         } else if (metamodelProvider.isEntityType(value.getClass())) {
             return new EntityParameterValue(value, metamodelProvider);
-        } else if (value instanceof LangString) {
-            return new StringParameterValue((LangString) value);
-        } else if (value instanceof Collection) {
-            return new CollectionParameterValue(
-                    ((Collection<?>) value).stream().map(this::create).collect(Collectors.toList()));
-        } else {
+        } else if (value instanceof LangString langString) {
+            return new StringParameterValue(langString);
+        } else if (value instanceof Collection<?> col) {
+            return new CollectionParameterValue(col.stream().map(this::create).collect(Collectors.toList()));
+        } else if (value instanceof IRI iri) {
+            return new IriParameterValue(iri);
+        }else {
             return new StringParameterValue(value.toString());
         }
     }

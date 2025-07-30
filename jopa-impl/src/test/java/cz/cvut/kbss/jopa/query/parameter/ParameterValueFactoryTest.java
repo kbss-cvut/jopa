@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.query.parameter;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
@@ -258,5 +259,12 @@ class ParameterValueFactoryTest {
         final Period period = Period.ofDays(365);
         final ParameterValue value = sut.create(period);
         assertThat(value, instanceOf(DurationParameterValue.class));
+    }
+
+    @Test
+    void createCreatesIriParameterValueForIri() {
+        final IRI iri = IRI.create("http://krizik.felk.cvut.cz/jopa#Individual");
+        final ParameterValue value = sut.create(iri);
+        assertThat(value, instanceOf(IriParameterValue.class));
     }
 }
