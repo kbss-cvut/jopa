@@ -23,7 +23,7 @@ import java.net.URI;
 import java.util.Objects;
 
 /**
- * Parameter value that will be put as an IRI into the query. I.e. it will be enclosed in &lt; and &gt;.
+ * Parameter value that will be put as an IRI into the query. I.e., it will be enclosed in &lt; and &gt;.
  */
 class UriParameterValue extends AbstractParameterValue {
 
@@ -42,10 +42,5 @@ class UriParameterValue extends AbstractParameterValue {
     public String getQueryString() {
         // TODO Allow prefixed URIs - they should not be wrapped in <>
         return IdentifierTransformer.stringifyIri(uri);
-    }
-
-    @Override
-    public String toString() {
-        return getQueryString();
     }
 }
