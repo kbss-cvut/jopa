@@ -33,6 +33,7 @@ import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ModelGenProcessorTests {
 
@@ -73,5 +74,23 @@ class ModelGenProcessorTests {
 
     static String readFileAsString(File file) throws IOException {
         return String.join("\n", Files.readAllLines(file.toPath(), StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void metamodelGenerationHandlesReferenceToConstantInEntityClass() throws Exception {
+        List<String> options = List.of("-AoutputDirectory=" + OUTPUT_DIRECTORY, "-AdebugOption=" + "true");
+        Compilation compilation = javac()
+                .withProcessors(new ModelGenProcessor()).withOptions(options)
+                .compile(JavaFileObjects.forSourceLines("cz.test.ex.TestingClassWithContext", readFileAsString(
+                        new File("src/test/java/cz/test/ex/TestingClassWithContext.java"))));
+        assertThat(compilation).succeededWithoutWarnings();
+
+        assertTrue(Files.exists(Paths.get(OUTPUT_DIRECTORY + "/cz/test/ex/TestingClassWithContext_.java")));
+        final Compilation staticMetamodelCompilation = javac()
+                .compile(JavaFileObjects.forSourceLines("cz.test.ex.TestingClassWithContext_",
+                        readFileAsString(new File(OUTPUT_DIRECTORY + "/cz/test/ex/TestingClassWithContext_.java"))));
+
+        assertThat(staticMetamodelCompilation).succeededWithoutWarnings();
+
     }
 }
