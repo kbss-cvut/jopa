@@ -34,6 +34,7 @@ public class OWL2JavaMojo extends AbstractMojo {
     private static final String ONTOLOGY_PARAM = "ontology-iri";
     private static final String OUTPUT_PARAM = "output-directory";
     private static final String W_OWLAPI_PARAM = "with-owlapi";
+    private static final String W_JAVA_URIS_PARAM = "with-java-uris";
     private static final String ALL_IC_PARAM = "whole-ontology-as-ics";
     private static final String VOCABULARY_PARAM = "vocabulary-only";
     private static final String IGNORE_FAILED_IMPORTS_PARAM = "ignore-failed-imports";
@@ -63,6 +64,9 @@ public class OWL2JavaMojo extends AbstractMojo {
 
     @Parameter(name = W_OWLAPI_PARAM, defaultValue = "false")
     private boolean withOwlapi;
+
+    @Parameter(name = W_JAVA_URIS_PARAM, defaultValue = "false")
+    private boolean withJavaUris;
 
     @Parameter(name = ALL_IC_PARAM, defaultValue = "false")
     private boolean wholeOntologyAsIcs;
@@ -127,7 +131,8 @@ public class OWL2JavaMojo extends AbstractMojo {
         }
 
         final TransformationConfiguration config =
-                builder.packageName(pPackage).targetDir(outputDirectory).addOwlapiIris(withOwlapi)
+                builder.packageName(pPackage).targetDir(outputDirectory)
+                       .addOwlapiIris(withOwlapi).addJavaUris(withJavaUris)
                        .generateJavadoc(javadocFromRdfsComment).preferMultilingualStrings(preferMultilingualStrings)
                        .generateAnnotationFields(generateAnnotationFields).generateThing(generateThing)
                        .ontologyPrefixProperty(ontologyPrefixProperty).alwaysUseOntologyPrefix(alwaysUsePrefixes)
@@ -149,6 +154,7 @@ public class OWL2JavaMojo extends AbstractMojo {
         Utils.logParameterValue(ONTOLOGY_PARAM, ontologyIri, getLog());
         Utils.logParameterValue(OUTPUT_PARAM, outputDirectory, getLog());
         Utils.logParameterValue(W_OWLAPI_PARAM, withOwlapi, getLog());
+        Utils.logParameterValue(W_JAVA_URIS_PARAM, withJavaUris, getLog());
         Utils.logParameterValue(ALL_IC_PARAM, wholeOntologyAsIcs, getLog());
         Utils.logParameterValue(VOCABULARY_PARAM, vocabularyOnly, getLog());
         Utils.logParameterValue(IGNORE_FAILED_IMPORTS_PARAM, ignoreFailedImports, getLog());

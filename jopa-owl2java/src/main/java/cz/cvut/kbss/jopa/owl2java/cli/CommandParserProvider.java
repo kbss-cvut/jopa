@@ -52,6 +52,7 @@ public final class CommandParserProvider {
         p.accepts(PACKAGE).withRequiredArg().ofType(String.class).defaultsTo(Defaults.PACKAGE);
         p.accepts(CONTEXT).withRequiredArg().ofType(String.class);
         p.accepts(WITH_IRIS).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
+        p.accepts(WITH_URIS).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
         p.accepts(TARGET_DIR).withRequiredArg().ofType(String.class).defaultsTo(Defaults.TARGET_DIR);
         p.accepts(WHOLE_ONTOLOGY_AS_IC).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
         p.accepts(IGNORE_FAILED_IMPORTS).withOptionalArg().ofType(Boolean.class).defaultsTo(true);
