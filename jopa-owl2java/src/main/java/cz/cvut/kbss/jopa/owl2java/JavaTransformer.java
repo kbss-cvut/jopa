@@ -68,6 +68,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -95,6 +96,7 @@ public class JavaTransformer {
     private static final Logger LOG = LoggerFactory.getLogger(JavaTransformer.class);
 
     private static final String PREFIX_STRING = "s_";
+    private static final String PREFIX_URI = "u_";
     private static final String PREFIX_CLASS = "c_";
     private static final String PREFIX_PROPERTY = "p_";
     private static final String PREFIX_INDIVIDUAL = "i_";
@@ -205,6 +207,11 @@ public class JavaTransformer {
                 voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class,
                         sFieldName.get().substring(PREFIX_STRING.length()),
                         cm.ref(IRI.class).staticInvoke("create").arg(fv1));
+            }
+            if (configuration.shouldGenerateJavaUris()) {
+                voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, URI.class,
+                        PREFIX_URI + sFieldName.get().substring(PREFIX_STRING.length()),
+                        cm.ref(URI.class).staticInvoke("create").arg(fv1));
             }
             generateJavadoc(o, c, fv1);
             entities.put(c, voc.staticRef(fv1));

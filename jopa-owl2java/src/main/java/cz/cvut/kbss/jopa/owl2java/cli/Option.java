@@ -42,6 +42,12 @@ public enum Option {
      */
     WITH_IRIS("w", "with OWLAPI IRIs"),
     /**
+     * Whether to generate vocabulary constants as instances of {@link java.net.URI URI}.
+     * <p>
+     * By default, they are String.
+     */
+    WITH_URIS("u", "with Java URIs"),
+    /**
      * Output directory name.
      * <p>
      * Note that the generator will create subdirectories corresponding to the package into which the target classes are
