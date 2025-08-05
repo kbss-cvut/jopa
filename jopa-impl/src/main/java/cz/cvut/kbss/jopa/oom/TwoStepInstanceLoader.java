@@ -26,7 +26,9 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 class TwoStepInstanceLoader extends EntityInstanceLoader {
 
@@ -48,8 +50,20 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
         }
     }
 
+    @Override
+    <T> T loadEntityFromAxioms(LoadingParameters<T> loadingParameters, Collection<Axiom<?>> axioms) {
+        final IdentifiableEntityType<T> rootEt = metamodel.entity(loadingParameters.getEntityClass());
+        NamedResource individual = NamedResource.create(loadingParameters.getIdentifier());
+        final IdentifiableEntityType<? extends T> et = new PolymorphicEntityTypeResolver<>(individual, rootEt, axioms.stream()
+                                                                                                                     .filter(ax -> ax.getAssertion()
+                                                                                                                                     .isClassAssertion())
+                                                                                                                     .map(ax -> (Axiom<URI>) ax)
+                                                                                                                     .collect(Collectors.toSet())).determineActualEntityType();
+        return reconstructEntityFromAxioms(loadingParameters, et, axioms);
+    }
+
     private <T> IdentifiableEntityType<? extends T> resolveEntityType(LoadingParameters<T> loadingParameters,
-                                                          IdentifiableEntityType<T> rootEt) throws OntoDriverException {
+                                                                      IdentifiableEntityType<T> rootEt) throws OntoDriverException {
         NamedResource individual = NamedResource.create(loadingParameters.getIdentifier());
         final Set<Axiom<URI>> types = storageConnection.types().getTypes(individual,
                 loadingParameters.getDescriptor().getContexts(), false);

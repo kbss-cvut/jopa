@@ -55,7 +55,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyCollection;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -100,7 +99,7 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
 
     @Test
     void testLoadEntity() throws Exception {
-        final Collection<Axiom<?>> entityAAxioms = Collections.singletonList(mock(Axiom.class));
+        final Collection<Axiom<?>> entityAAxioms = Generators.generateAxiomsForOWLClassA(IDENTIFIER);
         when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
         when(entityConstructorMock.reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, etAMock, descriptor, false), entityAAxioms))
                 .thenReturn(entityA);
@@ -128,7 +127,7 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
     @Test
     void loadEntityBypassesCacheWhenConfiguredTo() throws Exception {
         loadingParameters.bypassCache();
-        final Collection<Axiom<?>> entityAAxioms = Collections.singletonList(mock(Axiom.class));
+        final Collection<Axiom<?>> entityAAxioms = Generators.generateAxiomsForOWLClassA(IDENTIFIER);
         when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
         when(entityConstructorMock.reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, etAMock, descriptor, false), entityAAxioms))
                 .thenReturn(entityA);

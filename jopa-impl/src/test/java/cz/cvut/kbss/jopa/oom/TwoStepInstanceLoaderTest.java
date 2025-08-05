@@ -20,14 +20,17 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
+import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,7 +80,9 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
                 .thenReturn(axiomDescriptor);
         this.instanceLoader = TwoStepInstanceLoader.builder().connection(connectionMock).metamodel(metamodelMock)
                                                    .cache(cacheMock).descriptorFactory(descriptorFactoryMock)
-                                                   .entityBuilder(entityConstructorMock).build();
+                                                   .entityBuilder(entityConstructorMock)
+                                                   .loadStateRegistry(new LoadStateDescriptorRegistry(Object::toString))
+                                                   .build();
     }
 
     @Test
@@ -107,6 +112,25 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
                 .thenReturn(entityR);
 
         final OWLClassS result = instanceLoader.loadEntity(loadingParameters);
+        assertNotNull(result);
+        assertSame(entityR, result);
+    }
+
+    @Test
+    void loadEntityResolvesTypeFromProvidedAxiomsAndReconstructsEntity() {
+        final Set<Axiom<?>> axioms = Set.of(
+                new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false),
+                        new Value<>(URI.create(OWLClassR.getClassIri()))),
+                new AxiomImpl<>(INDIVIDUAL,
+                        Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false),
+                        new Value<>(new LangString("Test", "en"))));
+        final OWLClassR entityR = new OWLClassR();
+        when(entityConstructorMock
+                .reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, metamodelMock.entity(OWLClassR.class), descriptor, false),
+                        axioms))
+                .thenReturn(entityR);
+
+        final OWLClassS result = instanceLoader.loadEntityFromAxioms(loadingParameters, axioms);
         assertNotNull(result);
         assertSame(entityR, result);
     }
