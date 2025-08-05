@@ -19,6 +19,9 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+
+import java.util.Collection;
 
 /**
  * Loads entities which do not require polymorphic handling.
@@ -33,6 +36,12 @@ class DefaultInstanceLoader extends EntityInstanceLoader {
     <T> T loadEntity(LoadingParameters<T> loadingParameters) {
         final IdentifiableEntityType<T> et = metamodel.entity(loadingParameters.getEntityClass());
         return loadInstance(loadingParameters, et);
+    }
+
+    @Override
+    <T> T loadEntityFromAxioms(LoadingParameters<T> loadingParameters, Collection<Axiom<?>> axioms) {
+        final IdentifiableEntityType<T> et = metamodel.entity(loadingParameters.getEntityClass());
+        return reconstructEntityFromAxioms(loadingParameters, et, axioms);
     }
 
     static DefaultInstanceLoaderBuilder builder() {

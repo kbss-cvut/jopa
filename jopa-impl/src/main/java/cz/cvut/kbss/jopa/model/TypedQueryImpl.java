@@ -71,7 +71,14 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         final List<X> res = new ArrayList<>();
         executeQuery(rs -> {
             if (isEntityType) {
+//                if (rs.getColumnCount() == 3 && resultType has no inferred attributes) {
+//                    Assume results of ?x ?y ?z, i.e., x = entity, y = property, z = value
+//                }
+//                else {
+//                    // loadEntityInstance(rs, descriptor).ifPresent(res::add);
+//                }
                 loadEntityInstance(rs, descriptor).ifPresent(res::add);
+
             } else {
                 loadResultValue(rs).ifPresent(res::add);
             }

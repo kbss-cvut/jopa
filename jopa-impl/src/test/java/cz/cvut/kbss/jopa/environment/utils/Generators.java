@@ -19,9 +19,15 @@ package cz.cvut.kbss.jopa.environment.utils;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -165,5 +171,17 @@ public abstract class Generators {
 
     public static Set<URI> generateUriTypes(int count) {
         return generateTypes(count).stream().map(URI::create).collect(Collectors.toSet());
+    }
+
+    public static Collection<Axiom<?>> generateAxiomsForOWLClassA(URI id) {
+        final List<Axiom<?>> res = new ArrayList<>();
+        final NamedResource identifier = NamedResource.create(id);
+        res.add(new AxiomImpl<>(identifier, Assertion.createClassAssertion(false),
+                new Value<>(NamedResource.create(Vocabulary.c_OwlClassA))));
+        res.add(new AxiomImpl<>(identifier,
+                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute),
+                        false),
+                new Value<>("stringAttribute")));
+        return res;
     }
 }

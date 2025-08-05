@@ -182,15 +182,7 @@ class ObjectOntologyMapperTest {
     }
 
     private Collection<Axiom<?>> getAxiomsForEntityA() {
-        final List<Axiom<?>> res = new ArrayList<>();
-        final NamedResource identifier = NamedResource.create(IDENTIFIER);
-        res.add(new AxiomImpl<>(identifier, Assertion.createClassAssertion(false),
-                new Value<Object>(NamedResource.create(Vocabulary.c_OwlClassA))));
-        res.add(new AxiomImpl<>(identifier,
-                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute),
-                        false),
-                new Value<>("stringAttribute")));
-        return res;
+        return Generators.generateAxiomsForOWLClassA(IDENTIFIER);
     }
 
     @Test

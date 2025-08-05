@@ -17,17 +17,30 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
+import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.net.URI;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 abstract class InstanceLoaderTestBase {
 
@@ -57,5 +70,18 @@ abstract class InstanceLoaderTestBase {
     static void staticSetup() {
         descriptor = new EntityDescriptor();
         axiomDescriptor = new AxiomDescriptor(NamedResource.create(IDENTIFIER));
+    }
+
+    @Test
+    void loadEntityFromAxiomsReturnsCachedInstanceWhenItExists() {
+        final Set<Axiom<?>> axioms = Set.of(
+                new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false), new Value<>(URI.create(Vocabulary.c_OwlClassA)))
+        );
+        final OWLClassA cached = new OWLClassA(INDIVIDUAL.getIdentifier());
+        when(cacheMock.get(OWLClassA.class, IDENTIFIER, descriptor)).thenReturn(cached);
+
+        final OWLClassA result = instanceLoader.loadEntityFromAxioms(new LoadingParameters<>(OWLClassA.class, INDIVIDUAL.getIdentifier(), descriptor), axioms);
+        assertSame(cached, result);
+        verify(cacheMock).get(OWLClassA.class, IDENTIFIER, descriptor);
     }
 }
