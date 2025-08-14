@@ -33,12 +33,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * Class for generating output files
  */
 public class OutputFilesGenerator {
+
+    private static final String INDENT = "    ";
 
     private final String targetDir;
     private final boolean debugMode;
@@ -71,6 +74,7 @@ public class OutputFilesGenerator {
     private void generateClassFile(MetamodelClass cls) {
         final File targetFile = createTargetFile(cls);
         final StringBuilder content = new StringBuilder(generateClassPreamble(cls));
+        generateClassIriField(cls).ifPresent(content::append);
         content.append(generateAttributes(cls));
         content.append(generateClassSuffix());
         try {
@@ -149,11 +153,18 @@ public class OutputFilesGenerator {
         return sbOut.toString();
     }
 
+    private static Optional<String> generateClassIriField(MetamodelClass cls) {
+        if (cls.isEntityClass()) {
+            return Optional.of(INDENT + "public static volatile IRI classIRI;\n\n");
+        }
+        return Optional.empty();
+    }
+
     private static String generateAttributes(MetamodelClass cls) {
         StringBuilder attributes = new StringBuilder();
         for (Field field : cls.getFields()) {
             final String declaringClass = field.getParentName().substring(field.getParentName().lastIndexOf('.') + 1);
-            attributes.append("    public static volatile ");
+            attributes.append(INDENT + "public static volatile ");
             //@Id
             if (isAnnotatedWith(field, MappingAnnotations.ID)) {
                 attributes.append("Identifier<")

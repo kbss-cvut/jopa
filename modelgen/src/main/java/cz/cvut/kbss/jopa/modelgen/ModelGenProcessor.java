@@ -79,6 +79,9 @@ public class ModelGenProcessor extends AbstractProcessor {
                 if (!isAnnotatedWithNonEntity(elParent) && (sourcePackage == null || elParent.asType().toString()
                                                                                              .contains(sourcePackage))) {
                     MetamodelClass parentClass = new MetamodelClass(elParent);
+                    if (isAnnotationWithOwlClass(elParent)) {
+                        parentClass.makeEntityClass();
+                    }
 
                     if (debugOption) {
                         messager.printMessage(Diagnostic.Kind.NOTE,
@@ -131,20 +134,27 @@ public class ModelGenProcessor extends AbstractProcessor {
         return containsWanted;
     }
 
-    @Override
-    public SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.latestSupported();
+    private static boolean isAnnotatedWithNonEntity(Element element) {
+        return isAnnotatedWith(element, "cz.cvut.kbss.jopa.model.annotations.util.NonEntity");
     }
 
-    public boolean isAnnotatedWithNonEntity(Element element) {
+    private static boolean isAnnotatedWith(Element element, String annotationCls) {
         TypeElement typeElement = (TypeElement) element;
         List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
         for (AnnotationMirror annotation : annotations) {
-            if ("cz.cvut.kbss.jopa.model.annotations.util.NonEntity".equals(annotation.getAnnotationType()
-                                                                                      .toString())) {
+            if (annotationCls.equals(annotation.getAnnotationType().toString())) {
                 return true;
             }
         }
         return false;
+    }
+
+    private static boolean isAnnotationWithOwlClass(Element element) {
+        return isAnnotatedWith(element, "cz.cvut.kbss.jopa.model.annotations.OWLClass");
+    }
+
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
     }
 }
