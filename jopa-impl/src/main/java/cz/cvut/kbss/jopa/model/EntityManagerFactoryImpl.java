@@ -37,7 +37,7 @@ import java.util.function.Consumer;
 
 public class EntityManagerFactoryImpl implements EntityManagerFactory, PersistenceUnitUtil {
 
-    private volatile boolean open = true;
+    private volatile boolean open;
 
     private final Set<AbstractEntityManager> em;
     private final Configuration configuration;
@@ -59,6 +59,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         this.storageProperties = initStorageProperties();
         this.metamodel = initMetamodel();
         this.descriptorFactory = initDescriptorFactory();
+        this.open = true;
     }
 
     private OntologyStorageProperties initStorageProperties() {

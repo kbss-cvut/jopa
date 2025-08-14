@@ -123,9 +123,10 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
     public static final String TRANSACTION_MODE = "cz.cvut.kbss.jopa.transactionMode";
 
     /**
-     * Whether the second level cache should be used for the read-only mode. Expected values: (true, false).
+     * A comma-separated list of fully qualified class names of lifecycle plugins to be loaded and executed for the
+     * whole persistence unit.
      */
-    public static final String CACHE_ENABLED_READ_ONLY = "cz.cvut.jopa.readOnly.cache.enable";
+    public static final String PERSISTENCE_UNIT_LIFECYCLE_PLUGINS = "cz.cvut.jopa.plugin.persistenceUnit";
 
     private JOPAPersistenceProperties() {
         throw new AssertionError();
