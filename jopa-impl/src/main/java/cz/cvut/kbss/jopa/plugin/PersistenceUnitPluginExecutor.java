@@ -28,13 +28,13 @@ public class PersistenceUnitPluginExecutor {
     private static List<PersistenceUnitLifecyclePlugin> resolveAndLoadPlugins(Configuration config) {
         final String pluginClassesConfig = config.get(JOPAPersistenceProperties.PERSISTENCE_UNIT_LIFECYCLE_PLUGINS, "");
         final String[] pluginClasses = pluginClassesConfig.split(",");
-        if (pluginClasses.length == 0) {
+        if (pluginClasses.length == 0 || pluginClassesConfig.isBlank()) {
             return List.of();
         }
         final List<PersistenceUnitLifecyclePlugin> plugins = new ArrayList<>(pluginClasses.length);
         for (String pluginClass : pluginClasses) {
             try {
-                final Class<? extends PersistenceUnitLifecyclePlugin> cls = Class.forName(pluginClass)
+                final Class<? extends PersistenceUnitLifecyclePlugin> cls = Class.forName(pluginClass.trim())
                                                                                  .asSubclass(PersistenceUnitLifecyclePlugin.class);
                 plugins.add(cls.getConstructor().newInstance());
             } catch (ClassNotFoundException e) {
