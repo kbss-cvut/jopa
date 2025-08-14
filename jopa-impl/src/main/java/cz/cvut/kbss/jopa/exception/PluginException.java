@@ -7,10 +7,6 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
  */
 public class PluginException extends OWLPersistenceException {
 
-    public PluginException(String message) {
-        super(message);
-    }
-
     public PluginException(String message, Throwable cause) {
         super(message, cause);
     }
