@@ -45,7 +45,7 @@ public class StaticMetamodelInitializer {
     /**
      * Name of the field containing the entity class IRI in a static metamodel class.
      */
-    private static final String ENTITY_CLASS_IRI_FIELD = "classIRI";
+    private static final String ENTITY_CLASS_IRI_FIELD = "entityClassIRI";
 
     private final Metamodel metamodel;
 

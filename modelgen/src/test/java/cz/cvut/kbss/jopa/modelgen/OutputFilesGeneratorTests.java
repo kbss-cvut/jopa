@@ -158,7 +158,7 @@ class OutputFilesGeneratorTests {
 
         @Test
         void containsClassIri() {
-            assertThat(actualResult, containsString("public static volatile IRI classIRI;"));
+            assertThat(actualResult, containsString("public static volatile IRI entityClassIRI;"));
         }
 
         @Test

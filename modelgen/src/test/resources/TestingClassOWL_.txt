@@ -14,7 +14,7 @@ import java.util.List;
 @StaticMetamodel(TestingClassOWL.class)
 public abstract class TestingClassOWL_ {
 
-    public static volatile IRI classIRI;
+    public static volatile IRI entityClassIRI;
 
     public static volatile Identifier<TestingClassOWL, URI> uri;
     public static volatile SingularAttribute<TestingClassOWL, TestingClassOWL> testingClassOWL;

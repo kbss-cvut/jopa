@@ -139,8 +139,8 @@ public class OutputFilesGenerator {
                  .append("_;\n");
         }
         sbOut.append("\n@Generated(value = \"")
-             .append("cz.cvut.kbss.jopa.modelgen.ModelGenProcessor\")")
-             .append("\n@StaticMetamodel(")
+             .append("cz.cvut.kbss.jopa.modelgen.ModelGenProcessor\")\n")
+             .append("@StaticMetamodel(")
              .append(cls.getName())
              .append(".class)\n")
              .append("public abstract class ")
@@ -153,7 +153,7 @@ public class OutputFilesGenerator {
 
     private static Optional<String> generateClassIriField(MetamodelClass cls) {
         if (cls.isEntityClass()) {
-            return Optional.of(INDENT + "public static volatile IRI classIRI;\n\n");
+            return Optional.of(INDENT + "public static volatile IRI entityClassIRI;\n\n");
         }
         return Optional.empty();
     }
