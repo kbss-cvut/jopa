@@ -69,7 +69,7 @@ class StaticMetamodelInitializerTest {
     void initializeStaticMetamodelPopulatesEntityClassIriField() {
         when(metamodel.getEntities()).thenReturn(Collections.singleton(metamodelMocks.forOwlClassA().entityType()));
         sut.initializeStaticMetamodel();
-        assertEquals(metamodelMocks.forOwlClassA().entityType().getIRI(), OWLClassA_.classIRI);
+        assertEquals(metamodelMocks.forOwlClassA().entityType().getIRI(), OWLClassA_.entityClassIRI);
     }
 
     @Test

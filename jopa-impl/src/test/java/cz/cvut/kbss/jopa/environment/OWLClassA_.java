@@ -28,7 +28,7 @@ import java.net.URI;
 @StaticMetamodel(OWLClassA.class)
 public class OWLClassA_ {
 
-    public static volatile IRI classIRI;
+    public static volatile IRI entityClassIRI;
 
     public static volatile Identifier<OWLClassA, URI> uri;
 
