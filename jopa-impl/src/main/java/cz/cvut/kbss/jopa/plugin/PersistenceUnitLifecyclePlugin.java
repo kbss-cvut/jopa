@@ -5,9 +5,11 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 /**
  * Interface to be implemented by JOPA lifecycle plugins.
  * <p>
- * All the methods do nothing by default.
+ * The plugins may implement only selected methods, as they all by default do nothing.
+ * <p>
+ * Implementations must provide a public no-args constructor.
  */
-public interface LifecyclePlugin {
+public interface PersistenceUnitLifecyclePlugin {
 
     /**
      * Invoked after the persistence unit has been created.

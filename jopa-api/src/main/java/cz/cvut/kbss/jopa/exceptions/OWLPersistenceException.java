@@ -33,4 +33,6 @@ public class OWLPersistenceException extends RuntimeException {
     public OWLPersistenceException(Throwable cause) {
         super(cause);
     }
+
+    public OWLPersistenceException() {}
 }
