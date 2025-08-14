@@ -100,7 +100,7 @@ public class OutputFilesGenerator {
                 .append("_.java");
         try {
             File file = new File(fileName.toString());
-            file.getParentFile().mkdirs();
+            Files.createDirectories(file.getParentFile().toPath());
             if (!file.exists()) {
                 boolean result = file.createNewFile();
                 if (!result) {
@@ -143,9 +143,7 @@ public class OutputFilesGenerator {
              .append("\n@StaticMetamodel(")
              .append(cls.getName())
              .append(".class)\n")
-             .append("public ")
-             .append("abstract ")
-             .append("class ")
+             .append("public abstract class ")
              .append(cls.getName())
              .append("_ ")
              .append(extend)
