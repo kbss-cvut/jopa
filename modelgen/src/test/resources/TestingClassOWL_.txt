@@ -1,5 +1,6 @@
 package cz.test.ex;
 
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import javax.annotation.processing.Generated;
 import cz.test.ex.TestingClassOWL;
@@ -12,6 +13,8 @@ import java.util.List;
 @Generated(value = "cz.cvut.kbss.jopa.modelgen.ModelGenProcessor")
 @StaticMetamodel(TestingClassOWL.class)
 public abstract class TestingClassOWL_ {
+
+    public static volatile IRI entityClassIRI;
 
     public static volatile Identifier<TestingClassOWL, URI> uri;
     public static volatile SingularAttribute<TestingClassOWL, TestingClassOWL> testingClassOWL;

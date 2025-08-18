@@ -345,4 +345,14 @@ abstract class QueryTestBase {
         q.executeUpdate();
         verify(hint).apply(true, q, statementMock);
     }
+
+    @Test
+    void setParameterWithIriArgumentInterpretsItAsResourceIdentifier() throws Exception {
+        final String query = "SELECT ?x ?y WHERE { ?x a ?z .}";
+        final Query q = createQuery(query, Object.class);
+        q.setParameter("z", IRI.create("http://example.com/individual"));
+        assertEquals(IRI.create("http://example.com/individual"), q.getParameterValue("z"));
+        q.getResultList();
+        verify(statementMock).executeQuery("SELECT ?x ?y WHERE { ?x a <http://example.com/individual> .}");
+    }
 }

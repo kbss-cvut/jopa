@@ -32,6 +32,11 @@ public class Defaults {
     public static final boolean WITH_IRIS = false;
 
     /**
+     * @see Option#WITH_URIS
+     */
+    public static final boolean WITH_URIS = false;
+
+    /**
      * @see Option#TARGET_DIR
      */
     public static final String TARGET_DIR = "";

@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.plugin.PersistenceUnitPluginExecutor;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -37,7 +38,7 @@ import java.util.function.Consumer;
 
 public class EntityManagerFactoryImpl implements EntityManagerFactory, PersistenceUnitUtil {
 
-    private volatile boolean open = true;
+    private volatile boolean open;
 
     private final Set<AbstractEntityManager> em;
     private final Configuration configuration;
@@ -50,15 +51,19 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     private final EntityDescriptorFactory descriptorFactory;
 
     private final Consumer<EntityManagerFactoryImpl> closeListener;
+    private final PersistenceUnitPluginExecutor puPluginExecutor;
 
     public EntityManagerFactoryImpl(final Map<String, String> properties,
                                     Consumer<EntityManagerFactoryImpl> closeListener) {
         this.em = Collections.newSetFromMap(new ConcurrentHashMap<>());
         this.configuration = new Configuration(properties != null ? properties : Collections.emptyMap());
         this.closeListener = closeListener;
+        this.puPluginExecutor = new PersistenceUnitPluginExecutor(configuration);
         this.storageProperties = initStorageProperties();
         this.metamodel = initMetamodel();
         this.descriptorFactory = initDescriptorFactory();
+        this.open = true;
+        puPluginExecutor.afterPersistenceUnitCreated(this::createEntityManager);
     }
 
     private OntologyStorageProperties initStorageProperties() {
@@ -91,6 +96,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
             em.stream().filter(EntityManager::isOpen).forEach(EntityManager::close);
             em.clear();
+            puPluginExecutor.beforePersistenceUnitDestroyed(this::createEntityManager);
             if (serverSession != null) {
                 serverSession.close();
                 this.serverSession = null;

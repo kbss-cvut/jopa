@@ -27,6 +27,7 @@ public class MetamodelClass {
     private String name;
     private String extend;
     private final List<String> imports;
+    private boolean entityClass = false;
     private final List<Field> fields = new ArrayList<>();
 
     public MetamodelClass() {
@@ -92,6 +93,15 @@ public class MetamodelClass {
 
     public List<Field> getFields() {
         return fields;
+    }
+
+    public boolean isEntityClass() {
+        return entityClass;
+    }
+
+    public void makeEntityClass() {
+        this.entityClass = true;
+        imports.add(0, "cz.cvut.kbss.jopa.model.IRI");
     }
 
     public void addField(Field field) {

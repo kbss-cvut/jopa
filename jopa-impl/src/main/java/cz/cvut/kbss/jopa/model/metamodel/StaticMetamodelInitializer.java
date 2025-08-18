@@ -42,6 +42,11 @@ public class StaticMetamodelInitializer {
      */
     private static final String STATIC_METAMODEL_CLASS_SUFFIX = "_";
 
+    /**
+     * Name of the field containing the entity class IRI in a static metamodel class.
+     */
+    private static final String ENTITY_CLASS_IRI_FIELD = "entityClassIRI";
+
     private final Metamodel metamodel;
 
     public StaticMetamodelInitializer(Metamodel metamodel) {
@@ -109,10 +114,15 @@ public class StaticMetamodelInitializer {
     }
 
     private <T> void initStaticMembers(ManagedType<T> et, Class<?> smClass) throws IllegalAccessException {
+
         final Field[] fields = smClass.getDeclaredFields();
         for (Field f : fields) {
             if (!isCanonicalMetamodelField(f)) {
                 LOG.debug("Skipping field {}, it is not canonical (public static).", f);
+                continue;
+            }
+            if (isEntityClassIRIField(f, et)) {
+                setFieldValue(f, ((EntityType<T>) et).getIRI());
                 continue;
             }
             final FieldSpecification<T, ?> att = getMetamodelMember(f, et);
@@ -122,6 +132,10 @@ public class StaticMetamodelInitializer {
 
     private static boolean isCanonicalMetamodelField(Field field) {
         return Modifier.isStatic(field.getModifiers()) && Modifier.isPublic(field.getModifiers());
+    }
+
+    private static boolean isEntityClassIRIField(Field field, ManagedType<?> type) {
+        return type.getPersistenceType() == Type.PersistenceType.ENTITY && field.getName().equals(ENTITY_CLASS_IRI_FIELD);
     }
 
     private static void setFieldValue(Field field, Object value) throws IllegalAccessException {

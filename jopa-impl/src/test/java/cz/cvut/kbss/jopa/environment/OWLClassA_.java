@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.StaticMetamodel;
@@ -26,6 +27,8 @@ import java.net.URI;
 
 @StaticMetamodel(OWLClassA.class)
 public class OWLClassA_ {
+
+    public static volatile IRI entityClassIRI;
 
     public static volatile Identifier<OWLClassA, URI> uri;
 

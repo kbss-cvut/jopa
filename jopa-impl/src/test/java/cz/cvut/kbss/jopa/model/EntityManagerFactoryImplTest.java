@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.DataSourceStub;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.environment.utils.TestPlugin;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.sessions.ReadOnlyUnitOfWork;
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -67,10 +69,10 @@ class EntityManagerFactoryImplTest {
     }
 
     private Map<String, String> getProps() {
-        return Map.of(JOPAPersistenceProperties.DATA_SOURCE_CLASS, DataSourceStub.class.getName(),
+        return new HashMap<>(Map.of(JOPAPersistenceProperties.DATA_SOURCE_CLASS, DataSourceStub.class.getName(),
                 JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
                 Generators.createIndividualIdentifier().toString(),
-                JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
+                JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment"));
     }
 
     @Test
@@ -168,5 +170,20 @@ class EntityManagerFactoryImplTest {
     void createEntityManagerWithReadOnlyTransactionModeReturnsEntityManagerWithReadOnlyPersistenceContext() {
         final EntityManager em = emf.createEntityManager(Map.of(JOPAPersistenceProperties.TRANSACTION_MODE, "read_only"));
         assertInstanceOf(ReadOnlyUnitOfWork.class, em.unwrap(UnitOfWork.class));
+    }
+
+    @Test
+    void entityManagerFactoryInvokesPersistenceUnitPlugins() {
+        TestPlugin.afterCreatedCalled = false;
+        TestPlugin.beforeDestroyedCalled = false;
+
+        final Map<String, String> props = getProps();
+        props.put(JOPAPersistenceProperties.PERSISTENCE_UNIT_LIFECYCLE_PLUGINS, TestPlugin.class.getName());
+        try (final EntityManagerFactory emf = new EntityManagerFactoryImpl(props, closeListener)) {
+            assertTrue(emf.isOpen());
+            assertTrue(TestPlugin.afterCreatedCalled);
+            assertFalse(TestPlugin.beforeDestroyedCalled);
+        }
+        assertTrue(TestPlugin.beforeDestroyedCalled);
     }
 }

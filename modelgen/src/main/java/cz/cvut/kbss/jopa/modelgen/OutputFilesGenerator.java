@@ -33,12 +33,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * Class for generating output files
  */
 public class OutputFilesGenerator {
+
+    private static final String INDENT = "    ";
 
     private final String targetDir;
     private final boolean debugMode;
@@ -71,6 +74,7 @@ public class OutputFilesGenerator {
     private void generateClassFile(MetamodelClass cls) {
         final File targetFile = createTargetFile(cls);
         final StringBuilder content = new StringBuilder(generateClassPreamble(cls));
+        generateClassIriField(cls).ifPresent(content::append);
         content.append(generateAttributes(cls));
         content.append(generateClassSuffix());
         try {
@@ -96,7 +100,7 @@ public class OutputFilesGenerator {
                 .append("_.java");
         try {
             File file = new File(fileName.toString());
-            file.getParentFile().mkdirs();
+            Files.createDirectories(file.getParentFile().toPath());
             if (!file.exists()) {
                 boolean result = file.createNewFile();
                 if (!result) {
@@ -135,13 +139,11 @@ public class OutputFilesGenerator {
                  .append("_;\n");
         }
         sbOut.append("\n@Generated(value = \"")
-             .append("cz.cvut.kbss.jopa.modelgen.ModelGenProcessor\")")
-             .append("\n@StaticMetamodel(")
+             .append("cz.cvut.kbss.jopa.modelgen.ModelGenProcessor\")\n")
+             .append("@StaticMetamodel(")
              .append(cls.getName())
              .append(".class)\n")
-             .append("public ")
-             .append("abstract ")
-             .append("class ")
+             .append("public abstract class ")
              .append(cls.getName())
              .append("_ ")
              .append(extend)
@@ -149,11 +151,18 @@ public class OutputFilesGenerator {
         return sbOut.toString();
     }
 
+    private static Optional<String> generateClassIriField(MetamodelClass cls) {
+        if (cls.isEntityClass()) {
+            return Optional.of(INDENT + "public static volatile IRI entityClassIRI;\n\n");
+        }
+        return Optional.empty();
+    }
+
     private static String generateAttributes(MetamodelClass cls) {
         StringBuilder attributes = new StringBuilder();
         for (Field field : cls.getFields()) {
             final String declaringClass = field.getParentName().substring(field.getParentName().lastIndexOf('.') + 1);
-            attributes.append("    public static volatile ");
+            attributes.append(INDENT + "public static volatile ");
             //@Id
             if (isAnnotatedWith(field, MappingAnnotations.ID)) {
                 attributes.append("Identifier<")

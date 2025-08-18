@@ -26,6 +26,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -99,15 +102,17 @@ public class OWL2JavaTransformerTest {
         this.targetDir = getTempDirectory();
         assertEquals(0, targetDir.listFiles().length);
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), true).build());
+        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), true, true).build());
         verifyGeneratedModel(targetDir);
     }
 
     private TransformationConfiguration.TransformationConfigurationBuilder config(String context, String packageName,
                                                                                   String targetDir,
-                                                                                  boolean withOwlapiIris) {
+                                                                                  boolean withOwlapiIris,
+                                                                                  boolean withJavaUris) {
         return TransformationConfiguration.builder().context(context).packageName(packageName).targetDir(targetDir)
                                           .addOwlapiIris(withOwlapiIris)
+                                          .addJavaUris(withJavaUris)
                                           .propertiesType(PropertiesType.string);
     }
 
@@ -117,7 +122,7 @@ public class OWL2JavaTransformerTest {
         this.targetDir = getTempDirectory();
         assertEquals(0, targetDir.listFiles().length);
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.transform(config(CONTEXT, packageName, targetDir.getAbsolutePath(), true).build());
+        transformer.transform(config(CONTEXT, packageName, targetDir.getAbsolutePath(), true, true).build());
         verifyGeneratedTree(packageName, targetDir);
     }
 
@@ -143,7 +148,7 @@ public class OWL2JavaTransformerTest {
     public void transformGeneratesVocabularyFile() throws Exception {
         this.targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), true).build());
+        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), true, true).build());
         verifyVocabularyFileExistence(targetDir);
     }
 
@@ -156,7 +161,7 @@ public class OWL2JavaTransformerTest {
     public void transformGeneratesVocabularyFileForTheWholeFile() throws Exception {
         this.targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.transform(config(null, "", targetDir.getAbsolutePath(), true).build());
+        transformer.transform(config(null, "", targetDir.getAbsolutePath(), true, true).build());
         verifyVocabularyFileExistence(targetDir);
     }
 
@@ -166,7 +171,7 @@ public class OWL2JavaTransformerTest {
         final File targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> transformer.transform(config(unknownContext, "", targetDir.getAbsolutePath(), true).build()));
+                () -> transformer.transform(config(unknownContext, "", targetDir.getAbsolutePath(), true, true).build()));
         assertThat(ex.getMessage(), containsString("Context " + unknownContext + " not found."));
     }
 
@@ -189,7 +194,7 @@ public class OWL2JavaTransformerTest {
     public void generateVocabularyGeneratesOnlyVocabularyFile() throws Exception {
         this.targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.generateVocabulary(config(CONTEXT, "", targetDir.getAbsolutePath(), false).build());
+        transformer.generateVocabulary(config(CONTEXT, "", targetDir.getAbsolutePath(), false, false).build());
         final List<String> fileNames = Arrays.asList(targetDir.list());
         assertEquals(1, fileNames.size());
         assertEquals(VOCABULARY_FILE, fileNames.get(0));
@@ -199,7 +204,7 @@ public class OWL2JavaTransformerTest {
     public void generateVocabularyGeneratesOnlyVocabularyFileForTheWholeFile() throws Exception {
         this.targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), false).build());
+        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), false, false).build());
         final List<String> fileNames = Arrays.asList(targetDir.list());
         assertEquals(1, fileNames.size());
         assertEquals(VOCABULARY_FILE, fileNames.get(0));
@@ -214,7 +219,7 @@ public class OWL2JavaTransformerTest {
         final OWLAxiom axiom = dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(IRI.create(invalidIri)));
         TestUtils.addAxiom(axiom, transformer);
 
-        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), false).build());
+        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), false, false).build());
         final File vocabularyFile = targetDir.listFiles()[0];
         final String fileContents = readFile(vocabularyFile);
         assertFalse(fileContents.contains(invalidIri.substring(invalidIri.lastIndexOf('/') + 1) + " ="));
@@ -230,7 +235,7 @@ public class OWL2JavaTransformerTest {
         this.targetDir = getTempDirectory();
         assertEquals(0, targetDir.listFiles().length);
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.transform(config(CONTEXT, PACKAGE, targetDir.getAbsolutePath(), true).build());
+        transformer.transform(config(CONTEXT, PACKAGE, targetDir.getAbsolutePath(), true, true).build());
         final List<String> generatedClass = getGeneratedClass(targetDir, "Answer");
 
         String fieldDeclaration = getFieldDeclaration(generatedClass, "hasValue");
@@ -243,7 +248,7 @@ public class OWL2JavaTransformerTest {
         this.targetDir = getTempDirectory();
         assertEquals(0, targetDir.listFiles().length);
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.transform(config(CONTEXT, PACKAGE, targetDir.getAbsolutePath(), true).build());
+        transformer.transform(config(CONTEXT, PACKAGE, targetDir.getAbsolutePath(), true, true).build());
         final List<String> generatedClass = getGeneratedClass(targetDir, "Organization");
 
         final String classDeclaration = getExtendsClassDeclaration(generatedClass);
@@ -266,7 +271,7 @@ public class OWL2JavaTransformerTest {
         final OWL2JavaException ex = assertThrows(OWL2JavaException.class,
                 () -> {
                     transformer.setOntology(BAD_IMPORT_ONTOLOGY_IRI, mappingFilePath);
-                    transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
+                    transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true, true).build());
                 });
         assertThat(ex.getMessage(), containsString("Unable to load ontology"));
     }
@@ -276,7 +281,7 @@ public class OWL2JavaTransformerTest {
         this.targetDir = getTempDirectory();
         transformer.ignoreMissingImports(true);
         transformer.setOntology(BAD_IMPORT_ONTOLOGY_IRI, mappingFilePath);
-        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
+        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true, true).build());
         verifyVocabularyFileExistence(targetDir);
     }
 
@@ -307,7 +312,7 @@ public class OWL2JavaTransformerTest {
         this.targetDir = getTempDirectory();
         transformer.setOntology("http://krizik.felk.cvut.cz/ontologies/onto-with-same-property-in-import.owl",
                 mappingFilePath);
-        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), false).build());
+        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), false, false).build());
         final File vocabularyFile = targetDir.listFiles()[0];
         final String fileContents = readFile(vocabularyFile);
         final String property = "http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#createdBy";
@@ -328,7 +333,7 @@ public class OWL2JavaTransformerTest {
     public void generateVocabularyDoesNotDuplicateRdfProperties() throws Exception {
         this.targetDir = getTempDirectory();
         transformer.setOntology("http://www.w3.org/2000/01/rdf-schema", mappingFilePath);
-        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), false).build());
+        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), false, false).build());
         final File vocabularyFile = targetDir.listFiles()[0];
         final String fileContents = readFile(vocabularyFile);
         // Using the elements/1.1 version of identifier, because the terms version is declared also as an individual
@@ -341,7 +346,7 @@ public class OWL2JavaTransformerTest {
         this.targetDir = getTempDirectory();
         transformer.setOntology("http://krizik.felk.cvut.cz/ontologies/model",
                 mappingFilePath);
-        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
+        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true, true).build());
         final File vocabularyFile = targetDir.listFiles()[0];
         final String fileContents = readFile(vocabularyFile);
         assertTrue(fileContents.contains("ONTOLOGY_IRI_MODEL"));
@@ -399,7 +404,7 @@ public class OWL2JavaTransformerTest {
     public void generateVocabularyGeneratesJavadocFromRdfsComments() throws Exception {
         this.targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), false).build());
+        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), false, false).build());
         final File vocabFile = new File(targetDir.getAbsolutePath() + File.separator + VOCABULARY_FILE);
         assertTrue(readFile(vocabFile).contains("Connects artifact to its author."));
     }
@@ -409,7 +414,7 @@ public class OWL2JavaTransformerTest {
         this.targetDir = getTempDirectory();
         assertEquals(0, targetDir.listFiles().length);
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), false).build());
+        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), false, false).build());
         final File reportClass = new File(
                 targetDir + File.separator + Constants.MODEL_PACKAGE + File.separator + "Report.java");
         assertTrue(readFile(reportClass).contains("Connects artifact to its author."));
@@ -420,7 +425,7 @@ public class OWL2JavaTransformerTest {
         this.targetDir = getTempDirectory();
         assertEquals(0, targetDir.listFiles().length);
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), false).build());
+        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), false, false).build());
         final File reportClass = new File(
                 targetDir + File.separator + Constants.MODEL_PACKAGE + File.separator + "Report.java");
         assertTrue(readFile(reportClass).contains("Represents a logical report filed by a person."));
@@ -431,7 +436,7 @@ public class OWL2JavaTransformerTest {
         this.targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
         transformer.transform(
-                config(null, "", targetDir.getAbsolutePath(), false).generateJavadoc(false).build());
+                config(null, "", targetDir.getAbsolutePath(), false, false).generateJavadoc(false).build());
         final File vocabFile = new File(targetDir.getAbsolutePath() + File.separator + VOCABULARY_FILE);
         assertFalse(readFile(vocabFile).contains("Connects artifact to its author."));
     }
@@ -440,7 +445,7 @@ public class OWL2JavaTransformerTest {
     public void transformWithEmptyPackageNameGeneratesCorrectPackageNameForEntityClasses() throws Exception {
         this.targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), false).build());
+        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), false, false).build());
         final File modelFolder = new File(targetDir + File.separator + Constants.MODEL_PACKAGE);
         for (File entity : modelFolder.listFiles()) {
             final List<String> lines = Files.readAllLines(entity.toPath());
@@ -453,7 +458,7 @@ public class OWL2JavaTransformerTest {
     public void transformGeneratesSerializableEntities() throws Exception {
         this.targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
-        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), false).build());
+        transformer.transform(config(CONTEXT, "", targetDir.getAbsolutePath(), false, false).build());
         final File modelFolder = new File(targetDir + File.separator + Constants.MODEL_PACKAGE);
         for (File entityClass : modelFolder.listFiles()) {
             assertThat(readFile(entityClass), containsString("implements Serializable"));
@@ -464,7 +469,7 @@ public class OWL2JavaTransformerTest {
     public void generateVocabularyDoesNotGenerateDuplicateConstantsForImportedOntologies() throws Exception {
         this.targetDir = getTempDirectory();
         transformer.setOntology("http://onto.fel.cvut.cz/ontologies/dataset-descriptor", mappingFilePath);
-        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
+        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true, true).build());
         final File vocabularyFile = targetDir.listFiles()[0];
         final String fileContents = readFile(vocabularyFile);
         final Matcher m = Pattern.compile("\"http://onto.fel.cvut.cz/ontologies/ufo-c\";").matcher(fileContents);
@@ -475,12 +480,32 @@ public class OWL2JavaTransformerTest {
         assertEquals(1, matches.size());
     }
 
+    @ParameterizedTest
+    @CsvSource({"true,true", "true,false", "false,true", "false,false"})
+    public void generateVocabularyWithJavaUrisOrOwlIrisGeneratesClassWithRequestedFields(boolean withOwlApiIris, boolean withJavaUris) throws Exception {
+        this.targetDir = getTempDirectory();
+        this.targetDir = getTempDirectory();
+        transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath);
+        transformer.transform(
+                config(null, "", targetDir.getAbsolutePath(), withOwlApiIris, withJavaUris).build());
+        final File vocabFile = new File(targetDir.getAbsolutePath() + File.separator + VOCABULARY_FILE);
+        final String fileContents = readFile(vocabFile);
+        assertEquals(withOwlApiIris, fileContents.contains("import org.semanticweb.owlapi.model.IRI;"));
+        assertEquals(withJavaUris, fileContents.contains("import java.net.URI;"));
+        KNOWN_CLASSES.stream().map(name -> "c_" + name).forEach(className -> {
+            assertEquals(withOwlApiIris, fileContents.contains(
+                    String.format("public final static IRI %s = IRI.create(s_%1$s);", className)));
+            assertEquals(withJavaUris, fileContents.contains(
+                    String.format("public final static URI u_%s = URI.create(s_%1$s);", className)));
+        });
+    }
+
     @EnabledOnOs(OS.WINDOWS)
     @Test
     void generateVocabularyUsesUTF8ForIrisAndMappingFileOnWindows() throws Exception {
         this.targetDir = getTempDirectory();
         transformer.setOntology("http://onto.fel.cvut.cz/ontologies/owl2java/slovník", mappingFilePath);
-        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true).build());
+        transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true, true).build());
         final File vocabularyFile = targetDir.listFiles()[0];
         final String fileContents = readFile(vocabularyFile);
         assertThat(fileContents, anyOf(containsString("http://onto.fel.cvut.cz/ontologies/owl2java/slovník#vytvořil"),

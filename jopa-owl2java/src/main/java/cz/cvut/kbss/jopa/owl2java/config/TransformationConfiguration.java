@@ -33,6 +33,8 @@ public class TransformationConfiguration {
 
     private final boolean generateOwlapiIris;
 
+    private final boolean generateJavaUris;
+
     private final boolean generateJavadoc;
 
     private final boolean preferMultilingualStrings;
@@ -58,6 +60,7 @@ public class TransformationConfiguration {
         this.packageName = builder.packageName;
         this.targetDir = builder.targetDir;
         this.generateOwlapiIris = builder.owlapiIris;
+        this.generateJavaUris = builder.javaUris;
         this.generateJavadoc = builder.generateJavadoc;
         this.preferMultilingualStrings = builder.preferMultilingualStrings;
         this.propertiesType = builder.propertiesType;
@@ -77,6 +80,7 @@ public class TransformationConfiguration {
         this.packageName = cliParams.valueOf(Option.PACKAGE.arg).toString();
         this.targetDir = cliParams.valueOf(Option.TARGET_DIR.arg).toString();
         this.generateOwlapiIris = cliParams.is(Option.WITH_IRIS.arg, Defaults.WITH_IRIS);
+        this.generateJavaUris = cliParams.is(Option.WITH_URIS.arg, Defaults.WITH_URIS);
         this.generateJavadoc = cliParams.is(Option.GENERATE_JAVADOC_FROM_COMMENT.arg, Defaults.GENERATE_JAVADOC_FROM_COMMENT);
         this.preferMultilingualStrings = cliParams.is(Option.PREFER_MULTILINGUAL_STRINGS.arg, Defaults.PREFER_MULTILINGUAL_STRINGS);
         this.propertiesType = PropertiesType.fromParam(cliParams.valueOf(Option.PROPERTIES_TYPE.arg));
@@ -108,6 +112,10 @@ public class TransformationConfiguration {
 
     public boolean shouldGenerateOwlapiIris() {
         return generateOwlapiIris;
+    }
+
+    public boolean shouldGenerateJavaUris() {
+        return generateJavaUris;
     }
 
     public boolean shouldGenerateJavadoc() {
@@ -164,6 +172,7 @@ public class TransformationConfiguration {
         private String targetDir = Defaults.TARGET_DIR;
         private PropertiesType propertiesType = PropertiesType.valueOf(Defaults.PROPERTIES_TYPE);
         private boolean owlapiIris = Defaults.WITH_IRIS;
+        private boolean javaUris = Defaults.WITH_URIS;
         private boolean generateJavadoc = Defaults.GENERATE_JAVADOC_FROM_COMMENT;
         private boolean preferMultilingualStrings = Defaults.PREFER_MULTILINGUAL_STRINGS;
         private boolean generateAnnotationFields = Defaults.GENERATE_ANNOTATION_FIELDS;
@@ -190,6 +199,11 @@ public class TransformationConfiguration {
 
         public TransformationConfigurationBuilder addOwlapiIris(boolean add) {
             this.owlapiIris = add;
+            return this;
+        }
+
+        public TransformationConfigurationBuilder addJavaUris(boolean add) {
+            this.javaUris = add;
             return this;
         }
 

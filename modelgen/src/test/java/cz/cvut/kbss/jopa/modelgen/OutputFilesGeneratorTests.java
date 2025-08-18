@@ -51,6 +51,7 @@ class OutputFilesGeneratorTests {
         cl.setName(testingClass.getSimpleName());
         cl.setPckg(testingClass.getPackage().getName());
         cl.getImports().add(testingClass.getName());
+        cl.makeEntityClass();
         cl.setExtend("");
 
         Field field1 = new Field();
@@ -154,6 +155,11 @@ class OutputFilesGeneratorTests {
 
     @Nested
     class GenerateOutputFilesTest {
+
+        @Test
+        void containsClassIri() {
+            assertThat(actualResult, containsString("public static volatile IRI entityClassIRI;"));
+        }
 
         @Test
         void containsIdentifier() {

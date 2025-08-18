@@ -1,5 +1,12 @@
 # JOPA - Change Log
 
+### 2.5.0 - 2025-08-18
+- Support `IRI` as Query parameters (Enhancement #354).
+- Add entity class IRI to the static metamodel (Enhancement #360).
+- Implement a plugin API - currently there is plugin for the whole persistence unit lifecycle (Enhancement #361).
+- Support generating Java `URI` constants into the `Vocabulary` file in OWL2Java.
+- Make static metamodel generator a service discoverable using the Java Service Provider Interface.
+
 ### 2.4.4 - 2025-07-21
 - Fix an issue with merging entities with unset/changed query attributes (Bug #351).
 - Dependency updates: Jena 5.5.0.
