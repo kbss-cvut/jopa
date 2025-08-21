@@ -861,7 +861,7 @@ public class SoqlQueryParserTest {
     @Test
     void parseQueryExtractsItemsFromRdfContainer() {
         final String soql = "SELECT c FROM OWLClassC c WHERE :param MEMBER OF c.rdfSeq";
-        final int hashCode = strUri(Vocabulary.P_HAS_RDF_SEQ).hashCode();
+        final int hashCode = Math.abs(strUri(Vocabulary.P_HAS_RDF_SEQ).hashCode());
         final String containerVariable = "?rdfContainer" + hashCode;
         final String hasElementVariable = "?hasElement" + hashCode;
         final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassC) + " . " +

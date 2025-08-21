@@ -1,5 +1,8 @@
 # JOPA - Change Log
 
+### 2.5.1 - 2025-08-21
+- Fix an issue with translating SOQL to SPARQL when referencing a RDF container attribute (Bug #366).
+
 ### 2.5.0 - 2025-08-18
 - Support `IRI` as Query parameters (Enhancement #354).
 - Add entity class IRI to the static metamodel (Enhancement #360).
