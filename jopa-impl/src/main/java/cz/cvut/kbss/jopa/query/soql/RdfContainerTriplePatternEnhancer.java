@@ -11,8 +11,9 @@ class RdfContainerTriplePatternEnhancer extends TriplePatternEnhancer {
 
     @Override
     List<String> getTriplePatterns(String subject, String predicate, String object) {
-        // Make variable names dependent on predicate to avoid collisions
-        final int predicateHash = predicate.hashCode();
+        // Make variable names dependent on predicate to avoid collisions. This is not bulletproof but should be good enough.
+        // Cannot use just hashCode because it may be negative which makes the variable name invalid in SPARQL
+        final int predicateHash = Math.abs(predicate.hashCode());
         final String containerVariable = "?rdfContainer" + predicateHash;
         final String hasElementVariable = "?hasElement" + predicateHash;
         return List.of(
