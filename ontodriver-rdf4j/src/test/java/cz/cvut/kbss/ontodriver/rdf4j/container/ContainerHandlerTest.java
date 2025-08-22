@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StorageConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StorageConnector;
@@ -43,6 +44,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
@@ -384,5 +386,57 @@ class ContainerHandlerTest {
             assertEquals(1, containerTypeStatement.size());
             assertEquals(vf.createIRI(context.toString()), containerTypeStatement.get(0).getContext());
         }
+    }
+
+    @Test
+    void persistContainerSupportsTranslationsAsContent() throws Exception {
+        final Assertion property = Assertion.createDataPropertyAssertion(URI.create("https://example.com/hasAlternatives"), false);
+        final List<Translations> values = List.of(new Translations(Map.of("en", "One", "cs", "Jedna")),
+                new Translations(Map.of("en", "Two", "cs", "Dva")));
+        final ContainerValueDescriptor<Translations> descriptor = ContainerValueDescriptor.bagValueDescriptor(owner, property);
+        values.forEach(descriptor::addValue);
+
+        storageConnection.begin();
+        sut.persistContainer(descriptor);
+        storageConnection.commit();
+
+        final IRI subject = vf.createIRI(owner.getIdentifier().toString());
+        final IRI containerProperty = vf.createIRI(property.getIdentifier().toString());
+        try (RepositoryConnection conn = repository.getConnection()) {
+            final List<Statement> containerStatement = conn.getStatements(subject, containerProperty, null).stream()
+                                                           .toList();
+            assertEquals(1, containerStatement.size());
+            final Resource container = (Resource) containerStatement.get(0).getObject();
+            assertEquals(values.size() * 2, conn.getStatements(container, null, null).stream()
+                                                .filter(Predicate.not(s -> s.getPredicate().equals(RDF.TYPE))).toList()
+                                                .size());
+            for (int i = 0; i < values.size(); i++) {
+                assertEquals(2, conn.getStatements(container, vf.createIRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#_" + (i + 1)), null, false)
+                                    .stream().toList().size());
+            }
+        }
+    }
+
+    @Test
+    void loadContainerReturnsListOfAxiomsWithTranslationsWhenContainerContainsMultilingualStrings() throws Exception {
+        final Assertion property = Assertion.createDataPropertyAssertion(URI.create("https://example.com/hasAlternatives"), false);
+        final String ttl = """
+                @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+                <%s> <%s> <https://example.com/hasIsolationLevels/container> .
+                <https://example.com/hasIsolationLevels/container> rdf:_1 "one"@en .
+                <https://example.com/hasIsolationLevels/container> rdf:_1 "jedna"@cs .
+                <https://example.com/hasIsolationLevels/container> rdf:_2 "two"@en .
+                <https://example.com/hasIsolationLevels/container> rdf:_2 "dva"@cs .
+                """.formatted(owner.toString(), property.getIdentifier());
+        try (final RepositoryConnection conn = repository.getConnection()) {
+            conn.add(new ByteArrayInputStream(ttl.getBytes()), null, RDFFormat.TURTLE);
+        }
+
+        final List<Axiom<?>> result = sut.loadContainer(ContainerDescriptor.seqDescriptor(owner, property));
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(new Value<>(new Translations(Map.of("en", "one", "cs", "jedna"))), result.get(0).getValue());
+        assertEquals(new Value<>(new Translations(Map.of("en", "two", "cs", "dva"))), result.get(1).getValue());
     }
 }

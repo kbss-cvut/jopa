@@ -26,6 +26,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.util.ListElementStorageHelper;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -156,14 +157,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
     }
 
     private Translations currentContentToMultilingualString() {
-        final Translations mls = new Translations();
-        currentContent.forEach(s -> {
-            assert s.getObject().isLiteral();
-            final Literal literal = (Literal) s.getObject();
-            assert literal.getLanguage().isPresent();
-            mls.set(literal.getLanguage().get(), literal.getLabel());
-        });
-        return mls;
+        return ListElementStorageHelper.extractTranslations(currentContent.stream().map(Statement::getObject).toList());
     }
 
     @Override
@@ -195,7 +189,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
         assert currentNode.getObject() instanceof Resource;
         // We just replace the original content statement with new one
         connector.removeStatements(currentContent);
-        final Collection<org.eclipse.rdf4j.model.Value> contentValues = new ReferencedListHelper(valueConverter).toRdf4jValue(listDescriptor.getNodeContent(), newContent);
+        final Collection<org.eclipse.rdf4j.model.Value> contentValues = new ListElementStorageHelper(valueConverter).toRdf4jValue(listDescriptor.getNodeContent(), newContent);
         final Resource node = (Resource) currentNode.getObject();
         connector.addStatements(contentValues.stream()
                                              .map(v -> vf.createStatement(node, hasContentProperty, v, context))
