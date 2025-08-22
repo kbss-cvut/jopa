@@ -24,8 +24,10 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.util.ListElementStorageHelper;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -41,10 +43,13 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Handles RDF container access operations.
@@ -82,13 +87,8 @@ public class ContainerHandler {
             return List.of();
         }
         final Collection<Statement> content = connector.findStatements(container.get(), null, null, false, contexts);
-        return (List) content.stream()
-                             .filter(s -> s.getPredicate().stringValue().startsWith(MEMBERSHIP_PROPERTY_URI_BASE))
-                             .sorted(ContainerHandler::statementComparator)
-                             .map(s -> ValueConverter.fromRdf4jValue(descriptor.getProperty(), s.getObject()))
-                             .filter(Optional::isPresent)
-                             .map(o -> new AxiomImpl<>(descriptor.getOwner(), descriptor.getProperty(), new cz.cvut.kbss.ontodriver.model.Value<>(o.get())))
-                             .toList();
+        return loadContainerContent(content.stream().filter(s -> s.getPredicate().stringValue()
+                                                                  .startsWith(MEMBERSHIP_PROPERTY_URI_BASE)), descriptor);
     }
 
     private Optional<Resource> findContainer(ContainerDescriptor descriptor,
@@ -107,16 +107,22 @@ public class ContainerHandler {
         return Optional.of((Resource) containerValue);
     }
 
-    private static int statementComparator(Statement s1, Statement s2) {
-        final String p1 = s1.getPredicate().toString();
-        final String p2 = s2.getPredicate().toString();
-        try {
-            final int p1Number = Integer.parseInt(p1.substring(MEMBERSHIP_PROPERTY_URI_BASE_LENGTH));
-            final int p2Number = Integer.parseInt(p2.substring(MEMBERSHIP_PROPERTY_URI_BASE_LENGTH));
-            return p1Number - p2Number;
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Unable to determine container membership property number.", e);
-        }
+    private List<Axiom<?>> loadContainerContent(Stream<Statement> content,
+                                                ContainerDescriptor descriptor) {
+        final Map<Integer, List<Value>> values = content.collect(Collectors.groupingBy(s -> Integer.parseInt(s.getPredicate()
+                                                                                                              .toString()
+                                                                                                              .substring(MEMBERSHIP_PROPERTY_URI_BASE_LENGTH)),
+                Collectors.mapping(Statement::getObject, Collectors.toList())));
+        return values.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(e -> {
+            if (e.getValue().size() == 1) {
+                final Optional<?> optionalValue = ValueConverter.fromRdf4jValue(descriptor.getProperty(), e.getValue()
+                                                                                                           .get(0));
+                return optionalValue.map(v -> new AxiomImpl<>(descriptor.getOwner(), descriptor.getProperty(), new cz.cvut.kbss.ontodriver.model.Value<>(v)));
+            } else {
+                final Translations mls = ListElementStorageHelper.extractTranslations(e.getValue());
+                return Optional.of(new AxiomImpl<>(descriptor.getOwner(), descriptor.getProperty(), new cz.cvut.kbss.ontodriver.model.Value<>(mls)));
+            }
+        }).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
     }
 
     private Set<IRI> contexts(ContainerDescriptor descriptor) {
@@ -165,10 +171,13 @@ public class ContainerHandler {
     private <T> List<Statement> generateContainerContent(ContainerValueDescriptor<T> descriptor, Resource container,
                                                          IRI contextIri) throws Rdf4jDriverException {
         final List<Statement> result = new ArrayList<>(descriptor.getValues().size());
-        final ValueConverter valueConverter = new ValueConverter(vf);
+        final ListElementStorageHelper saveHelper = new ListElementStorageHelper(new ValueConverter(vf));
         for (int i = 0; i < descriptor.getValues().size(); i++) {
             final T value = descriptor.getValues().get(i);
-            result.add(vf.createStatement(container, vf.createIRI(MEMBERSHIP_PROPERTY_URI_BASE + (i + 1)), valueConverter.toRdf4jValue(descriptor.getProperty(), value), contextIri));
+            final Collection<Value> values = saveHelper.toRdf4jValue(descriptor.getProperty(), value);
+            for (Value v : values) {
+                result.add(vf.createStatement(container, vf.createIRI(MEMBERSHIP_PROPERTY_URI_BASE + (i + 1)), v, contextIri));
+            }
         }
         return result;
     }
