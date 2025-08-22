@@ -17,8 +17,10 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassC;
+import cz.cvut.kbss.jopa.test.OWLClassM;
 import cz.cvut.kbss.jopa.test.OWLClassR;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
@@ -182,5 +184,16 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
                           .setParameter("owner", entityC)
                           .setParameter("hasContainer", URI.create(Vocabulary.P_HAS_RDF_BAG))
                           .getSingleResult());
+    }
+
+    @Test
+    public void persistAndRetrieiveSupportMultilingualRdfSequence() {
+        this.em = getEntityManager("persistSupportsMultilingualRdfSequence", false);
+        entityM.setMultilingualRdfSequence(List.of(MultilingualString.create("One", "en").set("cs", "Jedna"),
+                MultilingualString.create("Two", "en").set("cs", "Dva")));
+        transactional(() -> em.persist(entityM));
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(entityM.getMultilingualRdfSequence(), result.getMultilingualRdfSequence());
     }
 }
