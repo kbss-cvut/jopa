@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.model.AttributeConverter;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.Convert;
+import cz.cvut.kbss.jopa.model.annotations.RDFContainer;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.CustomConverterWrapper;
@@ -91,7 +92,7 @@ public class ConverterResolver {
         if (config.isLexicalForm()) {
             return Optional.of(new ToLexicalFormConverter());
         }
-        if (isMultilingualReferencedList(attValueType, field)) {
+        if (requiresMultilingualConverter(attValueType, field)) {
             return Optional.of(new ToMultilingualStringConverter());
         }
         return Converters.getDefaultConverter(attValueType);
@@ -139,10 +140,9 @@ public class ConverterResolver {
         }
     }
 
-    private static boolean isMultilingualReferencedList(Class<?> elemType, PropertyInfo field) {
+    private static boolean requiresMultilingualConverter(Class<?> elemType, PropertyInfo field) {
         return MultilingualString.class.isAssignableFrom(elemType)
-                && field.getAnnotation(Sequence.class) != null
-                && List.class.isAssignableFrom(field.field().getType());
+                && (field.getAnnotation(Sequence.class) != null || field.getAnnotation(RDFContainer.class) != null);
     }
 
     public static Class<?> resolveConverterAttributeType(Class<?> converterType) {

@@ -116,13 +116,7 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
     @Test
     public void persistPersistsEntityWithRdfContainerOfEntities() {
         this.em = getEntityManager("persistPersistsEntityWithRdfContainerOfEntities", false);
-        final Set<OWLClassA> aBag = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassA())
-                                             .collect(Collectors.toSet());
-        entityC.setRdfBag(aBag);
-        transactional(() -> {
-            aBag.forEach(em::persist);
-            em.persist(entityC);
-        });
+        final Set<OWLClassA> aBag = generateAndPersistBagOfAs();
 
         final OWLClassC result = em.find(OWLClassC.class, entityC.getUri());
         assertEquals(aBag, result.getRdfBag());
@@ -136,16 +130,21 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
 
     }
 
+    private Set<OWLClassA> generateAndPersistBagOfAs() {
+        final Set<OWLClassA> aBag = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassA())
+                                             .collect(Collectors.toSet());
+        entityC.setRdfBag(aBag);
+        transactional(() -> {
+            aBag.forEach(em::persist);
+            em.persist(entityC);
+        });
+        return aBag;
+    }
+
     @Test
     public void updateUpdatesEntityWithRdfContainerOfEntities() {
         this.em = getEntityManager("updateUpdatesEntityWithRdfContainerOfEntities", true);
-        final Set<OWLClassA> originalBag = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassA())
-                                                    .collect(Collectors.toSet());
-        entityC.setRdfBag(originalBag);
-        transactional(() -> {
-            originalBag.forEach(em::persist);
-            em.persist(entityC);
-        });
+        generateAndPersistBagOfAs();
 
         entityC.setRdfBag(List.of(entityA));
         transactional(() -> {
@@ -187,7 +186,7 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
     }
 
     @Test
-    public void persistAndRetrieiveSupportMultilingualRdfSequence() {
+    public void persistAndRetrieveSupportMultilingualRdfSequence() {
         this.em = getEntityManager("persistSupportsMultilingualRdfSequence", false);
         entityM.setMultilingualRdfSequence(List.of(MultilingualString.create("One", "en").set("cs", "Jedna"),
                 MultilingualString.create("Two", "en").set("cs", "Dva")));
@@ -195,5 +194,20 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getMultilingualRdfSequence(), result.getMultilingualRdfSequence());
+    }
+
+    @Test
+    public void updateSupportsMultilingualRdfContainers() {
+        this.em = getEntityManager("persistSupportsMultilingualRdfSequence", false);
+        entityM.setMultilingualRdfSequence(List.of(MultilingualString.create("One", "en").set("cs", "Jedna"),
+                MultilingualString.create("Two", "en").set("cs", "Dva")));
+        transactional(() -> em.persist(entityM));
+
+        entityM.getMultilingualRdfSequence().get(1).set("cs", "Dve");
+        transactional(() -> em.merge(entityM));
+
+        final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
+        assertEquals(entityM.getMultilingualRdfSequence(), result.getMultilingualRdfSequence());
+        assertEquals("Dve", result.getMultilingualRdfSequence().get(1).get("cs"));
     }
 }
