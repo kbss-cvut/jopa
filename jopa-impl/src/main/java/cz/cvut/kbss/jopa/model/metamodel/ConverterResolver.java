@@ -37,7 +37,6 @@ import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 /**

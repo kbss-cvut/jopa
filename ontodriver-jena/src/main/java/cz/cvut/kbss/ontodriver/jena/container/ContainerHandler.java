@@ -23,9 +23,11 @@ import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
+import cz.cvut.kbss.ontodriver.jena.util.ListElementStorageHelper;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import org.apache.jena.rdf.model.Property;
@@ -40,8 +42,10 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ContainerHandler {
@@ -63,7 +67,7 @@ public class ContainerHandler {
         if (container.isEmpty()) {
             return List.of();
         }
-        return readContainerContent(container.get(), descriptor);
+        return readContainerContent(findContainerMembers(container.get(), contexts(descriptor)), descriptor);
     }
 
     private Optional<Resource> findContainer(ContainerDescriptor descriptor) throws JenaDriverException {
@@ -87,36 +91,31 @@ public class ContainerHandler {
         return descriptor.getContext() != null ? List.of(descriptor.getContext().toString()) : List.of();
     }
 
-    private List<Axiom<?>> readContainerContent(Resource container, ContainerDescriptor descriptor) {
-        return findContainerMembers(container, contexts(descriptor))
-                .sorted(ContainerHandler::statementComparator)
-                .map(s -> {
-                    final RDFNode element = s.getObject();
-                    if (element.isResource()) {
-                        return new AxiomImpl<>(descriptor.getOwner(), descriptor.getProperty(), new Value<>(NamedResource.create(element.asResource()
-                                                                                                                                        .getURI())));
-                    } else {
-                        return (Axiom<?>) new AxiomImpl<>(descriptor.getOwner(), descriptor.getProperty(), new Value<>(JenaUtils.literalToValue(element.asLiteral())));
-                    }
-                }).toList();
-
+    private List<Axiom<?>> readContainerContent(Stream<Statement> content,
+                                                ContainerDescriptor descriptor) {
+        final Map<Integer, List<RDFNode>> values = content.collect(Collectors.groupingBy(s -> Integer.parseInt(s.getPredicate()
+                                                                                                                .toString()
+                                                                                                                .substring(MEMBERSHIP_PROPERTY_URI_BASE_LENGTH)),
+                Collectors.mapping(Statement::getObject, Collectors.toList())));
+        return values.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(e -> {
+            if (e.getValue().size() == 1) {
+                final RDFNode node = e.getValue().get(0);
+                if (node.isResource()) {
+                    return new AxiomImpl<>(descriptor.getOwner(), descriptor.getProperty(), new Value<>(NamedResource.create(node.asResource()
+                                                                                                                                 .getURI())));
+                } else {
+                    return new AxiomImpl<>(descriptor.getOwner(), descriptor.getProperty(), new Value<>(JenaUtils.literalToValue(node.asLiteral())));
+                }
+            } else {
+                final Translations mls = ListElementStorageHelper.extractTranslations(e.getValue());
+                return new AxiomImpl<>(descriptor.getOwner(), descriptor.getProperty(), new cz.cvut.kbss.ontodriver.model.Value<>(mls));
+            }
+        }).collect(Collectors.toList());
     }
 
     private Stream<Statement> findContainerMembers(Resource container, List<String> contexts) {
         return connector.find(container, null, null, contexts).stream()
                         .filter(s -> s.getPredicate().getURI().startsWith(MEMBERSHIP_PROPERTY_URI_BASE));
-    }
-
-    private static int statementComparator(Statement s1, Statement s2) {
-        final String p1 = s1.getPredicate().toString();
-        final String p2 = s2.getPredicate().toString();
-        try {
-            final int p1Number = Integer.parseInt(p1.substring(MEMBERSHIP_PROPERTY_URI_BASE_LENGTH));
-            final int p2Number = Integer.parseInt(p2.substring(MEMBERSHIP_PROPERTY_URI_BASE_LENGTH));
-            return p1Number - p2Number;
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Unable to determine container membership property number.", e);
-        }
     }
 
     /**
@@ -156,9 +155,11 @@ public class ContainerHandler {
     private List<Statement> generateContainerContent(ContainerValueDescriptor<?> descriptor, Resource container) {
         final List<Statement> result = new ArrayList<>(descriptor.getValues().size());
         for (int i = 0; i < descriptor.getValues().size(); i++) {
-            result.add(ResourceFactory.createStatement(container,
-                    ResourceFactory.createProperty(MEMBERSHIP_PROPERTY_URI_BASE + (i + 1)),
-                    JenaUtils.toRdfNode(descriptor.getProperty(), descriptor.getValues().get(i))));
+            final Property membershipProperty = ResourceFactory.createProperty(MEMBERSHIP_PROPERTY_URI_BASE + (i + 1));
+            ListElementStorageHelper.toRdfNodes(descriptor.getValues().get(i), descriptor.getProperty())
+                                    .forEach(node -> result.add(ResourceFactory.createStatement(container,
+                                            membershipProperty,
+                                            node)));
         }
         return result;
     }

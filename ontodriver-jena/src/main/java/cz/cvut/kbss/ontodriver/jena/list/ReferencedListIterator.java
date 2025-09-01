@@ -21,10 +21,10 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
+import cz.cvut.kbss.ontodriver.jena.util.ListElementStorageHelper;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
-import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.Literal;
@@ -79,14 +79,7 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
             return (T) (value.isResource() ? NamedResource.create(value.asResource()
                                                                        .getURI()) : JenaUtils.literalToValue(value.asLiteral()));
         } else {
-            final Translations mls = new Translations();
-            content.forEach(n -> {
-                assert n.isLiteral();
-                final Literal lit = n.asLiteral();
-                assert lit.getLanguage() != null;
-                mls.set(lit.getLanguage(), lit.getString());
-            });
-            return (T) mls;
+            return (T) ListElementStorageHelper.extractTranslations(content);
         }
     }
 
@@ -133,9 +126,9 @@ class ReferencedListIterator<T> extends AbstractListIterator<T> {
     @Override
     void replace(T replacement) {
         remove(currentNode, hasContent, null);
-        final List<Statement> toAdd = ReferencedListHelper.toRdfNodes(replacement, hasContentAssertion)
-                                                          .map(n -> createStatement(currentNode, hasContent, n))
-                                                          .collect(Collectors.toList());
+        final List<Statement> toAdd = ListElementStorageHelper.toRdfNodes(replacement, hasContentAssertion)
+                                                              .map(n -> createStatement(currentNode, hasContent, n))
+                                                              .collect(Collectors.toList());
         connector.add(toAdd, context);
     }
 }

@@ -20,6 +20,7 @@ package cz.cvut.kbss.ontodriver.jena.list;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
+import cz.cvut.kbss.ontodriver.jena.util.ListElementStorageHelper;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -90,9 +91,9 @@ public class ReferencedListHandler {
                                     ReferencedListValueDescriptor<V> descriptor, int index) {
         final Resource node = generateNewListNode(descriptor.getListOwner().getIdentifier(), context, index);
         statements.add(createStatement(previousNode, link, node));
-        statements.addAll(ReferencedListHelper.toRdfNodes(value, descriptor.getNodeContent())
-                                              .map(n -> createStatement(node, hasContent, n))
-                                              .toList());
+        statements.addAll(ListElementStorageHelper.toRdfNodes(value, descriptor.getNodeContent())
+                                                  .map(n -> createStatement(node, hasContent, n))
+                                                  .toList());
         return node;
     }
 
