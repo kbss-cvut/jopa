@@ -32,6 +32,7 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
@@ -50,6 +51,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
@@ -362,5 +364,58 @@ class ContainerHandlerTest {
                                  .contains(ResourceFactory.createResource(owner.toString()), ResourceFactory.createProperty(property.getIdentifier()
                                                                                                                                     .toString()), containerIri));
         assertFalse(sharedDataset.getDefaultModel().contains(containerIri, null, (RDFNode) null));
+    }
+
+    @Test
+    void persistContainerSupportsTranslationsAsContent() throws Exception {
+        this.sharedDataset = DatasetFactory.createTxnMem();
+        connectorFactory.setDataset(sharedDataset);
+        final Assertion property = Assertion.createDataPropertyAssertion(URI.create("https://example.com/hasAlternatives"), false);
+        final List<Translations> values = List.of(new Translations(Map.of("en", "One", "cs", "Jedna")),
+                new Translations(Map.of("en", "Two", "cs", "Dva")));
+        final ContainerValueDescriptor<Translations> descriptor = ContainerValueDescriptor.bagValueDescriptor(owner, property);
+        values.forEach(descriptor::addValue);
+
+        connector.begin();
+        sut.persistContainer(descriptor);
+        connector.commit();
+
+        final Resource subject = ResourceFactory.createResource(owner.getIdentifier().toString());
+        final Property containerProperty = ResourceFactory.createProperty(property.getIdentifier().toString());
+        final List<Statement> containerStatement = sharedDataset.getDefaultModel()
+                                                                .listStatements(subject, containerProperty, (RDFNode) null)
+                                                                .toList();
+        assertEquals(1, containerStatement.size());
+        final Resource container = (Resource) containerStatement.get(0).getObject();
+        assertEquals(values.size() * 2, sharedDataset.getDefaultModel().listStatements(container, null, (RDFNode) null)
+                                                     .filterKeep(Predicate.not(s -> s.getPredicate().equals(RDF.type)))
+                                                     .toList()
+                                                     .size());
+        for (int i = 0; i < values.size(); i++) {
+            assertEquals(2, sharedDataset.getDefaultModel()
+                                         .listStatements(container, ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#_" + (i + 1)), (RDFNode) null)
+                                         .toList().size());
+        }
+    }
+
+    @Test
+    void loadContainerReturnsListOfAxiomsWithTranslationsWhenContainerContainsMultilingualStrings() throws Exception {
+        final Assertion property = Assertion.createDataPropertyAssertion(URI.create("https://example.com/hasAlternatives"), false);
+        loadData("""
+                @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+                <%s> <%s> <https://example.com/hasIsolationLevels/container> .
+                <https://example.com/hasIsolationLevels/container> rdf:_1 "one"@en .
+                <https://example.com/hasIsolationLevels/container> rdf:_1 "jedna"@cs .
+                <https://example.com/hasIsolationLevels/container> rdf:_2 "two"@en .
+                <https://example.com/hasIsolationLevels/container> rdf:_2 "dva"@cs .
+                """.formatted(owner.toString(), property.getIdentifier()));
+
+        connector.begin();
+        final List<Axiom<?>> result = sut.readContainer(ContainerDescriptor.seqDescriptor(owner, property));
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(new Value<>(new Translations(Map.of("en", "one", "cs", "jedna"))), result.get(0).getValue());
+        assertEquals(new Value<>(new Translations(Map.of("en", "two", "cs", "dva"))), result.get(1).getValue());
     }
 }
