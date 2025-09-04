@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.container;
 
+import com.google.common.collect.Multimap;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerValueDescriptor;
@@ -24,6 +25,7 @@ import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
@@ -39,7 +41,9 @@ import org.semanticweb.owlapi.io.StringDocumentSource;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
 import org.semanticweb.owlapi.model.OWLIndividual;
+import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -48,6 +52,7 @@ import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -305,5 +310,53 @@ class ContainerHandlerTest {
 
         sut.updateContainer(ContainerValueDescriptor.seqValueDescriptor(owner, property));
         assertTrue(ontology.getABoxAxioms(Imports.INCLUDED).isEmpty());
+    }
+
+    @Test
+    void persistContainerSupportsTranslationsAsContent() {
+        final Assertion property = Assertion.createDataPropertyAssertion(URI.create("https://example.com/hasAlternatives"), false);
+        final List<Translations> values = List.of(new Translations(Map.of("en", "One", "cs", "Jedna")),
+                new Translations(Map.of("en", "Two", "cs", "Dva")));
+        final ContainerValueDescriptor<Translations> descriptor = ContainerValueDescriptor.bagValueDescriptor(owner, property);
+        values.forEach(descriptor::addValue);
+        when(owlapiAdapter.generateIdentifier(any())).thenReturn(Generator.generateUri());
+
+        sut.persistContainer(descriptor);
+
+        final OWLNamedIndividual subject = dataFactory.getOWLNamedIndividual(owner.getIdentifier().toString());
+        final OWLObjectProperty containerProperty = dataFactory.getOWLObjectProperty(property.getIdentifier()
+                                                                                             .toString());
+        final List<OWLIndividual> containerStatement = EntitySearcher.getObjectPropertyValues(subject, containerProperty, ontology)
+                                                                     .toList();
+        assertEquals(1, containerStatement.size());
+        final Multimap<OWLDataPropertyExpression, OWLLiteral> containerContent = EntitySearcher.getDataPropertyValues(containerStatement.get(0), ontology);
+        assertEquals(values.size() * 2, containerContent.size());
+        for (int i = 0; i < values.size(); i++) {
+            assertEquals(2, containerContent.get(dataFactory.getOWLDataProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#_" + (i + 1)))
+                                            .size());
+        }
+    }
+
+    @Test
+    void loadContainerReturnsListOfAxiomsWithTranslationsWhenContainerContainsMultilingualStrings() throws Exception {
+        final Assertion property = Assertion.createDataPropertyAssertion(URI.create("https://example.com/hasAlternatives"), false);
+        final String ttl = """
+                @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+                <%s> <%s> <https://example.com/hasIsolationLevels/container> .
+                <https://example.com/hasIsolationLevels/container> rdf:_1 "one"@en .
+                <https://example.com/hasIsolationLevels/container> rdf:_1 "jedna"@cs .
+                <https://example.com/hasIsolationLevels/container> rdf:_2 "two"@en .
+                <https://example.com/hasIsolationLevels/container> rdf:_2 "dva"@cs .
+                """.formatted(owner.toString(), property.getIdentifier());
+        StringDocumentSource source = new StringDocumentSource(ttl);
+        OWLOntology loaded = ontologySnapshot.ontologyManager().loadOntologyFromOntologyDocument(source);
+        ontologySnapshot.ontologyManager().addAxioms(ontology, loaded.axioms());
+
+        final List<Axiom<?>> result = sut.readContainer(ContainerDescriptor.seqDescriptor(owner, property));
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(new Value<>(new Translations(Map.of("en", "one", "cs", "jedna"))), result.get(0).getValue());
+        assertEquals(new Value<>(new Translations(Map.of("en", "two", "cs", "dva"))), result.get(1).getValue());
     }
 }

@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.container;
 
+import com.google.common.collect.Multimap;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerValueDescriptor;
@@ -24,6 +25,7 @@ import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
@@ -31,12 +33,13 @@ import cz.cvut.kbss.ontodriver.owlapi.change.MutableRemoveAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.list.ListContentStorageHelper;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationValue;
-import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
@@ -46,9 +49,12 @@ import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ContainerHandler {
@@ -101,41 +107,65 @@ public class ContainerHandler {
                                                                                                                                                 .toURI()))));
             return result;
         } else {
-            final List<Axiom<?>> result = new ArrayList<>();
-            final List<PropertyValuePair<OWLLiteral>> lit = new ArrayList<>();
-            EntitySearcher.getDataPropertyValues(container.get(), ontology)
-                          .forEach((lp, value) -> lit.add(new PropertyValuePair<>(lp.asOWLDataProperty()
-                                                                                    .getIRI(), value)));
-            lit.sort((p1, p2) -> containerElementIriComparator(p1.property, p2.property));
-            lit.forEach(pv -> result.add(axiomAdapter.createAxiom(descriptor.getOwner(), descriptor.getProperty(), OwlapiUtils.owlLiteralToValue(pv.value))));
-            if (result.isEmpty()) {
+            final Multimap<OWLDataPropertyExpression, OWLLiteral> dataValues = EntitySearcher.getDataPropertyValues(container.get(), ontology);
+            if (dataValues.isEmpty()) {
                 return readContainerElementsAsAnnotationPropertyValues(container.get(), descriptor.getOwner(), descriptor.getProperty());
             }
-            return result;
+            return dataValues.keySet().stream()
+                             .sorted((dp1, dp2) -> containerElementIriComparator(dp1.asOWLDataProperty()
+                                                                                    .getIRI(), dp2.asOWLDataProperty()
+                                                                                                  .getIRI()))
+                             .map(dp -> {
+                                 final Collection<OWLLiteral> values = dataValues.get(dp);
+                                 if (values.size() > 1) {
+                                     final Translations mls = new Translations();
+                                     values.forEach(v -> mls.set(v.getLang(), v.getLiteral()));
+                                     return axiomAdapter.createAxiom(descriptor.getOwner(), descriptor.getProperty(), mls);
+                                 } else {
+                                     return axiomAdapter.createAxiom(descriptor.getOwner(), descriptor.getProperty(), OwlapiUtils.owlLiteralToValue(values.iterator()
+                                                                                                                                                          .next()));
+                                 }
+                             }).toList();
         }
     }
 
     private List<Axiom<?>> readContainerElementsAsAnnotationPropertyValues(OWLIndividual container, NamedResource owner,
                                                                            Assertion property) {
-        // For some reason a call to EntitySearcher with ternary operator on container does not compile
+        // For some reason, a call to EntitySearcher with ternary operator on container does not compile
         final Stream<OWLAnnotation> annotations = container.isAnonymous() ? EntitySearcher.getAnnotations(container.asOWLAnonymousIndividual(), ontology) : EntitySearcher.getAnnotations(container.asOWLNamedIndividual(), ontology);
-        return annotations.filter(a -> a.getProperty().getIRI().getIRIString()
-                                        .startsWith(MEMBERSHIP_PROPERTY_URI_BASE))
-                          .sorted((a1, a2) -> containerElementIriComparator(a1.getProperty()
-                                                                              .getIRI(), a2.getProperty().getIRI()))
-                          .map(an -> {
-                              if (an.getValue().isLiteral()) {
-                                  assert an.getValue().asLiteral().isPresent();
-                                  return axiomAdapter.createAxiom(owner, property, OwlapiUtils.owlLiteralToValue(an.getValue()
-                                                                                                                   .asLiteral()
-                                                                                                                   .get()));
-                              } else if (an.getValue().isIRI()) {
-                                  assert an.getValue().asIRI().isPresent();
-                                  return axiomAdapter.createAxiom(owner, property, an.getValue().asIRI().get());
-                              } else {
-                                  return null;
-                              }
-                          }).filter(Objects::nonNull).toList();
+        final Map<Integer, List<OWLAnnotationValue>> annotationValues = annotations.filter(a -> a.getProperty().getIRI()
+                                                                                                 .getIRIString()
+                                                                                                 .startsWith(MEMBERSHIP_PROPERTY_URI_BASE))
+                                                                                   .collect(Collectors.groupingBy(a -> Integer.parseInt(a.getProperty()
+                                                                                                                                         .getIRI()
+                                                                                                                                         .getIRIString()
+                                                                                                                                         .substring(MEMBERSHIP_PROPERTY_URI_BASE_LENGTH)), Collectors.mapping(OWLAnnotation::getValue, Collectors.toList())));
+        return annotationValues.entrySet().stream().sorted(Map.Entry.comparingByKey())
+                               .map(e -> {
+                                   final List<OWLAnnotationValue> values = e.getValue();
+                                   if (values.size() > 1) {
+                                       final Translations mls = new Translations();
+                                       values.forEach(v -> {
+                                           if (!v.isLiteral()) {
+                                               throw new IntegrityConstraintViolatedException("Multiple values found at position " + e.getKey() + " in container.");
+                                           }
+                                           assert v.asLiteral().isPresent();
+                                           mls.set(v.asLiteral().get().getLang(), v.asLiteral().get().getLiteral());
+                                       });
+                                       return axiomAdapter.createAxiom(owner, property, mls);
+                                   } else {
+                                       if (values.get(0).isLiteral()) {
+                                           assert values.get(0).asLiteral().isPresent();
+                                           return axiomAdapter.createAxiom(owner, property, OwlapiUtils.owlLiteralToValue(values.get(0)
+                                                                                                                                .asLiteral()
+                                                                                                                                .get()));
+                                       } else {
+                                           assert values.get(0).asIRI().isPresent();
+                                           return axiomAdapter.createAxiom(owner, property, values.get(0).asIRI()
+                                                                                                  .get());
+                                       }
+                                   }
+                               }).filter(Objects::nonNull).toList();
     }
 
     private Optional<? extends OWLIndividual> findContainer(ContainerDescriptor descriptor,
@@ -223,17 +253,17 @@ public class ContainerHandler {
                                                              Assertion property,
                                                              List<T> values) {
         final List<MutableAddAxiom> result = new ArrayList<>();
+        final NamedResource containerResource = NamedResource.create(container.toStringID());
+        final ListContentStorageHelper helper = new ListContentStorageHelper(axiomAdapter, ontology);
         for (int i = 0; i < values.size(); i++) {
             final T value = values.get(i);
-            final IRI propertyIri = IRI.create(MEMBERSHIP_PROPERTY_URI_BASE + (i + 1));
-            final OWLAxiom assertionAxiom = switch (property.getType()) {
-                case OBJECT_PROPERTY ->
-                        dataFactory.getOWLObjectPropertyAssertionAxiom(dataFactory.getOWLObjectProperty(propertyIri), container, dataFactory.getOWLNamedIndividual(IRI.create(value.toString())));
-                case DATA_PROPERTY ->
-                        dataFactory.getOWLDataPropertyAssertionAxiom(dataFactory.getOWLDataProperty(propertyIri), container, OwlapiUtils.createOWLLiteralFromValue(value, property.getLanguage()));
+            final URI propertyUri = URI.create(MEMBERSHIP_PROPERTY_URI_BASE + (i + 1));
+            final Assertion assertion = switch (property.getType()) {
+                case OBJECT_PROPERTY -> Assertion.createObjectPropertyAssertion(propertyUri, false);
+                case DATA_PROPERTY -> Assertion.createDataPropertyAssertion(propertyUri, false);
                 default -> throw new IllegalArgumentException("Unsupported property type " + property.getType());
             };
-            result.add(new MutableAddAxiom(ontology, assertionAxiom));
+            result.addAll(helper.saveListValue(containerResource, assertion, value));
         }
         return result;
     }
