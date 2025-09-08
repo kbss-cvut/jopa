@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.owl2java.prefix.PrefixMap;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntologyID;
 
+import javax.lang.model.SourceVersion;
 import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.Objects;
@@ -123,7 +124,33 @@ public class JavaNameGenerator {
         if (Arrays.binarySearch(JAVA_KEYWORDS, res) >= 0) {
             res = SEPARATOR + res;
         }
-        return res;
+        return sanitizeJavaIdentifier(res);
+    }
+
+    /**
+     * Filters the specified name so that it contains only characters allowed for Java identifiers.
+     * If the first character (before filtering) must not be at the start,
+     * an underscore ("_") is prepended.
+     * If the resulting field name (after filtering) matches any Java keyword,
+     * an underscore ("_") is appended.
+     * @param name the name to filter
+     * @return a valid Java identifier
+     * @see <a href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-3.html#jls-3.8">Java 17 Spec</a>
+     */
+    private static String sanitizeJavaIdentifier(String name) {
+        StringBuilder sb = new StringBuilder();
+        if (!Character.isJavaIdentifierStart(name.charAt(0))) {
+            sb.append("_");
+        }
+        for (int i = 0; i < name.length(); i++) {
+            if (Character.isJavaIdentifierPart(name.charAt(i))) {
+                sb.append(name.charAt(i));
+            }
+        }
+        if (SourceVersion.isKeyword(sb)) {
+            sb.append("_");
+        }
+        return sb.toString();
     }
 
     /**
