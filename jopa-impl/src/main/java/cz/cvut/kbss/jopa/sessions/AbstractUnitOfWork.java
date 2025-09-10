@@ -44,6 +44,7 @@ import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
@@ -54,11 +55,13 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.utils.MetamodelUtils;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -350,6 +353,20 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             return result;
         }
         return storage.find(new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor));
+    }
+
+    @Override
+    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor) {
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull(axioms);
+        Objects.requireNonNull(descriptor);
+
+        final T result = storage.loadFromAxioms(new AxiomBasedLoadingParameters<>(cls, descriptor, false, axioms));
+        if (result == null) {
+            return null;
+        }
+        final Object clone = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor).postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel()))));
+        return cls.cast(clone);
     }
 
     @Override

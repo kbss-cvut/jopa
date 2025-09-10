@@ -33,6 +33,7 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -157,25 +158,26 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> T loadEntity(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor) {
-        assert cls != null;
-        assert axioms != null;
-        assert descriptor != null;
+    public <T> T loadEntity(AxiomBasedLoadingParameters<T> loadingParameters) {
+        assert loadingParameters != null;
 
-        if (axioms.isEmpty()) {
+        if (loadingParameters.axioms().isEmpty()) {
             return null;
         }
-        final URI identifier = axioms.iterator().next().getSubject().getIdentifier();
-        final LoadingParameters<T> loadingParameters = new LoadingParameters<>(cls, identifier, descriptor, true);
-        final IdentifiableEntityType<T> et = getEntityType(cls);
+        final URI identifier = loadingParameters.axioms().iterator().next().getSubject().getIdentifier();
+        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.cls());
+        final LoadingParameters<T> params = new LoadingParameters<>(loadingParameters.cls(), identifier, loadingParameters.descriptor());
+        if (loadingParameters.bypassCache()) {
+            params.bypassCache();
+        }
         final T result;
         if (et.hasSubtypes()) {
-            result = twoStepInstanceLoader.loadEntityFromAxioms(loadingParameters, axioms);
+            result = twoStepInstanceLoader.loadEntityFromAxioms(params, loadingParameters.axioms());
         } else {
-            result = defaultInstanceLoader.loadEntityFromAxioms(loadingParameters, axioms);
+            result = defaultInstanceLoader.loadEntityFromAxioms(params, loadingParameters.axioms());
         }
         if (result != null) {
-            cacheLoadedEntity(loadingParameters, result);
+            cacheLoadedEntity(params, result);
         }
         return result;
     }

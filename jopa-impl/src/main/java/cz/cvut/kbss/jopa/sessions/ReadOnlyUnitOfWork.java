@@ -28,12 +28,14 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -135,6 +137,20 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         }
 
         return isInRepository(descriptor, original) ? cls.cast(original) : null;
+    }
+
+    @Override
+    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor) {
+        Objects.requireNonNull(cls);
+        Objects.requireNonNull(axioms);
+        Objects.requireNonNull(descriptor);
+
+        final AxiomBasedLoadingParameters<T> loadingParameters = new AxiomBasedLoadingParameters<>(cls, descriptor, true, axioms);
+        final T result = storage.loadFromAxioms(loadingParameters);
+        if (result == null) {
+            return null;
+        }
+        return cls.cast(registerExistingObject(result, descriptor));
     }
 
     /**
