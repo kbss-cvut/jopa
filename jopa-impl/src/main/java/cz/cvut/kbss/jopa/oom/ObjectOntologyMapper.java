@@ -25,17 +25,18 @@ import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Set;
 
 public interface ObjectOntologyMapper {
 
     /**
-     * Checks whether the storage contains individual with the specified identifier and of the specified type.
+     * Checks whether the storage contains an individual with the specified identifier and of the specified type.
      *
      * @param cls        Class representing the individual type
      * @param identifier Identifier
      * @param descriptor Descriptor, can specify context
-     * @return {@code true} if the ontology contains such individual, {@code false} otherwise
+     * @return {@code true} if the ontology contains such an individual, {@code false} otherwise
      */
     <T> boolean containsEntity(Class<T> cls, URI identifier, Descriptor descriptor);
 
@@ -43,9 +44,24 @@ public interface ObjectOntologyMapper {
      * Loads and reconstructs an entity from the ontology.
      *
      * @param loadingParameters Entity loading parameters
+     * @param <T>               Entity type
      * @return Reconstructed entity or {@code null} if there is none such
      */
     <T> T loadEntity(LoadingParameters<T> loadingParameters);
+
+    /**
+     * Loads entity from the specified axioms.
+     * <p>
+     * This means the axioms are (assumed to be) already loaded from the storage, and we only need to reconstruct the
+     * entity.
+     *
+     * @param cls        Expected result class
+     * @param axioms     Axioms representing the entity
+     * @param descriptor Entity descriptor
+     * @param <T>        Entity type
+     * @return Loaded entity or {@code null} if no entity of the expected target class can be reconstructed
+     */
+    <T> T loadEntity(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor);
 
     /**
      * Gets a reference to an entity corresponding to the specified parameters.

@@ -143,11 +143,39 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             result = defaultInstanceLoader.loadEntity(loadingParameters);
         }
         if (result != null) {
-            final LoadStateDescriptor<T> loadStateDescriptor = uow.getLoadStateRegistry().get(result);
-            assert loadStateDescriptor != null;
-            if (!loadingParameters.shouldBypassCache()) {
-                getCache().add(loadingParameters.getIdentifier(), result, new Descriptors(loadingParameters.getDescriptor(), loadStateDescriptor));
-            }
+            cacheLoadedEntity(loadingParameters, result);
+        }
+        return result;
+    }
+
+    private <T> void cacheLoadedEntity(LoadingParameters<T> loadingParameters, T result) {
+        final LoadStateDescriptor<T> loadStateDescriptor = uow.getLoadStateRegistry().get(result);
+        assert loadStateDescriptor != null;
+        if (!loadingParameters.shouldBypassCache()) {
+            getCache().add(loadingParameters.getIdentifier(), result, new Descriptors(loadingParameters.getDescriptor(), loadStateDescriptor));
+        }
+    }
+
+    @Override
+    public <T> T loadEntity(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor) {
+        assert cls != null;
+        assert axioms != null;
+        assert descriptor != null;
+
+        if (axioms.isEmpty()) {
+            return null;
+        }
+        final URI identifier = axioms.iterator().next().getSubject().getIdentifier();
+        final LoadingParameters<T> loadingParameters = new LoadingParameters<>(cls, identifier, descriptor, true);
+        final IdentifiableEntityType<T> et = getEntityType(cls);
+        final T result;
+        if (et.hasSubtypes()) {
+            result = twoStepInstanceLoader.loadEntityFromAxioms(loadingParameters, axioms);
+        } else {
+            result = defaultInstanceLoader.loadEntityFromAxioms(loadingParameters, axioms);
+        }
+        if (result != null) {
+            cacheLoadedEntity(loadingParameters, result);
         }
         return result;
     }

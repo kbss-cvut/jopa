@@ -32,6 +32,7 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -59,6 +60,10 @@ public class ConnectionWrapper implements Wrapper {
 
     public <T> T find(LoadingParameters<T> loadingParameters) {
         return mapper.loadEntity(loadingParameters);
+    }
+
+    public <T> T loadFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor) {
+        return mapper.loadEntity(cls, axioms, descriptor);
     }
 
     public <T> T getReference(LoadingParameters<T> loadingParameters) {
