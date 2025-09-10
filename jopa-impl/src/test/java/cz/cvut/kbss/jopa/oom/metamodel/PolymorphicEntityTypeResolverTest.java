@@ -86,6 +86,7 @@ public class PolymorphicEntityTypeResolverTest {
 
     @Test
     public void determineActualEntityTypeReturnsRootTypeWhenTypeAxiomsContainItsClass() {
+        when(etS.isAbstract()).thenReturn(false);    // Just for this test
         final Collection<Axiom<URI>> types = getTypeAxioms(etS.getIRI().toString());
 
         assertEquals(etS, execute(etS, types));
@@ -239,13 +240,13 @@ public class PolymorphicEntityTypeResolverTest {
     public void determineActualEntityTypeSearchesForMoreSpecificTypeWhenRootTypeIsAbstract() {
         final String abstractTypeIri = Generators.createIndividualIdentifier().toString();
         final IdentifiableEntityType<AbstractSubtype> etAbstract = spy(
-                new AbstractEntityType<>(
-                        AbstractSubtype.class, IRI.create(abstractTypeIri)));
-        doReturn(Collections.singleton(etS)).when(etAbstract).getSubtypes();
+                new AbstractEntityType<>(AbstractSubtype.class, IRI.create(abstractTypeIri)));
+        when(etAbstract.isAbstract()).thenReturn(true);
+        doReturn(Collections.singleton(etR)).when(etAbstract).getSubtypes();
         // We are abusing the type erasure here a little
-        when(etS.getSupertypes()).thenReturn((Set) Collections.singleton(etAbstract));
+        when(etR.getSupertypes()).thenReturn((Set) Collections.singleton(etAbstract));
 
-        final Collection<Axiom<URI>> types = getTypeAxioms(OWLClassS.getClassIri(), abstractTypeIri);
-        assertEquals(etS, execute(etAbstract, types));
+        final Collection<Axiom<URI>> types = getTypeAxioms(OWLClassR.getClassIri(), abstractTypeIri);
+        assertEquals(etR, execute(etAbstract, types));
     }
 }
