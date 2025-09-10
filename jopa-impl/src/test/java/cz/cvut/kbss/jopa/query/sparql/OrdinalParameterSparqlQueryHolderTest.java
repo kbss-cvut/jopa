@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryParameter;
+import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +62,7 @@ public class OrdinalParameterSparqlQueryHolderTest {
             }
         }
         final List<QueryParameter<?>> parameters = PARAMS.stream().map(paramsByName::get).collect(Collectors.toList());
-        this.holder = new SparqlQueryHolder(QUERY, PARTS, parameters);
+        this.holder = new SparqlQueryHolder(QUERY, PARTS, parameters, QueryType.SELECT);
     }
 
     @Test

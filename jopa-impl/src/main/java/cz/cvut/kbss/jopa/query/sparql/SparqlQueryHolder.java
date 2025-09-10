@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.query.sparql;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParameter;
+import cz.cvut.kbss.jopa.query.QueryType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +39,7 @@ public class SparqlQueryHolder implements QueryHolder {
 
     // Original query string
     private final String query;
+    private final QueryType queryType;
 
     private final Map<Parameter<?>, QueryParameter<?>> parameterSet;
     private final Map<Object, QueryParameter<?>> identifiersToParameters;
@@ -49,10 +51,11 @@ public class SparqlQueryHolder implements QueryHolder {
 
     private int limit = Integer.MAX_VALUE;
 
-    public SparqlQueryHolder(String query, List<String> parts, List<QueryParameter<?>> parameters) {
+    public SparqlQueryHolder(String query, List<String> parts, List<QueryParameter<?>> parameters, QueryType queryType) {
         this.query = query;
         this.parameters = parameters;
         this.queryParts = parts;
+        this.queryType = queryType;
         this.parameterSet = new HashMap<>();
         parameters.forEach(p -> parameterSet.put(p, p));
         this.identifiersToParameters = new HashMap<>(parameterSet.size());
@@ -227,6 +230,11 @@ public class SparqlQueryHolder implements QueryHolder {
             sb.append(") ");
         }
         return sb.toString();
+    }
+
+    @Override
+    public QueryType getQueryType() {
+        return queryType;
     }
 
     @Override

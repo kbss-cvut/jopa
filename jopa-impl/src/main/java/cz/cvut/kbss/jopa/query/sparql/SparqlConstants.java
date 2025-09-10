@@ -23,11 +23,6 @@ package cz.cvut.kbss.jopa.query.sparql;
 public class SparqlConstants {
 
     /**
-     * The {@literal SELECT} keyword.
-     */
-    public static final String SELECT = "SELECT";
-
-    /**
      * The {@literal WHERE} keyword.
      */
     public static final String WHERE = "WHERE";

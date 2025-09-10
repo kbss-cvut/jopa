@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.query.QueryParameter;
+import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
@@ -50,7 +51,7 @@ class SparqlQueryHolderTest {
         queryParams.add(xParam);
         queryParams.add(xParam);
         queryParams.add(new QueryParameter<>("type", parameterValueFactory));
-        this.sut = new SparqlQueryHolder(QUERY, List.of("SELECT ", " WHERE { ", " a ", " . }"), queryParams);
+        this.sut = new SparqlQueryHolder(QUERY, List.of("SELECT ", " WHERE { ", " a ", " . }"), queryParams, QueryType.SELECT);
     }
 
     @Test
@@ -109,7 +110,7 @@ class SparqlQueryHolderTest {
         queryParams.add(typeParam);
         queryParams.add(xParam);
         queryParams.add(typeParam);
-        this.sut = new SparqlQueryHolder(QUERY, List.of("SELECT ", ", ", " WHERE { ", " a ", " . }"), queryParams);
+        this.sut = new SparqlQueryHolder(QUERY, List.of("SELECT ", ", ", " WHERE { ", " a ", " . }"), queryParams, QueryType.SELECT);
         final List<URI> xValues = List.of(Generators.createIndividualIdentifier(), Generators.createIndividualIdentifier());
         final List<URI> typeValues = List.of(Generators.createIndividualIdentifier(), Generators.createIndividualIdentifier(), Generators.createIndividualIdentifier());
         sut.setParameter(sut.getParameter("x"), xValues);
