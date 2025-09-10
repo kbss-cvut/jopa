@@ -44,6 +44,7 @@ import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -700,7 +701,7 @@ class ObjectOntologyMapperTest {
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("value"))
         );
 
-        final OWLClassA result = mapper.loadEntity(OWLClassA.class, axioms, aDescriptor);
+        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, axioms));
         assertNotNull(result);
         assertEquals(IDENTIFIER, result.getUri());
         assertEquals("value", result.getStringAttribute());
@@ -709,7 +710,7 @@ class ObjectOntologyMapperTest {
 
     @Test
     void loadEntityFromAxiomsReturnsNullWhenAxiomsAreEmpty() {
-        assertNull(mapper.loadEntity(OWLClassA.class, List.of(), aDescriptor));
+        assertNull(mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, List.of())));
     }
 
     @Test
@@ -719,7 +720,7 @@ class ObjectOntologyMapperTest {
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("value"))
         );
 
-        final OWLClassA result = mapper.loadEntity(OWLClassA.class, axioms, aDescriptor);
+        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, axioms));
         verify(cacheMock).add(IDENTIFIER, result, new Descriptors(aDescriptor, loadStateRegistry.get(result)));
     }
 
@@ -731,7 +732,7 @@ class ObjectOntologyMapperTest {
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(RDFS.LABEL), false), new Value<>("value"))
         );
 
-        final OWLClassS result = mapper.loadEntity(OWLClassS.class, axioms, new EntityDescriptor());
+        final OWLClassS result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassS.class, new EntityDescriptor(), false, axioms));
         assertInstanceOf(OWLClassR.class, result);
     }
 }

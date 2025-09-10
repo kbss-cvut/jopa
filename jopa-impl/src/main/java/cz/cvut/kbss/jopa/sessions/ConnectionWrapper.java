@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapper;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapperImpl;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;
@@ -32,7 +33,6 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.net.URI;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -62,8 +62,8 @@ public class ConnectionWrapper implements Wrapper {
         return mapper.loadEntity(loadingParameters);
     }
 
-    public <T> T loadFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor) {
-        return mapper.loadEntity(cls, axioms, descriptor);
+    public <T> T loadFromAxioms(AxiomBasedLoadingParameters<T> loadingParameters) {
+        return mapper.loadEntity(loadingParameters);
     }
 
     public <T> T getReference(LoadingParameters<T> loadingParameters) {

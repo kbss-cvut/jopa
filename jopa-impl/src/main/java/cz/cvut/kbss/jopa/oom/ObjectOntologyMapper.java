@@ -21,11 +21,11 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.net.URI;
-import java.util.Collection;
 import java.util.Set;
 
 public interface ObjectOntologyMapper {
@@ -55,13 +55,11 @@ public interface ObjectOntologyMapper {
      * This means the axioms are (assumed to be) already loaded from the storage, and we only need to reconstruct the
      * entity.
      *
-     * @param cls        Expected result class
-     * @param axioms     Axioms representing the entity
-     * @param descriptor Entity descriptor
-     * @param <T>        Entity type
+     * @param loadingParameters Entity loading parameters
+     * @param <T>               Entity type
      * @return Loaded entity or {@code null} if no entity of the expected target class can be reconstructed
      */
-    <T> T loadEntity(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor);
+    <T> T loadEntity(AxiomBasedLoadingParameters<T> loadingParameters);
 
     /**
      * Gets a reference to an entity corresponding to the specified parameters.
