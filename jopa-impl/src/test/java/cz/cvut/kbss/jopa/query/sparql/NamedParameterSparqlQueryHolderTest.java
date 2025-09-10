@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryParameter;
+import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,7 +74,7 @@ public class NamedParameterSparqlQueryHolderTest {
             paramsByName.put(n, qp);
         }
         final List<QueryParameter<?>> parameters = PARAMS.stream().map(paramsByName::get).collect(Collectors.toList());
-        this.holder = new SparqlQueryHolder(QUERY, PARTS, parameters);
+        this.holder = new SparqlQueryHolder(QUERY, PARTS, parameters, QueryType.SELECT);
     }
 
     @Test
@@ -194,7 +195,7 @@ public class NamedParameterSparqlQueryHolderTest {
                         new QueryParameter<>("y", vf),
                         new QueryParameter<>("z", vf));
         final List<String> parts = Arrays.asList("SELECT ", " ", " WHERE { ", " ", " ", " . }");
-        this.holder = new SparqlQueryHolder(query, parts, params);
+        this.holder = new SparqlQueryHolder(query, parts, params, QueryType.SELECT);
         holder.setParameter(new QueryParameter<>("x", vf),
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityA"));
         final String result = holder.assembleQuery();

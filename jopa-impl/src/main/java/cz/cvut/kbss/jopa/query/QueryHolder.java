@@ -170,4 +170,12 @@ public interface QueryHolder {
      * @return Assembled query
      */
     String assembleQuery();
+
+    /**
+     * Gets the type of this query.
+     *
+     * @return Query type
+     */
+    QueryType getQueryType();
+
 }

@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.query.sparql;
 import cz.cvut.kbss.jopa.exception.QueryParserException;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
+import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ public class SparqlQueryParser implements QueryParser {
     private Map<Object, QueryParameter<?>> uniqueParams;
     private Integer positionalCounter;
 
+    private QueryType queryType;
     private List<String> queryParts;
     private List<QueryParameter<?>> parameters;
     private boolean inParam;
@@ -56,6 +58,7 @@ public class SparqlQueryParser implements QueryParser {
     private boolean inProjection;
     private boolean inComment;
     private boolean inUri;
+    private boolean inPreamble;
 
     public SparqlQueryParser(ParameterValueFactory parameterValueFactory) {
         this.parameterValueFactory = parameterValueFactory;
@@ -103,7 +106,7 @@ public class SparqlQueryParser implements QueryParser {
                     break;
                 case '>':
                     this.inUri = false;
-                    if(inParam) {
+                    if (inParam) {
                         parameterEnd(i);
                     }
                     wordEnd();
@@ -113,6 +116,7 @@ public class SparqlQueryParser implements QueryParser {
                 case '{':
                     // ~ inComment ? inProjection : !inProjection
                     this.inProjection = inComment && inProjection;  // Intentional fall-through
+                    this.inPreamble = !inComment || !inPreamble;
                 case '\r':
                 case ',':
                 case ')':
@@ -141,7 +145,7 @@ public class SparqlQueryParser implements QueryParser {
         } else {
             queryParts.add(query.substring(lastParamEndIndex));
         }
-        return new SparqlQueryHolder(query, queryParts, parameters);
+        return new SparqlQueryHolder(query, queryParts, parameters, queryType);
     }
 
     private void resetParser() {
@@ -155,6 +159,7 @@ public class SparqlQueryParser implements QueryParser {
         this.inParam = false;
         this.inUri = false;
         this.inComment = false;
+        this.inPreamble = true;
         this.lastParamEndIndex = 0;
         this.paramStartIndex = 0;
         this.currentParamType = null;
@@ -242,10 +247,21 @@ public class SparqlQueryParser implements QueryParser {
     }
 
     private void wordEnd() {
-        if (SparqlConstants.SELECT.equalsIgnoreCase(currentWord.toString())) {
-            this.inProjection = true;
-        } else if (inProjection && SparqlConstants.WHERE.equalsIgnoreCase(currentWord.toString())) {
-            this.inProjection = false;
+        final String word = currentWord.toString();
+        if (inPreamble) {
+            if (inProjection && SparqlConstants.WHERE.equalsIgnoreCase(word)) {
+                this.inProjection = false;
+            } else if (queryType == null && !inParam) {
+                for (QueryType qt : QueryType.values()) {
+                    if (qt.getKeyword().equalsIgnoreCase(word)) {
+                        this.queryType = qt;
+                        if (qt == QueryType.SELECT) {
+                            this.inProjection = true;
+                        }
+                        break;
+                    }
+                }
+            }
         }
         this.currentWord = new StringBuilder();
     }

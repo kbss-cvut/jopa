@@ -21,10 +21,16 @@ import cz.cvut.kbss.jopa.exception.QueryParserException;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
+import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -470,5 +476,22 @@ public class SparqlQueryParserTest {
         final QueryHolder holder = queryParser.parseQuery(query);
         assertTrue(holder.hasParameter("generatedName0"));
         assertTrue(holder.hasParameter("generatedName1"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("queryTypesParams")
+    void parseQueryResolvesQueryType(String query, QueryType expectedType) {
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(expectedType, holder.getQueryType());
+    }
+
+    static Stream<Arguments> queryTypesParams() {
+        return Stream.of(
+                Arguments.of("SELECT ?x WHERE { ?x a ?z . }", QueryType.SELECT),
+                Arguments.of("ASK { ?x a <https://example.com/a> . }", QueryType.ASK),
+                Arguments.of("INSERT DATA { <https://example.com/a> rdf:type <https://example.com/b> . }", QueryType.INSERT),
+                Arguments.of("DELETE ?x WHERE { ?x a ?z . }", QueryType.DELETE),
+                Arguments.of("CONSTRUCT { ?x a <https://example.com/b> . } WHERE { ?x a <https://example.com/a> . }", QueryType.CONSTRUCT)
+        );
     }
 }
