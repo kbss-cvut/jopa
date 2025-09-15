@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.RepoConnection;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.util.ListElementStorageHelper;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ValueConverter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
@@ -84,7 +85,7 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
     }
 
     private Collection<Value> toRdf4jValue(Assertion a, Object value) throws Rdf4jDriverException {
-        return new ReferencedListHelper(valueConverter).toRdf4jValue(a, value);
+        return new ListElementStorageHelper(valueConverter).toRdf4jValue(a, value);
     }
 
     private IRI generateSequenceNode(IRI owner, IRI context) throws Rdf4jDriverException {

@@ -1,5 +1,10 @@
 # JOPA - Change Log
 
+### 2.6.0 - 2025-09-15
+- Support multilingual RDF containers (i.e., multiple translations at the same position in an RDF container) (Enhancement #369).
+- Sanitize invalid characters in generated Java names in OWL2Java (thanks to @lukaskabc for a PR).
+- Update dependencies: RDF4J 5.1.5.
+
 ### 2.5.1 - 2025-08-21
 - Fix an issue with translating SOQL to SPARQL when referencing a RDF container attribute (Bug #366).
 

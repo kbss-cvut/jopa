@@ -21,8 +21,6 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
-import cz.cvut.kbss.ontodriver.model.LangString;
-import cz.cvut.kbss.ontodriver.model.Translations;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
@@ -35,7 +33,6 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 class ReferencedListNodeGenerator {
 
@@ -73,23 +70,14 @@ class ReferencedListNodeGenerator {
         return node;
     }
 
-    <V> Collection<TransactionalChange> generateNodeContent(NamedResource node, V value) {
+    <V> Collection<? extends TransactionalChange> generateNodeContent(NamedResource node, V value) {
         if (descriptor.getNodeContent().getType() == Assertion.AssertionType.OBJECT_PROPERTY) {
             final OWLAxiom valueAxiom = axiomAdapter
                     .toOwlObjectPropertyAssertionAxiom(new AxiomImpl<>(node, descriptor.getNodeContent(), new Value<>(value)));
             return List.of(new MutableAddAxiom(ontology, valueAxiom));
         } else {
             assert descriptor.getNodeContent().getType() == Assertion.AssertionType.DATA_PROPERTY;
-            if (value instanceof Translations mls) {
-                return mls.getValue().entrySet().stream().map(e -> {
-                    final String lang = e.getKey();
-                    final String val = e.getValue();
-                    final OWLAxiom valueAxiom = axiomAdapter.toOwlDataPropertyAssertionAxiom(new AxiomImpl<>(node, descriptor.getNodeContent(), new Value<>(new LangString(val, lang))));
-                    return new MutableAddAxiom(ontology, valueAxiom);
-                }).collect(Collectors.toList());
-            }
-            final OWLAxiom valueAxiom = axiomAdapter.toOwlDataPropertyAssertionAxiom(new AxiomImpl<>(node, descriptor.getNodeContent(), new Value<>(value)));
-            return List.of(new MutableAddAxiom(ontology, valueAxiom));
+            return new ListContentStorageHelper(axiomAdapter, ontology).saveListValue(node, descriptor.getNodeContent(), value);
         }
     }
 

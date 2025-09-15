@@ -107,6 +107,10 @@ public class OWLClassM {
     @OWLDataProperty(iri = Vocabulary.p_m_multilingualReferencedList)
     private List<MultilingualString> multilingualReferencedList;
 
+    @RDFContainer(type = RDFContainerType.SEQ)
+    @OWLDataProperty(iri = Vocabulary.p_m_multilingualRdfSequence)
+    private List<MultilingualString> multilingualRdfSequence;
+
     @OWLDataProperty(iri = Vocabulary.p_m_locale)
     private Locale locale;
 
@@ -291,6 +295,14 @@ public class OWLClassM {
         this.multilingualReferencedList = multilingualReferencedList;
     }
 
+    public List<MultilingualString> getMultilingualRdfSequence() {
+        return multilingualRdfSequence;
+    }
+
+    public void setMultilingualRdfSequence(List<MultilingualString> multilingualRdfSequence) {
+        this.multilingualRdfSequence = multilingualRdfSequence;
+    }
+
     public Locale getLocale() {
         return locale;
     }
@@ -324,6 +336,7 @@ public class OWLClassM {
                 ", annotationSimpleLiteral=" + annotationSimpleLiteral +
                 ", literalReferencedList=" + literalReferencedList +
                 ", multilingualReferencedList=" + multilingualReferencedList +
+                ", multilingualRdfSequence=" + multilingualRdfSequence +
                 ", locale=" + locale +
                 '}';
     }
