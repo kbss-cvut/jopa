@@ -159,14 +159,17 @@ public class SparqlQueryParserTest {
     }
 
     @Test
-    public void parsingQueryWithUsedParameterPositionThrowsException() {
+    public void parseQuerySupportsMultipleOccurrencesOfNumericParameter() {
         final String query = """
                 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
                 SELECT ?craft {
-                  ?craft foaf:name $1 .
-                  ?craft foaf:homepage $1
+                  ?craft foaf:weblog $1 .
+                  ?craft foaf:homepage $1 .
                 }""";
-        assertThrows(QueryParserException.class, () -> queryParser.parseQuery(query));
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(2, holder.getParameters().size());
+        assertTrue(holder.hasParameter("craft"));
+        assertTrue(holder.hasParameter(1));
     }
 
     @Test
