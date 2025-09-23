@@ -45,7 +45,7 @@ public class SparqlQueryFactory {
         assert connection != null;
         this.uow = uow;
         this.connection = connection;
-        this.queryParser = new SparqlQueryParser(new ParameterValueFactory(uow));
+        this.queryParser = new Sparql11QueryParser(new ParameterValueFactory(uow));
         this.soqlQueryParser = new SoqlQueryParser(queryParser, uow.getMetamodel());
     }
 

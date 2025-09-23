@@ -179,9 +179,10 @@ class TypedQueryImplTest extends QueryTestBase {
 
     @Test
     void executeUpdateRunsUpdateOnConnection() throws Exception {
-        final String update = "INSERT { ?inst ?property ?newValue . } " +
-                "DELETE { ?inst ?property ?origValue . } WHERE {" +
-                "?inst ?property ?origValue . }";
+        final String update = """
+                DELETE { ?inst ?property ?origValue . }
+                INSERT { ?inst ?property ?newValue . }
+                WHERE { ?inst ?property ?origValue . }""";
         final TypedQueryImpl q = createQuery(update);
         q.executeUpdate();
         verify(statementMock).executeUpdate(update);

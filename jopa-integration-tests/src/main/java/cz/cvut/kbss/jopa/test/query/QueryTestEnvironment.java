@@ -301,7 +301,7 @@ public final class QueryTestEnvironment {
             m.setBooleanAttribute(Generators.randomBoolean());
             m.setDoubleAttribute(Generators.getRandomGenerator().nextDouble() * 100);
             m.setFloatAttribute(Generators.getRandomGenerator().nextFloat() * 100);
-            m.setIntAttribute(Generators.randomInt());
+            m.setIntAttribute(Generators.randomInt(1000000));
             m.setLongAttribute((long) Generators.randomInt());
             m.setEnumAttribute(Generators.getRandomItem(Arrays.asList(OWLClassM.Severity.values())));
             m.setEnumSimpleLiteral(m.getEnumAttribute());

@@ -262,13 +262,16 @@ public interface Query {
      * Binds an argument value to a positional parameter.
      * <p>
      * This version does not express the type of the value in the query. Instead, it inserts the value directly into the
-     * query string. Can be useful e.g. for specifying OFFSET or LIMIT values.
+     * query string. It can be useful, e.g., for specifying values in filters.
+     * <p>
+     * Do not use this method to set query limit and offset, use the {@link #setFirstResult(int)} and
+     * {@link #setMaxResults(int)} methods instead.
      *
      * @param position position
      * @param value    parameter value
      * @return this query instance
-     * @throws IllegalArgumentException If position does not correspond to a positional parameter of the query or if the
-     *                                  argument is of incorrect type
+     * @throws IllegalArgumentException If position does not correspond to a positional parameter of the query, or if
+     *                                  the argument is of incorrect type
      */
     Query setUntypedParameter(int position, Object value);
 
@@ -276,12 +279,15 @@ public interface Query {
      * Binds an argument value to a named parameter.
      * <p>
      * This version does not express the type of the value in the query. Instead, it inserts the value directly into the
-     * query string. Can be useful e.g. for specifying OFFSET or LIMIT values.
+     * query string. It can be useful, e.g., for specifying values in filters.
+     * <p>
+     * Do not use this method to set query limit and offset, use the {@link #setFirstResult(int)} and
+     * {@link #setMaxResults(int)} methods instead.
      *
      * @param name  parameter name
      * @param value parameter value
      * @return this query instance
-     * @throws IllegalArgumentException If parameter name does not correspond to a parameter of the query or if the
+     * @throws IllegalArgumentException If parameter name does not correspond to a parameter of the query, or if the
      *                                  argument is of incorrect type
      */
     Query setUntypedParameter(String name, Object value);
@@ -290,7 +296,10 @@ public interface Query {
      * Binds the value of a Parameter object.
      * <p>
      * This version does not express the type of the value in the query. Instead, it inserts the value directly into the
-     * query string. Can be useful e.g. for specifying OFFSET or LIMIT values.
+     * query string. It can be useful, e.g., for specifying values in filters.
+     * <p>
+     * Do not use this method to set query limit and offset, use the {@link #setFirstResult(int)} and
+     * {@link #setMaxResults(int)} methods instead.
      *
      * @param parameter parameter object
      * @param value     parameter value
@@ -302,7 +311,7 @@ public interface Query {
     /**
      * Sets a query hint.
      * <p>
-     * The hints elements may be used to specify query properties and hints. Vendor-specific hints that are not
+     * The hint elements may be used to specify query properties and hints. Vendor-specific hints that are not
      * recognized by a provider are silently ignored.
      *
      * @param hintName Name of the query hint

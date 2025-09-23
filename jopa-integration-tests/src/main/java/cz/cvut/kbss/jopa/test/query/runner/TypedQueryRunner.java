@@ -270,14 +270,22 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     }
 
     @Test
-    public void usingUntypedQueryAllowsToSpecifyLimitInQuery() {
-        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
-        final int size = expected.size() / 2;
-        final List<OWLClassA> result = getEntityManager().createNativeQuery("SELECT ?x WHERE {" +
-                                                                 "?x a ?classA . } LIMIT ?limit", OWLClassA.class)
-                                                         .setParameter("classA", URI.create(Vocabulary.C_OWL_CLASS_A))
-                                                         .setUntypedParameter("limit", size).getResultList();
-        assertEquals(size, result.size());
+    public void setUntypedParameterAllowSpecifyingFilterValue() {
+        final int filterValue = 10000;
+        final List<OWLClassM> expected = QueryTestEnvironment.getData(OWLClassM.class).stream()
+                                                             .filter(m -> m.getIntAttribute() < filterValue)
+                                                             .sorted(Comparator.comparing(OWLClassM::getIntAttribute))
+                                                             .toList();
+        final List<OWLClassM> result = getEntityManager().createNativeQuery("SELECT ?x WHERE {" +
+                                                                 "?x a ?type ; ?hasInt ?intValue . FILTER(?intValue < ?filterValue) } ORDER BY ?intValue", OWLClassM.class)
+                                                         .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_M))
+                                                         .setParameter("hasInt", URI.create(Vocabulary.p_m_intAttribute))
+                                                         .setUntypedParameter("filterValue", filterValue)
+                                                         .getResultList();
+        assertEquals(expected.size(), result.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).getKey(), result.get(i).getKey());
+        }
     }
 
     @Test
