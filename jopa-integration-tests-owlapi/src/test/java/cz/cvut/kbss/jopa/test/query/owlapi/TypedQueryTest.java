@@ -67,13 +67,6 @@ public class TypedQueryTest extends TypedQueryRunner {
         em.getEntityManagerFactory().close();
     }
 
-    @Disabled
-    @Test
-    @Override
-    public void usingUntypedQueryAllowsToSpecifyLimitInQuery() {
-        // OWL2Query does not support LIMIT in queries
-    }
-
     @Override
     @Test
     public void setFirstResultCanBeUsedToOffsetFirstQueryResult() {

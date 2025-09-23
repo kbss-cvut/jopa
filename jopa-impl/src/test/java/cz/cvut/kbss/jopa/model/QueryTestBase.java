@@ -192,7 +192,7 @@ abstract class QueryTestBase {
 
     @Test
     void setPositionalParameterWithLanguageTag() throws Exception {
-        final String query = "SELECT ?x WHERE { ?x rdfs:label $ . }";
+        final String query = "SELECT ?x WHERE { ?x rdfs:label $1 . }";
         final Query q = createQuery(query, Object.class);
         final String value = "Hooray";
         q.setParameter(1, value, "en");
@@ -200,7 +200,7 @@ abstract class QueryTestBase {
         final Parameter<?> p = q.getParameter(1);
         assertEquals(value, q.getParameterValue(p));
         q.getResultList();
-        verify(statementMock).executeQuery(query.replace("$", "\"Hooray\"@en"));
+        verify(statementMock).executeQuery(query.replace("$1", "\"Hooray\"@en"));
     }
 
     @Test
@@ -222,8 +222,8 @@ abstract class QueryTestBase {
 
     @Test
     void setUntypedParameterByPositionAddsValueDirectlyIntoQueryString() throws Exception {
-        final String query = "SELECT * WHERE { ?x ?y ?z . } LIMIT $1";
-        final Integer value = 15;
+        final String query = "SELECT * WHERE { ?x ?y ?z . FILTER(STRLEN(?z) < $1) }";
+        final Integer value = 8;
         final Query q = createQuery(query, Object.class);
         q.setUntypedParameter(1, value);
         q.getResultList();
@@ -232,23 +232,23 @@ abstract class QueryTestBase {
 
     @Test
     void setUntypedParameterByNameAddsValueDirectlyIntoQueryString() throws Exception {
-        final String query = "SELECT * WHERE { ?x ?y ?z . } OFFSET ?offset";
-        final Integer value = 15;
+        final String query = "SELECT * WHERE { ?x ?y ?z . FILTER(STRLEN(?z) < ?minLength) }";
+        final Integer value = 8;
         final Query q = createQuery(query, Object.class);
-        q.setUntypedParameter("offset", value);
+        q.setUntypedParameter("minLength", value);
         q.getResultList();
-        verify(statementMock).executeQuery(query.replace("?offset", value.toString()));
+        verify(statementMock).executeQuery(query.replace("?minLength", value.toString()));
     }
 
     @Test
     void setUntypedParameterAddsValueDirectlyIntoQueryString() throws Exception {
-        final String query = "SELECT * WHERE { ?x ?y ?z . } OFFSET ?offset";
-        final Integer value = 15;
+        final String query = "SELECT * WHERE { ?x ?y ?z . FILTER(STRLEN(?z) < ?minLength) }";
+        final Integer value = 8;
         final Query q = createQuery(query, Object.class);
-        final Parameter<Integer> param = (Parameter<Integer>) q.getParameter("offset");
+        final Parameter<Integer> param = (Parameter<Integer>) q.getParameter("minLength");
         q.setUntypedParameter(param, value);
         q.getResultList();
-        verify(statementMock).executeQuery(query.replace("?offset", value.toString()));
+        verify(statementMock).executeQuery(query.replace("?minLength", value.toString()));
     }
 
     @Test
