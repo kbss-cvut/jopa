@@ -26,7 +26,7 @@ import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
-import cz.cvut.kbss.jopa.query.sparql.SparqlQueryParser;
+import cz.cvut.kbss.jopa.query.sparql.Sparql11QueryParser;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
@@ -66,7 +66,7 @@ public class SoqlQueryParserTest {
         final MetamodelProvider mpp = mock(MetamodelProvider.class);
         when(mpp.getMetamodel()).thenReturn(metamodel);
         when(mpp.isEntityType(any())).thenAnswer(inv -> metamodel.isEntityType(inv.getArgument(0)));
-        final SparqlQueryParser qp = new SparqlQueryParser(new ParameterValueFactory(mpp));
+        final QueryParser qp = new Sparql11QueryParser(new ParameterValueFactory(mpp));
         this.sut = new SoqlQueryParser(qp, metamodel);
     }
 

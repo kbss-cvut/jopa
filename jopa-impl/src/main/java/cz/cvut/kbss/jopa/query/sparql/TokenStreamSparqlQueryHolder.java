@@ -7,6 +7,7 @@ import cz.cvut.kbss.jopa.query.QueryType;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.TokenStreamRewriter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -14,11 +15,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-
-import static cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder.SPARQL_LIMIT;
-import static cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder.SPARQL_OFFSET;
-import static cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder.assembleValuesClause;
 
 class TokenStreamSparqlQueryHolder implements QueryHolder {
 
@@ -160,12 +158,53 @@ class TokenStreamSparqlQueryHolder implements QueryHolder {
         final StringBuilder sb = new StringBuilder(rewriter.getText());
         // TODO Check if query already contains limit and offset
         if (limit != Integer.MAX_VALUE) {
-            sb.append(SPARQL_LIMIT).append(limit);
+            sb.append(" LIMIT ").append(limit);
         }
         if (offset != 0) {
-            sb.append(SPARQL_OFFSET).append(offset);
+            sb.append(" OFFSET ").append(offset);
         }
         assembleValuesClause(projectedParams).ifPresent(sb::append);
+        return sb.toString();
+    }
+
+    /**
+     * Generates a VALUES clause for query parameters that are set and appear in SELECT projection.
+     * <p>
+     * TODO Note that the current implementation does not support collection-valued parameters.
+     *
+     * @param parameters Projected parameters to output into query as VALUES clause
+     * @return VALUES clause, if there were any set parameters
+     */
+    private static Optional<String> assembleValuesClause(Set<QueryParameter<?>> parameters) {
+        if (parameters.isEmpty()) {
+            return Optional.empty();
+        }
+        final StringBuilder variables = new StringBuilder();
+        final int tableSize = maxValueCount(parameters);
+        final List<List<String>> valueTable = new ArrayList<>(parameters.size());
+        for (QueryParameter<?> qp : parameters) {
+            if (!variables.isEmpty()) {
+                variables.append(' ');
+            }
+            variables.append(qp.getIdentifierAsQueryString());
+            valueTable.add(qp.getValue().toQueryValues(tableSize));
+        }
+        return Optional.of(" VALUES (" + variables + ") { " + valueTableToString(valueTable, tableSize) + "}");
+    }
+
+    private static int maxValueCount(Set<QueryParameter<?>> parameters) {
+        return parameters.stream().map(p -> p.getValue().valueCount()).max(Integer::compareTo).orElse(1);
+    }
+
+    private static String valueTableToString(List<List<String>> valueTable, int rowSize) {
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < rowSize; i++) {
+            sb.append("( ");
+            for (List<String> row : valueTable) {
+                sb.append(row.get(i)).append(" ");
+            }
+            sb.append(") ");
+        }
         return sb.toString();
     }
 
