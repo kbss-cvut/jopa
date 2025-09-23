@@ -46,7 +46,7 @@ public class Sparql11QueryParser implements QueryParser {
         final ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(listener, tree);
 
-        return new TokenStreamSparqlQueryHolder(query, listener.getQueryType(), listener.getParameters(), tokens);
+        return new TokenStreamSparqlQueryHolder(query, listener.getQueryAttributes(), listener.getParameters(), tokens);
     }
 
     private static class ErrorListener implements ANTLRErrorListener {

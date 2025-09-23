@@ -262,4 +262,16 @@ public class SparqlQueryParsingAndAssemblyTest {
         assertThat(result, Matchers.endsWith("VALUES (?x) { ( <" + value + "> ) }"));
         assertThat(result, Matchers.containsString("SELECT ?x ?type WHERE { ?x a ?type . }"));
     }
+
+    @Test
+    void setFirstResultThrowsIllegalStateExceptionWhenQueryContainsOffsetClause() {
+        this.sut = queryParser.parseQuery("SELECT ?x ?type WHERE { ?x a ?type . } OFFSET 1");
+        assertThrows(IllegalStateException.class, () -> sut.setFirstResult(2));
+    }
+
+    @Test
+    void setMaxResultsThrowsIllegalStateExceptionWhenQueryContainsLimitClause() {
+        this.sut = queryParser.parseQuery("SELECT ?x ?type WHERE { ?x a ?type . } LIMIT 1");
+        assertThrows(IllegalStateException.class, () -> sut.setMaxResults(2));
+    }
 }

@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.query.sparql;
 import cz.cvut.kbss.jopa.exception.QueryParserException;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
+import org.antlr.v4.runtime.Token;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,12 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     private final Map<Object, TokenQueryParameter<?>> parameters = new HashMap<>();
 
     private boolean inProjection;
+    private boolean hasLimit;
+    private boolean hasOffset;
+
+    private int depth = 0;
+
+    private Token lastCurlyBracket;
 
     private final ParameterValueFactory parameterValueFactory;
 
@@ -77,6 +84,16 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     }
 
     @Override
+    public void enterLimitClause(SparqlParser.LimitClauseContext ctx) {
+        this.hasLimit = true;
+    }
+
+    @Override
+    public void enterOffsetClause(SparqlParser.OffsetClauseContext ctx) {
+        this.hasOffset = true;
+    }
+
+    @Override
     public void enterVar(SparqlParser.VarContext ctx) {
         final TokenQueryParameter<?> param;
         if (ctx.VAR1() != null) {
@@ -101,8 +118,11 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
         param.getTokens().add(ctx.getStart());
     }
 
-    public QueryType getQueryType() {
-        return queryType;
+    QueryAttributes getQueryAttributes() {
+        final QueryAttributes attributes = new QueryAttributes(queryType);
+        attributes.hasLimit = this.hasLimit;
+        attributes.hasOffset = this.hasOffset;
+        return attributes;
     }
 
     List<TokenQueryParameter<?>> getParameters() {
