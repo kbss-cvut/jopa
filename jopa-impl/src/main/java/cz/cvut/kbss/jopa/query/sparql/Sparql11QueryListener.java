@@ -21,7 +21,7 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
 
     private int depth = 0;
 
-    private Token lastCurlyBracket;
+    private Token lastClosingCurlyBrace;
 
     private final ParameterValueFactory parameterValueFactory;
 
@@ -94,6 +94,19 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     }
 
     @Override
+    public void enterWhereClause(SparqlParser.WhereClauseContext ctx) {
+        depth++;
+    }
+
+    @Override
+    public void exitWhereClause(SparqlParser.WhereClauseContext ctx) {
+        depth--;
+        if (depth == 0) {
+            lastClosingCurlyBrace = ctx.stop;
+        }
+    }
+
+    @Override
     public void enterVar(SparqlParser.VarContext ctx) {
         final TokenQueryParameter<?> param;
         if (ctx.VAR1() != null) {
@@ -119,10 +132,7 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     }
 
     QueryAttributes getQueryAttributes() {
-        final QueryAttributes attributes = new QueryAttributes(queryType);
-        attributes.hasLimit = this.hasLimit;
-        attributes.hasOffset = this.hasOffset;
-        return attributes;
+        return new QueryAttributes(queryType, hasOffset, hasLimit, lastClosingCurlyBrace);
     }
 
     List<TokenQueryParameter<?>> getParameters() {
