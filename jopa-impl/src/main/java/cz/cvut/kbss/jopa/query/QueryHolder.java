@@ -177,5 +177,4 @@ public interface QueryHolder {
      * @return Query type
      */
     QueryType getQueryType();
-
 }

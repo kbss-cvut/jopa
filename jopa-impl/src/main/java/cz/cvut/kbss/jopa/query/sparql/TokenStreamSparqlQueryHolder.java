@@ -27,6 +27,8 @@ class TokenStreamSparqlQueryHolder implements QueryHolder {
     private final Map<Parameter<?>, TokenQueryParameter<?>> parameterSet;
     private final Map<Object, TokenQueryParameter<?>> identifiersToParameters;
 
+    private final List<SparqlAssemblyModifier> assemblyModifiers = new ArrayList<>();
+
     private int offset = 0;
 
     private int limit = Integer.MAX_VALUE;
@@ -40,6 +42,11 @@ class TokenStreamSparqlQueryHolder implements QueryHolder {
         parameters.forEach(p -> parameterSet.put(p, p));
         this.identifiersToParameters = new HashMap<>(parameterSet.size());
         parameterSet.values().forEach(p -> identifiersToParameters.put(p.getIdentifier(), p));
+    }
+
+    public void addAssemblyModifier(SparqlAssemblyModifier modifier) {
+        assert modifier != null;
+        assemblyModifiers.add(modifier);
     }
 
     @Override
@@ -116,7 +123,7 @@ class TokenStreamSparqlQueryHolder implements QueryHolder {
 
     @Override
     public void setFirstResult(int startPosition) {
-        if (queryAttributes.hasOffset) {
+        if (queryAttributes.hasOffset()) {
             throw new IllegalStateException("Query already contains an OFFSET clause.");
         }
         this.offset = startPosition;
@@ -129,7 +136,7 @@ class TokenStreamSparqlQueryHolder implements QueryHolder {
 
     @Override
     public void setMaxResults(int maxResults) {
-        if (queryAttributes.hasLimit) {
+        if (queryAttributes.hasLimit()) {
             throw new IllegalStateException("Query already contains a LIMIT clause.");
         }
         this.limit = maxResults;
@@ -161,6 +168,7 @@ class TokenStreamSparqlQueryHolder implements QueryHolder {
                 qp.getTokens().forEach(t -> rewriter.replace(t, qp.getValue().getQueryString()));
             }
         });
+        assemblyModifiers.forEach(modifier -> modifier.modify(rewriter, queryAttributes));
         final StringBuilder sb = new StringBuilder(rewriter.getText());
         if (limit != Integer.MAX_VALUE) {
             sb.append(" LIMIT ").append(limit);
@@ -215,6 +223,6 @@ class TokenStreamSparqlQueryHolder implements QueryHolder {
 
     @Override
     public QueryType getQueryType() {
-        return queryAttributes.queryType;
+        return queryAttributes.queryType();
     }
 }

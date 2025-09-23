@@ -1,7 +1,6 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.exception.QueryParserException;
-import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import org.antlr.v4.runtime.ANTLRErrorListener;
@@ -34,7 +33,7 @@ public class Sparql11QueryParser implements QueryParser {
     }
 
     @Override
-    public QueryHolder parseQuery(String query) {
+    public TokenStreamSparqlQueryHolder parseQuery(String query) {
         CharStream cs = CharStreams.fromString(query);
         final SparqlLexer lexer = new SparqlLexer(cs);
         final CommonTokenStream tokens = new CommonTokenStream(lexer);

@@ -1,15 +1,7 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.query.QueryType;
+import org.antlr.v4.runtime.Token;
 
-class QueryAttributes {
-
-    boolean hasLimit;
-    boolean hasOffset;
-
-    final QueryType queryType;
-
-    QueryAttributes(QueryType queryType) {
-        this.queryType = queryType;
-    }
+record QueryAttributes(QueryType queryType, boolean hasOffset, boolean hasLimit, Token lastClosingCurlyBraceToken) {
 }

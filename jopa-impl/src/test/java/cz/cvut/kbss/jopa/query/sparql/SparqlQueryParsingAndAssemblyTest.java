@@ -2,9 +2,7 @@ package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.query.Parameter;
-import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParameter;
-import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
@@ -36,9 +34,9 @@ public class SparqlQueryParsingAndAssemblyTest {
 
     private ParameterValueFactory valueFactory;
 
-    private QueryParser queryParser;
+    private Sparql11QueryParser queryParser;
 
-    private QueryHolder sut;
+    private TokenStreamSparqlQueryHolder sut;
 
     @BeforeEach
     void setUp() {
@@ -273,5 +271,15 @@ public class SparqlQueryParsingAndAssemblyTest {
     void setMaxResultsThrowsIllegalStateExceptionWhenQueryContainsLimitClause() {
         this.sut = queryParser.parseQuery("SELECT ?x ?type WHERE { ?x a ?type . } LIMIT 1");
         assertThrows(IllegalStateException.class, () -> sut.setMaxResults(2));
+    }
+
+    @Test
+    void parseAndAssembleQueryAllowsModifierToInsertClausesBeforeLastClosingCurlyBrace() {
+        this.sut = queryParser.parseQuery(SIMPLE_QUERY);
+        final SparqlAssemblyModifier assemblyModifier = (tokenRewriter, queryAttributes) -> tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), "?x ?y ?z . ");
+        sut.addAssemblyModifier(assemblyModifier);
+
+        final String result = sut.assembleQuery();
+        assertEquals("SELECT ?x WHERE { ?x a ?type . ?x ?y ?z . }", result);
     }
 }
