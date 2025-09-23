@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-class TokenStreamSparqlQueryHolder implements QueryHolder {
+public class TokenStreamSparqlQueryHolder implements QueryHolder {
 
     private final String query;
     private final QueryAttributes queryAttributes;
@@ -168,7 +168,7 @@ class TokenStreamSparqlQueryHolder implements QueryHolder {
                 qp.getTokens().forEach(t -> rewriter.replace(t, qp.getValue().getQueryString()));
             }
         });
-        assemblyModifiers.forEach(modifier -> modifier.modify(rewriter, queryAttributes));
+        assemblyModifiers.forEach(modifier -> modifier.modify(this, rewriter, queryAttributes));
         final StringBuilder sb = new StringBuilder(rewriter.getText());
         if (limit != Integer.MAX_VALUE) {
             sb.append(" LIMIT ").append(limit);

@@ -110,18 +110,13 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     public void enterVar(SparqlParser.VarContext ctx) {
         final TokenQueryParameter<?> param;
         if (ctx.VAR1() != null) {
-            param = parameters.computeIfAbsent(ctx.VAR1()
-                                                  .getText()
-                                                  .substring(1), k -> new TokenQueryParameter<>((String) k, parameterValueFactory));
+            final String paramName = ctx.VAR1().getText().substring(1);
+            param = parameters.computeIfAbsent(paramName, k -> new TokenQueryParameter<>((String) k, parameterValueFactory));
         } else {
             assert ctx.VAR2() != null;
             try {
-            final Integer position = Integer.parseInt(ctx.VAR2().getText().substring(1));
-            if (parameters.containsKey(position)) {
-                throw new QueryParserException("Parameter with position " + position + " already found in query " + ctx.getText());
-            }
-                param = new TokenQueryParameter<>(position, parameterValueFactory);
-                parameters.put(position, param);
+                final Integer position = Integer.parseInt(ctx.VAR2().getText().substring(1));
+                param = parameters.computeIfAbsent(position, k -> new TokenQueryParameter<>(position, parameterValueFactory));
             } catch (NumberFormatException e) {
                 throw new QueryParserException(ctx.VAR2().getText() + " is not a valid parameter position.", e);
             }

@@ -276,7 +276,7 @@ public class SparqlQueryParsingAndAssemblyTest {
     @Test
     void parseAndAssembleQueryAllowsModifierToInsertClausesBeforeLastClosingCurlyBrace() {
         this.sut = queryParser.parseQuery(SIMPLE_QUERY);
-        final SparqlAssemblyModifier assemblyModifier = (tokenRewriter, queryAttributes) -> tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), "?x ?y ?z . ");
+        final SparqlAssemblyModifier assemblyModifier = (sut, tokenRewriter, queryAttributes) -> tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), "?x ?y ?z . ");
         sut.addAssemblyModifier(assemblyModifier);
 
         final String result = sut.assembleQuery();
