@@ -20,7 +20,7 @@ import static cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder.SPARQL_LIMIT;
 import static cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder.SPARQL_OFFSET;
 import static cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder.assembleValuesClause;
 
-public class TokenStreamSparqlQueryHolder implements QueryHolder {
+class TokenStreamSparqlQueryHolder implements QueryHolder {
 
     private final String query;
     private final QueryType queryType;
@@ -33,7 +33,7 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
 
     private int limit = Integer.MAX_VALUE;
 
-    public TokenStreamSparqlQueryHolder(String query, QueryType queryType, List<TokenQueryParameter<?>> parameters,
+    TokenStreamSparqlQueryHolder(String query, QueryType queryType, List<TokenQueryParameter<?>> parameters,
                                         CommonTokenStream tokens) {
         this.query = query;
         this.queryType = queryType;
@@ -158,6 +158,7 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
             }
         });
         final StringBuilder sb = new StringBuilder(rewriter.getText());
+        // TODO Check if query already contains limit and offset
         if (limit != Integer.MAX_VALUE) {
             sb.append(SPARQL_LIMIT).append(limit);
         }
