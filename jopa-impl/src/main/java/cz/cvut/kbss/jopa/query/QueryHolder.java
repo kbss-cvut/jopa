@@ -36,9 +36,18 @@ public interface QueryHolder {
     /**
      * Gets a collection of parameters in the query.
      *
-     * @return Parameter names
+     * @return Parameter objects
      */
     Set<Parameter<?>> getParameters();
+
+    /**
+     * Gets a collection of parameters in the query.
+     * <p>
+     * This returns the same set as {@link #getParameters()}, but it returns more specific type {@link QueryParameter}.
+     *
+     * @return Parameter objects
+     */
+    Set<QueryParameter<?>> getQueryParameters();
 
     /**
      * Checks whether the query has a parameter with the specified name.

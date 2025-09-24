@@ -1,7 +1,9 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +20,7 @@ class EntityLoadingOptimizerTest {
 
     @BeforeEach
     void setUp() {
-        this.parser = new Sparql11QueryParser(valueFactory);
+        this.parser = new Sparql11QueryParser(valueFactory, mock(Metamodel.class), new Configuration());
     }
 
     @Test
