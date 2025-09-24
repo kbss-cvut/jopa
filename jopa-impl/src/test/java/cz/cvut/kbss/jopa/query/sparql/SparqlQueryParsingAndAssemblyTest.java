@@ -1,10 +1,15 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.model.JOPAExperimentalProperties;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.hamcrest.Matchers;
@@ -22,10 +27,12 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SparqlQueryParsingAndAssemblyTest {
 
@@ -34,14 +41,19 @@ public class SparqlQueryParsingAndAssemblyTest {
 
     private ParameterValueFactory valueFactory;
 
+    private Metamodel metamodelMock;
+
+    private final Configuration configuration = new Configuration();
+
     private Sparql11QueryParser queryParser;
 
     private TokenStreamSparqlQueryHolder sut;
 
     @BeforeEach
     void setUp() {
+        this.metamodelMock = mock(Metamodel.class);
         this.valueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
-        this.queryParser = new Sparql11QueryParser(valueFactory);
+        this.queryParser = new Sparql11QueryParser(valueFactory, metamodelMock, configuration);
     }
 
     @Test
@@ -281,5 +293,18 @@ public class SparqlQueryParsingAndAssemblyTest {
 
         final String result = sut.assembleQuery();
         assertEquals("SELECT ?x WHERE { ?x a ?type . ?x ?y ?z . }", result);
+    }
+
+    @Test
+    void parseAndAssembleQueryUsesEntityLoadingOptimizerWhenQuerySelectsEntityAndIsConfiguredToUse() {
+        configuration.set(JOPAExperimentalProperties.QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER, "true");
+        final EntityType<OWLClassA> et = mock(EntityType.class);
+        when(et.getJavaType()).thenReturn(OWLClassA.class);
+        when(et.getBindableJavaType()).thenReturn(OWLClassA.class);
+        when(metamodelMock.getEntities()).thenReturn(Set.of(et));
+
+        this.sut = queryParser.parseQuery(SIMPLE_QUERY, OWLClassA.class);
+        final String result = sut.assembleQuery();
+        assertNotEquals(SIMPLE_QUERY, result);
     }
 }

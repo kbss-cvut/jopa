@@ -60,6 +60,11 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
     }
 
     @Override
+    public Set<QueryParameter<?>> getQueryParameters() {
+        return Set.copyOf(parameterSet.values());
+    }
+
+    @Override
     public boolean hasParameter(String name) {
         return identifiersToParameters.containsKey(name);
     }

@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.util.Objects;
 
@@ -45,7 +46,7 @@ public class SparqlQueryFactory {
         assert connection != null;
         this.uow = uow;
         this.connection = connection;
-        this.queryParser = new Sparql11QueryParser(new ParameterValueFactory(uow));
+        this.queryParser = new Sparql11QueryParser(new ParameterValueFactory(uow), uow.getMetamodel(), new Configuration());
         this.soqlQueryParser = new SoqlQueryParser(queryParser, uow.getMetamodel());
     }
 
@@ -63,7 +64,7 @@ public class SparqlQueryFactory {
     }
 
     /**
-     * Creates typed query object representing a native SPARQL query.
+     * Creates a {@link cz.cvut.kbss.jopa.model.query.TypedQuery} object representing a native SPARQL query.
      *
      * @param sparql      The query
      * @param resultClass Type of the results
@@ -79,7 +80,7 @@ public class SparqlQueryFactory {
     private <T> TypedQueryImpl<T> createQueryImpl(String query, Class<T> resultClass, QueryParser parser) {
         Objects.requireNonNull(resultClass);
 
-        return new TypedQueryImpl<>(parser.parseQuery(query), resultClass, connection, uow);
+        return new TypedQueryImpl<>(parser.parseQuery(query, resultClass), resultClass, connection, uow);
     }
 
     /**

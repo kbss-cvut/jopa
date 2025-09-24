@@ -18,15 +18,28 @@
 package cz.cvut.kbss.jopa.query;
 
 /**
- * Used to parse queries into builders which enable the query to be further manipulated, e.g. set parameters.
+ * Used to parse queries into builders which enable the query to be further manipulated, e.g., set parameters.
  */
 public interface QueryParser {
 
     /**
-     * Parses the specified query string and returns a query builder instance containing the parsed query.
+     * Parses the specified query string and returns a query holder instance containing the parsed query.
      *
      * @param query The query to parse
-     * @return Query builder with the parsed query
+     * @return Query holder with the parsed query
      */
     QueryHolder parseQuery(String query);
+
+    /**
+     * Parses the specified query string and returns a query holder instance containing the parsed query.
+     * <p>
+     * The provided result class can be used when processing the query to make adjustments.
+     *
+     * @param query       Query to parse
+     * @param resultClass Result class provided by the client
+     * @return Query holder with the parsed query
+     */
+    default QueryHolder parseQuery(String query, Class<?> resultClass) {
+        return parseQuery(query);
+    }
 }
