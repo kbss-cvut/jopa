@@ -27,14 +27,15 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.utils.ThrowingConsumer;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
@@ -69,20 +70,15 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     private List<X> getResultListImpl() throws OntoDriverException {
         final boolean isEntityType = uow.isEntityType(resultType);
         final List<X> res = new ArrayList<>();
-        executeQuery(rs -> {
-            if (isEntityType) {
-//                if (rs.getColumnCount() == 3 && resultType has no inferred attributes) {
-//                    Assume results of ?x ?y ?z, i.e., x = entity, y = property, z = value
-//                }
-//                else {
-//                    // loadEntityInstance(rs, descriptor).ifPresent(res::add);
-//                }
-                loadEntityInstance(rs, descriptor).ifPresent(res::add);
+        final ThrowingConsumer<ResultRow, OntoDriverException> consumer;
+        if(isEntityType) {
+            final QueryResultEntityLoader<X> loader = getEntityResultLoader();
+            consumer = rr -> loader.loadEntityInstance(rr).ifPresent(res::add);
+        } else {
+            consumer = rr -> loadResultValue(rr).ifPresent(res::add);
+        }
 
-            } else {
-                loadResultValue(rs).ifPresent(res::add);
-            }
-        });
+        executeQuery(consumer);
         return res;
     }
 
@@ -90,17 +86,8 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         return descriptor;
     }
 
-    private Optional<X> loadEntityInstance(ResultRow resultRow, Descriptor instanceDescriptor) {
-        if (uow == null) {
-            throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
-        }
-        try {
-            assert resultRow.isBound(0);
-            final URI uri = URI.create(resultRow.getString(0));
-            return Optional.ofNullable(uow.readObject(resultType, uri, instanceDescriptor));
-        } catch (OntoDriverException e) {
-            throw new OWLPersistenceException("Unable to load query result as entity of type " + resultType, e);
-        }
+    private QueryResultEntityLoader<X> getEntityResultLoader() {
+        return new BaseQueryResultEntityLoader<>(uow, resultType, descriptor);
     }
 
     private Optional<X> loadResultValue(ResultRow resultRow) {
@@ -137,14 +124,11 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     @Override
     public Stream<X> getResultStream() {
         final boolean isEntityType = uow.isEntityType(resultType);
+        final Function<ResultRow, Optional<X>> mapper = isEntityType ?
+                new BaseQueryResultEntityLoader<>(uow, resultType, descriptor)::loadEntityInstance :
+                this::loadResultValue;
         try {
-            return executeQueryForStream(row -> {
-                if (isEntityType) {
-                    return loadEntityInstance(row, descriptor);
-                } else {
-                    return loadResultValue(row);
-                }
-            });
+            return executeQueryForStream(mapper);
         } catch (OntoDriverException e) {
             markTransactionForRollback();
             throw queryEvaluationException(e);
