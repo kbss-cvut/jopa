@@ -19,7 +19,6 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Parameter;
@@ -27,7 +26,6 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.utils.ThrowingConsumer;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
@@ -70,15 +68,15 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     private List<X> getResultListImpl() throws OntoDriverException {
         final boolean isEntityType = uow.isEntityType(resultType);
         final List<X> res = new ArrayList<>();
-        final ThrowingConsumer<ResultRow, OntoDriverException> consumer;
-        if(isEntityType) {
-            final QueryResultEntityLoader<X> loader = getEntityResultLoader();
-            consumer = rr -> loader.loadEntityInstance(rr).ifPresent(res::add);
+        final QueryResultLoader<X> resultLoader;
+        if (isEntityType) {
+            resultLoader = getEntityResultLoader();
         } else {
-            consumer = rr -> loadResultValue(rr).ifPresent(res::add);
+            resultLoader = new NonEntityQueryResultLoader<>(resultType);
         }
 
-        executeQuery(consumer);
+        executeQuery(rr -> resultLoader.loadEntityInstance(rr).ifPresent(res::add));
+        resultLoader.loadLastPending().ifPresent(res::add);
         return res;
     }
 
@@ -86,16 +84,8 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
         return descriptor;
     }
 
-    private QueryResultEntityLoader<X> getEntityResultLoader() {
-        return new BaseQueryResultEntityLoader<>(uow, resultType, descriptor);
-    }
-
-    private Optional<X> loadResultValue(ResultRow resultRow) {
-        try {
-            return Optional.of(resultRow.getObject(0, resultType));
-        } catch (OntoDriverException e) {
-            throw new OWLPersistenceException("Unable to map the query result to class " + resultType, e);
-        }
+    private QueryResultLoader<X> getEntityResultLoader() {
+        return new BaseEntityQueryResultLoader<>(uow, resultType, descriptor);
     }
 
     @Override
@@ -124,9 +114,13 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     @Override
     public Stream<X> getResultStream() {
         final boolean isEntityType = uow.isEntityType(resultType);
-        final Function<ResultRow, Optional<X>> mapper = isEntityType ?
-                new BaseQueryResultEntityLoader<>(uow, resultType, descriptor)::loadEntityInstance :
-                this::loadResultValue;
+        final QueryResultLoader<X> resultLoader;
+        if (isEntityType) {
+            resultLoader = new BaseEntityQueryResultLoader<>(uow, resultType, descriptor);
+        } else {
+            resultLoader = new NonEntityQueryResultLoader<>(resultType);
+        }
+        final Function<ResultRow, Optional<X>> mapper = resultLoader::loadEntityInstance;
         try {
             return executeQueryForStream(mapper);
         } catch (OntoDriverException e) {

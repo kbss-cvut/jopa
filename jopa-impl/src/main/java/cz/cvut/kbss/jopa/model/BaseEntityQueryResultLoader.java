@@ -9,13 +9,19 @@ import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import java.net.URI;
 import java.util.Optional;
 
-class BaseQueryResultEntityLoader<T> implements  QueryResultEntityLoader<T> {
+/**
+ * Default entity loader just calls {@link UnitOfWork} to load an instance with the identifier retrieved from the result
+ * row.
+ *
+ * @param <T> Result type
+ */
+class BaseEntityQueryResultLoader<T> implements QueryResultLoader<T> {
 
     private final UnitOfWork uow;
     private final Class<T> resultType;
     private final Descriptor descriptor;
 
-    BaseQueryResultEntityLoader(UnitOfWork uow, Class<T> resultType, Descriptor descriptor) {
+    BaseEntityQueryResultLoader(UnitOfWork uow, Class<T> resultType, Descriptor descriptor) {
         this.uow = uow;
         this.resultType = resultType;
         this.descriptor = descriptor;
