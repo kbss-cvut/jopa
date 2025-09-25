@@ -1,5 +1,7 @@
 package cz.cvut.kbss.jopa.model;
 
+import cz.cvut.kbss.jopa.query.sparql.EntityLoadingSparqlAssemblyModifier;
+
 /**
  * Experimental configuration properties.
  * <p>
@@ -8,7 +10,7 @@ package cz.cvut.kbss.jopa.model;
 public class JOPAExperimentalProperties {
 
     /**
-     * Enables the use of {@link cz.cvut.kbss.jopa.query.sparql.EntityLoadingOptimizer} for SPARQL queries.
+     * Enables the use of {@link EntityLoadingSparqlAssemblyModifier} for SPARQL queries.
      */
     public static final String QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER = "cz.cvut.kbss.jopa.experimental.query.enableEntityLoadingOptimizer";
 }

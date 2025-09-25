@@ -15,13 +15,13 @@ import java.util.Optional;
  *
  * @param <T> Result type
  */
-class BaseEntityQueryResultLoader<T> implements QueryResultLoader<T> {
+public class BaseEntityQueryResultLoader<T> implements QueryResultLoader<T> {
 
     private final UnitOfWork uow;
     private final Class<T> resultType;
     private final Descriptor descriptor;
 
-    BaseEntityQueryResultLoader(UnitOfWork uow, Class<T> resultType, Descriptor descriptor) {
+    public BaseEntityQueryResultLoader(UnitOfWork uow, Class<T> resultType, Descriptor descriptor) {
         this.uow = uow;
         this.resultType = resultType;
         this.descriptor = descriptor;

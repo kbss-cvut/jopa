@@ -13,11 +13,11 @@ import java.util.Optional;
  *
  * @param <T> Result type
  */
-class NonEntityQueryResultLoader<T> implements QueryResultLoader<T> {
+public class NonEntityQueryResultLoader<T> implements QueryResultLoader<T> {
 
     private final Class<T> resultType;
 
-    NonEntityQueryResultLoader(Class<T> resultType) {
+    public NonEntityQueryResultLoader(Class<T> resultType) {
         this.resultType = resultType;
     }
 

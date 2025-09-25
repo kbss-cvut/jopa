@@ -349,4 +349,17 @@ class SingularObjectPropertyStrategyTest {
         sut.buildInstanceFieldValue(target);
         assertNull(target.getOwlClassA());
     }
+
+    @Test
+    void addValueSupportsUriAxiomValue() throws Exception {
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassP, ?>, OWLClassP> strategy =
+                strategy(metamodelMocks.forOwlClassP().entityType(), metamodelMocks.forOwlClassP().pUriAttribute());
+        strategy.setReferenceSavingResolver(referenceResolverMock);
+        strategy.addAxiomValue(
+                new AxiomImpl<>(NamedResource.create(IDENTIFIER), propertyP(),
+                        new Value<>(VALUE)));
+        final OWLClassP p = new OWLClassP();
+        strategy.buildInstanceFieldValue(p);
+        assertEquals(VALUE, p.getIndividualUri());
+    }
 }

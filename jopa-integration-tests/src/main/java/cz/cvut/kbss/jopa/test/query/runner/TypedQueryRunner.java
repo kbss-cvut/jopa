@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.test.query.runner;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
+import cz.cvut.kbss.jopa.model.JOPAExperimentalProperties;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -408,5 +409,15 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                                                                                                  .getIRI())
                                                          .getResultList();
         assertThat(result, containsSameEntities(entities));
+    }
+
+    @Test
+    public void testSelectByObjectPropertyWithOptimizationLoadsCorrectResult() {
+        getEntityManager().setProperty(JOPAExperimentalProperties.QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER, "true");
+        try {
+            testSelectByObjectProperty();
+        } finally {
+            getEntityManager().setProperty(JOPAExperimentalProperties.QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER, "false");
+        }
     }
 }

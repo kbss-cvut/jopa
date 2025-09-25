@@ -1,17 +1,14 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
-import cz.cvut.kbss.jopa.model.JOPAExperimentalProperties;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
-import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
-import cz.cvut.kbss.jopa.utils.Configuration;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Grammar-based SPARQL 1.1 query parser.
@@ -22,15 +19,14 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
  */
 public class Sparql11QueryParser implements QueryParser {
 
-    private final ParameterValueFactory parameterValueFactory;
-    private final Metamodel metamodel;
-    private final Configuration configuration;
+    private static final Logger LOG = LoggerFactory.getLogger(Sparql11QueryParser.class);
 
-    public Sparql11QueryParser(ParameterValueFactory parameterValueFactory, Metamodel metamodel,
-                               Configuration configuration) {
+    private final ParameterValueFactory parameterValueFactory;
+    private final EntityLoadingOptimizer optimizer;
+
+    public Sparql11QueryParser(ParameterValueFactory parameterValueFactory, EntityLoadingOptimizer optimizer) {
         this.parameterValueFactory = parameterValueFactory;
-        this.metamodel = metamodel;
-        this.configuration = configuration;
+        this.optimizer = optimizer;
     }
 
     @Override
@@ -57,19 +53,9 @@ public class Sparql11QueryParser implements QueryParser {
     }
 
     private void optimizeQueryIfPossible(TokenStreamSparqlQueryHolder query, Class<?> resultClass) {
-        if (query.getQueryType() != QueryType.SELECT || !isResultClassEntity(resultClass)
-                || !isSingleVariableProjected(query) || !configuration.is(JOPAExperimentalProperties.QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER)) {
-            return;
-        }
-        final EntityLoadingOptimizer optimizer = new EntityLoadingOptimizer();
-        query.addAssemblyModifier(optimizer);
-    }
-
-    private boolean isResultClassEntity(Class<?> resultClass) {
-        return metamodel.getEntities().stream().anyMatch(et -> et.getBindableJavaType().equals(resultClass));
-    }
-
-    private static boolean isSingleVariableProjected(TokenStreamSparqlQueryHolder query) {
-        return query.getQueryParameters().stream().filter(QueryParameter::isProjected).count() == 1;
+        optimizer.getSparqlAssemblyModifier(query, resultClass).ifPresent(modifier -> {
+            LOG.trace("Using entity loading optimizer to enhance query.");
+            query.addAssemblyModifier(modifier);
+        });
     }
 }
