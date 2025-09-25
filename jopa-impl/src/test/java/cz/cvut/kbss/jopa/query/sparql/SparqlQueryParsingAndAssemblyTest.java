@@ -3,12 +3,10 @@ package cz.cvut.kbss.jopa.query.sparql;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.JOPAExperimentalProperties;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
-import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
@@ -41,7 +39,7 @@ public class SparqlQueryParsingAndAssemblyTest {
 
     private ParameterValueFactory valueFactory;
 
-    private Metamodel metamodelMock;
+    private UnitOfWork uowMock;
 
     private final Configuration configuration = new Configuration();
 
@@ -51,9 +49,10 @@ public class SparqlQueryParsingAndAssemblyTest {
 
     @BeforeEach
     void setUp() {
-        this.metamodelMock = mock(Metamodel.class);
-        this.valueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
-        this.queryParser = new Sparql11QueryParser(valueFactory, metamodelMock, configuration);
+        this.uowMock = mock(UnitOfWork.class);
+        when(uowMock.getConfiguration()).thenReturn(configuration);
+        this.valueFactory = new ParameterValueFactory(uowMock);
+        this.queryParser = new Sparql11QueryParser(valueFactory, new EntityLoadingOptimizer(uowMock));
     }
 
     @Test
@@ -298,10 +297,7 @@ public class SparqlQueryParsingAndAssemblyTest {
     @Test
     void parseAndAssembleQueryUsesEntityLoadingOptimizerWhenQuerySelectsEntityAndIsConfiguredToUse() {
         configuration.set(JOPAExperimentalProperties.QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER, "true");
-        final EntityType<OWLClassA> et = mock(EntityType.class);
-        when(et.getJavaType()).thenReturn(OWLClassA.class);
-        when(et.getBindableJavaType()).thenReturn(OWLClassA.class);
-        when(metamodelMock.getEntities()).thenReturn(Set.of(et));
+        when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
 
         this.sut = queryParser.parseQuery(SIMPLE_QUERY, OWLClassA.class);
         final String result = sut.assembleQuery();

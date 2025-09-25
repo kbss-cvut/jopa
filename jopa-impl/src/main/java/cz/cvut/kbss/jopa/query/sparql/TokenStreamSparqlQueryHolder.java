@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TokenStreamSparqlQueryHolder implements QueryHolder {
 
@@ -34,7 +35,7 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
     private int limit = Integer.MAX_VALUE;
 
     TokenStreamSparqlQueryHolder(String query, QueryAttributes attributes, List<TokenQueryParameter<?>> parameters,
-                                        CommonTokenStream tokens) {
+                                 CommonTokenStream tokens) {
         this.query = query;
         this.queryAttributes = attributes;
         this.tokens = tokens;
@@ -60,8 +61,13 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
     }
 
     @Override
-    public Set<QueryParameter<?>> getQueryParameters() {
+    public Set<TokenQueryParameter<?>> getQueryParameters() {
         return Set.copyOf(parameterSet.values());
+    }
+
+    @Override
+    public List<TokenQueryParameter<?>> getProjectedQueryParameters() {
+        return parameterSet.values().stream().filter(QueryParameter::isProjected).collect(Collectors.toList());
     }
 
     @Override
@@ -190,7 +196,7 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
      * <p>
      * TODO Note that the current implementation does not support collection-valued parameters.
      *
-     * @param parameters Projected parameters to output into query as VALUES clause
+     * @param parameters Projected parameters to output into the query as VALUES clause
      * @return VALUES clause, if there were any set parameters
      */
     private static Optional<String> assembleValuesClause(Set<QueryParameter<?>> parameters) {

@@ -24,8 +24,8 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHolder;
+import cz.cvut.kbss.jopa.query.sparql.EntityLoadingOptimizer;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
@@ -40,15 +40,15 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     private final Class<X> resultType;
 
-    private final UnitOfWork uow;
+    private final EntityLoadingOptimizer entityLoadingOptimizer;
 
     private Descriptor descriptor = new EntityDescriptor();
 
-    public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
-                          final ConnectionWrapper connection, UnitOfWork uow) {
+    public TypedQueryImpl(QueryHolder query, Class<X> resultType, ConnectionWrapper connection,
+                          EntityLoadingOptimizer entityLoadingOptimizer) {
         super(query, connection);
         this.resultType = Objects.requireNonNull(resultType);
-        this.uow = Objects.requireNonNull(uow);
+        this.entityLoadingOptimizer = entityLoadingOptimizer;
     }
 
     @Override
@@ -66,14 +66,8 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     }
 
     private List<X> getResultListImpl() throws OntoDriverException {
-        final boolean isEntityType = uow.isEntityType(resultType);
         final List<X> res = new ArrayList<>();
-        final QueryResultLoader<X> resultLoader;
-        if (isEntityType) {
-            resultLoader = getEntityResultLoader();
-        } else {
-            resultLoader = new NonEntityQueryResultLoader<>(resultType);
-        }
+        final QueryResultLoader<X> resultLoader = entityLoadingOptimizer.getQueryResultLoader(query, resultType, descriptor);
 
         executeQuery(rr -> resultLoader.loadEntityInstance(rr).ifPresent(res::add));
         resultLoader.loadLastPending().ifPresent(res::add);
@@ -82,10 +76,6 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     public Descriptor getDescriptor() {
         return descriptor;
-    }
-
-    private QueryResultLoader<X> getEntityResultLoader() {
-        return new BaseEntityQueryResultLoader<>(uow, resultType, descriptor);
     }
 
     @Override
@@ -113,13 +103,8 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public Stream<X> getResultStream() {
-        final boolean isEntityType = uow.isEntityType(resultType);
-        final QueryResultLoader<X> resultLoader;
-        if (isEntityType) {
-            resultLoader = new BaseEntityQueryResultLoader<>(uow, resultType, descriptor);
-        } else {
-            resultLoader = new NonEntityQueryResultLoader<>(resultType);
-        }
+        // Not using optimized loader because it needs another call to get the last pending result after all rows are processed
+        final QueryResultLoader<X> resultLoader = entityLoadingOptimizer.getUnoptimizedQueryResultLoader(resultType, descriptor);
         final Function<ResultRow, Optional<X>> mapper = resultLoader::loadEntityInstance;
         try {
             return executeQueryForStream(mapper);

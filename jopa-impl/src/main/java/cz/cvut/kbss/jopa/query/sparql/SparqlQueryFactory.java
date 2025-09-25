@@ -26,7 +26,6 @@ import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.util.Objects;
 
@@ -41,12 +40,15 @@ public class SparqlQueryFactory {
     private final QueryParser queryParser;
     private final SoqlQueryParser soqlQueryParser;
 
+    private final EntityLoadingOptimizer entityLoadingOptimizer;
+
     public SparqlQueryFactory(UnitOfWork uow, ConnectionWrapper connection) {
         assert uow != null;
         assert connection != null;
         this.uow = uow;
         this.connection = connection;
-        this.queryParser = new Sparql11QueryParser(new ParameterValueFactory(uow), uow.getMetamodel(), new Configuration());
+        this.entityLoadingOptimizer = new EntityLoadingOptimizer(uow);
+        this.queryParser = new Sparql11QueryParser(new ParameterValueFactory(uow), entityLoadingOptimizer);
         this.soqlQueryParser = new SoqlQueryParser(queryParser, uow.getMetamodel());
     }
 
@@ -80,7 +82,7 @@ public class SparqlQueryFactory {
     private <T> TypedQueryImpl<T> createQueryImpl(String query, Class<T> resultClass, QueryParser parser) {
         Objects.requireNonNull(resultClass);
 
-        return new TypedQueryImpl<>(parser.parseQuery(query, resultClass), resultClass, connection, uow);
+        return new TypedQueryImpl<>(parser.parseQuery(query, resultClass), resultClass, connection, entityLoadingOptimizer);
     }
 
     /**
@@ -88,7 +90,8 @@ public class SparqlQueryFactory {
      *
      * @param sparql           The query
      * @param resultSetMapping Name of the result set mapping to apply
-     * @return Query object * @throws NullPointerException If {@code sparql} or {@code resultSetMapping} is {@code null}
+     * @return Query object
+     * @throws NullPointerException If {@code sparql} or {@code resultSetMapping} is {@code null}
      */
     public QueryImpl createNativeQuery(String sparql, String resultSetMapping) {
         Objects.requireNonNull(sparql);
@@ -112,7 +115,7 @@ public class SparqlQueryFactory {
     }
 
     /**
-     * Creates typed query object representing a native SPARQL query.
+     * Creates a typed query object representing a native SPARQL query.
      *
      * @param query       The query
      * @param resultClass Type of the results param URI of the ontology context against which the query will be

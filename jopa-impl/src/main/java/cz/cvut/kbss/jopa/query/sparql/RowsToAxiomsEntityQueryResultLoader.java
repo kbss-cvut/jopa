@@ -1,6 +1,7 @@
-package cz.cvut.kbss.jopa.model;
+package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -90,7 +91,7 @@ class RowsToAxiomsEntityQueryResultLoader<T> implements QueryResultLoader<T> {
     @Override
     public Optional<T> loadLastPending() {
         if (!currentEntityAxioms.isEmpty()) {
-            return Optional.of(uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor));
+            return Optional.ofNullable(uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor));
         }
         return Optional.empty();
     }

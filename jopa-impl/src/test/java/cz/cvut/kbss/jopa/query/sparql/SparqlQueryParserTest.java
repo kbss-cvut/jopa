@@ -18,13 +18,12 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.exception.QueryParserException;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
-import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SparqlQueryParserTest {
 
@@ -49,8 +49,10 @@ public class SparqlQueryParserTest {
 
     @BeforeEach
     void setUp() {
-        this.valueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
-        this.queryParser = new Sparql11QueryParser(valueFactory, mock(Metamodel.class), new Configuration());
+        final UnitOfWork uow = mock(UnitOfWork.class);
+        when(uow.getConfiguration()).thenReturn(new Configuration());
+        this.valueFactory = new ParameterValueFactory(uow);
+        this.queryParser = new Sparql11QueryParser(valueFactory, new EntityLoadingOptimizer(uow));
     }
 
     @Test

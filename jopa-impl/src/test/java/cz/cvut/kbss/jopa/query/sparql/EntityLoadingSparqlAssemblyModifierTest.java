@@ -1,26 +1,29 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-class EntityLoadingOptimizerTest {
+class EntityLoadingSparqlAssemblyModifierTest {
 
     private final ParameterValueFactory valueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
 
     private Sparql11QueryParser parser;
 
-    private final EntityLoadingOptimizer sut = new EntityLoadingOptimizer();
+    private final EntityLoadingSparqlAssemblyModifier sut = new EntityLoadingSparqlAssemblyModifier();
 
     @BeforeEach
     void setUp() {
-        this.parser = new Sparql11QueryParser(valueFactory, mock(Metamodel.class), new Configuration());
+        final UnitOfWork uowMock = mock(UnitOfWork.class);
+        when(uowMock.getConfiguration()).thenReturn(new Configuration());
+        this.parser = new Sparql11QueryParser(valueFactory, new EntityLoadingOptimizer(uowMock));
     }
 
     @Test

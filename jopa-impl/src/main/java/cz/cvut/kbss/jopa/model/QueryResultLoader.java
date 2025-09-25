@@ -9,7 +9,7 @@ import java.util.Optional;
  *
  * @param <T> Type of the result
  */
-interface QueryResultLoader<T> {
+public interface QueryResultLoader<T> {
 
     /**
      * Loads an object from the given result row.

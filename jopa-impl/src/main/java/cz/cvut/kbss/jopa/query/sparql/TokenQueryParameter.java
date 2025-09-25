@@ -7,7 +7,12 @@ import org.antlr.v4.runtime.Token;
 import java.util.ArrayList;
 import java.util.List;
 
-class TokenQueryParameter<T> extends QueryParameter<T> {
+/**
+ * Query parameter represented by ANTLR tokens in the query string.
+ *
+ * @param <T> Parameter value type
+ */
+public class TokenQueryParameter<T> extends QueryParameter<T> {
 
     private final List<Token> tokens = new ArrayList<>();
 
