@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
@@ -92,6 +93,7 @@ abstract class QueryTestBase {
         when(resultSetIterator.next()).thenReturn(resultRow);
         when(resultSetMock.stream()).thenCallRealMethod();
         when(resultSetMock.spliterator()).thenCallRealMethod();
+        when(uowMock.getConfiguration()).thenReturn(new Configuration());
         this.queryFactory = new SparqlQueryFactory(uowMock, connectionWrapperMock);
     }
 

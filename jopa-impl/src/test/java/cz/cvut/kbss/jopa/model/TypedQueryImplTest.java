@@ -63,7 +63,7 @@ import static org.mockito.Mockito.when;
 class TypedQueryImplTest extends QueryTestBase {
 
     private static final String ASK_BOOLEAN_QUERY =
-            "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
+            "ASK { ?x a <https://onto.fel.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
 
     @Override
     TypedQueryImpl<?> createQuery(String query, Class<?> resultType) {
