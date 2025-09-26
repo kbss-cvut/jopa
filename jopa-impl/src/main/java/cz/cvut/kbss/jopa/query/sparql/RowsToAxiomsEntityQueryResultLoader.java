@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
+import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -14,6 +15,8 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -28,6 +31,8 @@ import java.util.Optional;
  * @param <T> Result type
  */
 class RowsToAxiomsEntityQueryResultLoader<T> implements QueryResultLoader<T> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RowsToAxiomsEntityQueryResultLoader.class);
 
     private final UnitOfWork uow;
     private final Class<T> resultType;
@@ -56,11 +61,11 @@ class RowsToAxiomsEntityQueryResultLoader<T> implements QueryResultLoader<T> {
                 currentEntityAxioms.add(new AxiomImpl<>(currentSubject, propertyToAssertion(property), new Value<>(value)));
                 return Optional.empty();
             } else {
-                final T result = uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor);
+                final T result = loadEntity();
                 final NamedResource newSubject = NamedResource.create(subject);
                 reset(newSubject);
                 currentEntityAxioms.add(new AxiomImpl<>(newSubject, propertyToAssertion(property), new Value<>(value)));
-                return Optional.of(result);
+                return Optional.ofNullable(result);
             }
         } catch (OntoDriverException e) {
             throw new OWLPersistenceException("Unable to load query result as entity of type " + resultType, e);
@@ -81,6 +86,18 @@ class RowsToAxiomsEntityQueryResultLoader<T> implements QueryResultLoader<T> {
             case DATA -> Assertion.createDataPropertyAssertion(property, false);
             case ANNOTATION -> Assertion.createAnnotationPropertyAssertion(property, false);
         }).orElseGet(() -> Assertion.createPropertyAssertion(property, false));
+    }
+
+    private T loadEntity() {
+        try {
+            return uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor);
+        } catch (CardinalityConstraintViolatedException e) {
+            // Axioms may contain more statements than expected due to query evaluation including inferred results.
+            // If the entity class declares ICs on non-inferred attributes, this may lead to IC violation exception.
+            // In that case, fall back to regular entity loading which uses the underlying repository access API and thus explicitly handles asserted and inferred statements
+            LOG.debug("Unable to load entity from axioms due to cardinality constraint violation, using regular entity loading.", e);
+            return uow.readObject(resultType, currentSubject.getIdentifier(), descriptor);
+        }
     }
 
     private void reset(NamedResource newSubject) {

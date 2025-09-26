@@ -4,6 +4,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -126,5 +127,27 @@ class RowsToAxiomsEntityQueryResultLoaderTest {
         assertTrue(result.isPresent());
         assertEquals(instance, result.get());
         verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor));
+    }
+
+    @Test
+    void loadEntityInstanceLoadsEntityUsingNormalUoWLoadWhenLoadFromAxiomsThrowsCardinalityConstraintViolatedException() throws Exception {
+        final RowsToAxiomsEntityQueryResultLoader<OWLClassA>
+                sut = new RowsToAxiomsEntityQueryResultLoader<>(uow, OWLClassA.class, descriptor);
+        final OWLClassA instance = Generators.generateOwlClassAInstance();
+        final List<ResultRow> firstResultRows = mockResultRows(instance);
+        final ResultRow lastRow = mock(ResultRow.class);
+        when(lastRow.getColumnCount()).thenReturn(3);
+        when(lastRow.getObject(0, URI.class)).thenReturn(Generators.createIndividualIdentifier());
+        when(lastRow.getObject(1, URI.class)).thenReturn(URI.create(RDF.TYPE));
+        when(lastRow.getObject(2)).thenReturn(URI.create(Vocabulary.c_OwlClassA));
+        final List<ResultRow> rows = Stream.concat(firstResultRows.stream(), Stream.of(lastRow)).toList();
+        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor))).thenThrow(CardinalityConstraintViolatedException.class);
+        when(uow.readObject(OWLClassA.class, instance.getUri(), descriptor)).thenReturn(instance);
+
+        final Optional<OWLClassA> result = rows.stream().map(sut::loadEntityInstance).filter(Optional::isPresent)
+                                               .map(Optional::get).findFirst();
+        assertTrue(result.isPresent());
+        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor));
+        verify(uow).readObject(OWLClassA.class, instance.getUri(), descriptor);
     }
 }

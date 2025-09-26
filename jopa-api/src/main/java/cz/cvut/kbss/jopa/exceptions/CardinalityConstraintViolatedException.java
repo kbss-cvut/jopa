@@ -20,7 +20,7 @@ package cz.cvut.kbss.jopa.exceptions;
 /**
  * This exception is thrown when cardinality restriction constraint is violated.
  * <p>
- * For example when the model expects only single value of a property but multiple are present.
+ * For example, when the model expects only a single value of a property but multiple are present.
  */
 public class CardinalityConstraintViolatedException extends IntegrityConstraintViolatedException {
 
