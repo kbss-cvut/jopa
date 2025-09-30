@@ -7,11 +7,15 @@ import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Allows optimizing queries that load entity instances.
  */
 public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimizer<TokenStreamSparqlQueryHolder> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SparqlQueryResultLoadingOptimizer.class);
 
     private final UnitOfWork uow;
 
@@ -24,6 +28,7 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
     public void optimizeQueryAssembly(Class<?> resultClass) {
         this.enableOptimization();
         if (canOptimize(resultClass)) {
+            LOG.trace("Processing query results with optimized entity loading.");
             queryHolder.setAssemblyModifier(new EntityLoadingSparqlAssemblyModifier());
         }
     }
