@@ -23,7 +23,11 @@ import cz.cvut.kbss.jopa.test.environment.OwlapiDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.TypedQueryRunner;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,13 +71,6 @@ public class TypedQueryTest extends TypedQueryRunner {
         em.getEntityManagerFactory().close();
     }
 
-    @Disabled
-    @Test
-    @Override
-    public void usingUntypedQueryAllowsToSpecifyLimitInQuery() {
-        // OWL2Query does not support LIMIT in queries
-    }
-
     @Override
     @Test
     public void setFirstResultCanBeUsedToOffsetFirstQueryResult() {
@@ -97,5 +94,12 @@ public class TypedQueryTest extends TypedQueryRunner {
     @Override
     protected void querySupportsSelectionByDate() {
         // OWL2Query does not support filter by date and delete (used in cleanup)
+    }
+
+    @Disabled
+    @Test
+    @Override
+    public void setUntypedParameterAllowSpecifyingFilterValue() {
+        // OWL2Query does not support complex filters
     }
 }

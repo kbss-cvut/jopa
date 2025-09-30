@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapper;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapperImpl;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;
@@ -58,6 +59,10 @@ public class ConnectionWrapper implements Wrapper {
     }
 
     public <T> T find(LoadingParameters<T> loadingParameters) {
+        return mapper.loadEntity(loadingParameters);
+    }
+
+    public <T> T loadFromAxioms(AxiomBasedLoadingParameters<T> loadingParameters) {
         return mapper.loadEntity(loadingParameters);
     }
 

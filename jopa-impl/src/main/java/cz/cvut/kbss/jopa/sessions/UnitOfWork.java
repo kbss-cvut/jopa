@@ -27,9 +27,11 @@ import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.utils.Wrapper;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -175,6 +177,19 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * repository
      */
     <T> T readObjectWithoutRegistration(Class<T> cls, Object identifier, Descriptor descriptor);
+
+    /**
+     * Reads an object from the specified axioms.
+     * <p>
+     * It is assumed the axioms correspond to the provided descriptor.
+     *
+     * @param cls        Expected result class
+     * @param axioms     Axioms representing the object
+     * @param descriptor Entity descriptor
+     * @param <T>        Return type
+     * @return The retrieved object or {@code null} if no object of the expected target class can be reconstructed
+     */
+    <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor);
 
     /**
      * Retrieves a reference to an object with the specified identifier.

@@ -1,62 +1,52 @@
-/*
- * JOPA
- * Copyright (C) 2025 Czech Technical University in Prague
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
- */
 package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParameter;
+import cz.cvut.kbss.jopa.query.QueryType;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.TokenStreamRewriter;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-public class SparqlQueryHolder implements QueryHolder {
+public class TokenStreamSparqlQueryHolder implements QueryHolder {
 
-    private static final String SPARQL_LIMIT = " LIMIT ";
-    private static final String SPARQL_OFFSET = " OFFSET ";
-
-    // Original query string
     private final String query;
+    private final QueryAttributes queryAttributes;
+    private final CommonTokenStream tokens;
 
-    private final Map<Parameter<?>, QueryParameter<?>> parameterSet;
-    private final Map<Object, QueryParameter<?>> identifiersToParameters;
-    // These parameters are in order matching the query parts and can appear multiple times in the list
-    private final List<QueryParameter<?>> parameters;
-    private final List<String> queryParts;
+    private final Map<Parameter<?>, TokenQueryParameter<?>> parameterSet;
+    private final Map<Object, TokenQueryParameter<?>> identifiersToParameters;
+
+    private SparqlAssemblyModifier assemblyModifier;
 
     private int offset = 0;
 
     private int limit = Integer.MAX_VALUE;
 
-    public SparqlQueryHolder(String query, List<String> parts, List<QueryParameter<?>> parameters) {
+    TokenStreamSparqlQueryHolder(String query, QueryAttributes attributes, List<TokenQueryParameter<?>> parameters,
+                                 CommonTokenStream tokens) {
         this.query = query;
-        this.parameters = parameters;
-        this.queryParts = parts;
-        this.parameterSet = new HashMap<>();
+        this.queryAttributes = attributes;
+        this.tokens = tokens;
+        this.parameterSet = new LinkedHashMap<>();
         parameters.forEach(p -> parameterSet.put(p, p));
         this.identifiersToParameters = new HashMap<>(parameterSet.size());
         parameterSet.values().forEach(p -> identifiersToParameters.put(p.getIdentifier(), p));
+    }
+
+    public void setAssemblyModifier(SparqlAssemblyModifier modifier) {
+        this.assemblyModifier = modifier;
     }
 
     @Override
@@ -67,6 +57,16 @@ public class SparqlQueryHolder implements QueryHolder {
     @Override
     public Set<Parameter<?>> getParameters() {
         return Collections.unmodifiableSet(parameterSet.keySet());
+    }
+
+    @Override
+    public Set<TokenQueryParameter<?>> getQueryParameters() {
+        return Set.copyOf(parameterSet.values());
+    }
+
+    @Override
+    public List<TokenQueryParameter<?>> getProjectedQueryParameters() {
+        return parameterSet.values().stream().filter(QueryParameter::isProjected).collect(Collectors.toList());
     }
 
     @Override
@@ -133,6 +133,9 @@ public class SparqlQueryHolder implements QueryHolder {
 
     @Override
     public void setFirstResult(int startPosition) {
+        if (queryAttributes.hasOffset()) {
+            throw new IllegalStateException("Query already contains an OFFSET clause.");
+        }
         this.offset = startPosition;
     }
 
@@ -143,6 +146,9 @@ public class SparqlQueryHolder implements QueryHolder {
 
     @Override
     public void setMaxResults(int maxResults) {
+        if (queryAttributes.hasLimit()) {
+            throw new IllegalStateException("Query already contains a LIMIT clause.");
+        }
         this.limit = maxResults;
     }
 
@@ -163,26 +169,24 @@ public class SparqlQueryHolder implements QueryHolder {
 
     @Override
     public String assembleQuery() {
-        final StringBuilder sb = new StringBuilder();
         final Set<QueryParameter<?>> projectedParams = new LinkedHashSet<>();
-        for (int i = 0; i < parameters.size(); i++) {
-            sb.append(queryParts.get(i));
-            final QueryParameter<?> qp = parameters.get(i);
+        final TokenStreamRewriter rewriter = new TokenStreamRewriter(tokens);
+        parameterSet.values().forEach(qp -> {
             if (qp.isProjected() && qp.getValue().isSet()) {
                 projectedParams.add(qp);
-                sb.append(qp.getIdentifierAsQueryString());
             } else {
-                sb.append(qp.getValue().getQueryString());
+                qp.getTokens().forEach(t -> rewriter.replace(t, qp.getValue().getQueryString()));
             }
+        });
+        if (assemblyModifier != null) {
+            assemblyModifier.modify(this, rewriter, queryAttributes);
         }
-        if (queryParts.size() > parameters.size()) {
-            sb.append(queryParts.get(parameters.size()));
-        }
+        final StringBuilder sb = new StringBuilder(rewriter.getText());
         if (limit != Integer.MAX_VALUE) {
-            sb.append(SPARQL_LIMIT).append(limit);
+            sb.append(" LIMIT ").append(limit);
         }
         if (offset != 0) {
-            sb.append(SPARQL_OFFSET).append(offset);
+            sb.append(" OFFSET ").append(offset);
         }
         assembleValuesClause(projectedParams).ifPresent(sb::append);
         return sb.toString();
@@ -193,7 +197,7 @@ public class SparqlQueryHolder implements QueryHolder {
      * <p>
      * TODO Note that the current implementation does not support collection-valued parameters.
      *
-     * @param parameters Projected parameters to output into query as VALUES clause
+     * @param parameters Projected parameters to output into the query as VALUES clause
      * @return VALUES clause, if there were any set parameters
      */
     private static Optional<String> assembleValuesClause(Set<QueryParameter<?>> parameters) {
@@ -230,7 +234,7 @@ public class SparqlQueryHolder implements QueryHolder {
     }
 
     @Override
-    public String toString() {
-        return assembleQuery();
+    public QueryType getQueryType() {
+        return queryAttributes.queryType();
     }
 }

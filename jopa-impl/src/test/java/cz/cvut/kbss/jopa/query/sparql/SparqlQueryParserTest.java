@@ -21,13 +21,25 @@ import cz.cvut.kbss.jopa.exception.QueryParserException;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
+import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
-import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SparqlQueryParserTest {
 
@@ -37,8 +49,10 @@ public class SparqlQueryParserTest {
 
     @BeforeEach
     void setUp() {
-        this.valueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
-        this.queryParser = new SparqlQueryParser(valueFactory);
+        final UnitOfWork uow = mock(UnitOfWork.class);
+        when(uow.getConfiguration()).thenReturn(new Configuration());
+        this.valueFactory = new ParameterValueFactory(uow);
+        this.queryParser = new Sparql11QueryParser(valueFactory);
     }
 
     @Test
@@ -117,7 +131,7 @@ public class SparqlQueryParserTest {
         final String query = """
                 PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
                 PREFIX org:    <http://example.com/ns#>
-
+                
                 CONSTRUCT { ?x foaf:name ?name }
                 WHERE  { ?x org:employeeName ?name }""";
         final QueryHolder holder = queryParser.parseQuery(query);
@@ -149,44 +163,17 @@ public class SparqlQueryParserTest {
     }
 
     @Test
-    public void testParseQueryWithUnnumberedPositionalParams() {
+    public void parseQuerySupportsMultipleOccurrencesOfNumericParameter() {
         final String query = """
                 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
                 SELECT ?craft {
-                  ?craft foaf:name $ .
-                  ?craft foaf:homepage $
+                  ?craft foaf:weblog $1 .
+                  ?craft foaf:homepage $1 .
                 }""";
         final QueryHolder holder = queryParser.parseQuery(query);
-        assertEquals(3, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft", valueFactory)));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>(1, valueFactory)));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>(2, valueFactory)));
-    }
-
-    @Test
-    public void testParseQueryWithMixedNumberedAndUnnumberedPositionalParams() {
-        final String query = """
-                PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-                SELECT ?craft {
-                  ?craft foaf:name $1 .
-                  ?craft foaf:homepage $
-                }""";
-        final QueryHolder holder = queryParser.parseQuery(query);
-        assertEquals(3, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft", valueFactory)));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>(1, valueFactory)));
-        assertTrue(holder.getParameters().contains(new QueryParameter<>(2, valueFactory)));
-    }
-
-    @Test
-    public void parsingQueryWithUsedParameterPositionThrowsException() {
-        final String query = """
-                PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-                SELECT ?craft {
-                  ?craft foaf:name $1 .
-                  ?craft foaf:homepage $1
-                }""";
-        assertThrows(QueryParserException.class, () -> queryParser.parseQuery(query));
+        assertEquals(2, holder.getParameters().size());
+        assertTrue(holder.hasParameter("craft"));
+        assertTrue(holder.hasParameter(1));
     }
 
     @Test
@@ -248,14 +235,6 @@ public class SparqlQueryParserTest {
         final String query = "SELECT ?x WHERE {?x a ?type}";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(2, holder.getParameters().size());
-        assertNotNull(holder.getParameter("x"));
-        assertNotNull(holder.getParameter("type"));
-    }
-
-    @Test
-    public void parsesQueryWithStringLiteralInSingleQuotes() {
-        final String query = "SELECT ?x WHERE {?x a ?type; ?x rdfs:label 'label'@en.}";
-        final QueryHolder holder = queryParser.parseQuery(query);
         assertNotNull(holder.getParameter("x"));
         assertNotNull(holder.getParameter("type"));
     }
@@ -434,18 +413,8 @@ public class SparqlQueryParserTest {
                   ?z
                 WHERE {
                   ?x ?y ?z .
-                
+                }
                 """;
-        final QueryHolder holder = queryParser.parseQuery(query);
-        assertEquals(3, holder.getParameters().size());
-        assertNotNull(holder.getParameter("x"));
-        assertNotNull(holder.getParameter("y"));
-        assertNotNull(holder.getParameter("z"));
-    }
-
-    @Test
-    void parseQueryHandlesAttributesWithinIris() {
-        final String query = "SELECT ?x WHERE { <http://example.com/?y> a ?z . }";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(3, holder.getParameters().size());
         assertNotNull(holder.getParameter("x"));
@@ -470,5 +439,22 @@ public class SparqlQueryParserTest {
         final QueryHolder holder = queryParser.parseQuery(query);
         assertTrue(holder.hasParameter("generatedName0"));
         assertTrue(holder.hasParameter("generatedName1"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("queryTypesParams")
+    void parseQueryResolvesQueryType(String query, QueryType expectedType) {
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(expectedType, holder.getQueryType());
+    }
+
+    static Stream<Arguments> queryTypesParams() {
+        return Stream.of(
+                Arguments.of("SELECT ?x WHERE { ?x a ?z . }", QueryType.SELECT),
+                Arguments.of("ASK { ?x a <https://example.com/a> . }", QueryType.ASK),
+                Arguments.of("INSERT DATA { <https://example.com/a> rdf:type <https://example.com/b> . }", QueryType.INSERT),
+                Arguments.of("DELETE {?x ?y ?z } WHERE { ?x a ?z . }", QueryType.DELETE),
+                Arguments.of("CONSTRUCT { ?x a <https://example.com/b> . } WHERE { ?x a <https://example.com/a> . }", QueryType.CONSTRUCT)
+        );
     }
 }

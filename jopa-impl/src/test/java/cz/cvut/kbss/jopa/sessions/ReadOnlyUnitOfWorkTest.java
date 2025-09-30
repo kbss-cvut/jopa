@@ -4,6 +4,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
@@ -19,10 +20,16 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -705,5 +712,26 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
 
         assertNotNull(result);
         assertNotSame(entityA, result);
+    }
+
+    @Test
+    @Override
+    void readObjectFromAxiomsLoadsEntityFromSpecifiedAxiomsAndReturnsIt() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final URI id = Generators.createIndividualIdentifier();
+        final NamedResource idResource = NamedResource.create(id);
+        final List<Axiom<?>> axioms = List.of(
+                new AxiomImpl<>(idResource, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(OWLClassA.getClassIri()))),
+                new AxiomImpl<>(idResource, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>(entityA.getStringAttribute()))
+        );
+        when(storageMock.loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, descriptor, true, axioms))).thenReturn(entityA);
+
+        final OWLClassA result = uow.readObjectFromAxioms(OWLClassA.class, axioms, descriptor);
+        assertNotNull(result);
+        assertEquals(entityA.getUri(), result.getUri());
+        assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
+        assertTrue(uow.contains(result));
+        verify(storageMock).loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, descriptor, true, axioms));
+        assertSame(entityA, result);
     }
 }

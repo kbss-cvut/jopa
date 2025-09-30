@@ -80,9 +80,22 @@ abstract class EntityInstanceLoader {
      * Loads entity based on the specified loading parameters.
      *
      * @param loadingParameters Instance loading parameters
+     * @param <T>               Entity type
      * @return The loaded instance (possibly {@code null})
      */
     abstract <T> T loadEntity(LoadingParameters<T> loadingParameters);
+
+    /**
+     * Loads entity based on the specified loading parameters and axioms representing the entity data.
+     * <p>
+     * If the entity is found in the cache, it is permitted to return the cached instance and discard the axioms.
+     *
+     * @param loadingParameters Instance loading parameters
+     * @param axioms            Axioms representing the entity
+     * @param <T>               Entity type
+     * @return The loaded instance
+     */
+    abstract <T> T loadEntityFromAxioms(LoadingParameters<T> loadingParameters, Collection<Axiom<?>> axioms);
 
     <U extends T, T> U loadInstance(LoadingParameters<T> loadingParameters, IdentifiableEntityType<U> et) {
         final URI identifier = loadingParameters.getIdentifier();
@@ -97,14 +110,25 @@ abstract class EntityInstanceLoader {
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
             removeAssertedForInferredOnlyFields(axioms, loadingParameters, et);
-            return axioms.isEmpty() ? null : entityBuilder.reconstructEntity(
-                    new EntityConstructor.EntityConstructionParameters<>(identifier, et, descriptor, loadingParameters.isForceEager()),
-                    axioms);
+            return reconstructEntityFromAxioms(loadingParameters, et, axioms);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         } catch (cz.cvut.kbss.jopa.exception.InstantiationException e) {
             throw new EntityReconstructionException(e);
         }
+    }
+
+    <U extends T, T> U reconstructEntityFromAxioms(LoadingParameters<T> loadingParameters, IdentifiableEntityType<U> et,
+                                                   Collection<Axiom<?>> axioms) {
+        if (!loadingParameters.shouldBypassCache()) {
+            final Optional<U> cached = loadCached(et, loadingParameters.getIdentifier(), loadingParameters.getDescriptor());
+            if (cached.isPresent()) {
+                return cached.get();
+            }
+        }
+        return axioms.isEmpty() ? null : entityBuilder.reconstructEntity(
+                new EntityConstructor.EntityConstructionParameters<>(loadingParameters.getIdentifier(), et, loadingParameters.getDescriptor(), loadingParameters.isForceEager()),
+                axioms);
     }
 
     <T> Optional<T> loadCached(EntityType<T> et, URI identifier, Descriptor descriptor) {

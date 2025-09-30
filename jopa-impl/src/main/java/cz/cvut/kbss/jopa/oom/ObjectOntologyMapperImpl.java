@@ -33,6 +33,7 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -143,11 +144,40 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             result = defaultInstanceLoader.loadEntity(loadingParameters);
         }
         if (result != null) {
-            final LoadStateDescriptor<T> loadStateDescriptor = uow.getLoadStateRegistry().get(result);
-            assert loadStateDescriptor != null;
-            if (!loadingParameters.shouldBypassCache()) {
-                getCache().add(loadingParameters.getIdentifier(), result, new Descriptors(loadingParameters.getDescriptor(), loadStateDescriptor));
-            }
+            cacheLoadedEntity(loadingParameters, result);
+        }
+        return result;
+    }
+
+    private <T> void cacheLoadedEntity(LoadingParameters<T> loadingParameters, T result) {
+        final LoadStateDescriptor<T> loadStateDescriptor = uow.getLoadStateRegistry().get(result);
+        assert loadStateDescriptor != null;
+        if (!loadingParameters.shouldBypassCache()) {
+            getCache().add(loadingParameters.getIdentifier(), result, new Descriptors(loadingParameters.getDescriptor(), loadStateDescriptor));
+        }
+    }
+
+    @Override
+    public <T> T loadEntity(AxiomBasedLoadingParameters<T> loadingParameters) {
+        assert loadingParameters != null;
+
+        if (loadingParameters.axioms().isEmpty()) {
+            return null;
+        }
+        final URI identifier = loadingParameters.axioms().iterator().next().getSubject().getIdentifier();
+        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.cls());
+        final LoadingParameters<T> params = new LoadingParameters<>(loadingParameters.cls(), identifier, loadingParameters.descriptor());
+        if (loadingParameters.bypassCache()) {
+            params.bypassCache();
+        }
+        final T result;
+        if (et.hasSubtypes()) {
+            result = twoStepInstanceLoader.loadEntityFromAxioms(params, loadingParameters.axioms());
+        } else {
+            result = defaultInstanceLoader.loadEntityFromAxioms(params, loadingParameters.axioms());
+        }
+        if (result != null) {
+            cacheLoadedEntity(params, result);
         }
         return result;
     }

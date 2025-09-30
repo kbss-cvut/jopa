@@ -37,16 +37,16 @@ public class SparqlQueryFactory {
     private final UnitOfWork uow;
     private final ConnectionWrapper connection;
 
-    private final QueryParser queryParser;
-    private final SoqlQueryParser soqlQueryParser;
+    private final Sparql11QueryParser sparqlParser;
+    private final SoqlQueryParser soqlParser;
 
     public SparqlQueryFactory(UnitOfWork uow, ConnectionWrapper connection) {
         assert uow != null;
         assert connection != null;
         this.uow = uow;
         this.connection = connection;
-        this.queryParser = new SparqlQueryParser(new ParameterValueFactory(uow));
-        this.soqlQueryParser = new SoqlQueryParser(queryParser, uow.getMetamodel());
+        this.sparqlParser = new Sparql11QueryParser(new ParameterValueFactory(uow));
+        this.soqlParser = new SoqlQueryParser(sparqlParser, uow.getMetamodel());
     }
 
     /**
@@ -59,11 +59,11 @@ public class SparqlQueryFactory {
     public QueryImpl createNativeQuery(String sparql) {
         Objects.requireNonNull(sparql);
 
-        return new QueryImpl(queryParser.parseQuery(sparql), connection);
+        return new QueryImpl(sparqlParser.parseQuery(sparql), connection);
     }
 
     /**
-     * Creates typed query object representing a native SPARQL query.
+     * Creates a {@link cz.cvut.kbss.jopa.model.query.TypedQuery} object representing a native SPARQL query.
      *
      * @param sparql      The query
      * @param resultClass Type of the results
@@ -73,13 +73,14 @@ public class SparqlQueryFactory {
     public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
         Objects.requireNonNull(sparql);
 
-        return createQueryImpl(sparql, resultClass, queryParser);
+        return createQueryImpl(sparql, resultClass, sparqlParser);
     }
 
     private <T> TypedQueryImpl<T> createQueryImpl(String query, Class<T> resultClass, QueryParser parser) {
         Objects.requireNonNull(resultClass);
-
-        return new TypedQueryImpl<>(parser.parseQuery(query), resultClass, connection, uow);
+        final TokenStreamSparqlQueryHolder queryHolder = (TokenStreamSparqlQueryHolder) parser.parseQuery(query, resultClass);
+        final QueryResultLoadingOptimizer<TokenStreamSparqlQueryHolder> queryResultLoadingOptimizer = new SparqlQueryResultLoadingOptimizer(queryHolder, uow);
+        return new TypedQueryImpl<>(queryHolder, resultClass, connection, queryResultLoadingOptimizer);
     }
 
     /**
@@ -87,14 +88,15 @@ public class SparqlQueryFactory {
      *
      * @param sparql           The query
      * @param resultSetMapping Name of the result set mapping to apply
-     * @return Query object * @throws NullPointerException If {@code sparql} or {@code resultSetMapping} is {@code null}
+     * @return Query object
+     * @throws NullPointerException If {@code sparql} or {@code resultSetMapping} is {@code null}
      */
     public QueryImpl createNativeQuery(String sparql, String resultSetMapping) {
         Objects.requireNonNull(sparql);
         Objects.requireNonNull(resultSetMapping);
 
         final SparqlResultMapper mapper = uow.getResultSetMappingManager().getMapper(resultSetMapping);
-        return new ResultSetMappingQuery(queryParser.parseQuery(sparql), connection, mapper, uow);
+        return new ResultSetMappingQuery(sparqlParser.parseQuery(sparql), connection, mapper, uow);
     }
 
     /**
@@ -107,11 +109,11 @@ public class SparqlQueryFactory {
     public QueryImpl createQuery(String query) {
         Objects.requireNonNull(query);
 
-        return new QueryImpl(soqlQueryParser.parseQuery(query), connection);
+        return new QueryImpl(soqlParser.parseQuery(query), connection);
     }
 
     /**
-     * Creates typed query object representing a native SPARQL query.
+     * Creates a typed query object representing a native SPARQL query.
      *
      * @param query       The query
      * @param resultClass Type of the results param URI of the ontology context against which the query will be
@@ -121,7 +123,7 @@ public class SparqlQueryFactory {
      */
     public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
         Objects.requireNonNull(query);
-        return createQueryImpl(query, resultClass, soqlQueryParser);
+        return createQueryImpl(query, resultClass, soqlParser);
     }
 
     /**

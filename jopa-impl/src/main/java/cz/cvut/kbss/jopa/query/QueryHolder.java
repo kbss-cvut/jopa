@@ -19,7 +19,9 @@ package cz.cvut.kbss.jopa.query;
 
 import cz.cvut.kbss.jopa.model.query.Parameter;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Represents a caretaker of a query, enabling parameter setting and final assembly of the query.
@@ -36,9 +38,28 @@ public interface QueryHolder {
     /**
      * Gets a collection of parameters in the query.
      *
-     * @return Parameter names
+     * @return Parameter objects
      */
     Set<Parameter<?>> getParameters();
+
+    /**
+     * Gets a collection of parameters in the query.
+     * <p>
+     * This returns the same set as {@link #getParameters()}, but it returns more specific type {@link QueryParameter}.
+     *
+     * @return Parameter objects
+     */
+    Set<? extends QueryParameter<?>> getQueryParameters();
+
+    /**
+     * Gets the list of query parameters that appear in the SELECT projection clause (in the order in which they are
+     * declared).
+     *
+     * @return Projected query parameters
+     */
+    default List<? extends QueryParameter<?>> getProjectedQueryParameters() {
+        return getQueryParameters().stream().filter(QueryParameter::isProjected).collect(Collectors.toList());
+    }
 
     /**
      * Checks whether the query has a parameter with the specified name.
@@ -170,4 +191,11 @@ public interface QueryHolder {
      * @return Assembled query
      */
     String assembleQuery();
+
+    /**
+     * Gets the type of this query.
+     *
+     * @return Query type
+     */
+    QueryType getQueryType();
 }

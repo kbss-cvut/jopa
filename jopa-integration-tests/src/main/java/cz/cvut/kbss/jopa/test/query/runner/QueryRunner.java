@@ -209,7 +209,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
     void testSelectQueryWithPositionalParameters() {
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
-                "SELECT ?x WHERE { ?x <" + Vocabulary.P_A_STRING_ATTRIBUTE + "> $ .}";
+                "SELECT ?x WHERE { ?x <" + Vocabulary.P_A_STRING_ATTRIBUTE + "> $1 .}";
         final Query q = getEntityManager().createNativeQuery(query);
         q.setParameter(1, a.getStringAttribute(), "en");
 

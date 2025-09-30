@@ -44,10 +44,12 @@ import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Lists;
 import cz.cvut.kbss.ontodriver.Types;
@@ -111,6 +113,7 @@ import static org.mockito.Mockito.when;
 class ObjectOntologyMapperTest {
 
     private static final URI IDENTIFIER = Generators.createIndividualIdentifier();
+    private static final NamedResource ID_RESOURCE = NamedResource.create(IDENTIFIER);
 
     private static OWLClassA entityA;
     private static Descriptor aDescriptor;
@@ -149,10 +152,10 @@ class ObjectOntologyMapperTest {
         entityA = new OWLClassA(IDENTIFIER);
         entityA.setStringAttribute("SomeStringAttribute");
         aTypes = new HashSet<>();
-        aTypes.add("http://krizik.felk.cvut.cz/ontologies/entityU");
-        aTypes.add("http://krizik.felk.cvut.cz/ontologies/entityV");
+        aTypes.add("https://onto.fel.cvut.cz/ontologies/jopa/entityU");
+        aTypes.add("https://onto.fel.cvut.cz/ontologies/jopa/entityV");
         aDescriptor = new EntityDescriptor();
-        axiomDescriptor = new AxiomDescriptor(NamedResource.create(IDENTIFIER));
+        axiomDescriptor = new AxiomDescriptor(ID_RESOURCE);
     }
 
     @BeforeEach
@@ -182,15 +185,7 @@ class ObjectOntologyMapperTest {
     }
 
     private Collection<Axiom<?>> getAxiomsForEntityA() {
-        final List<Axiom<?>> res = new ArrayList<>();
-        final NamedResource identifier = NamedResource.create(IDENTIFIER);
-        res.add(new AxiomImpl<>(identifier, Assertion.createClassAssertion(false),
-                new Value<Object>(NamedResource.create(Vocabulary.c_OwlClassA))));
-        res.add(new AxiomImpl<>(identifier,
-                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute),
-                        false),
-                new Value<>("stringAttribute")));
-        return res;
+        return Generators.generateAxiomsForOWLClassA(IDENTIFIER);
     }
 
     @Test
@@ -337,7 +332,7 @@ class ObjectOntologyMapperTest {
                         aDescriptor));
         assertThat(ex.getMessage(), containsString(message));
         verify(connectionMock).contains(
-                new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createClassAssertion(false),
+                new AxiomImpl<>(ID_RESOURCE, Assertion.createClassAssertion(false),
                         new Value<>(NamedResource.create(OWLClassA.getClassIri()))), Collections.emptySet());
     }
 
@@ -414,11 +409,10 @@ class ObjectOntologyMapperTest {
                                                                                                           .entityType(), LoadState.UNKNOWN);
         doReturn(loadStateDescriptor).when(cacheMock).getLoadStateDescriptor(entity);
         final Types typesMock = mock(Types.class);
-        final NamedResource individual = NamedResource.create(IDENTIFIER);
         final URI typeUri = URI.create(Vocabulary.C_OWLClassR);
-        when(typesMock.getTypes(NamedResource.create(IDENTIFIER), Collections.emptySet(), false))
+        when(typesMock.getTypes(ID_RESOURCE, Collections.emptySet(), false))
                 .thenReturn(Collections.singleton(
-                        new AxiomImpl<>(individual, Assertion.createClassAssertion(false), new Value<>(typeUri))));
+                        new AxiomImpl<>(ID_RESOURCE, Assertion.createClassAssertion(false), new Value<>(typeUri))));
         when(connectionMock.types()).thenReturn(typesMock);
 
         final LoadingParameters<OWLClassS> loadingParameters = new LoadingParameters<>(OWLClassS.class, IDENTIFIER,
@@ -473,7 +467,7 @@ class ObjectOntologyMapperTest {
         axioms.add(new AxiomImpl<>(id, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(Vocabulary.c_OwlClassD))));
         axioms.add(new AxiomImpl<>(id, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false),
-                new Value<Object>(NamedResource.create(IDENTIFIER))));
+                new Value<Object>(ID_RESOURCE)));
         return axioms;
     }
 
@@ -564,8 +558,8 @@ class ObjectOntologyMapperTest {
         final Assertion assertion =
                 Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
         final Descriptor descriptor = new EntityDescriptor();
-        mapper.registerPendingAssertion(NamedResource.create(IDENTIFIER), assertion, entityA, null);
-        final AxiomDescriptor axiomDescriptor = new AxiomDescriptor(NamedResource.create(IDENTIFIER));
+        mapper.registerPendingAssertion(ID_RESOURCE, assertion, entityA, null);
+        final AxiomDescriptor axiomDescriptor = new AxiomDescriptor(ID_RESOURCE);
         axiomDescriptor.addAssertion(Assertion.createClassAssertion(false));
         axiomDescriptor.addAssertion(Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false));
         when(descriptorFactoryMock
@@ -591,12 +585,12 @@ class ObjectOntologyMapperTest {
         final Assertion assertion =
                 Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
         final Descriptor descriptor = new EntityDescriptor();
-        mapper.registerPendingAssertion(NamedResource.create(IDENTIFIER), assertion, entityA, null);
+        mapper.registerPendingAssertion(ID_RESOURCE, assertion, entityA, null);
         final OWLClassA differentA = new OWLClassA(Generators.createIndividualIdentifier());
         owner.setOwlClassA(differentA);
         when(entityDeconstructorMock.mapFieldToAxioms(IDENTIFIER, owner, mocks.forOwlClassD().owlClassAAtt(),
                 metamodelMock.entity(OWLClassD.class), descriptor))
-                .thenReturn(new AxiomValueGatherer(NamedResource.create(IDENTIFIER), null));
+                .thenReturn(new AxiomValueGatherer(ID_RESOURCE, null));
 
         mapper.updateFieldValue(owner, mocks.forOwlClassD().owlClassAAtt(), descriptor);
         final PendingReferenceRegistry registry = getPendingAssertionRegistry();
@@ -613,7 +607,7 @@ class ObjectOntologyMapperTest {
         final Assertion nextProp =
                 Assertion.createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasNext), false);
         final SimpleListValueDescriptor listDesc =
-                new SimpleListValueDescriptor(NamedResource.create(IDENTIFIER), listProp, nextProp);
+                new SimpleListValueDescriptor(ID_RESOURCE, listProp, nextProp);
         mapper.registerPendingListReference(pending, listDesc, owner.getSimpleList());
 
         when(entityDeconstructorMock.mapEntityToAxioms(pending.getUri(), pending, etAMock, aDescriptor))
@@ -637,7 +631,7 @@ class ObjectOntologyMapperTest {
         final Assertion valueProp =
                 Assertion.createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasContents), false);
         final ReferencedListValueDescriptor listDesc =
-                new ReferencedListValueDescriptor(NamedResource.create(IDENTIFIER), listProp, nextProp, valueProp);
+                new ReferencedListValueDescriptor(ID_RESOURCE, listProp, nextProp, valueProp);
         mapper.registerPendingListReference(pending, listDesc, owner.getReferencedList());
 
         when(entityDeconstructorMock.mapEntityToAxioms(pending.getUri(), pending, etAMock, aDescriptor))
@@ -674,20 +668,20 @@ class ObjectOntologyMapperTest {
     @Test
     void loadFieldValueRemovesExplicitAxiomsWhenAttributeMappingHasIncludeExplicitFalse() throws Exception {
         final Attribute<OWLClassA, String> strAtt = mocks.forOwlClassA().stringAttribute();
-        final AxiomDescriptor allDescriptor = new AxiomDescriptor(NamedResource.create(IDENTIFIER));
+        final AxiomDescriptor allDescriptor = new AxiomDescriptor(ID_RESOURCE);
         final Assertion inferredStr = Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), true);
         allDescriptor.addAssertion(inferredStr);
         when(descriptorFactoryMock.createForFieldLoading(IDENTIFIER, strAtt, aDescriptor, etAMock)).thenReturn(allDescriptor);
         final Collection<Axiom<?>> allAxioms = new ArrayList<>(List.of(
-                new AxiomImpl<>(NamedResource.create(IDENTIFIER), inferredStr, new Value<>("inferred")),
-                new AxiomImpl<>(NamedResource.create(IDENTIFIER), inferredStr, new Value<>("asserted"))
+                new AxiomImpl<>(ID_RESOURCE, inferredStr, new Value<>("inferred")),
+                new AxiomImpl<>(ID_RESOURCE, inferredStr, new Value<>("asserted"))
         ));
         when(connectionMock.find(allDescriptor)).thenReturn(allAxioms);
-        final AxiomDescriptor assertedDescriptor = new AxiomDescriptor(NamedResource.create(IDENTIFIER));
+        final AxiomDescriptor assertedDescriptor = new AxiomDescriptor(ID_RESOURCE);
         assertedDescriptor.addAssertion(Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false));
         when(descriptorFactoryMock.createForAssertedFieldLoading(IDENTIFIER, strAtt, aDescriptor, etAMock)).thenReturn(assertedDescriptor);
         final Collection<Axiom<?>> assertedAxioms = List.of(
-                new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("asserted"))
+                new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("asserted"))
         );
         when(connectionMock.find(assertedDescriptor)).thenReturn(assertedAxioms);
         when(strAtt.includeExplicit()).thenReturn(false);
@@ -696,7 +690,49 @@ class ObjectOntologyMapperTest {
         verify(descriptorFactoryMock).createForFieldLoading(IDENTIFIER, strAtt, aDescriptor, etAMock);
         verify(descriptorFactoryMock).createForAssertedFieldLoading(IDENTIFIER, strAtt, aDescriptor, etAMock);
         verify(entityConstructorMock).setFieldValue(entityA, strAtt,
-                List.of(new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), true), new Value<>("inferred"))),
+                List.of(new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), true), new Value<>("inferred"))),
                 mocks.forOwlClassA().entityType(), aDescriptor);
+    }
+
+    @Test
+    void loadEntityFromAxiomsReconstructsEntityFromAxiomsAndReturnsIt() {
+        final List<Axiom<?>> axioms = List.of(
+                new AxiomImpl<>(ID_RESOURCE, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(OWLClassA.getClassIri()))),
+                new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("value"))
+        );
+
+        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, axioms));
+        assertNotNull(result);
+        assertEquals(IDENTIFIER, result.getUri());
+        assertEquals("value", result.getStringAttribute());
+        assertEquals(LoadState.LOADED, loadStateRegistry.get(result).isLoaded());
+    }
+
+    @Test
+    void loadEntityFromAxiomsReturnsNullWhenAxiomsAreEmpty() {
+        assertNull(mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, List.of())));
+    }
+
+    @Test
+    void loadEntityFromAxiomsPutsLoadedEntityToCache() {
+        final List<Axiom<?>> axioms = List.of(
+                new AxiomImpl<>(ID_RESOURCE, Assertion.createClassAssertion(false), new Value<>(URI.create(OWLClassA.getClassIri()))),
+                new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("value"))
+        );
+
+        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, axioms));
+        verify(cacheMock).add(IDENTIFIER, result, new Descriptors(aDescriptor, loadStateRegistry.get(result)));
+    }
+
+    @Test
+    void loadEntityFromAxiomsResolvesConcreteClassForEntityTypeWithSubTypes() {
+        final List<Axiom<?>> axioms = List.of(
+                new AxiomImpl<>(ID_RESOURCE, Assertion.createClassAssertion(false), new Value<>(URI.create(OWLClassS.getClassIri()))),
+                new AxiomImpl<>(ID_RESOURCE, Assertion.createClassAssertion(false), new Value<>(URI.create(OWLClassR.getClassIri()))),
+                new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(RDFS.LABEL), false), new Value<>("value"))
+        );
+
+        final OWLClassS result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassS.class, new EntityDescriptor(), false, axioms));
+        assertInstanceOf(OWLClassR.class, result);
     }
 }

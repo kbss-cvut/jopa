@@ -63,7 +63,7 @@ import static org.mockito.Mockito.when;
 class TypedQueryImplTest extends QueryTestBase {
 
     private static final String ASK_BOOLEAN_QUERY =
-            "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
+            "ASK { ?x a <https://onto.fel.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
 
     @Override
     TypedQueryImpl<?> createQuery(String query, Class<?> resultType) {
@@ -179,9 +179,10 @@ class TypedQueryImplTest extends QueryTestBase {
 
     @Test
     void executeUpdateRunsUpdateOnConnection() throws Exception {
-        final String update = "INSERT { ?inst ?property ?newValue . } " +
-                "DELETE { ?inst ?property ?origValue . } WHERE {" +
-                "?inst ?property ?origValue . }";
+        final String update = """
+                DELETE { ?inst ?property ?origValue . }
+                INSERT { ?inst ?property ?newValue . }
+                WHERE { ?inst ?property ?origValue . }""";
         final TypedQueryImpl q = createQuery(update);
         q.executeUpdate();
         verify(statementMock).executeUpdate(update);

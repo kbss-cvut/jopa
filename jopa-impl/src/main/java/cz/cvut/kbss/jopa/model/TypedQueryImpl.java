@@ -19,37 +19,36 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHolder;
+import cz.cvut.kbss.jopa.query.sparql.QueryResultLoadingOptimizer;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     private final Class<X> resultType;
 
-    private final UnitOfWork uow;
+    private final QueryResultLoadingOptimizer<? extends QueryHolder> queryResultLoadingOptimizer;
 
     private Descriptor descriptor = new EntityDescriptor();
 
-    public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
-                          final ConnectionWrapper connection, UnitOfWork uow) {
+    public TypedQueryImpl(QueryHolder query, Class<X> resultType, ConnectionWrapper connection,
+                          QueryResultLoadingOptimizer<? extends QueryHolder> queryResultLoadingOptimizer) {
         super(query, connection);
         this.resultType = Objects.requireNonNull(resultType);
-        this.uow = Objects.requireNonNull(uow);
+        this.queryResultLoadingOptimizer = queryResultLoadingOptimizer;
     }
 
     @Override
@@ -67,41 +66,17 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     }
 
     private List<X> getResultListImpl() throws OntoDriverException {
-        final boolean isEntityType = uow.isEntityType(resultType);
         final List<X> res = new ArrayList<>();
-        executeQuery(rs -> {
-            if (isEntityType) {
-                loadEntityInstance(rs, descriptor).ifPresent(res::add);
-            } else {
-                loadResultValue(rs).ifPresent(res::add);
-            }
-        });
+        queryResultLoadingOptimizer.optimizeQueryAssembly(resultType);
+        final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor);
+
+        executeQuery(rr -> resultLoader.loadResult(rr).ifPresent(res::add));
+        resultLoader.loadLastPending().ifPresent(res::add);
         return res;
     }
 
     public Descriptor getDescriptor() {
         return descriptor;
-    }
-
-    private Optional<X> loadEntityInstance(ResultRow resultRow, Descriptor instanceDescriptor) {
-        if (uow == null) {
-            throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
-        }
-        try {
-            assert resultRow.isBound(0);
-            final URI uri = URI.create(resultRow.getString(0));
-            return Optional.ofNullable(uow.readObject(resultType, uri, instanceDescriptor));
-        } catch (OntoDriverException e) {
-            throw new OWLPersistenceException("Unable to load query result as entity of type " + resultType, e);
-        }
-    }
-
-    private Optional<X> loadResultValue(ResultRow resultRow) {
-        try {
-            return Optional.of(resultRow.getObject(0, resultType));
-        } catch (OntoDriverException e) {
-            throw new OWLPersistenceException("Unable to map the query result to class " + resultType, e);
-        }
     }
 
     @Override
@@ -129,15 +104,13 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public Stream<X> getResultStream() {
-        final boolean isEntityType = uow.isEntityType(resultType);
+        // Not using optimized loader because it needs another call to get the last pending result after all rows are processed
+        // TODO Try figuring a way to use the optimized loader
+        queryResultLoadingOptimizer.disableOptimization();
+        final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor);
+        final Function<ResultRow, Optional<X>> mapper = resultLoader::loadResult;
         try {
-            return executeQueryForStream(row -> {
-                if (isEntityType) {
-                    return loadEntityInstance(row, descriptor);
-                } else {
-                    return loadResultValue(row);
-                }
-            });
+            return executeQueryForStream(mapper);
         } catch (OntoDriverException e) {
             markTransactionForRollback();
             throw queryEvaluationException(e);

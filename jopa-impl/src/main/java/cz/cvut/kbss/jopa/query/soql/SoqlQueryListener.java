@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
+import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.sparql.SparqlConstants;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -202,7 +203,7 @@ public class SoqlQueryListener implements SoqlListener {
 
     @Override
     public void enterSelectClause(SoqlParser.SelectClauseContext ctx) {
-        this.typeDef = SparqlConstants.SELECT;
+        this.typeDef = QueryType.SELECT.getKeyword();
 
         if (ctx.DISTINCT() != null) {
             this.isSelectedParamDistinct = true;

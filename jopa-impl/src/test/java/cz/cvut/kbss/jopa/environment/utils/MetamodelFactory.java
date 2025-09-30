@@ -684,6 +684,7 @@ public class MetamodelFactory {
         initEntityType(et, OWLClassS.class, listenerManager);
         when(et.getFieldSpecifications()).thenReturn(Set.of(sNameAtt, sTypes, idS));
         when(et.getAttributes()).thenReturn(Collections.singleton(sNameAtt));
+        when(et.isAbstract()).thenReturn(true);
         initIdentifier(et, idS, OWLClassS.getUriField(), true);
 
         initAttribute(et, sNameAtt, new AttributeInfo(OWLClassS.getNameField(), Attribute.PersistentAttributeType.ANNOTATION));

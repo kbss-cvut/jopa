@@ -20,8 +20,6 @@ package cz.cvut.kbss.jopa.test.query.runner;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.test.OWLClassA;
@@ -54,7 +52,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -258,26 +255,22 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     }
 
     @Test
-    void usingDescriptorAllowsToCustomizeQueryResults() {
-        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
-        expected.forEach(a -> assertNotNull(a.getStringAttribute()));
-        final Descriptor descriptor = new EntityDescriptor();
-        descriptor.setLanguage("cs");
-        final List<OWLClassA> result = getEntityManager().createNamedQuery("OWLClassA.findAll", OWLClassA.class)
-                                                         .setDescriptor(descriptor).getResultList();
+    public void setUntypedParameterAllowSpecifyingFilterValue() {
+        final int filterValue = 10000;
+        final List<OWLClassM> expected = QueryTestEnvironment.getData(OWLClassM.class).stream()
+                                                             .filter(m -> m.getIntAttribute() < filterValue)
+                                                             .sorted(Comparator.comparing(OWLClassM::getIntAttribute))
+                                                             .toList();
+        final List<OWLClassM> result = getEntityManager().createNativeQuery("SELECT ?x WHERE {" +
+                                                                 "?x a ?type ; ?hasInt ?intValue . FILTER(?intValue < ?filterValue) } ORDER BY ?intValue", OWLClassM.class)
+                                                         .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_M))
+                                                         .setParameter("hasInt", URI.create(Vocabulary.p_m_intAttribute))
+                                                         .setUntypedParameter("filterValue", filterValue)
+                                                         .getResultList();
         assertEquals(expected.size(), result.size());
-        result.forEach(a -> assertNull(a.getStringAttribute()));    // Because the data has @en language tag
-    }
-
-    @Test
-    public void usingUntypedQueryAllowsToSpecifyLimitInQuery() {
-        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
-        final int size = expected.size() / 2;
-        final List<OWLClassA> result = getEntityManager().createNativeQuery("SELECT ?x WHERE {" +
-                                                                 "?x a ?classA . } LIMIT ?limit", OWLClassA.class)
-                                                         .setParameter("classA", URI.create(Vocabulary.C_OWL_CLASS_A))
-                                                         .setUntypedParameter("limit", size).getResultList();
-        assertEquals(size, result.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).getKey(), result.get(i).getKey());
+        }
     }
 
     @Test

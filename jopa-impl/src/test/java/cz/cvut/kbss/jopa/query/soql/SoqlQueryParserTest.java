@@ -26,8 +26,9 @@ import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
-import cz.cvut.kbss.jopa.query.sparql.SparqlQueryParser;
-import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import cz.cvut.kbss.jopa.query.sparql.Sparql11QueryParser;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,10 +64,11 @@ public class SoqlQueryParserTest {
     void setUp() throws Exception {
         MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodel);
-        final MetamodelProvider mpp = mock(MetamodelProvider.class);
-        when(mpp.getMetamodel()).thenReturn(metamodel);
-        when(mpp.isEntityType(any())).thenAnswer(inv -> metamodel.isEntityType(inv.getArgument(0)));
-        final SparqlQueryParser qp = new SparqlQueryParser(new ParameterValueFactory(mpp));
+        final UnitOfWork uow = mock(UnitOfWork.class);
+        when(uow.getConfiguration()).thenReturn(new Configuration());
+        when(uow.getMetamodel()).thenReturn(metamodel);
+        when(uow.isEntityType(any())).thenAnswer(inv -> metamodel.isEntityType(inv.getArgument(0)));
+        final QueryParser qp = new Sparql11QueryParser(new ParameterValueFactory(uow));
         this.sut = new SoqlQueryParser(qp, metamodel);
     }
 
