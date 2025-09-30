@@ -23,7 +23,11 @@ import cz.cvut.kbss.jopa.test.environment.OwlapiDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.TypedQueryRunner;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,13 +101,5 @@ public class TypedQueryTest extends TypedQueryRunner {
     @Override
     public void setUntypedParameterAllowSpecifyingFilterValue() {
         // OWL2Query does not support complex filters
-    }
-
-    @Disabled
-    @Test
-    @Override
-    public void testSelectByObjectPropertyWithOptimizationLoadsCorrectResult() {
-        // TODO Check which this does not work and if necessary, disable the optimization for OWLAPI driver
-        super.testSelectByObjectPropertyWithOptimizationLoadsCorrectResult();
     }
 }

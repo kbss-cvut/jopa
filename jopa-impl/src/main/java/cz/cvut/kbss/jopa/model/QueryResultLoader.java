@@ -12,12 +12,12 @@ import java.util.Optional;
 public interface QueryResultLoader<T> {
 
     /**
-     * Loads an object from the given result row.
+     * Loads the result from the given result row.
      *
      * @param resultRow Result row to load from
      * @return Loaded value, if present
      */
-    Optional<T> loadEntityInstance(ResultRow resultRow);
+    Optional<T> loadResult(ResultRow resultRow);
 
     /**
      * If the loader performs any aggregation, use this to method to get the last pending result.

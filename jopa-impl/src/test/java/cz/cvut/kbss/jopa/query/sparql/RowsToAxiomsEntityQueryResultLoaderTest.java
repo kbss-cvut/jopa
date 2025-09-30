@@ -68,7 +68,7 @@ class RowsToAxiomsEntityQueryResultLoaderTest {
         final List<ResultRow> rows = Stream.concat(firstResultRows.stream(), Stream.of(lastRow)).toList();
         when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor))).thenReturn(instance);
 
-        final Optional<OWLClassA> result = rows.stream().map(sut::loadEntityInstance).filter(Optional::isPresent)
+        final Optional<OWLClassA> result = rows.stream().map(sut::loadResult).filter(Optional::isPresent)
                                                .map(Optional::get).findFirst();
         assertTrue(result.isPresent());
         assertEquals(instance, result.get());
@@ -90,7 +90,7 @@ class RowsToAxiomsEntityQueryResultLoaderTest {
     }
 
     @Test
-    void loadEntityInstanceLoadsMultipleInstancesFromConsecutiveRows() throws OntoDriverException {
+    void loadResultLoadsMultipleInstancesFromConsecutiveRows() throws OntoDriverException {
         final RowsToAxiomsEntityQueryResultLoader<OWLClassA>
                 sut = new RowsToAxiomsEntityQueryResultLoader<>(uow, OWLClassA.class, descriptor);
         final OWLClassA instanceOne = Generators.generateOwlClassAInstance();
@@ -108,7 +108,7 @@ class RowsToAxiomsEntityQueryResultLoaderTest {
         when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor))).thenReturn(instanceOne)
                                                                                             .thenReturn(instanceTwo);
 
-        final List<OWLClassA> result = rows.stream().map(sut::loadEntityInstance).filter(Optional::isPresent)
+        final List<OWLClassA> result = rows.stream().map(sut::loadResult).filter(Optional::isPresent)
                                            .map(Optional::get).toList();
         assertEquals(List.of(instanceOne, instanceTwo), result);
         verify(uow, times(2)).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor));
@@ -122,7 +122,7 @@ class RowsToAxiomsEntityQueryResultLoaderTest {
         final List<ResultRow> firstResultRows = mockResultRows(instance);
         when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor))).thenReturn(instance);
 
-        assertTrue(firstResultRows.stream().map(sut::loadEntityInstance).noneMatch(Optional::isPresent));
+        assertTrue(firstResultRows.stream().map(sut::loadResult).noneMatch(Optional::isPresent));
         final Optional<OWLClassA> result = sut.loadLastPending();
         assertTrue(result.isPresent());
         assertEquals(instance, result.get());
@@ -144,7 +144,7 @@ class RowsToAxiomsEntityQueryResultLoaderTest {
         when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor))).thenThrow(CardinalityConstraintViolatedException.class);
         when(uow.readObject(OWLClassA.class, instance.getUri(), descriptor)).thenReturn(instance);
 
-        final Optional<OWLClassA> result = rows.stream().map(sut::loadEntityInstance).filter(Optional::isPresent)
+        final Optional<OWLClassA> result = rows.stream().map(sut::loadResult).filter(Optional::isPresent)
                                                .map(Optional::get).findFirst();
         assertTrue(result.isPresent());
         verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor));

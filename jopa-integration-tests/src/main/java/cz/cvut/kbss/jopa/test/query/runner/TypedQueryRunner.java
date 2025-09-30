@@ -19,10 +19,7 @@ package cz.cvut.kbss.jopa.test.query.runner;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
-import cz.cvut.kbss.jopa.model.JOPAExperimentalProperties;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.test.OWLClassA;
@@ -55,7 +52,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -259,18 +255,6 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     }
 
     @Test
-    void usingDescriptorAllowsToCustomizeQueryResults() {
-        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
-        expected.forEach(a -> assertNotNull(a.getStringAttribute()));
-        final Descriptor descriptor = new EntityDescriptor();
-        descriptor.setLanguage("cs");
-        final List<OWLClassA> result = getEntityManager().createNamedQuery("OWLClassA.findAll", OWLClassA.class)
-                                                         .setDescriptor(descriptor).getResultList();
-        assertEquals(expected.size(), result.size());
-        result.forEach(a -> assertNull(a.getStringAttribute()));    // Because the data has @en language tag
-    }
-
-    @Test
     public void setUntypedParameterAllowSpecifyingFilterValue() {
         final int filterValue = 10000;
         final List<OWLClassM> expected = QueryTestEnvironment.getData(OWLClassM.class).stream()
@@ -409,15 +393,5 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                                                                                                  .getIRI())
                                                          .getResultList();
         assertThat(result, containsSameEntities(entities));
-    }
-
-    @Test
-    public void testSelectByObjectPropertyWithOptimizationLoadsCorrectResult() {
-        getEntityManager().setProperty(JOPAExperimentalProperties.QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER, "true");
-        try {
-            testSelectByObjectProperty();
-        } finally {
-            getEntityManager().setProperty(JOPAExperimentalProperties.QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER, "false");
-        }
     }
 }

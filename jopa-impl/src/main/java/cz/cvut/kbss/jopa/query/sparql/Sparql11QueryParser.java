@@ -7,8 +7,6 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Grammar-based SPARQL 1.1 query parser.
@@ -19,14 +17,10 @@ import org.slf4j.LoggerFactory;
  */
 public class Sparql11QueryParser implements QueryParser {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Sparql11QueryParser.class);
-
     private final ParameterValueFactory parameterValueFactory;
-    private final EntityLoadingOptimizer optimizer;
 
-    public Sparql11QueryParser(ParameterValueFactory parameterValueFactory, EntityLoadingOptimizer optimizer) {
+    public Sparql11QueryParser(ParameterValueFactory parameterValueFactory) {
         this.parameterValueFactory = parameterValueFactory;
-        this.optimizer = optimizer;
     }
 
     @Override
@@ -47,15 +41,6 @@ public class Sparql11QueryParser implements QueryParser {
 
     @Override
     public TokenStreamSparqlQueryHolder parseQuery(String query, Class<?> resultClass) {
-        final TokenStreamSparqlQueryHolder holder = parseQuery(query);
-        optimizeQueryIfPossible(holder, resultClass);
-        return holder;
-    }
-
-    private void optimizeQueryIfPossible(TokenStreamSparqlQueryHolder query, Class<?> resultClass) {
-        optimizer.getSparqlAssemblyModifier(query, resultClass).ifPresent(modifier -> {
-            LOG.trace("Using entity loading optimizer to enhance query.");
-            query.addAssemblyModifier(modifier);
-        });
+        return parseQuery(query);
     }
 }
