@@ -1,8 +1,6 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
-import cz.cvut.kbss.jopa.model.JOPAExperimentalProperties;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
@@ -25,7 +23,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -39,8 +36,6 @@ public class SparqlQueryParsingAndAssemblyTest {
 
     private ParameterValueFactory valueFactory;
 
-    private UnitOfWork uowMock;
-
     private final Configuration configuration = new Configuration();
 
     private Sparql11QueryParser queryParser;
@@ -49,10 +44,10 @@ public class SparqlQueryParsingAndAssemblyTest {
 
     @BeforeEach
     void setUp() {
-        this.uowMock = mock(UnitOfWork.class);
+        UnitOfWork uowMock = mock(UnitOfWork.class);
         when(uowMock.getConfiguration()).thenReturn(configuration);
         this.valueFactory = new ParameterValueFactory(uowMock);
-        this.queryParser = new Sparql11QueryParser(valueFactory, new EntityLoadingOptimizer(uowMock));
+        this.queryParser = new Sparql11QueryParser(valueFactory);
     }
 
     @Test
@@ -288,19 +283,9 @@ public class SparqlQueryParsingAndAssemblyTest {
     void parseAndAssembleQueryAllowsModifierToInsertClausesBeforeLastClosingCurlyBrace() {
         this.sut = queryParser.parseQuery(SIMPLE_QUERY);
         final SparqlAssemblyModifier assemblyModifier = (sut, tokenRewriter, queryAttributes) -> tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), "?x ?y ?z . ");
-        sut.addAssemblyModifier(assemblyModifier);
+        sut.setAssemblyModifier(assemblyModifier);
 
         final String result = sut.assembleQuery();
         assertEquals("SELECT ?x WHERE { ?x a ?type . ?x ?y ?z . }", result);
-    }
-
-    @Test
-    void parseAndAssembleQueryUsesEntityLoadingOptimizerWhenQuerySelectsEntityAndIsConfiguredToUse() {
-        configuration.set(JOPAExperimentalProperties.QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER, "true");
-        when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
-
-        this.sut = queryParser.parseQuery(SIMPLE_QUERY, OWLClassA.class);
-        final String result = sut.assembleQuery();
-        assertNotEquals(SIMPLE_QUERY, result);
     }
 }

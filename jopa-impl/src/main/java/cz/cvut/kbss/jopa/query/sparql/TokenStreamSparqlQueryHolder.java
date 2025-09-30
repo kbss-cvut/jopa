@@ -28,7 +28,7 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
     private final Map<Parameter<?>, TokenQueryParameter<?>> parameterSet;
     private final Map<Object, TokenQueryParameter<?>> identifiersToParameters;
 
-    private final List<SparqlAssemblyModifier> assemblyModifiers = new ArrayList<>();
+    private SparqlAssemblyModifier assemblyModifier;
 
     private int offset = 0;
 
@@ -45,9 +45,8 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
         parameterSet.values().forEach(p -> identifiersToParameters.put(p.getIdentifier(), p));
     }
 
-    public void addAssemblyModifier(SparqlAssemblyModifier modifier) {
-        assert modifier != null;
-        assemblyModifiers.add(modifier);
+    public void setAssemblyModifier(SparqlAssemblyModifier modifier) {
+        this.assemblyModifier = modifier;
     }
 
     @Override
@@ -179,7 +178,9 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
                 qp.getTokens().forEach(t -> rewriter.replace(t, qp.getValue().getQueryString()));
             }
         });
-        assemblyModifiers.forEach(modifier -> modifier.modify(this, rewriter, queryAttributes));
+        if (assemblyModifier != null) {
+            assemblyModifier.modify(this, rewriter, queryAttributes);
+        }
         final StringBuilder sb = new StringBuilder(rewriter.getText());
         if (limit != Integer.MAX_VALUE) {
             sb.append(" LIMIT ").append(limit);

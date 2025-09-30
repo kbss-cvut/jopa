@@ -18,16 +18,21 @@
 package cz.cvut.kbss.jopa.test.query.rdf4j;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.JOPAExperimentalProperties;
 import cz.cvut.kbss.jopa.test.environment.Rdf4jDataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Rdf4jPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.TypedQueryRunner;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jOntoDriverProperties;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
+import java.util.Map;
 
 public class TypedQueryTest extends TypedQueryRunner {
 
@@ -43,7 +48,8 @@ public class TypedQueryTest extends TypedQueryRunner {
     static void setUpBeforeClass() {
         final Rdf4jPersistenceFactory persistenceFactory = new Rdf4jPersistenceFactory();
         em = persistenceFactory.getEntityManager("SPARQLTypedQueryTests", false,
-                Collections.singletonMap(Rdf4jOntoDriverProperties.USE_INFERENCE, "true"));
+                Map.of(Rdf4jOntoDriverProperties.USE_INFERENCE, "true",
+                        JOPAExperimentalProperties.QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER, "true"));
         QueryTestEnvironment.generateTestData(em);
         em.clear();
         em.getEntityManagerFactory().getCache().evictAll();

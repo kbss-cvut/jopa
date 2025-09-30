@@ -38,7 +38,7 @@ class RowsToAxiomsEntityQueryResultLoader<T> implements QueryResultLoader<T> {
     private final Class<T> resultType;
     private final Descriptor descriptor;
 
-    private List<Axiom<?>> currentEntityAxioms;
+    private List<Axiom<?>> currentEntityAxioms = List.of();
     private NamedResource currentSubject;
 
     RowsToAxiomsEntityQueryResultLoader(UnitOfWork uow, Class<T> resultType, Descriptor descriptor) {
@@ -48,7 +48,7 @@ class RowsToAxiomsEntityQueryResultLoader<T> implements QueryResultLoader<T> {
     }
 
     @Override
-    public Optional<T> loadEntityInstance(ResultRow resultRow) {
+    public Optional<T> loadResult(ResultRow resultRow) {
         assert resultRow.getColumnCount() == 3;
         try {
             final URI subject = resultRow.getObject(0, URI.class);

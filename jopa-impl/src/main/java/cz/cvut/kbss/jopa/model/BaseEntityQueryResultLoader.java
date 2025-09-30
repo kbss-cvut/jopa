@@ -28,7 +28,7 @@ public class BaseEntityQueryResultLoader<T> implements QueryResultLoader<T> {
     }
 
     @Override
-    public Optional<T> loadEntityInstance(ResultRow resultRow) {
+    public Optional<T> loadResult(ResultRow resultRow) {
         try {
             assert resultRow.isBound(0);
             final URI uri = URI.create(resultRow.getString(0));

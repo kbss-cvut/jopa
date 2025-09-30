@@ -52,7 +52,7 @@ public class SparqlQueryParserTest {
         final UnitOfWork uow = mock(UnitOfWork.class);
         when(uow.getConfiguration()).thenReturn(new Configuration());
         this.valueFactory = new ParameterValueFactory(uow);
-        this.queryParser = new Sparql11QueryParser(valueFactory, new EntityLoadingOptimizer(uow));
+        this.queryParser = new Sparql11QueryParser(valueFactory);
     }
 
     @Test

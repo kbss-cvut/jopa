@@ -23,13 +23,13 @@ class EntityLoadingSparqlAssemblyModifierTest {
     void setUp() {
         final UnitOfWork uowMock = mock(UnitOfWork.class);
         when(uowMock.getConfiguration()).thenReturn(new Configuration());
-        this.parser = new Sparql11QueryParser(valueFactory, new EntityLoadingOptimizer(uowMock));
+        this.parser = new Sparql11QueryParser(valueFactory);
     }
 
     @Test
     void modifyAddsUnboundPropertyAndValuePatternAndProjectsPropertyAndValueForNamedParameter() {
         final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
-        holder.addAssemblyModifier(sut);
+        holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
         assertEquals("SELECT ?x ?xP ?xV WHERE { ?x a ?type . ?x ?xP ?xV . }", result);
@@ -38,7 +38,7 @@ class EntityLoadingSparqlAssemblyModifierTest {
     @Test
     void modifyAddsUnboundPropertyAndValuePatternAndProjectsPropertyAndValueForPositionalParameter() {
         final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT $1 WHERE { $1 a ?type . }");
-        holder.addAssemblyModifier(sut);
+        holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
         assertEquals("SELECT $1 ?1P ?1V WHERE { $1 a ?type . $1 ?1P ?1V . }", result);

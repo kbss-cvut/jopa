@@ -22,7 +22,7 @@ public class NonEntityQueryResultLoader<T> implements QueryResultLoader<T> {
     }
 
     @Override
-    public Optional<T> loadEntityInstance(ResultRow resultRow) {
+    public Optional<T> loadResult(ResultRow resultRow) {
         try {
             return Optional.of(resultRow.getObject(0, resultType));
         } catch (OntoDriverException e) {
