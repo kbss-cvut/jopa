@@ -108,7 +108,7 @@ class RowsToAxiomsEntityQueryResultLoader<T> implements QueryResultLoader<T> {
     @Override
     public Optional<T> loadLastPending() {
         if (!currentEntityAxioms.isEmpty()) {
-            return Optional.ofNullable(uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor));
+            return Optional.ofNullable(loadEntity());
         }
         return Optional.empty();
     }

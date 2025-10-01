@@ -144,6 +144,10 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
         return offset;
     }
 
+    public boolean hasOffset() {
+        return queryAttributes.hasOffset() || offset != 0;
+    }
+
     @Override
     public void setMaxResults(int maxResults) {
         if (queryAttributes.hasLimit()) {
@@ -155,6 +159,10 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
     @Override
     public int getMaxResults() {
         return limit;
+    }
+
+    public boolean hasLimit() {
+        return queryAttributes.hasLimit() || limit != Integer.MAX_VALUE;
     }
 
     @Override

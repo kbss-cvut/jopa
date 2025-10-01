@@ -44,7 +44,7 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
     }
 
     private boolean limitOffsetSet() {
-        return queryHolder.getFirstResult() != 0 || queryHolder.getMaxResults() != Integer.MAX_VALUE;
+        return queryHolder.hasOffset() || queryHolder.hasLimit();
     }
 
     /**
