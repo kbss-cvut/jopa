@@ -288,4 +288,14 @@ public class SparqlQueryParsingAndAssemblyTest {
         final String result = sut.assembleQuery();
         assertEquals("SELECT ?x WHERE { ?x a ?type . ?x ?y ?z . }", result);
     }
+
+    @Test
+    void parseAndAssembleAllowsVariableInDropGraphStatement() {
+        this.sut = queryParser.parseQuery("DROP GRAPH ?g");
+        final URI graphUri = Generators.createIndividualIdentifier();
+        sut.setParameter(sut.getParameter("g"), graphUri);
+
+        final String result = sut.assembleQuery();
+        assertEquals("DROP GRAPH " + IdentifierTransformer.stringifyIri(graphUri), result);
+    }
 }
