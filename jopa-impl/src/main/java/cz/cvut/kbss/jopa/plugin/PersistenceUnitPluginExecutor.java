@@ -26,7 +26,9 @@ public class PersistenceUnitPluginExecutor {
     }
 
     private static List<PersistenceUnitLifecyclePlugin> resolveAndLoadPlugins(Configuration config) {
-        final String pluginClassesConfig = config.get(JOPAPersistenceProperties.PERSISTENCE_UNIT_LIFECYCLE_PLUGINS, "");
+        final String pluginClassesConfig = config.contains(JOPAPersistenceProperties.PERSISTENCE_UNIT_LIFECYCLE_PLUGINS)
+                ? config.get(JOPAPersistenceProperties.PERSISTENCE_UNIT_LIFECYCLE_PLUGINS)
+                : config.get(JOPAPersistenceProperties.PERSISTENCE_UNIT_LIFECYCLE_PLUGINS_LEGACY);
         final String[] pluginClasses = pluginClassesConfig.split(",");
         if (pluginClasses.length == 0 || pluginClassesConfig.isBlank()) {
             return List.of();
