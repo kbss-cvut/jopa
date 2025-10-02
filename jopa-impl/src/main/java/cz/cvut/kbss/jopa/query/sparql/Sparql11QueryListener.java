@@ -25,8 +25,9 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
 
     private final ParameterValueFactory parameterValueFactory;
 
-    public Sparql11QueryListener(
-            ParameterValueFactory parameterValueFactory) {this.parameterValueFactory = parameterValueFactory;}
+    public Sparql11QueryListener(ParameterValueFactory parameterValueFactory) {
+        this.parameterValueFactory = parameterValueFactory;
+    }
 
     @Override
     public void enterSelectQuery(SparqlParser.SelectQueryContext ctx) {
@@ -102,7 +103,7 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     public void exitWhereClause(SparqlParser.WhereClauseContext ctx) {
         depth--;
         if (depth == 0) {
-            lastClosingCurlyBrace = ctx.stop;
+            this.lastClosingCurlyBrace = ctx.stop;
         }
     }
 
