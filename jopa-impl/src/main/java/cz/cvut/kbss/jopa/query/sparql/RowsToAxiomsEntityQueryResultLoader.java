@@ -82,9 +82,9 @@ class RowsToAxiomsEntityQueryResultLoader<T> implements QueryResultLoader<T> {
                                                                                 .equals(property.toString()))
                                                               .findFirst();
         return attribute.map(att -> switch (att.getPersistentAttributeType()) {
-            case OBJECT -> Assertion.createObjectPropertyAssertion(property, false);
-            case DATA -> Assertion.createDataPropertyAssertion(property, false);
-            case ANNOTATION -> Assertion.createAnnotationPropertyAssertion(property, false);
+            case OBJECT -> Assertion.createObjectPropertyAssertion(property, att.isInferred());
+            case DATA -> Assertion.createDataPropertyAssertion(property, att.isInferred());
+            case ANNOTATION -> Assertion.createAnnotationPropertyAssertion(property, att.isInferred());
         }).orElseGet(() -> Assertion.createPropertyAssertion(property, false));
     }
 
@@ -108,7 +108,7 @@ class RowsToAxiomsEntityQueryResultLoader<T> implements QueryResultLoader<T> {
     @Override
     public Optional<T> loadLastPending() {
         if (!currentEntityAxioms.isEmpty()) {
-            return Optional.ofNullable(uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor));
+            return Optional.ofNullable(loadEntity());
         }
         return Optional.empty();
     }

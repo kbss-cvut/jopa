@@ -125,9 +125,18 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
     /**
      * A comma-separated list of fully qualified class names of lifecycle plugins to be loaded and executed for the
      * whole persistence unit.
-     * TODO Fix incorrect property name (missing kbss)
      */
-    public static final String PERSISTENCE_UNIT_LIFECYCLE_PLUGINS = "cz.cvut.jopa.plugin.persistenceUnit";
+    public static final String PERSISTENCE_UNIT_LIFECYCLE_PLUGINS = "cz.cvut.kbss.jopa.plugin.persistenceUnit";
+
+    /**
+     * Backward compatibility property name for {@link #PERSISTENCE_UNIT_LIFECYCLE_PLUGINS}.
+     * <p>
+     * Introduced because previously the property was incorrectly named.
+     *
+     * @deprecated Use {@link #PERSISTENCE_UNIT_LIFECYCLE_PLUGINS} instead.
+     */
+    @Deprecated
+    public static final String PERSISTENCE_UNIT_LIFECYCLE_PLUGINS_LEGACY = "cz.cvut.jopa.plugin.persistenceUnit";
 
     private JOPAPersistenceProperties() {
         throw new AssertionError();

@@ -35,7 +35,7 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
 
     private boolean canOptimize(Class<?> resultClass) {
         return optimizationEnabled && queryHolder.getQueryType() == QueryType.SELECT
-                && projectsEntity(resultClass) && !limitOffsetSet()
+                && projectsEntity(resultClass) && limitOrOffsetNotSet() && queryDoesNotContainGraphOrServiceClause()
                 && uow.getConfiguration().is(JOPAExperimentalProperties.QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER);
     }
 
@@ -43,8 +43,14 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
         return uow.isEntityType(resultClass) && queryHolder.getProjectedQueryParameters().size() == 1;
     }
 
-    private boolean limitOffsetSet() {
-        return queryHolder.getFirstResult() != 0 || queryHolder.getMaxResults() != Integer.MAX_VALUE;
+    private boolean limitOrOffsetNotSet() {
+        return !queryHolder.hasOffset() && !queryHolder.hasLimit();
+    }
+
+    private boolean queryDoesNotContainGraphOrServiceClause() {
+        // Do not optimize a query containing GRAPH or SERVICE. The optimization pattern uses the default context, and it
+        // could lead to incorrect results
+        return !queryHolder.getQueryAttributes().hasGraphOrService();
     }
 
     /**

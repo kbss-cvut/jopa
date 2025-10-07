@@ -1,5 +1,17 @@
 # JOPA - Change Log
 
+### 2.6.2 - 2025-10-07
+
+- Fix issues introduced by the entity loading optimizer (Enhancement #357) and the new grammar-based SPARQL processing.
+    - Allow variable in GRAPH IRI position (e.g., in DROP GRAPH queries)
+    - Fix `Query.getSingleResult` behavior
+    - Fix issues with asserted/inferred attributes
+    - Handle queries where the triple last pattern does not end with a `.`
+- Entity loading optimization will not be applied when the query contains a `GRAPH` or `SERVICE` clause, as it could
+  lead to incorrect results being returned
+- Rename the plugin property (`cz.cvut.kbss.jopa.plugin.persistenceUnit`). The previous version (which missed the `kbss`
+  part) is still supported for backward compatibility.
+
 ### 2.6.1 - 2025-09-30
 
 - **Experimental** implementation of optimized entity retrieval from query results (Enhancement #357).
@@ -33,7 +45,8 @@
 
 ### 2.6.0 - 2025-09-15
 
-- Support multilingual RDF containers (i.e., multiple translations at the same position in an RDF container) (Enhancement #369).
+- Support multilingual RDF containers, i.e., multiple translations at the same position in an RDF container (Enhancement
+  #369).
 - Sanitize invalid characters in generated Java names in OWL2Java (thanks to @lukaskabc for a PR).
 - Dependency updates: RDF4J 5.1.5.
 

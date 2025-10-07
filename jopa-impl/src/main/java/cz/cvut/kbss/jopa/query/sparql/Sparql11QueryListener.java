@@ -18,6 +18,7 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     private boolean inProjection;
     private boolean hasLimit;
     private boolean hasOffset;
+    private boolean hasGraphOrService;
 
     private int depth = 0;
 
@@ -25,8 +26,9 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
 
     private final ParameterValueFactory parameterValueFactory;
 
-    public Sparql11QueryListener(
-            ParameterValueFactory parameterValueFactory) {this.parameterValueFactory = parameterValueFactory;}
+    public Sparql11QueryListener(ParameterValueFactory parameterValueFactory) {
+        this.parameterValueFactory = parameterValueFactory;
+    }
 
     @Override
     public void enterSelectQuery(SparqlParser.SelectQueryContext ctx) {
@@ -94,6 +96,16 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     }
 
     @Override
+    public void enterGraphGraphPattern(SparqlParser.GraphGraphPatternContext ctx) {
+        this.hasGraphOrService = true;
+    }
+
+    @Override
+    public void enterServiceGraphPattern(SparqlParser.ServiceGraphPatternContext ctx) {
+        this.hasGraphOrService = true;
+    }
+
+    @Override
     public void enterWhereClause(SparqlParser.WhereClauseContext ctx) {
         depth++;
     }
@@ -102,7 +114,7 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     public void exitWhereClause(SparqlParser.WhereClauseContext ctx) {
         depth--;
         if (depth == 0) {
-            lastClosingCurlyBrace = ctx.stop;
+            this.lastClosingCurlyBrace = ctx.stop;
         }
     }
 
@@ -127,7 +139,7 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     }
 
     QueryAttributes getQueryAttributes() {
-        return new QueryAttributes(queryType, hasOffset, hasLimit, lastClosingCurlyBrace);
+        return new QueryAttributes(queryType, hasOffset, hasLimit, hasGraphOrService, lastClosingCurlyBrace);
     }
 
     List<TokenQueryParameter<?>> getParameters() {

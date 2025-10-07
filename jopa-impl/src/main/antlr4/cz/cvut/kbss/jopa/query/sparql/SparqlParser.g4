@@ -227,7 +227,7 @@ graphOrDefault
     ;
 
 graphRef
-    : GRAPH iri
+    : GRAPH varOrIRI
     ;
 
 graphRefAll

@@ -4,7 +4,7 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryType;
-import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.TokenStreamRewriter;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
 
     private final String query;
     private final QueryAttributes queryAttributes;
-    private final CommonTokenStream tokens;
+    private final TokenStream tokens;
 
     private final Map<Parameter<?>, TokenQueryParameter<?>> parameterSet;
     private final Map<Object, TokenQueryParameter<?>> identifiersToParameters;
@@ -35,7 +35,7 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
     private int limit = Integer.MAX_VALUE;
 
     TokenStreamSparqlQueryHolder(String query, QueryAttributes attributes, List<TokenQueryParameter<?>> parameters,
-                                 CommonTokenStream tokens) {
+                                 TokenStream tokens) {
         this.query = query;
         this.queryAttributes = attributes;
         this.tokens = tokens;
@@ -144,6 +144,10 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
         return offset;
     }
 
+    public boolean hasOffset() {
+        return queryAttributes.hasOffset() || offset != 0;
+    }
+
     @Override
     public void setMaxResults(int maxResults) {
         if (queryAttributes.hasLimit()) {
@@ -155,6 +159,10 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
     @Override
     public int getMaxResults() {
         return limit;
+    }
+
+    public boolean hasLimit() {
+        return queryAttributes.hasLimit() || limit != Integer.MAX_VALUE;
     }
 
     @Override
@@ -236,5 +244,9 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
     @Override
     public QueryType getQueryType() {
         return queryAttributes.queryType();
+    }
+
+    public QueryAttributes getQueryAttributes() {
+        return queryAttributes;
     }
 }

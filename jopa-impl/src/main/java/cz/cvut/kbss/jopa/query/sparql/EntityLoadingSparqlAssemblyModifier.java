@@ -2,6 +2,8 @@ package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryType;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.TokenStreamRewriter;
 
 /**
@@ -21,7 +23,7 @@ public class EntityLoadingSparqlAssemblyModifier implements SparqlAssemblyModifi
 
         final TokenQueryParameter<?> p = queryHolder.getProjectedQueryParameters().get(0);
         tokenRewriter.insertAfter(p.getTokens().get(0), generateProjectionModification(p));
-        tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), generateSelectionTriplePattern(p));
+        tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), generateSelectionTriplePattern(p, tokenRewriter.getTokenStream(), queryAttributes.lastClosingCurlyBraceToken()));
     }
 
     private String generateProjectionModification(TokenQueryParameter<?> subjectParam) {
@@ -41,7 +43,8 @@ public class EntityLoadingSparqlAssemblyModifier implements SparqlAssemblyModifi
         return "?" + baseName + "V";
     }
 
-    private String generateSelectionTriplePattern(TokenQueryParameter<?> subjectParam) {
+    private String generateSelectionTriplePattern(TokenQueryParameter<?> subjectParam, TokenStream tokenStream,
+                                                  Token lastClosingCurlyBracket) {
         final String baseName;
         final char varPrefix;
         if (subjectParam.getPosition() != null) {
@@ -51,6 +54,18 @@ public class EntityLoadingSparqlAssemblyModifier implements SparqlAssemblyModifi
             baseName = subjectParam.getName();
             varPrefix = '?';
         }
-        return varPrefix + baseName + " " + property(baseName) + " " + value(baseName) + " . ";
+        return (requiresDot(tokenStream, lastClosingCurlyBracket) ? " . " : "")
+                + varPrefix + baseName + " " + property(baseName) + " " + value(baseName) + " . ";
+    }
+
+    private boolean requiresDot(TokenStream tokenStream, Token lastClosingCurlyBracket) {
+        int position = lastClosingCurlyBracket.getTokenIndex() - 1;
+        while (position > 0) {
+            final Token t = tokenStream.get(position--);
+            if (!t.getText().isBlank()) {
+                return !t.getText().equals(".");
+            }
+        }
+        return true;
     }
 }

@@ -7,7 +7,8 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +33,7 @@ class EntityLoadingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertEquals("SELECT ?x ?xP ?xV WHERE { ?x a ?type . ?x ?xP ?xV . }", result);
+        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xP ?xV WHERE { ?x a ?type . ?x ?xP ?xV . }"));
     }
 
     @Test
@@ -41,6 +42,15 @@ class EntityLoadingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertEquals("SELECT $1 ?1P ?1V WHERE { $1 a ?type . $1 ?1P ?1V . }", result);
+        assertThat(result, equalToCompressingWhiteSpace("SELECT $1 ?1P ?1V WHERE { $1 a ?type . $1 ?1P ?1V . }"));
+    }
+
+    @Test
+    void modifyInsertsDotBeforePropertyAndValuePatternWhenLastTriplePatternDoesNotEndWithDot() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type }");
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xP ?xV WHERE { ?x a ?type . ?x ?xP ?xV . }"));
     }
 }
