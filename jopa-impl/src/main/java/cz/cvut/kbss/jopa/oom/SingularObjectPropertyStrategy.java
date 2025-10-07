@@ -45,7 +45,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<AbstractAttribute<
 
     @Override
     void addAxiomValue(Axiom<?> ax) {
-        final NamedResource valueIdentifier = extractAxiomValue(ax);
+        final NamedResource valueIdentifier = MappingUtils.extractNamedResourceFromAxiomValue(ax);
         final Class<?> targetType = attribute.getJavaType();
         final Object newValue;
         if (IdentifierTransformer.isValidIdentifierType(targetType)) {
@@ -66,15 +66,6 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<AbstractAttribute<
         }
         verifyCardinality(ax.getSubject());
         this.value = newValue;
-    }
-
-    private static NamedResource extractAxiomValue(Axiom<?> ax) {
-        if (ax.getValue().getValue() instanceof URI uri) {
-            return NamedResource.create(uri);
-        } else if (ax.getValue().getValue() instanceof NamedResource nr) {
-            return nr;
-        }
-        throw new IllegalArgumentException("Unsupported axiom value " + ax.getValue() + ", expected NamedResource or URI.");
     }
 
     private void verifyCardinality(NamedResource subject) {

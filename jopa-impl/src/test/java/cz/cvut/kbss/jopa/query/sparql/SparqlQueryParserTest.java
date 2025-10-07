@@ -457,4 +457,20 @@ public class SparqlQueryParserTest {
                 Arguments.of("CONSTRUCT { ?x a <https://example.com/b> . } WHERE { ?x a <https://example.com/a> . }", QueryType.CONSTRUCT)
         );
     }
+
+    @Test
+    void parseAllowsVariableInFromClause() {
+        final String query = "ASK FROM ?graph { ?x a ?type . }";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertTrue(holder.hasParameter("graph"));
+        assertTrue(holder.hasParameter("type"));
+    }
+
+    @Test
+    void parseAllowsVariableInFromNamedClause() {
+        final String query = "SELECT ?x FROM NAMED ?graph { ?x a ?type . }";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertTrue(holder.hasParameter("graph"));
+        assertTrue(holder.hasParameter("type"));
+    }
 }

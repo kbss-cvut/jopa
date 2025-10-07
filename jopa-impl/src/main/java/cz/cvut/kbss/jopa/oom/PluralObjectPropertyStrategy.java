@@ -55,7 +55,7 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
 
     @Override
     void addAxiomValue(Axiom<?> ax) {
-        final NamedResource valueIdentifier = (NamedResource) ax.getValue().getValue();
+        final NamedResource valueIdentifier = MappingUtils.extractNamedResourceFromAxiomValue(ax);
         final Class<?> elementType = attribute.getBindableJavaType();
         if (IdentifierTransformer.isValidIdentifierType(elementType)) {
             values.add(IdentifierTransformer.transformToIdentifier(valueIdentifier.getIdentifier(), elementType));
