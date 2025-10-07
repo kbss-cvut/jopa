@@ -105,7 +105,7 @@ varOrBlankNode
     ;
 
 datasetClause
-    : FROM NAMED? iri
+    : FROM NAMED? varOrIRI
     ;
 
 whereClause
