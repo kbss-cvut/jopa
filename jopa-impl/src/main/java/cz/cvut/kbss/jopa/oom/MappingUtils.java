@@ -20,6 +20,9 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver.model.Assertion.AssertionType;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+
+import java.net.URI;
 
 final class MappingUtils {
 
@@ -28,13 +31,11 @@ final class MappingUtils {
     }
 
     /**
-     * Checks whether the specified axioms is a class assertion for an instance
-     * of the specified entity type. </p>
+     * Checks whether the specified axioms is a class assertion for an instance of the specified entity type. </p>
      *
      * @param ax Axiom
      * @param et Entity type
-     * @return True if the axioms asserts that an individual is of type
-     * represented by the entity type
+     * @return True if the axioms asserts that an individual is of type represented by the entity type
      */
     static boolean isEntityClassAssertion(Axiom<?> ax, EntityType<?> et) {
         return isClassAssertion(ax) && isEntityClass(ax, et);
@@ -54,5 +55,21 @@ final class MappingUtils {
         final String type = et.getIRI().toString();
         final String val = ax.getValue().stringValue();
         return val.equals(type);
+    }
+
+    /**
+     * Gets the value from the specified axiom as a {@link NamedResource}.
+     *
+     * @param ax Axiom with value to get
+     * @return Named resource
+     */
+    static NamedResource extractNamedResourceFromAxiomValue(Axiom<?> ax) {
+        assert ax != null;
+        if (ax.getValue().getValue() instanceof URI uri) {
+            return NamedResource.create(uri);
+        } else if (ax.getValue().getValue() instanceof NamedResource nr) {
+            return nr;
+        }
+        throw new IllegalArgumentException("Unsupported axiom value " + ax.getValue() + ", expected NamedResource or URI.");
     }
 }
