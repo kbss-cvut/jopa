@@ -245,4 +245,8 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
     public QueryType getQueryType() {
         return queryAttributes.queryType();
     }
+
+    public QueryAttributes getQueryAttributes() {
+        return queryAttributes;
+    }
 }

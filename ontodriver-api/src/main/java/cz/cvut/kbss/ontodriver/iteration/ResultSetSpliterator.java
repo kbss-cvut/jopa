@@ -71,7 +71,7 @@ public class ResultSetSpliterator extends Spliterators.AbstractSpliterator<Resul
     public void forEachRemaining(Consumer<? super ResultRow> action) {
         Objects.requireNonNull(action);
         try {
-            // Row is just a view on the result set which does the actual iteration
+            // Row is just a view on the result set that does the actual iteration
             final DelegatingResultRow row = new DelegatingResultRow(resultSet);
             while (resultSet.hasNext()) {
                 resultSet.next();
