@@ -1,5 +1,11 @@
 # JOPA - Change Log
 
+### 2.6.3 - 2025-10-07
+
+- Fix a ClassCastException when building plural object property attribute value from axioms.
+- Temporarily disable entity loading optimization when the target type is not abstract and has subclasses.
+- Allow variable in graph IRI position in FROM/FROM NAMED clauses.
+
 ### 2.6.2 - 2025-10-07
 
 - Fix issues introduced by the entity loading optimizer (Enhancement #357) and the new grammar-based SPARQL processing.
