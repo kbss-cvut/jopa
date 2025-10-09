@@ -85,11 +85,11 @@ public class PolymorphicEntityTypeResolverTest {
     }
 
     @Test
-    public void determineActualEntityTypeReturnsRootTypeWhenTypeAxiomsContainItsClass() {
+    public void determineActualEntityTypeReturnsMostSpecificTypeWhenAxiomsContainRootTypeClassAndItIsNotAbstract() {
         when(etS.isAbstract()).thenReturn(false);    // Just for this test
-        final Collection<Axiom<URI>> types = getTypeAxioms(etS.getIRI().toString());
+        final Collection<Axiom<URI>> types = getTypeAxioms(etS.getIRI().toString(), etR.getIRI().toString());
 
-        assertEquals(etS, execute(etS, types));
+        assertEquals(etR, execute(etS, types));
     }
 
     private <T> EntityType<? extends T> execute(IdentifiableEntityType<T> root, Collection<Axiom<URI>> types) {
@@ -144,7 +144,7 @@ public class PolymorphicEntityTypeResolverTest {
     }
 
     @Test
-    public void determineActualEntityTypeReturnsMostConcreteEtWhenParentEtIsAlsoInTypes() {
+    public void determineActualEntityTypeReturnsMostSpecificEtWhenParentEtIsAlsoInTypes() {
         final IdentifiableEntityType extraEt = generateEntityTypeSubtree(1, etR);
         final Collection<Axiom<URI>> types = getTypeAxioms(etR.getIRI().toString(), extraEt.getIRI().toString());
 
@@ -171,7 +171,7 @@ public class PolymorphicEntityTypeResolverTest {
     }
 
     @Test
-    public void determineActualEntityTypeReturnsMostConcreteEtWhenAncestorIsAlsoInTypes() {
+    public void determineActualEntityTypeReturnsMostSpecificEtWhenAncestorIsAlsoInTypes() {
         final IdentifiableEntityType mostSpecificEt = generateEntityTypeSubtree(Generators.randomPositiveInt(5), etR);
         final Collection<Axiom<URI>> types = getTypeAxioms(etR.getIRI().toString(), mostSpecificEt.getIRI().toString());
 

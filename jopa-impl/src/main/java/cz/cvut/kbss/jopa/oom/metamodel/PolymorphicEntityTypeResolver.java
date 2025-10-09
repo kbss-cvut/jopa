@@ -48,19 +48,15 @@ public class PolymorphicEntityTypeResolver<T> {
     /**
      * Returns entity type suitable for instance loading. This entity type is
      * <ul>
-     * <li>either the specified {@code root} in case the type axioms contain type corresponding to the root entity
-     * type,
-     * <li>or the most specific non-abstract entity type from the hierarchy of the specified root entity type
-     * present in the specified type axioms.
+     * <li>the most specific non-abstract entity type from the hierarchy of the specified root entity type
+     * present in the specified type axioms</li>
+     * <li>the specified root entity type if it is not abstract and no other entity type matches the specified types</li>
      * </ul>
      *
      * @return The specified root entity type or the most specific non-abstract unique entity type
      * @throws AmbiguousEntityTypeException When multiple entity types match the specified types
      */
     public IdentifiableEntityType<? extends T> determineActualEntityType() {
-        if (types.contains(root.getIRI().toURI()) && !root.isAbstract()) {
-            return root;
-        }
         resolveMatchingEntityTypes();
         if (matches.size() > 1) {
             throw new AmbiguousEntityTypeException(
@@ -76,7 +72,10 @@ public class PolymorphicEntityTypeResolver<T> {
      * superseded by the more specific entity type just found.
      */
     private void resolveMatchingEntityTypes() {
-        findMatchingEntityType(root, new HashSet<>());
+        if (!root.isAbstract() && types.contains(root.getIRI().toURI())) {
+            matches.add(root);
+        }
+        findMatchingEntityType(root, Set.of(root));
     }
 
     private void findMatchingEntityType(AbstractIdentifiableType<? extends T> parent,
@@ -86,8 +85,7 @@ public class PolymorphicEntityTypeResolver<T> {
             if (subtype.getPersistenceType() == Type.PersistenceType.ENTITY && !subtype.isAbstract()) {
                 assert subtype instanceof IdentifiableEntityType;
                 final IdentifiableEntityType<? extends T> et = (IdentifiableEntityType<? extends T>) subtype;
-                final URI etUri = et.getIRI().toURI();
-                if (types.contains(etUri)) {
+                if (types.contains(et.getIRI().toURI())) {
                     addMatchingType(et, ancestors);
                 }
                 updatedAncestors.add(et);
