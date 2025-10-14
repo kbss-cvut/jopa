@@ -5,7 +5,6 @@ import cz.cvut.kbss.jopa.model.JOPAExperimentalProperties;
 import cz.cvut.kbss.jopa.model.NonEntityQueryResultLoader;
 import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import org.slf4j.Logger;
@@ -37,8 +36,7 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
     private boolean canOptimize(Class<?> resultClass) {
         return optimizationEnabled && queryHolder.getQueryType() == QueryType.SELECT
                 && projectsEntity(resultClass) && limitOrOffsetNotSet() && queryDoesNotContainGraphOrServiceClause()
-                && uow.getConfiguration().is(JOPAExperimentalProperties.QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER)
-                && resultTypeDoesNotHaveSubclasses(resultClass);
+                && uow.getConfiguration().is(JOPAExperimentalProperties.QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER);
     }
 
     private boolean projectsEntity(Class<?> resultClass) {
@@ -53,12 +51,6 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
         // Do not optimize a query containing GRAPH or SERVICE. The optimization pattern uses the default context, and it
         // could lead to incorrect results
         return !queryHolder.getQueryAttributes().hasGraphOrService();
-    }
-
-    private boolean resultTypeDoesNotHaveSubclasses(Class<?> resultClass) {
-        // TODO This is temporary. Target type resolution should always use the most specific concrete entity type available, even when target type is not abstract
-        final IdentifiableEntityType<?> et = uow.getMetamodel().entity(resultClass);
-        return et.isAbstract() || et.getSubtypes().isEmpty();
     }
 
     /**
