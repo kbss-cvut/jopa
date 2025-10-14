@@ -31,8 +31,8 @@ public interface CacheManager extends Cache {
     /**
      * Adds the specified object into the shared session cache.
      * <p>
-     * If the cache already contains object with the specified identifier (and it is in the same repository context), it
-     * is replaced with the one passed as argument.
+     * If the cache already contains an object with the specified identifier (and it is in the same repository context),
+     * it is replaced with the one passed as argument.
      *
      * @param identifier  Identifier of the specified object
      * @param entity      The object to be added into the cache

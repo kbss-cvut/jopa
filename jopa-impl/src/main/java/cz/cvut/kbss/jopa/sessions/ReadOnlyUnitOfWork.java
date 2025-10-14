@@ -35,6 +35,7 @@ import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.MetamodelUtils;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.lang.reflect.Field;
@@ -399,7 +400,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     private boolean isObjectInCache(Class<?> cls, Object identifier, Descriptor descriptor) {
-        return getLiveObjectCache().contains(cls, identifier, descriptor);
+        return getLiveObjectCache().contains(MetamodelUtils.getEntityClass(cls), identifier, descriptor);
     }
 
     /**

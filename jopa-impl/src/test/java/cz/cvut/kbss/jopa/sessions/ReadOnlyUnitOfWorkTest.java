@@ -10,8 +10,8 @@ import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.lifecycle.PostLoadInvoker;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingListProxy;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingSetProxy;
 import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxy;
@@ -79,7 +79,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     private ObjectChangeSet objectChangeSetMock;
     private URI uriMock;
     private ChangeRecord changeRecordMock;
-    private EntityType entityTypeMock;
+    private IdentifiableEntityType<?> entityTypeMock;
 
     @BeforeEach
     @Override
@@ -94,7 +94,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         objectChangeSetMock = Mockito.mock(ObjectChangeSet.class);
         uriMock = Mockito.mock(URI.class);
         changeRecordMock = Mockito.mock(ChangeRecord.class);
-        entityTypeMock = Mockito.mock(EntityType.class);
+        entityTypeMock = Mockito.mock(IdentifiableEntityType.class);
     }
 
     @Override

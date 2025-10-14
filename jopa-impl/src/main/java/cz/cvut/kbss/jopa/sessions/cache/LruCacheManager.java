@@ -236,7 +236,7 @@ public class LruCacheManager implements CacheManager {
             }
             final URI ctx = descriptors.repositoryDescriptor().getSingleContext().orElse(defaultContext);
             super.put(identifier, entity, descriptors);
-            cache.put(new LruCache.CacheNode(ctx, entity.getClass(), identifier), NULL_VALUE);
+            cache.put(new LruCache.CacheNode(ctx, entityClass(entity), identifier), NULL_VALUE);
         }
 
         @Override

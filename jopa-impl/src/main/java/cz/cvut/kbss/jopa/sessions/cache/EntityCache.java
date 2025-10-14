@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.utils.MetamodelUtils;
 
 import java.net.URI;
 import java.util.Collections;
@@ -50,7 +51,7 @@ class EntityCache {
         assert entity != null;
         assert isCacheable(descriptors.repositoryDescriptor());
 
-        final Class<?> cls = entity.getClass();
+        final Class<?> cls = entityClass(entity);
         final URI ctx = descriptors.repositoryDescriptor().getSingleContext().orElse(defaultContext);
 
         Map<Object, Map<Class<?>, Object>> ctxMap;
@@ -76,6 +77,10 @@ class EntityCache {
 
     boolean isCacheable(Descriptor descriptor) {
         return descriptor.getContexts().size() <= 1;
+    }
+
+    Class<?> entityClass(Object entity) {
+        return MetamodelUtils.getEntityClass(entity.getClass());
     }
 
     <T> T get(Class<T> cls, Object identifier, Descriptor descriptor) {
