@@ -129,7 +129,7 @@ class EntityConstructor {
                     ax, attributes, fieldLoaders, et, constructionParams.descriptor());
             if (fs == null) {
                 if (!MappingUtils.isClassAssertion(ax)) {
-                    LOG.warn("No attribute found for property {}. Axiom {} will be skipped.", ax.getAssertion(), ax);
+                    LOG.trace("No attribute found for property {}. Axiom {} will be skipped.", ax.getAssertion(), ax);
                 }
                 continue;
             }
