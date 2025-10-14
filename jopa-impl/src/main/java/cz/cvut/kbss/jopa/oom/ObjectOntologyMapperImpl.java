@@ -308,12 +308,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     private <T> LoadingParameters<T> initEntityLoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor) {
         LoadingParameters<T> params = new LoadingParameters<>(cls, identifier, descriptor);
-
-        // TODO:
-        // This is necessary when loading object properties (singular and plural)
-        // The solution is not ideal. I think that LoadingParams
-        // should be propagated to this method by loading appropriate methods.
-        if (uow instanceof ReadOnlyUnitOfWork) {
+        if (uow.isReadOnly()) {
             // this prevents caching of entities loaded by ReadOnlyUOW
             params.bypassCache();
         }

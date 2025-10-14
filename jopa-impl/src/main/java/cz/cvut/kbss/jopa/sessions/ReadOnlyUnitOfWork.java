@@ -257,7 +257,8 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
                 if (IndirectWrapperHelper.requiresIndirectWrapper(fieldValue)) {
                     // Unwrap descriptor in case it is an object property collection
-                    final Descriptor fieldDescriptor = super.getDescriptor(original).getAttributeDescriptor(fs).unwrap();
+                    final Descriptor fieldDescriptor = super.getDescriptor(original).getAttributeDescriptor(fs)
+                                                            .unwrap();
                     if (fs.isCollection()) {
                         newValue = this.registerExistingObjects((Collection<Object>) fieldValue, fieldDescriptor);
                     } else {
@@ -420,8 +421,13 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         storage.commit();
     }
 
-    /// ///////////////////////////////////THESE METHODS SHOULD NOT BE
-    /// SUPPORTED/////////////////////////////////////////
+    @Override
+    public boolean isReadOnly() {
+        return true;
+    }
+
+    /// ///////////////////////////////////THESE METHODS SHOULD NOT BE SUPPORTED///////////////////////////////////////
+
     private static void throwUnsupportedOperationException() {
         throw new UnsupportedOperationException("Method not supported.");
     }
