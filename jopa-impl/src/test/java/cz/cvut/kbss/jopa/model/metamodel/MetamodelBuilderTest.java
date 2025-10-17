@@ -739,4 +739,22 @@ class MetamodelBuilderTest {
         assertNotNull(a.getSubtypes());
         assertTrue(a.getSubtypes().isEmpty());
     }
+
+    @Test
+    void buildMetamodelEagerlyGeneratesLazyLoadingEntityProxiesForEntityClassesReferencedByLazilyFetchAttributes() {
+        when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class, ClassWithLazySingularAttribute.class));
+        builder.buildMetamodel(finderMock);
+        assertTrue(builder.getLazyLoadingEntityProxyClasses().containsKey(OWLClassA.class));
+        assertFalse(builder.getLazyLoadingEntityProxyClasses().containsKey(ClassWithLazySingularAttribute.class));
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithLazySingularAttribute")
+    public static class ClassWithLazySingularAttribute {
+        @Id
+        private URI id;
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "lazyAttribute", fetch = FetchType.LAZY)
+        private OWLClassA lazyAttribute;
+    }
 }
