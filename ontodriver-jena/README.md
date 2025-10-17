@@ -6,7 +6,7 @@ Currently supported storage types:
 
 * In-memory (`in-memory`)
 * File (`file`)
-* TDB (`tdb`)
+* TDB (`tdb`) and TDB2 (`tdb2`)
 * Fuseki (`fuseki`)
 
 The storage type is configured using the `cz.cvut.kbss.ontodriver.jena.storage` property.
