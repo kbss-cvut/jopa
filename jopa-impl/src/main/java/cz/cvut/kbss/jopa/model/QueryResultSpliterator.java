@@ -19,11 +19,9 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
-import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Spliterator for processing {@link cz.cvut.kbss.ontodriver.ResultSet} from {@link cz.cvut.kbss.jopa.model.query.Query}
@@ -38,19 +36,19 @@ import java.util.function.Function;
 class QueryResultSpliterator<X> extends Spliterators.AbstractSpliterator<X> {
 
     private final Spliterator<ResultRow> resultSetSpliterator;
-    private final Function<ResultRow, Optional<X>> mapper;
+    private final QueryResultLoader<X> resultLoader;
     private final Runnable onClose;
 
-    QueryResultSpliterator(Spliterator<ResultRow> resultSetSpliterator, Function<ResultRow, Optional<X>> mapper,
+    QueryResultSpliterator(Spliterator<ResultRow> resultSetSpliterator, QueryResultLoader<X> resultLoader,
                            Runnable onClose) {
         super(Long.MAX_VALUE, Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.NONNULL);
         this.resultSetSpliterator = resultSetSpliterator;
-        this.mapper = mapper;
+        this.resultLoader = resultLoader;
         this.onClose = onClose;
     }
 
     private void mapAndApply(ResultRow row, Consumer<? super X> action) {
-        mapper.apply(row).ifPresent(action);
+        resultLoader.loadResult(row).ifPresent(action);
     }
 
     @Override
@@ -58,6 +56,7 @@ class QueryResultSpliterator<X> extends Spliterators.AbstractSpliterator<X> {
         try {
             final boolean result = resultSetSpliterator.tryAdvance(row -> mapAndApply(row, action));
             if (!result) {
+                resultLoader.loadLastPending().ifPresent(action);
                 onClose.run();
             }
             return result;
@@ -72,6 +71,7 @@ class QueryResultSpliterator<X> extends Spliterators.AbstractSpliterator<X> {
         try {
             resultSetSpliterator.forEachRemaining(row -> mapAndApply(row, action));
         } finally {
+            resultLoader.loadLastPending().ifPresent(action);
             onClose.run();
         }
     }
