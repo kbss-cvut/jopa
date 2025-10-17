@@ -20,6 +20,8 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.environment.TestPersistenceProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -29,7 +31,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
+@Execution(ExecutionMode.SAME_THREAD)
 class DefaultPersistenceProviderResolverTest {
 
     private final DefaultPersistenceProviderResolver resolver = new DefaultPersistenceProviderResolver();
