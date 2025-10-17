@@ -21,11 +21,13 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.TypeReferenceMap;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Inheritance;
 import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxyGenerator;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.ResultSetMappingManager;
 import cz.cvut.kbss.jopa.query.mapper.ResultSetMappingProcessor;
@@ -58,9 +60,11 @@ public class MetamodelBuilder {
 
     private final Map<IdentifiableType<?>, Set<AnnotatedAccessor>> annotatedAccessors = new HashMap<>();
     private final TypeReferenceMap typeReferenceMap = new TypeReferenceMap();
+    private final Map<Class<?>, Class<?>> lazyLoadingProxyClasses = new HashMap<>();
 
     private final List<DeferredFieldInitialization<?>> deferredFieldInitializations = new ArrayList<>();
 
+    private final LazyLoadingEntityProxyGenerator lazyLoadingEntityProxyGenerator = new LazyLoadingEntityProxyGenerator();
     private final NamespaceResolver namespaceResolver = new NamespaceResolver();
 
     private final ConverterResolver converterResolver;
@@ -285,14 +289,31 @@ public class MetamodelBuilder {
         return typeMap.containsKey(cls);
     }
 
-    void registerTypeReference(Class<?> referencedType, Class<?> referringType) {
-        assert hasManagedType(referencedType);
-        assert hasManagedType(referringType);
-        typeReferenceMap.addReference(referencedType, referringType);
+    <X> void attributeProcessed(Attribute<X, ?> att) {
+        registerTypeReference(att);
+        createLazyLoadingProxy(att);
+    }
+
+    private <X> void registerTypeReference(Attribute<X, ?> attribute) {
+        final Class<?> type = attribute.isCollection() ? ((PluralAttribute<X, ?, ?>) attribute).getBindableJavaType() : attribute.getJavaType();
+        if (hasManagedType(type)) {
+            typeReferenceMap.addReference(type, attribute.getDeclaringType().getJavaType());
+        }
     }
 
     public TypeReferenceMap getTypeReferenceMap() {
         return typeReferenceMap;
+    }
+
+    <X> void createLazyLoadingProxy(Attribute<X, ?> attribute) {
+        if (attribute.getFetchType() == FetchType.LAZY && !attribute.isCollection()) {
+            final Class<?> cls = attribute.getJavaType();
+            lazyLoadingProxyClasses.computeIfAbsent(cls, lazyLoadingEntityProxyGenerator::generate);
+        }
+    }
+
+    public Map<Class<?>, Class<?>> getLazyLoadingEntityProxyClasses() {
+        return Collections.unmodifiableMap(lazyLoadingProxyClasses);
     }
 
     public Set<AnnotatedAccessor> getAnnotatedAccessorsForClass(IdentifiableType<?> k) {
