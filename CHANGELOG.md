@@ -1,5 +1,13 @@
 # JOPA - Change Log
 
+### 2.6.4 - 2025-10-22
+
+- Support entity classes with subclasses by the entity loading optimizer (Enhancement #357).
+- Support entity loading optimization in query result stream (Enhancement #357).
+- Always resolve the most specific entity classes for instantiation (instead of preferring class exactly matching the requested type).
+- Eagerly generate lazy loading entity proxy classes for entity classes that are actually referenced by attributes with fetchType=LAZY in the model (Enhancement #380).
+- Dependency updates: Jena 5.6.0.
+
 ### 2.6.3 - 2025-10-07
 
 - Fix a ClassCastException when building plural object property attribute value from axioms.
