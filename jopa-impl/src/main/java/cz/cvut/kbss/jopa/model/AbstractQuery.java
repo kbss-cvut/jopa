@@ -36,9 +36,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -286,7 +284,7 @@ abstract class AbstractQuery implements Query {
         hints.forEach((hint, value) -> QueryHintsHandler.apply(hint, value, this, statement));
     }
 
-    <R> Stream<R> executeQueryForStream(Function<ResultRow, Optional<R>> function) throws OntoDriverException {
+    <R> Stream<R> executeQueryForStream(QueryResultLoader<R> resultLoader) throws OntoDriverException {
         final Statement stmt = initQueryStatement();
         final ResultSet rs = stmt.executeQuery(query.assembleQuery());
         final Runnable closeHandler = () -> {
@@ -297,7 +295,7 @@ abstract class AbstractQuery implements Query {
                 throw new OWLPersistenceException(e);
             }
         };
-        return StreamSupport.stream(new QueryResultSpliterator<>(rs.spliterator(), function, closeHandler), false)
+        return StreamSupport.stream(new QueryResultSpliterator<>(rs.spliterator(), resultLoader, closeHandler), false)
                             .onClose(closeHandler);
     }
 

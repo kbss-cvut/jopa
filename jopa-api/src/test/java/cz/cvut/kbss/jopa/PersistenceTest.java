@@ -21,6 +21,8 @@ import cz.cvut.kbss.jopa.environment.TestPersistenceProvider;
 import cz.cvut.kbss.jopa.model.PersistenceProperties;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.util.Collections;
 import java.util.Map;
@@ -29,6 +31,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@Execution(ExecutionMode.SAME_THREAD)
 class PersistenceTest {
 
     @Test

@@ -92,7 +92,7 @@ class RowsToAxiomsEntityQueryResultLoader<T> implements QueryResultLoader<T> {
         try {
             return uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor);
         } catch (CardinalityConstraintViolatedException e) {
-            // Axioms may contain more statements than expected due to query evaluation including inferred results.
+            // Axioms may contain more statements than expected due to query evaluation containing inferred results.
             // If the entity class declares ICs on non-inferred attributes, this may lead to IC violation exception.
             // In that case, fall back to regular entity loading which uses the underlying repository access API and thus explicitly handles asserted and inferred statements
             LOG.debug("Unable to load entity from axioms due to cardinality constraint violation, using regular entity loading.", e);

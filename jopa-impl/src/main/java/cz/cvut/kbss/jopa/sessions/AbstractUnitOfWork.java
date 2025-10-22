@@ -1013,4 +1013,8 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
             this.hasDeleted = true;
         }
     }
+
+    public boolean isReadOnly() {
+        return false;
+    }
 }

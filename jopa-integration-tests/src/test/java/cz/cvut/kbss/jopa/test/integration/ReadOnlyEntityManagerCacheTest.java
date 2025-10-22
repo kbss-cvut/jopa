@@ -298,7 +298,7 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
                                  .stream()
                                  .filter((OWLClassA a) -> a.getUri().equals(instanceAUri1))
                                  .findFirst()
-                                 .get();
+                                 .orElse(null);
         assertNotNull(clone);
         assertNotSame(originalA, clone);
 
@@ -372,7 +372,7 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
 
 
         // trigger lazy load
-        firstDD.getOwlClassA().getStringAttribute();
+        assertNotNull(firstDD.getOwlClassA().getStringAttribute());
 
         // property should be loaded and not cached
         assertInstanceOf(OWLClassA.class, firstDD.getOwlClassA());
@@ -426,7 +426,7 @@ public class ReadOnlyEntityManagerCacheTest extends IntegrationTestBase {
 
         // trigger getA load
         // getA should by cloned
-        firstDD.getOwlClassA().getStringAttribute();
+        assertNotNull(firstDD.getOwlClassA().getStringAttribute());
         assertInstanceOf(OWLClassA.class, firstDD.getOwlClassA());
         assertNotSame(firstAOriginal, firstDD.getOwlClassA());
 

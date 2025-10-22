@@ -35,6 +35,7 @@ import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.MetamodelUtils;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.lang.reflect.Field;
@@ -256,7 +257,8 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
                 if (IndirectWrapperHelper.requiresIndirectWrapper(fieldValue)) {
                     // Unwrap descriptor in case it is an object property collection
-                    final Descriptor fieldDescriptor = super.getDescriptor(original).getAttributeDescriptor(fs).unwrap();
+                    final Descriptor fieldDescriptor = super.getDescriptor(original).getAttributeDescriptor(fs)
+                                                            .unwrap();
                     if (fs.isCollection()) {
                         newValue = this.registerExistingObjects((Collection<Object>) fieldValue, fieldDescriptor);
                     } else {
@@ -399,7 +401,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     private boolean isObjectInCache(Class<?> cls, Object identifier, Descriptor descriptor) {
-        return getLiveObjectCache().contains(cls, identifier, descriptor);
+        return getLiveObjectCache().contains(MetamodelUtils.getEntityClass(cls), identifier, descriptor);
     }
 
     /**
@@ -419,8 +421,13 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         storage.commit();
     }
 
-    /// ///////////////////////////////////THESE METHODS SHOULD NOT BE
-    /// SUPPORTED/////////////////////////////////////////
+    @Override
+    public boolean isReadOnly() {
+        return true;
+    }
+
+    /// ///////////////////////////////////THESE METHODS SHOULD NOT BE SUPPORTED///////////////////////////////////////
+
     private static void throwUnsupportedOperationException() {
         throw new UnsupportedOperationException("Method not supported.");
     }

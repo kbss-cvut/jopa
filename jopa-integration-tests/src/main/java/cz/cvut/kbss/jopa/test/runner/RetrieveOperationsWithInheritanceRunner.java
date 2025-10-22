@@ -116,7 +116,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     }
 
     @Test
-    void findLoadsSuperclassInstanceWhenRequestedAndClassAssertionIsPresent() throws Exception {
+    void findLoadsSubclassInstanceWhenSuperclassRequestedAndBothSubclassAndSuperclassTypesArePresent() throws Exception {
         this.em = getEntityManager("findLoadsSuperclassInstanceWhenRequestedAndClassAssertionIsPresent",
                 false);
         final Collection<Quad> data = triplesForEntityT();
@@ -125,9 +125,10 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
         final OWLClassS result = em.find(OWLClassS.class, entityT.getUri());
         assertNotNull(result);
+        assertInstanceOf(OWLClassT.class, result);
         assertEquals(entityT.getName(), result.getName());
         assertEquals(entityT.getDescription(), result.getDescription());
-        assertTrue(result.getTypes().contains(Vocabulary.C_OWL_CLASS_T));
+        assertTrue(result.getTypes().contains(Vocabulary.C_OWL_CLASS_S));
     }
 
     @Test

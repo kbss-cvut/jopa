@@ -95,7 +95,6 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         initFromMetamodelBuilder(metamodelBuilder);
         this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
         this.resultSetMappingManager = metamodelBuilder.getResultSetMappingManager();
-        this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
         new StaticMetamodelInitializer(this).initializeStaticMetamodel();
     }
 
@@ -104,13 +103,15 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         this.entities = metamodelBuilder.getEntities();
         this.inferredClasses = metamodelBuilder.getInferredClasses();
         this.namespaceResolver = metamodelBuilder.getNamespaceResolver();
+        this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
+        this.lazyLoadingProxyClasses.putAll(metamodelBuilder.getLazyLoadingEntityProxyClasses());
     }
 
     /**
      * Builds a reduced metamodel for the specified set of entity classes.
      * <p>
      * The result of calling this method is not equivalent to {@link #build(PersistenceUnitClassFinder)} as it does not
-     * process result set mappings, attribute converters, named queries etc. It only builds metamodel for the specified
+     * process result set mappings, attribute converters, named queries, etc. It only builds metamodel for the specified
      * entity classes.
      * <p>
      * Also, no additional processing (like initializing static metamodel) is done.
@@ -122,11 +123,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         LOG.debug("Building reduced metamodel from entity classes {}...", entityClasses);
         final MetamodelBuilder metamodelBuilder = new MetamodelBuilder(configuration);
         metamodelBuilder.buildMetamodel(entityClasses);
-
-        this.typeMap = metamodelBuilder.getTypeMap();
-        this.entities = metamodelBuilder.getEntities();
-        this.inferredClasses = metamodelBuilder.getInferredClasses();
-        this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
+        initFromMetamodelBuilder(metamodelBuilder);
     }
 
     @Override

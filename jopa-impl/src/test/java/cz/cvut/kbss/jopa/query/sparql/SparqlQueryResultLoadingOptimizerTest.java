@@ -2,8 +2,6 @@ package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.model.JOPAExperimentalProperties;
-import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -16,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.net.URI;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -45,10 +42,6 @@ class SparqlQueryResultLoadingOptimizerTest {
         final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type }"));
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow);
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
-        final IdentifiableEntityType<OWLClassA> et = mock(IdentifiableEntityType.class);
-        final MetamodelImpl mm = mock(MetamodelImpl.class);
-        when(uow.getMetamodel()).thenReturn(mm);
-        when(mm.entity(OWLClassA.class)).thenReturn(et);
         sut.optimizeQueryAssembly(OWLClassA.class);
         verify(qh).setAssemblyModifier(any(EntityLoadingSparqlAssemblyModifier.class));
     }

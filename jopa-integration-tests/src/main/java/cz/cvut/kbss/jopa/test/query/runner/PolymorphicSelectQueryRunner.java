@@ -37,7 +37,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -122,7 +121,7 @@ public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
     }
 
     @Test
-    void selectLoadsInstanceAsGivenTypeWhenItIsConcreteAndFoundInTypesOfIndividual() {
+    void selectLoadsInstanceAsMostSpecificSubtypeFoundInTypesOfIndividualWhenSupertypeProvidedAsResultType() {
         final OWLClassT t = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassT.class));
         final EntityManager em = getEntityManager();
         em.getTransaction().begin();
@@ -134,9 +133,9 @@ public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
                                    .setParameter("hasInt", URI.create(Vocabulary.P_T_INTEGER_ATTRIBUTE))
                                    .setParameter("int", t.getIntAttribute()).getSingleResult();
         assertNotNull(result);
-        assertFalse(result instanceof OWLClassT);
+        assertInstanceOf(OWLClassT.class, result);
         assertEquals(t.getName(), result.getName());
         assertEquals(t.getDescription(), result.getDescription());
-        assertTrue(result.getTypes().contains(Vocabulary.C_OWL_CLASS_T));
+        assertTrue(result.getTypes().contains(Vocabulary.C_OWL_CLASS_S));
     }
 }

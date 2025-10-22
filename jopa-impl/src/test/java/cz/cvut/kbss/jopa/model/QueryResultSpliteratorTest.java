@@ -28,7 +28,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -52,7 +51,7 @@ class QueryResultSpliteratorTest {
     private ResultRow resultRow;
 
     @Mock
-    private Function<ResultRow, Optional<String>> mapper;
+    private QueryResultLoader<String> resultLoader;
 
     @Mock
     private Runnable closer;
@@ -81,9 +80,9 @@ class QueryResultSpliteratorTest {
             ((Consumer<ResultRow>) invocation.getArgument(0)).accept(resultRow);
             return true;
         });
-        when(mapper.apply(any())).thenReturn(Optional.of("test"));
+        when(resultLoader.loadResult(any())).thenReturn(Optional.of("test"));
         sut.tryAdvance(consumer);
-        verify(mapper).apply(resultRow);
+        verify(resultLoader).loadResult(resultRow);
         verify(consumer).accept("test");
     }
 
@@ -93,7 +92,7 @@ class QueryResultSpliteratorTest {
             ((Consumer<ResultRow>) invocation.getArgument(0)).accept(resultRow);
             return true;
         });
-        when(mapper.apply(any())).thenReturn(Optional.of("test"));
+        when(resultLoader.loadResult(any())).thenReturn(Optional.of("test"));
         assertTrue(sut.tryAdvance(consumer));
     }
 
@@ -103,7 +102,7 @@ class QueryResultSpliteratorTest {
             ((Consumer<ResultRow>) invocation.getArgument(0)).accept(resultRow);
             return false;
         });
-        when(mapper.apply(any())).thenReturn(Optional.of("test"));
+        when(resultLoader.loadResult(any())).thenReturn(Optional.of("test"));
         assertFalse(sut.tryAdvance(consumer));
     }
 
@@ -113,9 +112,20 @@ class QueryResultSpliteratorTest {
             ((Consumer<ResultRow>) invocation.getArgument(0)).accept(resultRow);
             return false;
         });
-        when(mapper.apply(any())).thenReturn(Optional.of("test"));
+        when(resultLoader.loadResult(any())).thenReturn(Optional.of("test"));
         sut.tryAdvance(consumer);
         verify(closer).run();
+    }
+
+    @Test
+    void tryAdvanceAttemptsToLoadPendingResultWhenResultSetSpliteratorReturnsFalse() {
+        when(resultSetSpliterator.tryAdvance(any())).then(invocation -> {
+            ((Consumer<ResultRow>) invocation.getArgument(0)).accept(resultRow);
+            return false;
+        });
+        when(resultLoader.loadResult(any())).thenReturn(Optional.of("test"));
+        sut.tryAdvance(consumer);
+        verify(resultLoader).loadLastPending();
     }
 
     @Test
@@ -124,7 +134,7 @@ class QueryResultSpliteratorTest {
             ((Consumer<ResultRow>) invocation.getArgument(0)).accept(resultRow);
             return true;
         });
-        when(mapper.apply(any())).thenReturn(Optional.of("test"));
+        when(resultLoader.loadResult(any())).thenReturn(Optional.of("test"));
         doThrow(OWLPersistenceException.class).when(consumer).accept(anyString());
         assertThrows(OWLPersistenceException.class, () -> sut.tryAdvance(consumer));
         verify(closer).run();
@@ -136,7 +146,7 @@ class QueryResultSpliteratorTest {
             ((Consumer<ResultRow>) invocation.getArgument(0)).accept(resultRow);
             return true;
         });
-        when(mapper.apply(any())).thenReturn(Optional.empty());
+        when(resultLoader.loadResult(any())).thenReturn(Optional.empty());
         assertTrue(sut.tryAdvance(consumer));
         verify(consumer, never()).accept(any());
     }
@@ -147,9 +157,9 @@ class QueryResultSpliteratorTest {
             ((Consumer<ResultRow>) invocation.getArgument(0)).accept(resultRow);
             return null;
         }).when(resultSetSpliterator).forEachRemaining(any());
-        when(mapper.apply(any())).thenReturn(Optional.of("test"));
+        when(resultLoader.loadResult(any())).thenReturn(Optional.of("test"));
         sut.forEachRemaining(consumer);
-        verify(mapper).apply(resultRow);
+        verify(resultLoader).loadResult(resultRow);
         verify(consumer).accept("test");
     }
 
@@ -159,7 +169,7 @@ class QueryResultSpliteratorTest {
             ((Consumer<ResultRow>) invocation.getArgument(0)).accept(resultRow);
             return null;
         }).when(resultSetSpliterator).forEachRemaining(any());
-        when(mapper.apply(any())).thenReturn(Optional.of("test"));
+        when(resultLoader.loadResult(any())).thenReturn(Optional.of("test"));
         sut.forEachRemaining(consumer);
         verify(closer).run();
     }
@@ -170,9 +180,20 @@ class QueryResultSpliteratorTest {
             ((Consumer<ResultRow>) invocation.getArgument(0)).accept(resultRow);
             return null;
         }).when(resultSetSpliterator).forEachRemaining(any());
-        when(mapper.apply(any())).thenReturn(Optional.of("test"));
+        when(resultLoader.loadResult(any())).thenReturn(Optional.of("test"));
         doThrow(OWLPersistenceException.class).when(consumer).accept(anyString());
         assertThrows(OWLPersistenceException.class, () -> sut.forEachRemaining(consumer));
         verify(closer).run();
+    }
+
+    @Test
+    void forEachRemainingInvokesLoadLastPendingAfterAllItemsHaveBeenProcessed() {
+        doAnswer(invocation -> {
+            ((Consumer<ResultRow>) invocation.getArgument(0)).accept(resultRow);
+            return null;
+        }).when(resultSetSpliterator).forEachRemaining(any());
+        when(resultLoader.loadResult(any())).thenReturn(Optional.of("test"));
+        sut.forEachRemaining(consumer);
+        verify(resultLoader).loadLastPending();
     }
 }

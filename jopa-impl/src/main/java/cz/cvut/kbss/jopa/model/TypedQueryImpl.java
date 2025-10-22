@@ -27,13 +27,10 @@ import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.sparql.QueryResultLoadingOptimizer;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
@@ -104,13 +101,10 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public Stream<X> getResultStream() {
-        // Not using optimized loader because it needs another call to get the last pending result after all rows are processed
-        // TODO Try figuring a way to use the optimized loader
-        queryResultLoadingOptimizer.disableOptimization();
+        queryResultLoadingOptimizer.optimizeQueryAssembly(resultType);
         final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor);
-        final Function<ResultRow, Optional<X>> mapper = resultLoader::loadResult;
         try {
-            return executeQueryForStream(mapper);
+            return executeQueryForStream(resultLoader);
         } catch (OntoDriverException e) {
             markTransactionForRollback();
             throw queryEvaluationException(e);

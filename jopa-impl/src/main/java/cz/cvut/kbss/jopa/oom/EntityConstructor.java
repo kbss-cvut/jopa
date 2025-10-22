@@ -107,11 +107,10 @@ class EntityConstructor {
      * @param identifier Entity identifier
      * @param et         Entity type
      * @param <T>        Entity type
-     * @return Newly created instance with identifier set
+     * @return Newly created instance with the identifier set
      */
     <T> T createEntityInstance(URI identifier, IdentifiableEntityType<T> et) {
-        // TODO et.getInstantiableJavaType?
-        final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getJavaType());
+        final T instance = ReflectionUtils.instantiateUsingDefaultConstructor(et.getInstantiableJavaType());
         EntityPropertiesUtils.setIdentifier(identifier, instance, et);
         return instance;
     }
@@ -130,7 +129,7 @@ class EntityConstructor {
                     ax, attributes, fieldLoaders, et, constructionParams.descriptor());
             if (fs == null) {
                 if (!MappingUtils.isClassAssertion(ax)) {
-                    LOG.warn("No attribute found for property {}. Axiom {} will be skipped.", ax.getAssertion(), ax);
+                    LOG.trace("No attribute found for property {}. Axiom {} will be skipped.", ax.getAssertion(), ax);
                 }
                 continue;
             }
@@ -140,8 +139,7 @@ class EntityConstructor {
                 fs.addAxiomValue(ax);
             }
         }
-        // We need to build the field values separately because some may be
-        // plural and we have to wait until all values are prepared
+        // We need to build the field values separately because some may be plural, and we have to wait until all values are prepared
         for (FieldStrategy<? extends FieldSpecification<?, ?>, ?> fs : fieldLoaders.values()) {
             fs.buildInstanceFieldValue(instance);
             if (fs.attribute.getFetchType() == FetchType.LAZY && !constructionParams.forceEager() && fs.hasValue()) {
@@ -251,7 +249,7 @@ class EntityConstructor {
             }
             et.getAttributes().stream().filter(a -> query.hasParameter(a.getName())).forEach(a -> {
                 final Object value = EntityPropertiesUtils.getAttributeValue(a, instance);
-                if (value != null && ((!a.isCollection() || !((Collection) value).isEmpty()))) {
+                if (value != null && ((!a.isCollection() || !((Collection<?>) value).isEmpty()))) {
                     query.setParameter(a.getName(), value);
                 }
             });

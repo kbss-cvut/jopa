@@ -114,8 +114,7 @@ class ClassFieldMetamodelProcessor<X> {
         propertyAtt.resolve(propertyInfo, metamodelBuilder, fieldValueCls);
 
         if (propertyAtt.isKnownOwlProperty()) {
-            final AbstractAttribute<X, ?> a = createAndDeclareAttribute(sourceCls, propertyInfo, inference, propertyAtt);
-            registerTypeReference(a);
+            createAndDeclareAttribute(sourceCls, propertyInfo, inference, propertyAtt);
             return;
         }
 
@@ -134,7 +133,7 @@ class ClassFieldMetamodelProcessor<X> {
         throw new MetamodelInitializationException("Unable to process field " + field + ". It is not transient but has no mapping information.");
     }
 
-    private AbstractAttribute<X, ?> createAndDeclareAttribute(Class<?> sourceCls, PropertyInfo propertyInfo,
+    private void createAndDeclareAttribute(Class<?> sourceCls, PropertyInfo propertyInfo,
                                                               InferenceMode inference, PropertyAttributes propertyAtt) {
         final AbstractAttribute<X, ?> a = createAttribute(propertyInfo, inference, propertyAtt);
         if (!Objects.equals(et.getJavaType(), sourceCls)) {
@@ -142,7 +141,7 @@ class ClassFieldMetamodelProcessor<X> {
         } else {
             et.addDeclaredAttribute(a.getName(), a);
         }
-        return a;
+        metamodelBuilder.attributeProcessed(a);
     }
 
 
@@ -198,8 +197,7 @@ class ClassFieldMetamodelProcessor<X> {
         final PropertyAttributes propertyAtt = PropertyAttributes.create(info, mappingValidator, context);
         propertyAtt.resolve(info, metamodelBuilder, fieldValueCls);
 
-        final AbstractAttribute<X, ?> a = createAndDeclareAttribute(sourceCls, info, inference, propertyAtt);
-        registerTypeReference(a);
+        createAndDeclareAttribute(sourceCls, info, inference, propertyAtt);
     }
 
     private static boolean methodsAnnotationsEqual(Method newMethod, Method foundMethod) {
@@ -429,13 +427,6 @@ class ClassFieldMetamodelProcessor<X> {
 
     private String resolvePrefix(String value) {
         return context.resolveNamespace(value);
-    }
-
-    private void registerTypeReference(Attribute<X, ?> attribute) {
-        final Class<?> type = attribute.isCollection() ? ((PluralAttribute<X, ?, ?>) attribute).getBindableJavaType() : attribute.getJavaType();
-        if (metamodelBuilder.hasManagedType(type)) {
-            metamodelBuilder.registerTypeReference(type, et.getJavaType());
-        }
     }
 
     private void processIdentifierField(Field field) {
