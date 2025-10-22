@@ -130,7 +130,7 @@ public class ModelGenMojo extends AbstractMojo {
     }
 
     private List<String> getCompileSourceRoots() {
-        final List<String> compileSourceRoots = project.getCompileSourceRoots();
+        final List<String> compileSourceRoots = new ArrayList<>(project.getCompileSourceRoots());
         if (additionalSources != null && !additionalSources.isEmpty()) {
             compileSourceRoots.add(additionalSources);
         }
