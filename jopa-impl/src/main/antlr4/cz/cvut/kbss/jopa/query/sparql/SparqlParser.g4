@@ -484,7 +484,7 @@ graphNodePath
     ;
 
 varOrTerm
-    : var | graphTerm
+    : var | graphTerm | tripleTerm
     ;
 
 varOrIRI
@@ -501,6 +501,18 @@ graphTerm
 
 nil
     : '(' ')'
+    ;
+
+tripleTerm
+    : '<<' tripleTermSubject verb tripleTermObject '>>'
+    ;
+
+tripleTermSubject
+    : var | iri | rdfLiteral | numericLiteral | booleanLiteral | blankNode | tripleTerm
+    ;
+
+tripleTermObject
+    : var | iri | rdfLiteral | numericLiteral | booleanLiteral | blankNode | tripleTerm
     ;
 
 /* ANTLR V4 branded expressions */
