@@ -116,7 +116,7 @@ public class StorageConnection implements RepoConnection {
     public List<Resource> getContexts() throws Rdf4jDriverException {
         return withConnection(conn -> {
             try {
-                return connection.getContextIDs().stream().collect(Collectors.toList());
+                return conn.getContextIDs().stream().collect(Collectors.toList());
             } catch (RepositoryException e) {
                 throw new Rdf4jDriverException(e);
             }
@@ -249,7 +249,7 @@ public class StorageConnection implements RepoConnection {
         return withConnection(conn -> {
             try {
                 final IRI[] ctxArr = contexts.toArray(new IRI[0]);
-                return conn.hasStatement(statement, true, ctxArr) && !connection.hasStatement(statement, false, ctxArr);
+                return conn.hasStatement(statement, true, ctxArr) && !conn.hasStatement(statement, false, ctxArr);
             } catch (RepositoryException e) {
                 throw new Rdf4jDriverException(e);
             }
