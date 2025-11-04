@@ -473,4 +473,15 @@ public class SparqlQueryParserTest {
         assertTrue(holder.hasParameter("graph"));
         assertTrue(holder.hasParameter("type"));
     }
+
+    @Test
+    void parserSupportsTripleTermsWithVariables() {
+        final String query = "SELECT ?annotationProperty ?annotationValue WHERE { << ?x a ?type >> ?annotationProperty ?annotationValue . }";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(4, holder.getParameters().size());
+        assertTrue(holder.hasParameter("x"));
+        assertTrue(holder.hasParameter("type"));
+        assertTrue(holder.hasParameter("annotationProperty"));
+        assertTrue(holder.hasParameter("annotationValue"));
+    }
 }
