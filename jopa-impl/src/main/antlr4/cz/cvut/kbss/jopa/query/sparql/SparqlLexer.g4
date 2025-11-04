@@ -428,6 +428,10 @@ LESS : '<';
 
 GREATER : '>';
 
+TRIPLE_TERM_OPEN: '<<';
+
+TRIPLE_TERM_CLOSE: '>>';
+
 PIPE : '|';
 
 ANY : .;
