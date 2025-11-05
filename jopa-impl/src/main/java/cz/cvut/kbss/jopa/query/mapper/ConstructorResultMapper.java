@@ -60,8 +60,9 @@ class ConstructorResultMapper implements SparqlResultMapper {
         final Object[] values = new Object[paramMappers.size()];
         final Class<?>[] types = new Class[paramMappers.size()];
         for (int i = 0; i < paramMappers.size(); i++) {
-            values[i] = paramMappers.get(i).map(resultRow, uow);
-            types[i] = values[i] != null ? values[i].getClass() : paramMappers.get(i).getTargetType();
+            final VariableResultMapper paramMapper = paramMappers.get(i);
+            values[i] = paramMapper.map(resultRow, uow);
+            types[i] = paramMapper.getTargetType() != void.class ? paramMapper.getTargetType() : values[i] != null ? values[i].getClass() : void.class;
         }
         return buildInstance(values, types);
     }
