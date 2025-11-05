@@ -126,14 +126,6 @@ public class ObjectPropertyCollectionDescriptor extends FieldDescriptor {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((elementDescriptor == null) ? 0 : elementDescriptor.hashCode());
-        return result;
-    }
-
-    @Override
     protected boolean equals(Object other, Map<VisitedPair, Boolean> visited) {
         return super.equalsImpl(other) && elementDescriptor.equals(((ObjectPropertyCollectionDescriptor) other).elementDescriptor, visited);
     }

@@ -210,7 +210,9 @@ public abstract class AbstractDescriptor implements Descriptor {
         }
 
         public boolean equals(Object o) {
-            if (!(o instanceof VisitedPair p)) {return false;}
+            if (!(o instanceof VisitedPair p)) {
+                return false;
+            }
             return a == p.a && b == p.b;
         }
 

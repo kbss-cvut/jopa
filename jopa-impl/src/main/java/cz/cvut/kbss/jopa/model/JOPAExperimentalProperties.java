@@ -13,4 +13,8 @@ public class JOPAExperimentalProperties {
      * Enables the use of {@link EntityLoadingSparqlAssemblyModifier} for SPARQL queries.
      */
     public static final String QUERY_ENABLE_ENTITY_LOADING_OPTIMIZER = "cz.cvut.kbss.jopa.experimental.query.enableEntityLoadingOptimizer";
+
+    private JOPAExperimentalProperties() {
+        throw new AssertionError();
+    }
 }

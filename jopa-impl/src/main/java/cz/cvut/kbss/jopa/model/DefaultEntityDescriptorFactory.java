@@ -76,12 +76,12 @@ public class DefaultEntityDescriptorFactory implements EntityDescriptorFactory {
         return result;
     }
 
-    private Optional<Context> resolveContext(Class<?> cls) {
+    private static Optional<Context> resolveContext(Class<?> cls) {
         final Context ctx = cls.getAnnotation(Context.class);
         return Optional.ofNullable(ctx);
     }
 
-    private Optional<Context> resolveContext(Member member) {
+    private static Optional<Context> resolveContext(Member member) {
         if (member instanceof Method m) {
             return Optional.ofNullable(m.getAnnotation(Context.class));
         } else {

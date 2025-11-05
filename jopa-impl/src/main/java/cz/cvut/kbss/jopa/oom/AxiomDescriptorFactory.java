@@ -58,7 +58,7 @@ class AxiomDescriptorFactory {
         return descriptor;
     }
 
-    private void addForTypes(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
+    private static void addForTypes(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
         final TypesSpecification<?, ?> types = et.getTypes();
         if (types != null) {
             final Descriptor entityDesc = loadingParams.getDescriptor();
@@ -86,7 +86,7 @@ class AxiomDescriptorFactory {
         }
     }
 
-    private void addForProperties(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
+    private static void addForProperties(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
         final PropertiesSpecification<?, ?, ?, ?> props = et.getProperties();
         if (props != null) {
             final Descriptor entityDesc = loadingParams.getDescriptor();
@@ -168,7 +168,7 @@ class AxiomDescriptorFactory {
         return createForFieldLoadingImpl(identifier, fieldSpec, entityDescriptor, et, includeInferred);
     }
 
-    private AxiomDescriptor createForFieldLoadingImpl(URI identifier, FieldSpecification<?, ?> fieldSpec,
+    private static AxiomDescriptor createForFieldLoadingImpl(URI identifier, FieldSpecification<?, ?> fieldSpec,
                                                       Descriptor entityDescriptor, EntityType<?> et,
                                                       boolean includeInferred) {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(identifier));

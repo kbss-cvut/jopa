@@ -26,7 +26,7 @@ public class EntityLoadingSparqlAssemblyModifier implements SparqlAssemblyModifi
         tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), generateSelectionTriplePattern(p, tokenRewriter.getTokenStream(), queryAttributes.lastClosingCurlyBraceToken()));
     }
 
-    private String generateProjectionModification(TokenQueryParameter<?> subjectParam) {
+    private static String generateProjectionModification(TokenQueryParameter<?> subjectParam) {
         final String baseName = getBaseParamName(subjectParam);
         return " " + property(baseName) + " " + value(baseName);
     }
@@ -43,7 +43,7 @@ public class EntityLoadingSparqlAssemblyModifier implements SparqlAssemblyModifi
         return "?" + baseName + "V";
     }
 
-    private String generateSelectionTriplePattern(TokenQueryParameter<?> subjectParam, TokenStream tokenStream,
+    private static String generateSelectionTriplePattern(TokenQueryParameter<?> subjectParam, TokenStream tokenStream,
                                                   Token lastClosingCurlyBracket) {
         final String baseName;
         final char varPrefix;
@@ -58,12 +58,12 @@ public class EntityLoadingSparqlAssemblyModifier implements SparqlAssemblyModifi
                 + varPrefix + baseName + " " + property(baseName) + " " + value(baseName) + " . ";
     }
 
-    private boolean requiresDot(TokenStream tokenStream, Token lastClosingCurlyBracket) {
+    private static boolean requiresDot(TokenStream tokenStream, Token lastClosingCurlyBracket) {
         int position = lastClosingCurlyBracket.getTokenIndex() - 1;
         while (position > 0) {
             final Token t = tokenStream.get(position--);
             if (!t.getText().isBlank()) {
-                return !t.getText().equals(".");
+                return !".".equals(t.getText());
             }
         }
         return true;
