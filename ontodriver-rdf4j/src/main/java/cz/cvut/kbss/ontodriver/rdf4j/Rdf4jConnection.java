@@ -45,7 +45,6 @@ public class Rdf4jConnection implements Connection {
     private final Rdf4jAdapter adapter;
     private boolean open;
     private boolean autoCommit;
-    private boolean readOnly;
 
     private Lists lists;
     private Types types;
@@ -138,12 +137,12 @@ public class Rdf4jConnection implements Connection {
     @Override
     public void setReadOnly(boolean readOnly) {
         ensureOpen();
-        this.readOnly = readOnly;
+        adapter.setReadOnly(readOnly);
     }
 
     @Override
     public boolean isReadOnly() {
-        return readOnly;
+        return adapter.isReadOnly();
     }
 
     @Override

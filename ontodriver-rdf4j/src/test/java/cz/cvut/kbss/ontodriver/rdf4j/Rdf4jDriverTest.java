@@ -65,7 +65,7 @@ public class Rdf4jDriverTest {
     }
 
     @Test
-    public void acquiresConnection() {
+    public void acquiresConnection() throws Exception {
         final Connection res = driver.acquireConnection();
         assertNotNull(res);
         assertNotNull(res.lists());

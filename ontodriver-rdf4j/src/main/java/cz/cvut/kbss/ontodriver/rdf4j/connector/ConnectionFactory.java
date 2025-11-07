@@ -28,7 +28,7 @@ public interface ConnectionFactory {
      *
      * @return New storage connection
      */
-    RepoConnection createStorageConnection();
+    RepoConnection createStorageConnection() throws  Rdf4jDriverException;
 
     /**
      * Closes this factory

@@ -59,6 +59,22 @@ public interface RepoConnection extends Closeable, StatementExecutor, Wrapper {
     void rollback() throws Rdf4jDriverException;
 
     /**
+     * Puts this connection in read-only mode.
+     * <p>
+     * Cannot be called during an active transaction.
+     *
+     * @param readOnly {@code true} enables read-only mode, {@code false} disables it
+     */
+    void setReadOnly(boolean readOnly);
+
+    /**
+     * Checks whether this connection is in a read-only mode.
+     *
+     * @return {@code true} if this connection is in read-only mode, {@code false} otherwise
+     */
+    boolean isReadOnly();
+
+    /**
      * Gets resources representing currently existing contexts in the repository.
      *
      * @return List of resources

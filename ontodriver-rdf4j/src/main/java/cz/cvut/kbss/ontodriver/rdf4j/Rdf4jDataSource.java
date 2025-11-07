@@ -60,7 +60,7 @@ public class Rdf4jDataSource implements DataSource {
     }
 
     @Override
-    public synchronized Connection getConnection() throws Rdf4jDriverException {
+    public synchronized Connection getConnection() throws OntoDriverException {
         ensureOpen();
         ensureConnected();
         return driver.acquireConnection();
