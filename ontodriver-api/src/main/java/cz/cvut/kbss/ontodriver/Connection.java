@@ -78,7 +78,7 @@ public interface Connection extends AutoCloseable, Wrapper {
 
     /**
      * Puts this connection in read-only mode as a hint to the driver to enable database optimizations.
-     *
+     * <p>
      * <b>Note</b>: This method cannot be called during a transaction.
      *
      * @param readOnly {@code true} enables read-only mode, {@code false} disables it

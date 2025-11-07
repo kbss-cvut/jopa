@@ -113,6 +113,14 @@ public class Rdf4jAdapter implements Closeable, Wrapper {
         }
     }
 
+    void setReadOnly(boolean readOnly) {
+        connector.setReadOnly(readOnly);
+    }
+
+    boolean isReadOnly() {
+        return connector.isReadOnly();
+    }
+
     boolean isConsistent(URI context) {
         // RDF4J currently doesn't support any consistency checking functionality
         return true;
@@ -149,7 +157,6 @@ public class Rdf4jAdapter implements Closeable, Wrapper {
     }
 
     private void startTransactionIfNotActive() throws Rdf4jDriverException {
-        // TODO Consider whether a transaction should be started for read operations
         if (!transaction.isActive()) {
             connector.begin();
             transaction.begin();
