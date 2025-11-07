@@ -87,6 +87,18 @@ public class JenaConnection implements Connection {
         return autoCommit;
     }
 
+    @Override
+    public void setReadOnly(boolean readOnly) {
+        ensureOpen();
+        // Do nothing, unsupported
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        ensureOpen();
+        return false;
+    }
+
     private void commitIfAuto() throws JenaDriverException {
         if (autoCommit) {
             adapter.commit();

@@ -83,22 +83,24 @@ public class DataSourceStub implements DataSource {
         }
 
         @Override
-        public void commit() {
-
-        }
+        public void commit() {}
 
         @Override
-        public void rollback() {
-
-        }
+        public void rollback() {}
 
         @Override
-        public void setAutoCommit(boolean autoCommit) {
-
-        }
+        public void setAutoCommit(boolean autoCommit) {}
 
         @Override
         public boolean isAutoCommit() {
+            return false;
+        }
+
+        @Override
+        public void setReadOnly(boolean readOnly) {}
+
+        @Override
+        public boolean isReadOnly() {
             return false;
         }
 
@@ -138,9 +140,7 @@ public class DataSourceStub implements DataSource {
         }
 
         @Override
-        public void persist(AxiomValueDescriptor descriptor) {
-
-        }
+        public void persist(AxiomValueDescriptor descriptor) {}
 
         @Override
         public URI generateIdentifier(URI classUri) {
@@ -148,14 +148,10 @@ public class DataSourceStub implements DataSource {
         }
 
         @Override
-        public void update(AxiomValueDescriptor descriptor) {
-
-        }
+        public void update(AxiomValueDescriptor descriptor) {}
 
         @Override
-        public void remove(AxiomDescriptor descriptor) {
-
-        }
+        public void remove(AxiomDescriptor descriptor) {}
 
         @Override
         public Lists lists() {
@@ -178,9 +174,7 @@ public class DataSourceStub implements DataSource {
         }
 
         @Override
-        public void close() {
-
-        }
+        public void close() {}
 
         @Override
         public <T> T unwrap(Class<T> cls) {

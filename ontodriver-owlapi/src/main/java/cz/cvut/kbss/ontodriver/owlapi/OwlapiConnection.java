@@ -120,6 +120,18 @@ public class OwlapiConnection implements Connection {
     }
 
     @Override
+    public void setReadOnly(boolean readOnly) {
+        ensureOpen();
+        // Do nothing, unsupported
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        ensureOpen();
+        return false;
+    }
+
+    @Override
     public Statement createStatement() {
         ensureOpen();
         return adapter.createStatement(this);
