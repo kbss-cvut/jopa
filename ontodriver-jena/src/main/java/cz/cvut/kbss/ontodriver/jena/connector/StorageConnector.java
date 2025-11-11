@@ -48,6 +48,24 @@ public interface StorageConnector extends Closeable, Wrapper, StatementExecutor 
     void rollback();
 
     /**
+     * Sets the connector to the specified read-only mode.
+     *
+     * @param readOnly {@code true} for read-only mode
+     */
+    default void setReadOnly(boolean readOnly) {
+        // Do nothing
+    }
+
+    /**
+     * Gets this connector's read-only status.
+     *
+     * @return {@code true} when in read-only mode, {@code false} otherwise
+     */
+    default boolean isReadOnly() {
+        return false;
+    }
+
+    /**
      * Retrieves statements corresponding to the specified criteria from the specified named graph.
      * <p>
      * The first three parameters are optional, their absence signifies that any value in that position is acceptable.

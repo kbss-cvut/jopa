@@ -43,9 +43,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LocalModelTest {
+public class ChangeTrackingLocalModelTest {
 
-    private final LocalModel localModel = new LocalModel(false);
+    private final ChangeTrackingLocalModel localModel = new ChangeTrackingLocalModel(false);
 
     @Test
     public void addStatementsAddsThemIntoDefaultAddModel() {
@@ -83,39 +83,39 @@ public class LocalModelTest {
     public void containsReturnsAddedForStatementInAdded() {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.addStatements(Collections.singletonList(statement), null);
-        assertEquals(LocalModel.Containment.ADDED,
-                localModel.contains(statement.getSubject(), statement.getPredicate(), null, Collections.emptySet()));
+        assertEquals(ChangeTrackingLocalModel.Containment.ADDED,
+                     localModel.contains(statement.getSubject(), statement.getPredicate(), null, Collections.emptySet()));
     }
 
     @Test
     public void containsReturnsAddedForStatementsInAddedContext() {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.addStatements(Collections.singletonList(statement), NAMED_GRAPH);
-        assertEquals(LocalModel.Containment.ADDED,
-                localModel.contains(createResource(SUBJECT), statement.getPredicate(), null, Collections.singleton(NAMED_GRAPH)));
+        assertEquals(ChangeTrackingLocalModel.Containment.ADDED,
+                     localModel.contains(createResource(SUBJECT), statement.getPredicate(), null, Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test
     public void containsReturnsRemovedForStatementInRemoved() {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.removeStatements(Collections.singletonList(statement), null);
-        assertEquals(LocalModel.Containment.REMOVED,
-                localModel.contains(statement.getSubject(), statement.getPredicate(), null, Collections.emptySet()));
+        assertEquals(ChangeTrackingLocalModel.Containment.REMOVED,
+                     localModel.contains(statement.getSubject(), statement.getPredicate(), null, Collections.emptySet()));
     }
 
     @Test
     public void containsReturnsRemovedForStatementInRemovedContext() {
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         localModel.removeStatements(Collections.singletonList(statement), NAMED_GRAPH);
-        assertEquals(LocalModel.Containment.REMOVED,
-                localModel.contains(statement.getSubject(), statement.getPredicate(), null,
+        assertEquals(ChangeTrackingLocalModel.Containment.REMOVED,
+                     localModel.contains(statement.getSubject(), statement.getPredicate(), null,
                         Collections.singleton(NAMED_GRAPH)));
     }
 
     @Test
     public void containsReturnsUnknownForStatementNotInLocalModel() {
-        assertEquals(LocalModel.Containment.UNKNOWN,
-                localModel.contains(createResource(SUBJECT), null, createResource(TYPE_ONE), Collections.emptySet()));
+        assertEquals(ChangeTrackingLocalModel.Containment.UNKNOWN,
+                     localModel.contains(createResource(SUBJECT), null, createResource(TYPE_ONE), Collections.emptySet()));
     }
 
     @Test
@@ -220,16 +220,16 @@ public class LocalModelTest {
 
     @Test
     public void containsUsesUnionGraphWhenConfigured() {
-        final LocalModel model = new LocalModel(true);
+        final LocalModel model = new ChangeTrackingLocalModel(true);
         final Statement added = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_ONE);
         model.addStatements(Collections.singletonList(added), NAMED_GRAPH);
-        assertEquals(LocalModel.Containment.ADDED,
-                model.contains(createResource(SUBJECT), null, null, Collections.emptySet()));
+        assertEquals(ChangeTrackingLocalModel.Containment.ADDED,
+                     model.contains(createResource(SUBJECT), null, null, Collections.emptySet()));
     }
 
     @Test
     public void enhanceUsesUnionGraphWhenConfigured() {
-        final LocalModel model = new LocalModel(true);
+        final LocalModel model = new ChangeTrackingLocalModel(true);
         final Statement removed = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
         model.removeStatements(Collections.singletonList(removed), NAMED_GRAPH);
         final Collection<Statement> toEnhance = Collections
@@ -242,7 +242,7 @@ public class LocalModelTest {
 
     @Test
     public void removeRemovesStatementsFromAllNamedGraphsWhenDefaultAsUnionIsConfigured() {
-        final LocalModel model = new LocalModel(true);
+        final LocalModel model = new ChangeTrackingLocalModel(true);
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
         model.addStatements(Collections.singletonList(statement), NAMED_GRAPH);
         model.removeStatements(Collections.singletonList(statement), null);
@@ -251,7 +251,7 @@ public class LocalModelTest {
 
     @Test
     public void addToDefaultRemovesStatementsFromRemovedContext() {
-        final LocalModel model = new LocalModel(true);
+        final LocalModel model = new ChangeTrackingLocalModel(true);
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
         model.removeStatements(Collections.singletonList(statement), NAMED_GRAPH);
         model.addStatements(Collections.singletonList(statement), null);
@@ -261,23 +261,23 @@ public class LocalModelTest {
 
     @Test
     void containsReturnsFalseWhenSubjectAndPredicateWereRemovedInLocalModel() {
-        final LocalModel sut = new LocalModel(true);
+        final LocalModel sut = new ChangeTrackingLocalModel(true);
         sut.removePropertyValues(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
                 createProperty(Vocabulary.RDF_TYPE), Collections.emptySet())));
-        assertEquals(LocalModel.Containment.REMOVED, sut.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Collections.emptySet()));
+        assertEquals(ChangeTrackingLocalModel.Containment.REMOVED, sut.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Collections.emptySet()));
     }
 
     @Test
     void containsReturnsFalseWhenSubjectAndPredicateWereRemovedInLocalModelInMatchingContext() {
-        final LocalModel sut = new LocalModel(true);
+        final LocalModel sut = new ChangeTrackingLocalModel(true);
         sut.removePropertyValues(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
                 createProperty(Vocabulary.RDF_TYPE), Set.of(NAMED_GRAPH))));
-        assertEquals(LocalModel.Containment.REMOVED, sut.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Set.of(NAMED_GRAPH)));
+        assertEquals(ChangeTrackingLocalModel.Containment.REMOVED, sut.contains(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE), createResource(TYPE_TWO), Set.of(NAMED_GRAPH)));
     }
 
     @Test
     void enhanceStatementsRemovesStatementsWhoseSubjectPredicateMatchRemoved() {
-        final LocalModel sut = new LocalModel(true);
+        final LocalModel sut = new ChangeTrackingLocalModel(true);
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
         sut.removePropertyValues(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
                 createProperty(Vocabulary.RDF_TYPE), Collections.emptySet())));
@@ -288,7 +288,7 @@ public class LocalModelTest {
 
     @Test
     void enhanceStatementsRemovesStatementsWhoseSubjectPredicateAndContextMatchRemoved() {
-        final LocalModel sut = new LocalModel(true);
+        final LocalModel sut = new ChangeTrackingLocalModel(true);
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
         sut.removePropertyValues(Set.of(new SubjectPredicateContext(createResource(SUBJECT),
                 createProperty(Vocabulary.RDF_TYPE), Set.of(NAMED_GRAPH))));
@@ -299,7 +299,7 @@ public class LocalModelTest {
 
     @Test
     void removeStatementsBySubjectAndPredicateRemovesPreviouslyAddedStatementsWithMatchingSubjectPredicate() {
-        final LocalModel sut = new LocalModel(true);
+        final LocalModel sut = new ChangeTrackingLocalModel(true);
         final Statement statement = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
         sut.addStatements(Collections.singletonList(statement), null);
         sut.removePropertyValues(Set.of(new SubjectPredicateContext(statement.getSubject(), statement.getPredicate(), Collections.emptySet())));
@@ -309,7 +309,7 @@ public class LocalModelTest {
 
     @Test
     void removeStatementsBySubjectAndPredicateRemovesPreviouslyAddedStatementsWithMatchingSubjectPredicateAndContext() {
-        final LocalModel sut = new LocalModel(true);
+        final LocalModel sut = new ChangeTrackingLocalModel(true);
         final Statement addedOne = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
         final Statement addedOther = statement(SUBJECT, Generator.generateUri().toString(), Generator.generateUri().toString());
         sut.addStatements(List.of(addedOne, addedOther), NAMED_GRAPH);

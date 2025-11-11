@@ -112,8 +112,8 @@ public class SnapshotStorageConnectorTest {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
         connector.add(Collections.singletonList(added), null);
-        assertEquals(LocalModel.Containment.ADDED,
-                getTransactionalChanges()
+        assertEquals(ChangeTrackingLocalModel.Containment.ADDED,
+                     getTransactionalChanges()
                         .contains(added.getSubject(), added.getPredicate(), added.getObject(), Collections.emptySet()));
     }
 
@@ -143,8 +143,8 @@ public class SnapshotStorageConnectorTest {
         connector.begin();
         final Statement added = createStatement(createResource(SUBJECT), RDF.type, createResource(TYPE_ONE));
         connector.add(Collections.singletonList(added), null);
-        assertEquals(LocalModel.Containment.ADDED,
-                getTransactionalChanges()
+        assertEquals(ChangeTrackingLocalModel.Containment.ADDED,
+                     getTransactionalChanges()
                         .contains(added.getSubject(), added.getPredicate(), added.getObject(), Collections.emptySet()));
         connector.rollback();
         assertNull(getTransactionalChanges());
@@ -158,8 +158,8 @@ public class SnapshotStorageConnectorTest {
         connector.add(Collections.singletonList(added), context);
         assertTrue(dataset().getNamedModel(context)
                             .contains(added.getSubject(), added.getPredicate(), added.getObject()));
-        assertEquals(LocalModel.Containment.ADDED,
-                getTransactionalChanges()
+        assertEquals(ChangeTrackingLocalModel.Containment.ADDED,
+                     getTransactionalChanges()
                         .contains(added.getSubject(), added.getPredicate(), added.getObject(),
                                 Collections.singleton(context)));
     }

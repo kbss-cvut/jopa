@@ -76,6 +76,14 @@ public class JenaAdapter implements Wrapper {
         }
     }
 
+    void setReadOnly(boolean readOnly) {
+        connector.setReadOnly(readOnly);
+    }
+
+    boolean isReadOnly() {
+        return connector.isReadOnly();
+    }
+
     void persist(AxiomValueDescriptor descriptor) {
         beginTransactionIfNotActive();
         new AxiomSaver(connector).saveAxioms(descriptor);

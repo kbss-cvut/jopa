@@ -90,13 +90,13 @@ public class JenaConnection implements Connection {
     @Override
     public void setReadOnly(boolean readOnly) {
         ensureOpen();
-        // Do nothing, unsupported
+        adapter.setReadOnly(readOnly);
     }
 
     @Override
     public boolean isReadOnly() {
         ensureOpen();
-        return false;
+        return adapter.isReadOnly();
     }
 
     private void commitIfAuto() throws JenaDriverException {

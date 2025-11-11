@@ -59,7 +59,7 @@ public class SnapshotStorageConnector extends SharedStorageConnector {
         transaction.begin();
         snapshotCentralDataset();
         this.transactionalUpdates = new ArrayList<>();
-        this.transactionalChanges = new LocalModel(configuration.is(JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION));
+        this.transactionalChanges = new ChangeTrackingLocalModel(configuration.is(JenaConfigParam.TREAT_DEFAULT_GRAPH_AS_UNION));
     }
 
     void snapshotCentralDataset() {
