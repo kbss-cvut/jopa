@@ -162,4 +162,16 @@ class StorageConnectionTest {
         verify(connector).acquireConnection();
         verify(conn, never()).begin(any(IsolationLevel.class));
     }
+
+    @Test
+    void commitDoesNotCommitWhenConnectionIsReadOnly() throws Exception {
+        final StorageConnector connector = mock(StorageConnector.class);
+        final RepositoryConnection conn = mock(RepositoryConnection.class);
+        when(connector.acquireConnection()).thenReturn(conn);
+        this.sut = new StorageConnection(connector, IsolationLevels.READ_UNCOMMITTED);
+        sut.setReadOnly(true);
+        sut.begin();
+        sut.commit();
+        verify(conn, never()).commit();
+    }
 }

@@ -167,8 +167,10 @@ public class StorageConnection implements RepoConnection {
         assert connection != null;
 
         try {
-            LOG.trace("Commit storage transaction.");
-            connection.commit();
+            if (!readOnly) {
+                LOG.trace("Commit storage transaction.");
+                connection.commit();
+            }
             connection.close();
             this.connection = null;
         } catch (RepositoryException e) {
