@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.TestPlugin;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.sessions.ReadOnlyUnitOfWork;
+import cz.cvut.kbss.jopa.sessions.CloningReadOnlyUnitOfWork;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
@@ -169,7 +169,7 @@ class EntityManagerFactoryImplTest {
     @Test
     void createEntityManagerWithReadOnlyTransactionModeReturnsEntityManagerWithReadOnlyPersistenceContext() {
         final EntityManager em = emf.createEntityManager(Map.of(JOPAPersistenceProperties.TRANSACTION_MODE, "read_only"));
-        assertInstanceOf(ReadOnlyUnitOfWork.class, em.unwrap(UnitOfWork.class));
+        assertInstanceOf(CloningReadOnlyUnitOfWork.class, em.unwrap(UnitOfWork.class));
     }
 
     @Test
