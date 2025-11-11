@@ -23,9 +23,19 @@ import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
-import org.apache.jena.rdf.model.*;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * This connector tracks transactional changes and writes them on commit to the {@link SharedStorageConnector}.
@@ -35,6 +45,8 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     private final AbstractStorageConnector centralConnector;
 
     private final boolean useDefaultAsUnion;
+
+    private boolean readOnly;
 
     private LocalModel localModel;
 
@@ -48,7 +60,7 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
     @Override
     public void begin() {
         transaction.begin();
-        this.localModel = new LocalModel(useDefaultAsUnion);
+        this.localModel = readOnly ? new DummyLocalModel() : new ChangeTrackingLocalModel(useDefaultAsUnion);
     }
 
     @Override
@@ -68,6 +80,19 @@ public class ChangeTrackingStorageConnector extends AbstractStorageConnector {
         } finally {
             this.localModel = null;
         }
+    }
+
+    @Override
+    public void setReadOnly(boolean readOnly) {
+        if (transaction.isActive()) {
+            throw new IllegalStateException("Cannot change read-only mode of an active transaction.");
+        }
+        this.readOnly = readOnly;
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        return readOnly;
     }
 
     private void mergeRemovedStatements() {
