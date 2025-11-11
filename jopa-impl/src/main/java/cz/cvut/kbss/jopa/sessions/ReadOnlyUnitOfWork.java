@@ -259,7 +259,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
                     // Unwrap descriptor in case it is an object property collection
                     final Descriptor fieldDescriptor = super.getDescriptor(original).getAttributeDescriptor(fs)
                                                             .unwrap();
-                    if (fs.isCollection()) {
+                    if (fs.isCollection() && et.getProperties() != fs) {
                         newValue = this.registerExistingObjects((Collection<Object>) fieldValue, fieldDescriptor);
                     } else {
                         newValue = fieldValue;
