@@ -104,7 +104,7 @@ class ExplicitAxiomLoader extends AbstractAxiomLoader {
         final List<Axiom<?>> axioms = new ArrayList<>();
         for (Assertion a : assertedProperties.values()) {
             final Set<URI> assertionCtx = descriptor.getAssertionContexts(a);
-            if (assertionContextMatchesSubject(descriptor.getSubjectContexts(), assertionCtx)) {
+            if (assertionContextMatchesSubject(descriptor.getSubjectContexts(), assertionCtx) || Objects.equals(unspecifiedProperty, a)) {
                 continue;
             }
             final Property property = ResourceFactory.createProperty(a.getIdentifier().toString());

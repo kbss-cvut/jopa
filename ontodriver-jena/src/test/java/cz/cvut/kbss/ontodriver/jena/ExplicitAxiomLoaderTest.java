@@ -20,30 +20,56 @@ package cz.cvut.kbss.ontodriver.jena;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.apache.jena.rdf.model.ResourceFactory.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.apache.jena.rdf.model.ResourceFactory.createLangLiteral;
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
+import static org.apache.jena.rdf.model.ResourceFactory.createTypedLiteral;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
 
     @Mock
@@ -53,7 +79,6 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         this.explicitAxiomLoader = new ExplicitAxiomLoader(connectorMock);
     }
 
@@ -371,8 +396,7 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
         descriptor.addAssertion(assertion);
         descriptor.addAssertionContext(assertion, CONTEXT);
         final List<Statement> statements = generateObjectPropertyAssertions(descriptor.getAssertions());
-        when(connectorMock.find(any(), any(), any(), eq(Collections.singleton(CONTEXT.toString()))))
-                .thenReturn(statements);
+        when(connectorMock.find(any(), any(), any(), anyCollection())).thenReturn(statements);
 
         final Collection<Axiom<?>> result = explicitAxiomLoader.find(descriptor, mapAssertions(descriptor));
         verifyObjectPropertyAxioms(statements, result);
@@ -411,17 +435,10 @@ class ExplicitAxiomLoaderTest extends AxiomLoaderTestBase {
     @Test
     void findSkipsPropertyValuesWhenUnspecifiedPropertyHasDifferentContext() {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
-        final Assertion ap = Assertion.createAnnotationPropertyAssertion(Generator.generateUri(), false);
-        final List<Statement> notMatching = generateAnnotations(Collections.singletonList(ap));
-        final URI anotherContext = Generator.generateUri();
-        when(connectorMock
-                .find(SUBJECT_RES, createProperty(ap.getIdentifier().toString()), null,
-                        Collections.singleton(anotherContext.toString())))
-                .thenReturn(notMatching);
         final Assertion unspecified = Assertion.createUnspecifiedPropertyAssertion(false);
         final List<Statement> matching = generateAnnotations(Collections.singletonList(unspecified));
-        when(connectorMock.find(SUBJECT_RES, null, null, Collections.singleton(CONTEXT.toString())))
-                .thenReturn(matching);
+        when(connectorMock.find(SUBJECT_RES, null, null, Set.of())).thenReturn(Set.of());
+        doReturn(matching).when(connectorMock).find(eq(SUBJECT_RES), any(), eq(null), eq(Collections.singleton(CONTEXT.toString())));
         descriptor.addAssertion(unspecified);
         descriptor.addAssertionContext(unspecified, CONTEXT);
 
