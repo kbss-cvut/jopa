@@ -105,15 +105,6 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
     boolean isObjectManaged(Object entity);
 
     /**
-     * Checks whether the specified entity has been registered in this Unit of Work as a new object for persist.
-     *
-     * @param entity Object to check
-     * @return {@code true} when entity is managed and new, {@code false} otherwise
-     * @see #isObjectManaged(Object)
-     */
-    boolean isObjectNew(Object entity);
-
-    /**
      * Checks whether the specified repository context is consistent.
      *
      * @param context Context URI, {@code null} indicates the whole repository should be checked

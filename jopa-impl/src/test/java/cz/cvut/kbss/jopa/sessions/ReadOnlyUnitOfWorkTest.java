@@ -193,11 +193,6 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     }
 
     @Test
-    void throwsUnsupportedOperationOnIsObjectNew() {
-        assertThrows(UnsupportedOperationException.class, () -> uow.isObjectNew(objectMock));
-    }
-
-    @Test
     void throwsUnsupportedOperationOnMergeDetached() {
         assertThrows(UnsupportedOperationException.class, () -> uow.mergeDetached(entityA, descriptorMock));
     }

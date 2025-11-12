@@ -401,11 +401,6 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     @Override
-    public boolean isObjectNew(Object entity) {
-        return entity != null && newObjectsCloneToOriginal.containsKey(entity);
-    }
-
-    @Override
     public boolean isObjectManaged(Object entity) {
         Objects.requireNonNull(entity);
 

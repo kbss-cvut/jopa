@@ -81,17 +81,6 @@ abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
     }
 
     @Test
-    void mergeDetachedRegistersNewObjectWhenItDoesNotExist() {
-        when(storageMock.contains(entityA.getUri(), entityA.getClass(), descriptor)).thenReturn(false);
-        assertFalse(uow.contains(entityA));
-        defaultLoadStateDescriptor(entityA);
-        final OWLClassA res = uow.mergeDetached(entityA, descriptor);
-        assertNotNull(res);
-        assertSame(entityA, res);
-        assertTrue(uow.isObjectNew(res));
-    }
-
-    @Test
     void mergeRegistersChangesInUoWChangeSet() throws Exception {
         final OWLClassA clone = new OWLClassA();
         clone.setUri(entityA.getUri());

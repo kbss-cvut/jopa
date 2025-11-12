@@ -458,17 +458,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
      * @throws UnsupportedOperationException Method not supported.
      */
     @Override
-    public boolean isObjectNew(Object entity) throws UnsupportedOperationException {
-        throwUnsupportedOperationException();
-        return false;
-    }
-
-    /**
-     * Method not supported.
-     *
-     * @throws UnsupportedOperationException Method not supported.
-     */
-    @Override
     public <T> T mergeDetached(T entity, Descriptor descriptor) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
         return null;

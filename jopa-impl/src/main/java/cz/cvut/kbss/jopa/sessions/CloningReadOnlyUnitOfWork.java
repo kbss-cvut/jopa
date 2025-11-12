@@ -27,6 +27,13 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import java.lang.reflect.Field;
 import java.net.URI;
 
+/**
+ * Read-only UoW which clones all entities before returning them to the application.
+ * <p>
+ * Cloning entities allows using second-level cache which brings better performance than {@link ReadOnlyUnitOfWork}
+ * which does not clone entities but also skips second-level cache (unless entity is already there in which case it
+ * behaves exactly like this class).
+ */
 public class CloningReadOnlyUnitOfWork extends AbstractUnitOfWork {
 
     CloningReadOnlyUnitOfWork(AbstractSession parent, Configuration configuration) {
@@ -47,8 +54,8 @@ public class CloningReadOnlyUnitOfWork extends AbstractUnitOfWork {
         if (!isActive()) {
             throw new IllegalStateException("Cannot commit inactive Unit of Work!");
         }
-        this.clear();
-        this.commitToStorage();
+        commitToStorage();
+        clear();
         LOG.trace("UnitOfWork commit finished.");
     }
 
@@ -66,6 +73,17 @@ public class CloningReadOnlyUnitOfWork extends AbstractUnitOfWork {
     @Override
     public boolean isReadOnly() {
         return true;
+    }
+
+
+    @Override
+    public boolean hasChanges() throws UnsupportedOperationException {
+        return false;
+    }
+
+    @Override
+    public boolean isFlushingChanges() {
+        return false;
     }
 
     /// ///////////////////////////////////THESE METHODS SHOULD NOT BE SUPPORTED///////////////////////////////////////
@@ -92,17 +110,6 @@ public class CloningReadOnlyUnitOfWork extends AbstractUnitOfWork {
     @Override
     void preventCachingIfReferenceIsNotLoaded(ChangeRecord changeRecord) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
-    }
-
-    /**
-     * Method not supported.
-     *
-     * @throws UnsupportedOperationException Method not supported.
-     */
-    @Override
-    public boolean isObjectNew(Object entity) throws UnsupportedOperationException {
-        throwUnsupportedOperationException();
-        return false;
     }
 
     /**
@@ -228,17 +235,6 @@ public class CloningReadOnlyUnitOfWork extends AbstractUnitOfWork {
      * @throws UnsupportedOperationException Always thrown
      */
     @Override
-    public boolean hasChanges() throws UnsupportedOperationException {
-        throwUnsupportedOperationException();
-        return false;
-    }
-
-    /**
-     * Method is not supported.
-     *
-     * @throws UnsupportedOperationException Always thrown
-     */
-    @Override
     void setHasChanges() throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
@@ -251,16 +247,6 @@ public class CloningReadOnlyUnitOfWork extends AbstractUnitOfWork {
     @Override
     public void restoreRemovedObject(Object entity) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
-    }
-
-    /**
-     * Method is not supported.
-     *
-     * @throws UnsupportedOperationException Always thrown
-     */
-    @Override
-    public boolean isFlushingChanges() throws UnsupportedOperationException {
-        return false;
     }
 
     /**

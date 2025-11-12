@@ -103,13 +103,6 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     }
 
     @Test
-    void isObjectNewReturnsTrueForNewlyRegisteredObject() {
-        final OWLClassA testNew = Generators.generateOwlClassAInstance();
-        uow.registerNewObject(testNew, descriptor);
-        assertTrue(uow.isObjectNew(testNew));
-    }
-
-    @Test
     void registerNewObjectThrowsIdentifierNotSetExceptionWhenIdentifierIsNullAndNotGenerated() {
         final OWLClassB b = new OWLClassB();
         assertThrows(IdentifierNotSetException.class, () -> uow.registerNewObject(b, descriptor));
@@ -249,11 +242,6 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         uow.commit();
 
         verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
-    }
-
-    @Test
-    void isObjectNewReturnsFalseForNullArgument() {
-        assertFalse(uow.isObjectNew(null));
     }
 
     @Test
@@ -520,13 +508,6 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         uow.attributeChanged(clone, OWLClassL.getSimpleListField());
         uow.commit();
         verify(storageMock).commit();
-    }
-
-    @Test
-    void isObjectNewReturnsFalseForRegisteredExistingObject() {
-        defaultLoadStateDescriptor(entityA);
-        OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
-        assertFalse(uow.isObjectNew(managed));
     }
 
     @Test
