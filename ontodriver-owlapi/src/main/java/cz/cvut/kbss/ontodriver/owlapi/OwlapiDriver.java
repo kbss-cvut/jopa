@@ -92,7 +92,7 @@ class OwlapiDriver implements Closeable, ConnectionListener {
     }
 
     @Override
-    public void connectionClosed(Connection connection) {
+    public void connectionClosed(OwlapiConnection connection) {
         openConnections.remove(connection);
     }
 }
