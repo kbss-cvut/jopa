@@ -193,11 +193,6 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     }
 
     @Test
-    void throwsUnsupportedOperationOnIsObjectNew() {
-        assertThrows(UnsupportedOperationException.class, () -> uow.isObjectNew(objectMock));
-    }
-
-    @Test
     void throwsUnsupportedOperationOnMergeDetached() {
         assertThrows(UnsupportedOperationException.class, () -> uow.mergeDetached(entityA, descriptorMock));
     }
@@ -225,8 +220,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     @Override
     void getManagedOriginalReturnsManagedOriginalInstance() {
-        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false);
-        params.bypassCache();
+        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false, true);
         when(storageMock.find(params)).thenReturn(
                 entityA);
         defaultLoadStateDescriptor(entityA);
@@ -240,8 +234,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     @Override
     void getOriginalReturnsOriginalRegisteredByReadObject() {
-        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false);
-        params.bypassCache();
+        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false, true);
         when(storageMock.find(params)).thenReturn(
                 entityA);
         defaultLoadStateDescriptor(entityA);
@@ -256,8 +249,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     @Override
     void readObjectLoadsObjectFromStorage() {
-        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false);
-        params.bypassCache();
+        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false, true);
         when(storageMock.find(params))
                 .thenReturn(entityA);
         defaultLoadStateDescriptor(entityA);
@@ -314,8 +306,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
 
     @Test
     void readObjectInternalRegistersUnmanagedObject() {
-        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, getValueAsURI(entityA.getUri()), descriptor);
-        params.bypassCache();
+        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, getValueAsURI(entityA.getUri()), descriptor, false, true);
         when(storageMock.find(params)).thenReturn(entityA);
         defaultLoadStateDescriptor(entityA);
 
@@ -327,8 +318,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
 
     @Test
     void readObjectInternalReturnsObject() {
-        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, getValueAsURI(entityA.getUri()), descriptor);
-        params.bypassCache();
+        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, getValueAsURI(entityA.getUri()), descriptor, false, true);
         when(storageMock.find(params)).thenReturn(entityA);
         defaultLoadStateDescriptor(entityA);
 
@@ -664,8 +654,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     @Test
     @Override
     void rollbackDetachesAllManagedEntities() {
-        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false);
-        params.bypassCache();
+        LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false, true);
         when(storageMock.find(params))
                 .thenReturn(entityA);
         defaultLoadStateDescriptor(entityA, entityB);

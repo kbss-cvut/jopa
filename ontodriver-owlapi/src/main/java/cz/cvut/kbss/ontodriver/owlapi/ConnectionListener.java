@@ -22,5 +22,5 @@ import cz.cvut.kbss.ontodriver.Connection;
 @FunctionalInterface
 interface ConnectionListener {
 
-    void connectionClosed(Connection connection);
+    void connectionClosed(OwlapiConnection connection);
 }

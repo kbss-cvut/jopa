@@ -40,7 +40,7 @@ public interface Connection extends AutoCloseable, Wrapper {
     /**
      * Commits this connection.
      * <p>
-     * This effectively makes persistent any changes made since the last commit/rollback or since this connection was
+     * This effectively makes persistent any changes made since the last commit/rollback, or since this connection was
      * opened.
      * <p>
      * If this connection is in auto-commit mode, calling this method has no effect.
@@ -75,6 +75,23 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @throws IllegalStateException If called on a closed connection
      */
     boolean isAutoCommit();
+
+    /**
+     * Puts this connection in read-only mode as a hint to the driver to enable database optimizations.
+     * <p>
+     * <b>Note</b>: This method cannot be called during a transaction.
+     *
+     * @param readOnly {@code true} enables read-only mode, {@code false} disables it
+     */
+    void setReadOnly(boolean readOnly);
+
+    /**
+     * Retrieves whether this Connection object is in read-only mode.
+     *
+     * @return {@code true} if this Connection object is read-only; {@code false} otherwise
+     * @throws IllegalStateException If called on a closed connection
+     */
+    boolean isReadOnly();
 
     /**
      * Creates a new SPARQL statement.

@@ -99,7 +99,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
         final String enabledStr = configuration.get(JOPAPersistenceProperties.TRANSACTION_MODE);
         if (Constants.READ_ONLY_TRANSACTION_MODE.equals(enabledStr)) {
             LOG.trace("Acquiring read-only UnitOfWork.");
-            return new ReadOnlyUnitOfWork(this, configuration);
+            return new CloningReadOnlyUnitOfWork(this, configuration);
         }
 
         final ChangeTrackingMode mode = ChangeTrackingMode.resolve(configuration);

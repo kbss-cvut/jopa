@@ -37,8 +37,8 @@ class ConnectionStatementExecutor implements StatementExecutor {
     @Override
     public TupleQueryResult executeSelectQuery(QuerySpecification query) throws Rdf4jDriverException {
         try {
-            final TupleQuery tq = connection.prepareTupleQuery(QueryLanguage.SPARQL, query.getQuery());
-            tq.setIncludeInferred(query.isIncludeInference());
+            final TupleQuery tq = connection.prepareTupleQuery(QueryLanguage.SPARQL, query.query());
+            tq.setIncludeInferred(query.includeInference());
             return new QueryResult(tq.evaluate(), connection);
         } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
             throw new Rdf4jDriverException(e);
@@ -48,8 +48,8 @@ class ConnectionStatementExecutor implements StatementExecutor {
     @Override
     public boolean executeBooleanQuery(QuerySpecification query) throws Rdf4jDriverException {
         try {
-            final BooleanQuery bq = connection.prepareBooleanQuery(QueryLanguage.SPARQL, query.getQuery());
-            bq.setIncludeInferred(query.isIncludeInference());
+            final BooleanQuery bq = connection.prepareBooleanQuery(QueryLanguage.SPARQL, query.query());
+            bq.setIncludeInferred(query.includeInference());
             return bq.evaluate();
         } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
             throw new Rdf4jDriverException(e);
@@ -59,8 +59,8 @@ class ConnectionStatementExecutor implements StatementExecutor {
     @Override
     public void executeUpdate(QuerySpecification query) throws Rdf4jDriverException {
         try {
-            final Update u = connection.prepareUpdate(QueryLanguage.SPARQL, query.getQuery());
-            u.setIncludeInferred(query.isIncludeInference());
+            final Update u = connection.prepareUpdate(QueryLanguage.SPARQL, query.query());
+            u.setIncludeInferred(query.includeInference());
             u.execute();
         } catch (MalformedQueryException | UpdateExecutionException | RepositoryException e) {
             throw new Rdf4jDriverException(e);

@@ -34,13 +34,13 @@ class DefaultInstanceLoader extends EntityInstanceLoader {
 
     @Override
     <T> T loadEntity(LoadingParameters<T> loadingParameters) {
-        final IdentifiableEntityType<T> et = metamodel.entity(loadingParameters.getEntityClass());
+        final IdentifiableEntityType<T> et = metamodel.entity(loadingParameters.entityClass());
         return loadInstance(loadingParameters, et);
     }
 
     @Override
     <T> T loadEntityFromAxioms(LoadingParameters<T> loadingParameters, Collection<Axiom<?>> axioms) {
-        final IdentifiableEntityType<T> et = metamodel.entity(loadingParameters.getEntityClass());
+        final IdentifiableEntityType<T> et = metamodel.entity(loadingParameters.entityClass());
         return reconstructEntityFromAxioms(loadingParameters, et, axioms);
     }
 

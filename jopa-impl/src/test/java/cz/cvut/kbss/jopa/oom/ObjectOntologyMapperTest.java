@@ -319,7 +319,7 @@ class ObjectOntologyMapperTest {
         final ArgumentCaptor<LoadingParameters<OWLClassA>> captor = ArgumentCaptor.forClass(LoadingParameters.class);
         verify(descriptorFactoryMock).createForEntityLoading(captor.capture(), eq(etAMock));
         final LoadingParameters<OWLClassA> p = captor.getValue();
-        assertTrue(p.isForceEager());
+        assertTrue(p.forceEager());
     }
 
     @Test
@@ -387,15 +387,15 @@ class ObjectOntologyMapperTest {
 
     @Test
     void loadEntityLoadsInstanceFromCacheWhenItIsPresentThere() throws Exception {
-        when(cacheMock.contains(OWLClassA.class, IDENTIFIER, loadingParameters.getDescriptor())).thenReturn(true);
-        when(cacheMock.get(OWLClassA.class, IDENTIFIER, loadingParameters.getDescriptor())).thenReturn(entityA);
+        when(cacheMock.contains(OWLClassA.class, IDENTIFIER, loadingParameters.descriptor())).thenReturn(true);
+        when(cacheMock.get(OWLClassA.class, IDENTIFIER, loadingParameters.descriptor())).thenReturn(entityA);
         final LoadStateDescriptor<OWLClassA> loadStateDescriptor = new LoadStateDescriptor<>(entityA, mocks.forOwlClassA()
                                                                                                            .entityType(), LoadState.UNKNOWN);
         doReturn(loadStateDescriptor).when(cacheMock).getLoadStateDescriptor(entityA);
 
         final OWLClassA result = mapper.loadEntity(loadingParameters);
         assertSame(entityA, result);
-        verify(cacheMock).get(OWLClassA.class, IDENTIFIER, loadingParameters.getDescriptor());
+        verify(cacheMock).get(OWLClassA.class, IDENTIFIER, loadingParameters.descriptor());
         verify(connectionMock, never()).find(any(AxiomDescriptor.class));
     }
 
@@ -429,17 +429,17 @@ class ObjectOntologyMapperTest {
         when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(axiomsForA);
         final OWLClassA result = mapper.loadEntity(loadingParameters);
         assertNotNull(result);
-        verify(cacheMock).add(IDENTIFIER, result, new Descriptors(loadingParameters.getDescriptor(), loadStateRegistry.get(result)));
+        verify(cacheMock).add(IDENTIFIER, result, new Descriptors(loadingParameters.descriptor(), loadStateRegistry.get(result)));
     }
 
     @Test
     void loadEntityDoesNotPutIntoSecondLevelCacheWhenBypassCache() throws Exception {
         final Collection<Axiom<?>> axiomsForA = getAxiomsForEntityA();
         when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(axiomsForA);
-        loadingParameters.bypassCache();
+        this.loadingParameters = loadingParameters.withBypassCache();
         final OWLClassA result = mapper.loadEntity(loadingParameters);
         assertNotNull(result);
-        verify(cacheMock, never()).add(IDENTIFIER, result, new Descriptors(loadingParameters.getDescriptor(), loadStateRegistry.get(result)));
+        verify(cacheMock, never()).add(IDENTIFIER, result, new Descriptors(loadingParameters.descriptor(), loadStateRegistry.get(result)));
     }
 
     @Test

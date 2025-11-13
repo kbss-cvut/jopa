@@ -135,6 +135,17 @@ public class Rdf4jConnection implements Connection {
     }
 
     @Override
+    public void setReadOnly(boolean readOnly) {
+        ensureOpen();
+        adapter.setReadOnly(readOnly);
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        return adapter.isReadOnly();
+    }
+
+    @Override
     public Statement createStatement() {
         ensureOpen();
         return new Rdf4jStatement(adapter.getQueryExecutor());

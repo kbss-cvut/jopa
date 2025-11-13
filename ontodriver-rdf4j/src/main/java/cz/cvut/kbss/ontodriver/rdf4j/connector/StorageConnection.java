@@ -22,6 +22,7 @@ import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import cz.cvut.kbss.ontodriver.rdf4j.util.ThrowingFunction;
 import org.eclipse.rdf4j.common.transaction.IsolationLevel;
+import org.eclipse.rdf4j.common.transaction.IsolationLevels;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -44,6 +45,7 @@ public class StorageConnection implements RepoConnection {
     private static final Logger LOG = LoggerFactory.getLogger(StorageConnection.class);
 
     private boolean open;
+    private boolean readOnly;
 
     final Rdf4jConnectionProvider connectionProvider;
     private final IsolationLevel isolationLevel;
@@ -78,6 +80,19 @@ public class StorageConnection implements RepoConnection {
         } finally {
             this.open = false;
         }
+    }
+
+    @Override
+    public void setReadOnly(boolean readOnly) {
+        if (connection != null && connection.isActive()) {
+            throw new IllegalStateException("Cannot set read-only mode during active repository transaction.");
+        }
+        this.readOnly = readOnly;
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        return readOnly;
     }
 
     @Override
@@ -116,7 +131,7 @@ public class StorageConnection implements RepoConnection {
     public List<Resource> getContexts() throws Rdf4jDriverException {
         return withConnection(conn -> {
             try {
-                return connection.getContextIDs().stream().collect(Collectors.toList());
+                return conn.getContextIDs().stream().collect(Collectors.toList());
             } catch (RepositoryException e) {
                 throw new Rdf4jDriverException(e);
             }
@@ -131,12 +146,20 @@ public class StorageConnection implements RepoConnection {
     @Override
     public void begin() throws Rdf4jDriverException {
         this.connection = connectionProvider.acquireConnection();
-        try {
-            LOG.trace("Begin storage transaction.");
-            connection.begin(isolationLevel);
-        } catch (RepositoryException e) {
-            throw new Rdf4jDriverException(e);
+        if (shouldBeginRepositoryLevelTransaction()) {
+            try {
+                LOG.trace("Begin storage transaction.");
+                connection.begin(isolationLevel);
+            } catch (RepositoryException e) {
+                throw new Rdf4jDriverException(e);
+            }
+        } else {
+            LOG.trace("Read-only connection, not starting repository-level transaction");
         }
+    }
+
+    boolean shouldBeginRepositoryLevelTransaction() {
+        return !readOnly || isolationLevel == IsolationLevels.SERIALIZABLE;
     }
 
     @Override
@@ -144,8 +167,10 @@ public class StorageConnection implements RepoConnection {
         assert connection != null;
 
         try {
-            LOG.trace("Commit storage transaction.");
-            connection.commit();
+            if (!readOnly) {
+                LOG.trace("Commit storage transaction.");
+                connection.commit();
+            }
             connection.close();
             this.connection = null;
         } catch (RepositoryException e) {
@@ -249,7 +274,7 @@ public class StorageConnection implements RepoConnection {
         return withConnection(conn -> {
             try {
                 final IRI[] ctxArr = contexts.toArray(new IRI[0]);
-                return conn.hasStatement(statement, true, ctxArr) && !connection.hasStatement(statement, false, ctxArr);
+                return conn.hasStatement(statement, true, ctxArr) && !conn.hasStatement(statement, false, ctxArr);
             } catch (RepositoryException e) {
                 throw new Rdf4jDriverException(e);
             }

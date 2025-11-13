@@ -19,6 +19,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import org.eclipse.rdf4j.common.transaction.IsolationLevel;
+import org.eclipse.rdf4j.common.transaction.IsolationLevels;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -27,8 +28,22 @@ import java.util.Set;
 
 public class GraphDBStorageConnection extends StorageConnection {
 
-    public GraphDBStorageConnection(StorageConnector storageConnector, IsolationLevel isolationLevel) {
+    public GraphDBStorageConnection(StorageConnector storageConnector,
+                                    IsolationLevel isolationLevel) throws Rdf4jDriverException {
         super(storageConnector, isolationLevel);
+        validateIsolationLevel(isolationLevel);
+    }
+
+    private static void validateIsolationLevel(IsolationLevel isolationLevel) throws Rdf4jDriverException {
+        // GraphDB supports only READ_COMMITTED isolation level
+        if (isolationLevel != null && isolationLevel.isCompatibleWith(IsolationLevels.SNAPSHOT_READ)) {
+            throw new Rdf4jDriverException("GraphDBStorageConnection does not support isolation level " + isolationLevel);
+        }
+    }
+
+    @Override
+    boolean shouldBeginRepositoryLevelTransaction() {
+        return !isReadOnly();
     }
 
     @Override

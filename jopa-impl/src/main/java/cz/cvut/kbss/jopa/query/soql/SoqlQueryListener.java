@@ -28,9 +28,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.sparql.SparqlConstants;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +43,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class SoqlQueryListener implements SoqlListener {
+public class SoqlQueryListener extends SoqlBaseListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(SoqlQueryListener.class);
 
@@ -91,43 +89,9 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterStart(SoqlParser.StartContext ctx) {
-
-    }
-
-    @Override
-    public void exitStart(SoqlParser.StartContext ctx) {
-
-    }
-
-    @Override
-    public void enterQuerySentence(SoqlParser.QuerySentenceContext ctx) {
-    }
-
-    @Override
     public void exitQuerySentence(SoqlParser.QuerySentenceContext ctx) {
         this.soql = ctx.getText();
         buildSparqlQueryString();
-    }
-
-    @Override
-    public void enterSelectStatement(SoqlParser.SelectStatementContext ctx) {
-
-    }
-
-    @Override
-    public void exitSelectStatement(SoqlParser.SelectStatementContext ctx) {
-
-    }
-
-    @Override
-    public void enterSingleValuedObjectPathExpression(SoqlParser.SingleValuedObjectPathExpressionContext ctx) {
-
-    }
-
-    @Override
-    public void exitSingleValuedObjectPathExpression(SoqlParser.SingleValuedObjectPathExpressionContext ctx) {
-
     }
 
     @Override
@@ -187,47 +151,12 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void exitSimpleSubpath(SoqlParser.SimpleSubpathContext ctx) {
-
-    }
-
-    @Override
-    public void enterSingleValuedObjectField(SoqlParser.SingleValuedObjectFieldContext ctx) {
-
-    }
-
-    @Override
-    public void exitSingleValuedObjectField(SoqlParser.SingleValuedObjectFieldContext ctx) {
-
-    }
-
-    @Override
     public void enterSelectClause(SoqlParser.SelectClauseContext ctx) {
         this.typeDef = QueryType.SELECT.getKeyword();
 
         if (ctx.DISTINCT() != null) {
             this.isSelectedParamDistinct = true;
         }
-    }
-
-    @Override
-    public void exitSelectClause(SoqlParser.SelectClauseContext ctx) {
-
-    }
-
-    @Override
-    public void enterSelectItem(SoqlParser.SelectItemContext ctx) {
-
-    }
-
-    @Override
-    public void exitSelectItem(SoqlParser.SelectItemContext ctx) {
-
-    }
-
-    @Override
-    public void enterSelectExpression(SoqlParser.SelectExpressionContext ctx) {
-
     }
 
     private void pushNewAttribute(SoqlAttribute myAttr) {
@@ -260,11 +189,6 @@ public class SoqlQueryListener implements SoqlListener {
         }
     }
 
-    @Override
-    public void exitAggregateExpression(SoqlParser.AggregateExpressionContext ctx) {
-
-    }
-
     private boolean isIdentifier(SoqlNode objectNode, SoqlNode attributeNode) {
         if (!objectTypes.containsKey(objectNode.getValue())) {
             return false;
@@ -282,18 +206,6 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterConditionalExpression(SoqlParser.ConditionalExpressionContext ctx) {
-    }
-
-    @Override
-    public void exitConditionalExpression(SoqlParser.ConditionalExpressionContext ctx) {
-    }
-
-    @Override
-    public void enterConditionalTerm(SoqlParser.ConditionalTermContext ctx) {
-    }
-
-    @Override
     public void exitConditionalTerm(SoqlParser.ConditionalTermContext ctx) {
         final ParserRuleContext parentCtx = ctx.getParent();
         if (parentCtx.getChildCount() > 1 && !parentCtx.getChild(0).equals(ctx)) {
@@ -302,26 +214,10 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterConditionalFactor(SoqlParser.ConditionalFactorContext ctx) {
-    }
-
-    @Override
     public void exitConditionalFactor(SoqlParser.ConditionalFactorContext ctx) {
         if (ctx.getChildCount() > 1) {
             attrPointer.setNot(true);
         }
-    }
-
-    @Override
-    public void enterSimpleConditionalExpression(SoqlParser.SimpleConditionalExpressionContext ctx) {
-    }
-
-    @Override
-    public void exitSimpleConditionalExpression(SoqlParser.SimpleConditionalExpressionContext ctx) {
-    }
-
-    @Override
-    public void enterInExpression(SoqlParser.InExpressionContext ctx) {
     }
 
     @Override
@@ -354,26 +250,6 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterInItem(SoqlParser.InItemContext ctx) {
-    }
-
-    @Override
-    public void exitInItem(SoqlParser.InItemContext ctx) {
-    }
-
-    @Override
-    public void enterLiteral(SoqlParser.LiteralContext ctx) {
-    }
-
-    @Override
-    public void exitLiteral(SoqlParser.LiteralContext ctx) {
-    }
-
-    @Override
-    public void enterLikeExpression(SoqlParser.LikeExpressionContext ctx) {
-    }
-
-    @Override
     public void exitLikeExpression(SoqlParser.LikeExpressionContext ctx) {
         if (ctx.getChildCount() > 2 && ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
             attrPointer.setOperator(LikeOperator.notLike());
@@ -388,11 +264,6 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterMemberOfExpression(SoqlParser.MemberOfExpressionContext ctx) {
-
-    }
-
-    @Override
     public void exitMemberOfExpression(SoqlParser.MemberOfExpressionContext ctx) {
         if (ctx.getChildCount() > 2 && ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
             attrPointer.setNot(true);
@@ -401,20 +272,6 @@ public class SoqlQueryListener implements SoqlListener {
         ParseTree whereClauseValue = ctx.getChild(0);
         attrPointer.setValue(whereClauseValue.getText());
         this.isInObjectIdentifierExpression = false;
-    }
-
-    @Override
-    public void enterEntityExpression(SoqlParser.EntityExpressionContext ctx) {
-
-    }
-
-    @Override
-    public void exitEntityExpression(SoqlParser.EntityExpressionContext ctx) {
-
-    }
-
-    @Override
-    public void enterComparisonExpression(SoqlParser.ComparisonExpressionContext ctx) {
     }
 
     @Override
@@ -463,46 +320,6 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void exitFromClause(SoqlParser.FromClauseContext ctx) {
-
-    }
-
-    @Override
-    public void enterEntityName(SoqlParser.EntityNameContext ctx) {
-
-    }
-
-    @Override
-    public void exitEntityName(SoqlParser.EntityNameContext ctx) {
-
-    }
-
-    @Override
-    public void enterWhereClause(SoqlParser.WhereClauseContext ctx) {
-
-    }
-
-    @Override
-    public void exitWhereClause(SoqlParser.WhereClauseContext ctx) {
-
-    }
-
-    @Override
-    public void enterStringExpression(SoqlParser.StringExpressionContext ctx) {
-
-    }
-
-    @Override
-    public void exitStringExpression(SoqlParser.StringExpressionContext ctx) {
-
-    }
-
-    @Override
-    public void enterFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
-
-    }
-
-    @Override
     public void exitFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
         final String functionName = ctx.getChild(0).getText();
         final FunctionNode node = new FunctionNode(attrPointer.getFirstNode(), functionName);
@@ -510,62 +327,10 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void enterSimpleArithmeticExpression(SoqlParser.SimpleArithmeticExpressionContext ctx) {
-
-    }
-
-    @Override
-    public void exitSimpleArithmeticExpression(SoqlParser.SimpleArithmeticExpressionContext ctx) {
-
-    }
-
-    @Override
-    public void enterArithmeticTerm(SoqlParser.ArithmeticTermContext ctx) {
-
-    }
-
-    @Override
-    public void exitArithmeticTerm(SoqlParser.ArithmeticTermContext ctx) {
-
-    }
-
-    @Override
-    public void enterArithmeticFactor(SoqlParser.ArithmeticFactorContext ctx) {
-
-    }
-
-    @Override
-    public void exitArithmeticFactor(SoqlParser.ArithmeticFactorContext ctx) {
-
-    }
-
-    @Override
-    public void enterArithmeticPrimary(SoqlParser.ArithmeticPrimaryContext ctx) {
-
-    }
-
-    @Override
-    public void exitArithmeticPrimary(SoqlParser.ArithmeticPrimaryContext ctx) {
-
-    }
-
-    @Override
-    public void enterFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
-    }
-
-    @Override
     public void exitFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
         final String functionName = ctx.getChild(0).getText();
         final FunctionNode node = new FunctionNode(attrPointer.getFirstNode(), functionName);
         attrPointer.setFirstNode(node);
-    }
-
-    @Override
-    public void enterOrderByClause(SoqlParser.OrderByClauseContext ctx) {
-    }
-
-    @Override
-    public void exitOrderByClause(SoqlParser.OrderByClauseContext ctx) {
     }
 
     @Override
@@ -591,19 +356,6 @@ public class SoqlQueryListener implements SoqlListener {
     }
 
     @Override
-    public void exitOrderByItem(SoqlParser.OrderByItemContext ctx) {
-    }
-
-    @Override
-    public void enterGroupByClause(SoqlParser.GroupByClauseContext ctx) {
-
-    }
-
-    @Override
-    public void exitGroupByClause(SoqlParser.GroupByClauseContext ctx) {
-    }
-
-    @Override
     public void enterGroupByItem(SoqlParser.GroupByItemContext ctx) {
         SoqlNode firstNode = linkObjectPathExpression(ctx);
         SoqlGroupParameter groupParam = new SoqlGroupParameter(firstNode);
@@ -624,11 +376,6 @@ public class SoqlQueryListener implements SoqlListener {
         groupAttributes.add(groupParam);
     }
 
-    @Override
-    public void exitGroupByItem(SoqlParser.GroupByItemContext ctx) {
-
-    }
-
     private SoqlNode linkObjectPathExpression(ParserRuleContext ctx) {
         SoqlNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
         SoqlNode currentNode = firstNode;
@@ -643,42 +390,6 @@ public class SoqlQueryListener implements SoqlListener {
             this.isInObjectIdentifierExpression = true;
         }
         return firstNode;
-    }
-
-    @Override
-    public void enterInputParameter(SoqlParser.InputParameterContext ctx) {
-
-    }
-
-    @Override
-    public void exitInputParameter(SoqlParser.InputParameterContext ctx) {
-
-    }
-
-    @Override
-    public void enterComparisonOperator(SoqlParser.ComparisonOperatorContext ctx) {
-
-    }
-
-    @Override
-    public void exitComparisonOperator(SoqlParser.ComparisonOperatorContext ctx) {
-
-    }
-
-    @Override
-    public void visitTerminal(TerminalNode terminalNode) {
-    }
-
-    @Override
-    public void visitErrorNode(ErrorNode errorNode) {
-    }
-
-    @Override
-    public void enterEveryRule(ParserRuleContext parserRuleContext) {
-    }
-
-    @Override
-    public void exitEveryRule(ParserRuleContext parserRuleContext) {
     }
 
     //Methods to help parse tree

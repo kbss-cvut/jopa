@@ -124,7 +124,7 @@ class ChangeTrackingIndirectMultilingualStringTest {
         another.set("de", "der Bau");
         assertNotEquals(sut, another);
         assertNotEquals(sut, new ChangeTrackingIndirectMultilingualString(owner, field, uow, another));
-        assertNotEquals(sut, "test");
+        assertNotEquals("test", sut);
     }
 
     @Test

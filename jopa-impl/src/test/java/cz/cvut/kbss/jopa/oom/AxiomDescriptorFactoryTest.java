@@ -397,7 +397,7 @@ class AxiomDescriptorFactoryTest {
     void createForReferenceLoadingCreatesClassAssertionAxiom() {
         final LoadingParameters<OWLClassA> params = new LoadingParameters<>(OWLClassA.class, ID, descriptor);
         final Axiom<NamedResource> result =
-                sut.createForReferenceLoading(params.getIdentifier(), metamodelMocks.forOwlClassA().entityType());
+                sut.createForReferenceLoading(params.identifier(), metamodelMocks.forOwlClassA().entityType());
         assertNotNull(result);
         assertEquals(Assertion.createClassAssertion(false), result.getAssertion());
         assertEquals(ID, result.getSubject().getIdentifier());

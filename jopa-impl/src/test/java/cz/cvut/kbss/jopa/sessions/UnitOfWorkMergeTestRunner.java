@@ -43,7 +43,6 @@ import java.util.Iterator;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -78,17 +77,6 @@ abstract class UnitOfWorkMergeTestRunner extends UnitOfWorkTestBase {
         when(serverSessionStub.getLiveObjectCache().contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(true);
         mergeDetached();
         verify(serverSessionStub.getLiveObjectCache()).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
-    }
-
-    @Test
-    void mergeDetachedRegistersNewObjectWhenItDoesNotExist() {
-        when(storageMock.contains(entityA.getUri(), entityA.getClass(), descriptor)).thenReturn(false);
-        assertFalse(uow.contains(entityA));
-        defaultLoadStateDescriptor(entityA);
-        final OWLClassA res = uow.mergeDetached(entityA, descriptor);
-        assertNotNull(res);
-        assertSame(entityA, res);
-        assertTrue(uow.isObjectNew(res));
     }
 
     @Test

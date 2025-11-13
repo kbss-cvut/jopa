@@ -103,13 +103,6 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     }
 
     @Test
-    void isObjectNewReturnsTrueForNewlyRegisteredObject() {
-        final OWLClassA testNew = Generators.generateOwlClassAInstance();
-        uow.registerNewObject(testNew, descriptor);
-        assertTrue(uow.isObjectNew(testNew));
-    }
-
-    @Test
     void registerNewObjectThrowsIdentifierNotSetExceptionWhenIdentifierIsNullAndNotGenerated() {
         final OWLClassB b = new OWLClassB();
         assertThrows(IdentifierNotSetException.class, () -> uow.registerNewObject(b, descriptor));
@@ -252,11 +245,6 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     }
 
     @Test
-    void isObjectNewReturnsFalseForNullArgument() {
-        assertFalse(uow.isObjectNew(null));
-    }
-
-    @Test
     void isLoadedByAttributeReturnsLoadedForAttributesOfNewlyRegisteredInstance() throws Exception {
         uow.registerNewObject(entityA, descriptor);
         assertEquals(LoadState.LOADED, uow.isLoaded(entityA, OWLClassA.getStrAttField().getName()));
@@ -336,8 +324,7 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         original.setOwlClassA(entityA);
         defaultLoadStateDescriptor(original);
         final LoadingParameters<OWLClassD> loadingParams =
-                new LoadingParameters<>(OWLClassD.class, d.getUri(), descriptor, true);
-        loadingParams.bypassCache();
+                new LoadingParameters<>(OWLClassD.class, d.getUri(), descriptor, true, true);
         when(storageMock.find(loadingParams)).thenReturn(original);
 
         uow.refreshObject(d);
@@ -355,8 +342,7 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         final OWLClassD original = new OWLClassD(d.getUri());
         original.setOwlClassA(entityA);
         final LoadingParameters<OWLClassD> loadingParams =
-                new LoadingParameters<>(OWLClassD.class, d.getUri(), descriptor, true);
-        loadingParams.bypassCache();
+                new LoadingParameters<>(OWLClassD.class, d.getUri(), descriptor, true, true);
         when(storageMock.find(loadingParams)).thenReturn(original);
         defaultLoadStateDescriptor(original);
         uow.refreshObject(d);
@@ -388,8 +374,7 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         original.setStringAttribute(entityA.getStringAttribute());
         original.setTypes(new HashSet<>(entityA.getTypes()));
         final LoadingParameters<OWLClassA> loadingParams =
-                new LoadingParameters<>(OWLClassA.class, a.getUri(), descriptor, true);
-        loadingParams.bypassCache();
+                new LoadingParameters<>(OWLClassA.class, a.getUri(), descriptor, true, true);
         defaultLoadStateDescriptor(original);
         when(storageMock.find(loadingParams)).thenReturn(original);
         uow.refreshObject(a);
@@ -412,8 +397,7 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         defaultLoadStateDescriptor(entityD, entityA);
         final OWLClassD d = (OWLClassD) uow.registerExistingObject(entityD, descriptor);
         final LoadingParameters<OWLClassD> loadingParams =
-                new LoadingParameters<>(OWLClassD.class, d.getUri(), descriptor, true);
-        loadingParams.bypassCache();
+                new LoadingParameters<>(OWLClassD.class, d.getUri(), descriptor, true, true);
         when(storageMock.find(loadingParams)).thenReturn(null);
 
         final EntityNotFoundException result = assertThrows(EntityNotFoundException.class, () -> uow.refreshObject(d));
@@ -520,13 +504,6 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         uow.attributeChanged(clone, OWLClassL.getSimpleListField());
         uow.commit();
         verify(storageMock).commit();
-    }
-
-    @Test
-    void isObjectNewReturnsFalseForRegisteredExistingObject() {
-        defaultLoadStateDescriptor(entityA);
-        OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
-        assertFalse(uow.isObjectNew(managed));
     }
 
     @Test

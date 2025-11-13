@@ -38,7 +38,7 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
 
     @Override
     <T> T loadEntity(LoadingParameters<T> loadingParameters) {
-        final IdentifiableEntityType<T> rootEt = metamodel.entity(loadingParameters.getEntityClass());
+        final IdentifiableEntityType<T> rootEt = metamodel.entity(loadingParameters.entityClass());
         try {
             final IdentifiableEntityType<? extends T> et = resolveEntityType(loadingParameters, rootEt);
             if (et == null) {
@@ -52,8 +52,8 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
 
     @Override
     <T> T loadEntityFromAxioms(LoadingParameters<T> loadingParameters, Collection<Axiom<?>> axioms) {
-        final IdentifiableEntityType<T> rootEt = metamodel.entity(loadingParameters.getEntityClass());
-        NamedResource individual = NamedResource.create(loadingParameters.getIdentifier());
+        final IdentifiableEntityType<T> rootEt = metamodel.entity(loadingParameters.entityClass());
+        NamedResource individual = NamedResource.create(loadingParameters.identifier());
         final IdentifiableEntityType<? extends T> et = new PolymorphicEntityTypeResolver<>(individual, rootEt, axioms.stream()
                                                                                                                      .filter(ax -> ax.getAssertion()
                                                                                                                                      .isClassAssertion())
@@ -64,9 +64,9 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
 
     private <T> IdentifiableEntityType<? extends T> resolveEntityType(LoadingParameters<T> loadingParameters,
                                                                       IdentifiableEntityType<T> rootEt) throws OntoDriverException {
-        NamedResource individual = NamedResource.create(loadingParameters.getIdentifier());
+        NamedResource individual = NamedResource.create(loadingParameters.identifier());
         final Set<Axiom<URI>> types = storageConnection.types().getTypes(individual,
-                loadingParameters.getDescriptor().getContexts(), false);
+                loadingParameters.descriptor().getContexts(), false);
         return new PolymorphicEntityTypeResolver<>(individual, rootEt, types).determineActualEntityType();
     }
 

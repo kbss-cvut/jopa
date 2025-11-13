@@ -67,7 +67,7 @@ class VirtuosoDriver implements AutoCloseable, ConnectionListener<Rdf4jConnectio
         this.open = true;
     }
 
-    Connection acquireConnection() {
+    Connection acquireConnection() throws OntoDriverException {
         assert open;
         final RuntimeConfiguration config = new RuntimeConfiguration(configuration);
         config.setStatementLoaderFactory(statementLoaderFactory);

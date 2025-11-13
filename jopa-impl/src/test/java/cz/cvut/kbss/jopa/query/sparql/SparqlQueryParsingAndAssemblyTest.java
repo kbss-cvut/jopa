@@ -298,4 +298,14 @@ public class SparqlQueryParsingAndAssemblyTest {
         final String result = sut.assembleQuery();
         assertEquals("DROP GRAPH " + IdentifierTransformer.stringifyIri(graphUri), result);
     }
+
+    @Test
+    void parseAndAssembleSupportsVariablesInTripleTerms() {
+        final URI xUri = Generators.createIndividualIdentifier();
+        this.sut = queryParser.parseQuery("SELECT ?annotationProperty ?annotationValue WHERE { << ?x ?property ?value >> ?annotationProperty ?annotationValue . }");
+        sut.setParameter(sut.getParameter("x"), xUri);
+
+        final String result = sut.assembleQuery();
+        assertEquals("SELECT ?annotationProperty ?annotationValue WHERE { << " + IdentifierTransformer.stringifyIri(xUri) + " ?property ?value >> ?annotationProperty ?annotationValue . }", result);
+    }
 }

@@ -126,7 +126,10 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
 
     @Test
     void loadEntityBypassesCacheWhenConfiguredTo() throws Exception {
-        loadingParameters.bypassCache();
+        this.loadingParameters = loadingParameters.withBypassCache();
+        when(descriptorFactoryMock.createForEntityLoading(loadingParameters, metamodelMocks.forOwlClassA()
+                                                                                           .entityType()))
+                .thenReturn(axiomDescriptor);
         final Collection<Axiom<?>> entityAAxioms = Generators.generateAxiomsForOWLClassA(IDENTIFIER);
         when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
         when(entityConstructorMock.reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, etAMock, descriptor, false), entityAAxioms))
@@ -138,13 +141,13 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
 
     @Test
     void loadEntityReloadsQueryAttributesWhenInstanceIsRetrievedFromCache() {
-        when(cacheMock.contains(OWLClassA.class, loadingParameters.getIdentifier(), descriptor)).thenReturn(true);
-        when(cacheMock.get(OWLClassA.class, loadingParameters.getIdentifier(), descriptor)).thenReturn(entityA);
+        when(cacheMock.contains(OWLClassA.class, loadingParameters.identifier(), descriptor)).thenReturn(true);
+        when(cacheMock.get(OWLClassA.class, loadingParameters.identifier(), descriptor)).thenReturn(entityA);
 
         final OWLClassA res = instanceLoader.loadEntity(loadingParameters);
         assertEquals(entityA, res);
         verify(entityConstructorMock).populateQueryAttributes(entityA, etAMock);
-        verify(entityConstructorMock, never()).reconstructEntity(eq(new EntityConstructor.EntityConstructionParameters<>(loadingParameters.getIdentifier(), etAMock, descriptor, false)), anyCollection());
+        verify(entityConstructorMock, never()).reconstructEntity(eq(new EntityConstructor.EntityConstructionParameters<>(loadingParameters.identifier(), etAMock, descriptor, false)), anyCollection());
     }
 
     @Test
@@ -152,8 +155,8 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
         final OWLClassD entityD = new OWLClassD(Generators.createIndividualIdentifier());
         entityD.setOwlClassA(entityA);
         final LoadingParameters<OWLClassD> dLoadingParameters = new LoadingParameters<>(OWLClassD.class, entityD.getUri(), descriptor);
-        when(cacheMock.contains(OWLClassD.class, dLoadingParameters.getIdentifier(), descriptor)).thenReturn(true);
-        when(cacheMock.get(OWLClassD.class, dLoadingParameters.getIdentifier(), descriptor)).thenReturn(entityD);
+        when(cacheMock.contains(OWLClassD.class, dLoadingParameters.identifier(), descriptor)).thenReturn(true);
+        when(cacheMock.get(OWLClassD.class, dLoadingParameters.identifier(), descriptor)).thenReturn(entityD);
 
         final OWLClassD result = instanceLoader.loadEntity(dLoadingParameters);
         assertEquals(entityD, result);

@@ -98,9 +98,9 @@ abstract class EntityInstanceLoader {
     abstract <T> T loadEntityFromAxioms(LoadingParameters<T> loadingParameters, Collection<Axiom<?>> axioms);
 
     <U extends T, T> U loadInstance(LoadingParameters<T> loadingParameters, IdentifiableEntityType<U> et) {
-        final URI identifier = loadingParameters.getIdentifier();
-        final Descriptor descriptor = loadingParameters.getDescriptor();
-        if (!loadingParameters.shouldBypassCache()) {
+        final URI identifier = loadingParameters.identifier();
+        final Descriptor descriptor = loadingParameters.descriptor();
+        if (!loadingParameters.bypassCache()) {
             final Optional<U> cached = loadCached(et, identifier, descriptor);
             if (cached.isPresent()) {
                 return cached.get();
@@ -120,14 +120,14 @@ abstract class EntityInstanceLoader {
 
     <U extends T, T> U reconstructEntityFromAxioms(LoadingParameters<T> loadingParameters, IdentifiableEntityType<U> et,
                                                    Collection<Axiom<?>> axioms) {
-        if (!loadingParameters.shouldBypassCache()) {
-            final Optional<U> cached = loadCached(et, loadingParameters.getIdentifier(), loadingParameters.getDescriptor());
+        if (!loadingParameters.bypassCache()) {
+            final Optional<U> cached = loadCached(et, loadingParameters.identifier(), loadingParameters.descriptor());
             if (cached.isPresent()) {
                 return cached.get();
             }
         }
         return axioms.isEmpty() ? null : entityBuilder.reconstructEntity(
-                new EntityConstructor.EntityConstructionParameters<>(loadingParameters.getIdentifier(), et, loadingParameters.getDescriptor(), loadingParameters.isForceEager()),
+                new EntityConstructor.EntityConstructionParameters<>(loadingParameters.identifier(), et, loadingParameters.descriptor(), loadingParameters.forceEager()),
                 axioms);
     }
 
@@ -189,9 +189,9 @@ abstract class EntityInstanceLoader {
             if (fs.includeExplicit()) {
                 continue;
             }
-            final AxiomDescriptor desc = descriptorFactory.createForAssertedFieldLoading(loadingParameters.getIdentifier(), fs, loadingParameters.getDescriptor(), et);
+            final AxiomDescriptor desc = descriptorFactory.createForAssertedFieldLoading(loadingParameters.identifier(), fs, loadingParameters.descriptor(), et);
             final Collection<Axiom<?>> asserted = storageConnection.find(desc);
-            // Ensure entity class assertion axiom is not removed, we need it for entity reconstruction
+            // Ensure entity class assertion axiom is not removed; we need it for entity reconstruction
             asserted.removeIf(ax -> MappingUtils.isEntityClassAssertion(ax, et));
             removeAxioms(allAxioms, asserted);
         }

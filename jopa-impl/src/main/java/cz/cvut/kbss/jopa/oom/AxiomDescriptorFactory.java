@@ -45,23 +45,23 @@ import static cz.cvut.kbss.ontodriver.model.Assertion.createObjectPropertyAssert
 class AxiomDescriptorFactory {
 
     AxiomDescriptor createForEntityLoading(LoadingParameters<?> loadingParams, EntityType<?> et) {
-        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(loadingParams.getIdentifier()));
-        loadingParams.getDescriptor().getContexts().forEach(descriptor::addSubjectContext);
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(loadingParams.identifier()));
+        loadingParams.descriptor().getContexts().forEach(descriptor::addSubjectContext);
         descriptor.addAssertion(Assertion.createClassAssertion(false));
         addForTypes(loadingParams, et, descriptor);
         addForProperties(loadingParams, et, descriptor);
         for (Attribute<?, ?> att : et.getAttributes()) {
-            final Descriptor attDescriptor = loadingParams.getDescriptor().getAttributeDescriptor(att);
+            final Descriptor attDescriptor = loadingParams.descriptor().getAttributeDescriptor(att);
             final Assertion a = createAssertion(att, attDescriptor, includeInferred(att, attDescriptor));
-            addAssertionToDescriptor(loadingParams.getDescriptor(), att, descriptor, a);
+            addAssertionToDescriptor(loadingParams.descriptor(), att, descriptor, a);
         }
         return descriptor;
     }
 
-    private void addForTypes(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
+    private static void addForTypes(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
         final TypesSpecification<?, ?> types = et.getTypes();
         if (types != null) {
-            final Descriptor entityDesc = loadingParams.getDescriptor();
+            final Descriptor entityDesc = loadingParams.descriptor();
             final Assertion typesAssertion =
                     Assertion.createClassAssertion(includeInferred(types, entityDesc.getAttributeDescriptor(types)));
             if (descriptor.containsAssertion(typesAssertion) && !entityDesc.getAttributeContexts(types).isEmpty()) {
@@ -86,10 +86,10 @@ class AxiomDescriptorFactory {
         }
     }
 
-    private void addForProperties(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
+    private static void addForProperties(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
         final PropertiesSpecification<?, ?, ?, ?> props = et.getProperties();
         if (props != null) {
-            final Descriptor entityDesc = loadingParams.getDescriptor();
+            final Descriptor entityDesc = loadingParams.descriptor();
             final Assertion propsAssertion = Assertion.createUnspecifiedPropertyAssertion(
                     includeInferred(props, entityDesc.getAttributeDescriptor(props)));
             addAssertionToDescriptor(entityDesc, props, descriptor, propsAssertion);
@@ -168,7 +168,7 @@ class AxiomDescriptorFactory {
         return createForFieldLoadingImpl(identifier, fieldSpec, entityDescriptor, et, includeInferred);
     }
 
-    private AxiomDescriptor createForFieldLoadingImpl(URI identifier, FieldSpecification<?, ?> fieldSpec,
+    private static AxiomDescriptor createForFieldLoadingImpl(URI identifier, FieldSpecification<?, ?> fieldSpec,
                                                       Descriptor entityDescriptor, EntityType<?> et,
                                                       boolean includeInferred) {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(identifier));

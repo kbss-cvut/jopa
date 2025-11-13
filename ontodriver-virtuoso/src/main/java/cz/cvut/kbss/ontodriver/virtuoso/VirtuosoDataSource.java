@@ -39,7 +39,7 @@ public class VirtuosoDataSource implements DataSource {
     private Map<String, String> properties;
 
     @Override
-    public synchronized Connection getConnection() throws VirtuosoDriverException {
+    public synchronized Connection getConnection() throws OntoDriverException {
         ensureOpen();
         ensureConnected();
         return driver.acquireConnection();

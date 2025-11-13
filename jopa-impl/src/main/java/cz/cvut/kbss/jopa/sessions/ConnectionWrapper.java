@@ -47,6 +47,7 @@ public class ConnectionWrapper implements Wrapper {
 
     void setUnitOfWork(AbstractUnitOfWork uow) {
         this.mapper = new ObjectOntologyMapperImpl(uow, connection);
+        connection.setReadOnly(uow.isReadOnly());
     }
 
     public <T> boolean contains(Object identifier, Class<T> cls, Descriptor descriptor) {

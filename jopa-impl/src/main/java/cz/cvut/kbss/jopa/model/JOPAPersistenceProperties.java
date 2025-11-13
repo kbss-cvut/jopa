@@ -135,7 +135,7 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
      *
      * @deprecated Use {@link #PERSISTENCE_UNIT_LIFECYCLE_PLUGINS} instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static final String PERSISTENCE_UNIT_LIFECYCLE_PLUGINS_LEGACY = "cz.cvut.jopa.plugin.persistenceUnit";
 
     private JOPAPersistenceProperties() {

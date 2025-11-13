@@ -19,6 +19,7 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector;
 
 import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import org.eclipse.rdf4j.common.transaction.IsolationLevel;
 import org.eclipse.rdf4j.common.transaction.IsolationLevels;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -33,6 +34,8 @@ import org.eclipse.rdf4j.sail.inferencer.fc.SchemaCachingRDFSInferencer;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.net.URI;
 import java.util.Collections;
@@ -42,8 +45,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class StorageConnectionTest {
@@ -54,7 +60,7 @@ class StorageConnectionTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        if (repository.isInitialized()) {
+        if (repository != null && repository.isInitialized()) {
             if (sut != null) {
                 sut.close();
             }
@@ -116,5 +122,56 @@ class StorageConnectionTest {
         final Rdf4jDriverException ex = assertThrows(Rdf4jDriverException.class, sut2::commit);
         sut2.close();
         assertInstanceOf(RepositoryException.class, ex.getCause());
+    }
+
+    @Test
+    void setReadOnlyPutsConnectionIntoReadOnlyMode() throws Exception {
+        final StorageConnector connector = mock(StorageConnector.class);
+        final RepositoryConnection conn = mock(RepositoryConnection.class);
+        when(connector.acquireConnection()).thenReturn(conn);
+        this.sut = new StorageConnection(connector, IsolationLevels.READ_UNCOMMITTED);
+        sut.setReadOnly(true);
+        assertTrue(sut.isReadOnly());
+    }
+
+    @Test
+    void setReadOnlyThrowsIllegalStateExceptionWhenTransactionIsAlreadyActive() throws Exception {
+        final StorageConnector connector = mock(StorageConnector.class);
+        final RepositoryConnection conn = mock(RepositoryConnection.class);
+        when(connector.acquireConnection()).thenReturn(conn);
+        when(conn.isActive()).thenReturn(true);
+        this.sut = new StorageConnection(connector, IsolationLevels.READ_UNCOMMITTED);
+        try {
+            sut.begin();
+            assertThrows(IllegalStateException.class, () -> sut.setReadOnly(true));
+        } finally {
+            sut.rollback();
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"READ_UNCOMMITTED", "READ_COMMITTED", "SNAPSHOT_READ", "SNAPSHOT"})
+    void beginDoesNotStartTransactionWhenIsolationLevelIsNotSerializable(String level) throws Exception {
+        final StorageConnector connector = mock(StorageConnector.class);
+        final RepositoryConnection conn = mock(RepositoryConnection.class);
+        when(connector.acquireConnection()).thenReturn(conn);
+        final IsolationLevels isolationLevel = IsolationLevels.valueOf(level);
+        this.sut = new StorageConnection(connector, isolationLevel);
+        sut.setReadOnly(true);
+        sut.begin();
+        verify(connector).acquireConnection();
+        verify(conn, never()).begin(any(IsolationLevel.class));
+    }
+
+    @Test
+    void commitDoesNotCommitWhenConnectionIsReadOnly() throws Exception {
+        final StorageConnector connector = mock(StorageConnector.class);
+        final RepositoryConnection conn = mock(RepositoryConnection.class);
+        when(connector.acquireConnection()).thenReturn(conn);
+        this.sut = new StorageConnection(connector, IsolationLevels.READ_UNCOMMITTED);
+        sut.setReadOnly(true);
+        sut.begin();
+        sut.commit();
+        verify(conn, never()).commit();
     }
 }

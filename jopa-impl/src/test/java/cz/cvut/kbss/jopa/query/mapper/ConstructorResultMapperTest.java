@@ -53,9 +53,8 @@ class ConstructorResultMapperTest {
     @Test
     void mapRetrievesVariableValueAndUsesConstructorToCreateNewInstance() {
         final ConstructorResultMapper mapper = new ConstructorResultMapper(OWLClassA.class);
-        final VariableResultMapper paramMapper = mock(VariableResultMapper.class);
         final URI uri = Generators.createIndividualIdentifier();
-        when(paramMapper.map(resultRow, uowMock)).thenReturn(uri);
+        final VariableResultMapper paramMapper = idMapper(uri);
         mapper.addParameterMapper(paramMapper);
 
         final Object result = mapper.map(resultRow, uowMock);
@@ -64,16 +63,23 @@ class ConstructorResultMapperTest {
         verify(paramMapper).map(resultRow, uowMock);
     }
 
+    private VariableResultMapper idMapper(URI uri) {
+        final VariableResultMapper idMapper = mock(VariableResultMapper.class);
+        when(idMapper.map(resultRow, uowMock)).thenReturn(uri);
+        when(idMapper.getTargetType()).thenReturn((Class) URI.class);
+        return idMapper;
+    }
+
     @Test
     void mapRetrievesValuesForMultipleConstructorParamsAndInstantiatesResult() {
         final ConstructorResultMapper mapper = new ConstructorResultMapper(OWLClassA.class);
-        final VariableResultMapper idMapper = mock(VariableResultMapper.class);
-        final VariableResultMapper stringMapper = mock(VariableResultMapper.class);
         final URI uri = Generators.createIndividualIdentifier();
+        final VariableResultMapper idMapper = idMapper(uri);
+        final VariableResultMapper stringMapper = mock(VariableResultMapper.class);
         final String string = "stringAttributeValue";
-        when(idMapper.map(resultRow, uowMock)).thenReturn(uri);
         mapper.addParameterMapper(idMapper);
         when(stringMapper.map(resultRow, uowMock)).thenReturn(string);
+        when(stringMapper.getTargetType()).thenReturn((Class) String.class);
 
         mapper.addParameterMapper(stringMapper);
 
@@ -86,10 +92,9 @@ class ConstructorResultMapperTest {
     @Test
     void mapInstantiatesResultsWhenResultSetReturnsNullForVariableMapping() {
         final ConstructorResultMapper mapper = new ConstructorResultMapper(OWLClassA.class);
-        final VariableResultMapper idMapper = mock(VariableResultMapper.class);
-        final VariableResultMapper stringMapper = mock(VariableResultMapper.class);
         final URI uri = Generators.createIndividualIdentifier();
-        when(idMapper.map(resultRow, uowMock)).thenReturn(uri);
+        final VariableResultMapper idMapper = idMapper(uri);
+        final VariableResultMapper stringMapper = mock(VariableResultMapper.class);
         mapper.addParameterMapper(idMapper);
         when(stringMapper.getTargetType()).thenAnswer(inv -> String.class);
         mapper.addParameterMapper(stringMapper);
@@ -105,6 +110,7 @@ class ConstructorResultMapperTest {
         final ConstructorResultMapper mapper = new ConstructorResultMapper(OWLClassA.class);
         final VariableResultMapper wrongMapper = mock(VariableResultMapper.class);
         when(wrongMapper.map(resultRow, uowMock)).thenReturn(117);
+        when(wrongMapper.getTargetType()).thenReturn((Class) Integer.class);
         mapper.addParameterMapper(wrongMapper);
 
         final SparqlResultMappingException result =
@@ -117,9 +123,8 @@ class ConstructorResultMapperTest {
     @Test
     void mapIsAbleToUsePrivateConstructorToCreateTargetInstance() {
         final ConstructorResultMapper mapper = new ConstructorResultMapper(WithPrivateConstructor.class);
-        final VariableResultMapper wrongMapper = mock(VariableResultMapper.class);
         final URI uri = Generators.createIndividualIdentifier();
-        when(wrongMapper.map(resultRow, uowMock)).thenReturn(uri);
+        final VariableResultMapper wrongMapper = idMapper(uri);
         mapper.addParameterMapper(wrongMapper);
 
         final Object result = mapper.map(resultRow, uowMock);
@@ -138,9 +143,10 @@ class ConstructorResultMapperTest {
     @Test
     void mapThrowsMappingExceptionWhenItIsUnableToBuildTargetInstance() {
         final ConstructorResultMapper mapper = new ConstructorResultMapper(AbstractClass.class);
-        final VariableResultMapper wrongMapper = mock(VariableResultMapper.class);
         final URI uri = Generators.createIndividualIdentifier();
+        final VariableResultMapper wrongMapper = idMapper(uri);
         when(wrongMapper.map(resultRow, uowMock)).thenReturn(uri);
+        when(wrongMapper.getTargetType()).thenReturn((Class) URI.class);
         mapper.addParameterMapper(wrongMapper);
 
         final SparqlResultMappingException result =
@@ -160,18 +166,48 @@ class ConstructorResultMapperTest {
     @Test
     void mapSupportsAutomaticConversionFromLangStringToString() {
         final ConstructorResultMapper mapper = new ConstructorResultMapper(OWLClassA.class);
-        final VariableResultMapper idMapper = mock(VariableResultMapper.class);
-        final VariableResultMapper stringMapper = mock(VariableResultMapper.class);
         final URI uri = Generators.createIndividualIdentifier();
-        when(idMapper.map(resultRow, uowMock)).thenReturn(uri);
+        final VariableResultMapper idMapper = idMapper(uri);
+        final VariableResultMapper stringMapper = mock(VariableResultMapper.class);
         mapper.addParameterMapper(idMapper);
         final LangString strValue = new LangString("test", "en");
         when(stringMapper.map(resultRow, uowMock)).thenReturn(strValue.getValue());
+        when(stringMapper.getTargetType()).thenReturn((Class) String.class);
         mapper.addParameterMapper(stringMapper);
 
         final Object result = mapper.map(resultRow, uowMock);
         assertInstanceOf(OWLClassA.class, result);
         assertEquals(uri, ((OWLClassA) result).getUri());
         assertEquals(strValue.getValue(), ((OWLClassA) result).getStringAttribute());
+    }
+
+    @Test
+    void mapPrefersDeclaredVariableTargetTypeOverActualValueTypeWhenRetrievingConstructor() {
+        final ConstructorResultMapper mapper = new ConstructorResultMapper(GeneralConstructor.class);
+        final URI uri = Generators.createIndividualIdentifier();
+        final VariableResultMapper idMapper = idMapper(uri);
+        final VariableResultMapper stringMapper = mock(VariableResultMapper.class);
+        when(idMapper.map(resultRow, uowMock)).thenReturn(uri);
+        when(idMapper.getTargetType()).thenReturn((Class) URI.class);
+        mapper.addParameterMapper(idMapper);
+        when(stringMapper.getTargetType()).thenReturn((Class) Object.class);
+        when(stringMapper.map(resultRow, uowMock)).thenReturn("test");
+        mapper.addParameterMapper(stringMapper);
+
+        final Object result = mapper.map(resultRow, uowMock);
+        assertInstanceOf(GeneralConstructor.class, result);
+        assertEquals(uri, ((GeneralConstructor) result).uri);
+        assertEquals("test", ((GeneralConstructor) result).str);
+    }
+
+    private static class GeneralConstructor {
+
+        private final URI uri;
+        private final Object str;
+
+        GeneralConstructor(URI uri, Object str) {
+            this.uri = uri;
+            this.str = str;
+        }
     }
 }

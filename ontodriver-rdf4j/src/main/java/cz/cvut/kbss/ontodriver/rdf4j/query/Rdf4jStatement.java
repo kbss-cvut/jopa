@@ -71,7 +71,7 @@ public class Rdf4jStatement implements Statement {
     }
 
     QuerySpecification querySpec(String sparql) {
-        return QuerySpecification.query(sparql).includeInference(!inferenceDisabled);
+        return new QuerySpecification(sparql, !inferenceDisabled);
     }
 
     private static boolean isAskQuery(String query) throws Rdf4jDriverException {

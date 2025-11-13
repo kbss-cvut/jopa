@@ -28,10 +28,8 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.Arguments;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.net.URI;
 import java.util.Collections;
@@ -40,30 +38,26 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ServerSessionTest {
-
-    @Mock
-    private MetamodelImpl metamodelMock;
 
     private ServerSession session;
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         OntologyStorageProperties storageProperties = OntologyStorageProperties.ontologyUri(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa")).physicalUri(
                 URI.create("file://tmp/jopa")).driver(DataSourceStub.class.getCanonicalName()).build();
-        when(metamodelMock.getEntities()).thenReturn(Collections.emptySet());
-        this.session = new ServerSession(storageProperties, new Configuration(Collections.emptyMap()), metamodelMock);
+        this.session = new ServerSession(storageProperties, new Configuration(Collections.emptyMap()), mock(MetamodelImpl.class));
     }
 
     @Test
     public void testClose() {
         final EntityTransaction et = mock(EntityTransaction.class);
         when(et.isActive()).thenReturn(Boolean.TRUE);
-        when(et.isRollbackOnly()).thenReturn(Boolean.FALSE);
         final AbstractEntityManager em = mock(AbstractEntityManager.class);
         session.transactionStarted(et, em);
 
@@ -84,7 +78,7 @@ public class ServerSessionTest {
 
     static Stream<Arguments> unitOfWorkModeProvider() {
         return Stream.of(
-                Arguments.of(JOPAPersistenceProperties.TRANSACTION_MODE, "read_only", ReadOnlyUnitOfWork.class),
+                Arguments.of(JOPAPersistenceProperties.TRANSACTION_MODE, "read_only", CloningReadOnlyUnitOfWork.class),
                 Arguments.of(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, "immediate", ChangeTrackingUnitOfWork.class),
                 Arguments.of(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, "on_commit", OnCommitChangePropagatingUnitOfWork.class),
                 Arguments.of(JOPAPersistenceProperties.CHANGE_TRACKING_MODE, "invalid_mode", ChangeTrackingUnitOfWork.class),

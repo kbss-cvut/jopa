@@ -105,15 +105,6 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
     boolean isObjectManaged(Object entity);
 
     /**
-     * Checks whether the specified entity has been registered in this Unit of Work as a new object for persist.
-     *
-     * @param entity Object to check
-     * @return {@code true} when entity is managed and new, {@code false} otherwise
-     * @see #isObjectManaged(Object)
-     */
-    boolean isObjectNew(Object entity);
-
-    /**
      * Checks whether the specified repository context is consistent.
      *
      * @param context Context URI, {@code null} indicates the whole repository should be checked
@@ -160,7 +151,7 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * @param descriptor Entity descriptor
      * @return The retrieved object or {@code null} if there is no object with the specified identifier in the specified
      * repository
-     * @throws NullPointerException    If {@code cls}, {@code identifier} or {@code repository} is {@code null}
+     * @throws NullPointerException    If {@code entityClass}, {@code identifier} or {@code repository} is {@code null}
      * @throws OWLPersistenceException If an error occurs during object loading
      */
     <T> T readObject(Class<T> cls, Object identifier, Descriptor descriptor);

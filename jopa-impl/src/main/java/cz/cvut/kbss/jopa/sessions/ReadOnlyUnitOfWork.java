@@ -100,17 +100,16 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         if (result != null) {
             return result;
         }
-        LoadingParameters<T> params = new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor);
-
         // registered result is either original or clone of original (if original is read from cache)
         Object registeredResult;
         if (isObjectInCache(cls, identifier, descriptor)) {
+            LoadingParameters<T> params = new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor);
             result = storage.find(params);
             registeredResult = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor)
                     .postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel())))
             );
         } else {
-            params.bypassCache();
+            LoadingParameters<T> params = new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor, false, true);
             result = storage.find(params);
             registeredResult = registerExistingObject(result, descriptor);
         }
@@ -259,7 +258,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
                     // Unwrap descriptor in case it is an object property collection
                     final Descriptor fieldDescriptor = super.getDescriptor(original).getAttributeDescriptor(fs)
                                                             .unwrap();
-                    if (fs.isCollection()) {
+                    if (fs.isCollection() && et.getProperties() != fs) {
                         newValue = this.registerExistingObjects((Collection<Object>) fieldValue, fieldDescriptor);
                     } else {
                         newValue = fieldValue;
@@ -450,17 +449,6 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     @Override
     void preventCachingIfReferenceIsNotLoaded(ChangeRecord changeRecord) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
-    }
-
-    /**
-     * Method not supported.
-     *
-     * @throws UnsupportedOperationException Method not supported.
-     */
-    @Override
-    public boolean isObjectNew(Object entity) throws UnsupportedOperationException {
-        throwUnsupportedOperationException();
-        return false;
     }
 
     /**
