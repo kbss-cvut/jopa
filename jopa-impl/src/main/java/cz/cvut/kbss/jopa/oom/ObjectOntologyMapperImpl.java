@@ -135,7 +135,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     private <T> T loadEntityInternal(LoadingParameters<T> loadingParameters) {
-        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.getEntityClass());
+        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.entityClass());
         final T result;
         if (et.hasSubtypes()) {
             result = twoStepInstanceLoader.loadEntity(loadingParameters);
@@ -151,8 +151,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     private <T> void cacheLoadedEntity(LoadingParameters<T> loadingParameters, T result) {
         final LoadStateDescriptor<T> loadStateDescriptor = uow.getLoadStateRegistry().get(result);
         assert loadStateDescriptor != null;
-        if (!loadingParameters.shouldBypassCache()) {
-            getCache().add(loadingParameters.getIdentifier(), result, new Descriptors(loadingParameters.getDescriptor(), loadStateDescriptor));
+        if (!loadingParameters.bypassCache()) {
+            getCache().add(loadingParameters.identifier(), result, new Descriptors(loadingParameters.descriptor(), loadStateDescriptor));
         }
     }
 
@@ -165,10 +165,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         }
         final URI identifier = loadingParameters.axioms().iterator().next().getSubject().getIdentifier();
         final IdentifiableEntityType<T> et = getEntityType(loadingParameters.cls());
-        final LoadingParameters<T> params = new LoadingParameters<>(loadingParameters.cls(), identifier, loadingParameters.descriptor());
-        if (loadingParameters.bypassCache()) {
-            params.bypassCache();
-        }
+        final LoadingParameters<T> params = new LoadingParameters<>(loadingParameters.cls(), identifier, loadingParameters.descriptor(), false, loadingParameters.bypassCache());
         final T result;
         if (et.hasSubtypes()) {
             result = twoStepInstanceLoader.loadEntityFromAxioms(params, loadingParameters.axioms());
@@ -306,12 +303,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     private <T> LoadingParameters<T> initEntityLoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor) {
-        LoadingParameters<T> params = new LoadingParameters<>(cls, identifier, descriptor);
-        if (uow.isReadOnly()) {
-            // this prevents caching of entities loaded by ReadOnlyUOW
-            params.bypassCache();
-        }
-        return params;
+        return new LoadingParameters<>(cls, identifier, descriptor, false, uow.isReadOnly());
     }
 
     @Override

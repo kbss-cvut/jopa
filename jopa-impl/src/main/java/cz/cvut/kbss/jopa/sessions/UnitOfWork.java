@@ -151,7 +151,7 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * @param descriptor Entity descriptor
      * @return The retrieved object or {@code null} if there is no object with the specified identifier in the specified
      * repository
-     * @throws NullPointerException    If {@code cls}, {@code identifier} or {@code repository} is {@code null}
+     * @throws NullPointerException    If {@code entityClass}, {@code identifier} or {@code repository} is {@code null}
      * @throws OWLPersistenceException If an error occurs during object loading
      */
     <T> T readObject(Class<T> cls, Object identifier, Descriptor descriptor);

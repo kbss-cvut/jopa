@@ -137,7 +137,7 @@ class EntityManagerImplTest {
         final ArgumentCaptor<OWLClassJ> argumentCaptor = ArgumentCaptor.forClass(OWLClassJ.class);
         verify(uow).mergeDetached(argumentCaptor.capture(), any(Descriptor.class));
         assertSame(j, argumentCaptor.getValue());
-        // Check that there is no exception thrown (there was a NPX bug in merging null collections) and that
+        // Check that there is no exception thrown (there was an NPX bug in merging null collections) and that
         // the merged object is correctly passed to merge in UoW
     }
 
@@ -703,13 +703,11 @@ class EntityManagerImplTest {
         uow.getLoadStateRegistry()
            .put(loadedOriginal, LoadStateDescriptorFactory.createAllLoaded(lazyOriginal, mocks.forOwlClassJ()
                                                                                               .entityType()));
-        final LoadingParameters<OWLClassJ> refreshLoadParams = new LoadingParameters<>(OWLClassJ.class, lazyOriginal.getUri(), descriptorFactory.createDescriptor(OWLClassJ.class), true);
-        refreshLoadParams.bypassCache();
+        final LoadingParameters<OWLClassJ> refreshLoadParams = new LoadingParameters<>(OWLClassJ.class, lazyOriginal.getUri(), descriptorFactory.createDescriptor(OWLClassJ.class), true, true);
         when(connectorMock.find(refreshLoadParams)).thenReturn(loadedOriginal);
         final LoadingParameters<OWLClassA> refreshALoadParams = new LoadingParameters<>(OWLClassA.class, a.getUri(), descriptorFactory.createDescriptor(OWLClassJ.class)
                                                                                                                                       .getAttributeDescriptor(mocks.forOwlClassJ()
-                                                                                                                                                                   .setAttribute()), true);
-        refreshALoadParams.bypassCache();
+                                                                                                                                                                   .setAttribute()), true, true);
         when(connectorMock.find(refreshALoadParams)).thenReturn(a);
 
         final OWLClassJ toRefresh = em.find(OWLClassJ.class, lazyOriginal.getUri());

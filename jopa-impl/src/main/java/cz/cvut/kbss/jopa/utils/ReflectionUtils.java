@@ -37,7 +37,7 @@ public class ReflectionUtils {
      *
      * @param cls Class to instantiate
      * @param <T> Type
-     * @return New instance of class {@code cls}
+     * @return New instance of class {@code entityClass}
      * @throws InstantiationException When no-arg constructor does not exist or is not accessible
      */
     public static <T> T instantiateUsingDefaultConstructor(Class<T> cls) {

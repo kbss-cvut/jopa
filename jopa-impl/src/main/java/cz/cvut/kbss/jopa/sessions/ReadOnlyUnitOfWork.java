@@ -100,17 +100,16 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
         if (result != null) {
             return result;
         }
-        LoadingParameters<T> params = new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor);
-
         // registered result is either original or clone of original (if original is read from cache)
         Object registeredResult;
         if (isObjectInCache(cls, identifier, descriptor)) {
+            LoadingParameters<T> params = new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor);
             result = storage.find(params);
             registeredResult = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor)
                     .postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel())))
             );
         } else {
-            params.bypassCache();
+            LoadingParameters<T> params = new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor, false, true);
             result = storage.find(params);
             registeredResult = registerExistingObject(result, descriptor);
         }

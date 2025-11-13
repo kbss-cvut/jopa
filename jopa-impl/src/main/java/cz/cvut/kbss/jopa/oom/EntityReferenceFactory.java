@@ -47,16 +47,16 @@ class EntityReferenceFactory {
     <T> T createReferenceProxy(LoadingParameters<T> loadingParameters) {
         assert loadingParameters != null;
 
-        final Class<? extends T> referenceProxyClass = metamodel.getEntityReferenceProxy(loadingParameters.getEntityClass());
+        final Class<? extends T> referenceProxyClass = metamodel.getEntityReferenceProxy(loadingParameters.entityClass());
         try {
             final T reference = referenceProxyClass.getDeclaredConstructor().newInstance();
             assert reference instanceof EntityReferenceProxy<?>;
             final EntityReferenceProxy<?> referenceProxy = (EntityReferenceProxy<?>) reference;
-            referenceProxy.setIdentifier(loadingParameters.getIdentifier());
-            referenceProxy.setType((Class) loadingParameters.getEntityClass());
+            referenceProxy.setIdentifier(loadingParameters.identifier());
+            referenceProxy.setType((Class) loadingParameters.entityClass());
             referenceProxy.setPersistenceContext(uow);
-            referenceProxy.setDescriptor(loadingParameters.getDescriptor());
-            EntityPropertiesUtils.setIdentifier(loadingParameters.getIdentifier(), reference, metamodel.entity(loadingParameters.getEntityClass()));
+            referenceProxy.setDescriptor(loadingParameters.descriptor());
+            EntityPropertiesUtils.setIdentifier(loadingParameters.identifier(), reference, metamodel.entity(loadingParameters.entityClass()));
             return reference;
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
                  InvocationTargetException e) {

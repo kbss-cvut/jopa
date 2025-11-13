@@ -684,8 +684,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         final URI idUri = EntityPropertiesUtils.getIdentifier(object, et);
         final Descriptor descriptor = getDescriptor(object);
 
-        final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true);
-        params.bypassCache();
+        final LoadingParameters<T> params = new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true, true);
         final ConnectionWrapper connection = acquireConnection();
         try {
             uowChangeSet.cancelObjectChanges(getOriginal(object));

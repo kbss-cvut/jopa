@@ -20,85 +20,18 @@ package cz.cvut.kbss.jopa.sessions.util;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 import java.net.URI;
-import java.util.Objects;
 
-public final class LoadingParameters<T> {
-
-    private final Class<T> cls;
-    private final URI identifier;
-    private final Descriptor descriptor;
-    private final boolean forceEager;
-    private boolean bypassCache;
+public record LoadingParameters<T> (Class<T> entityClass, URI identifier, Descriptor descriptor, boolean forceEager, boolean bypassCache) {
 
     public LoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor) {
-        this.cls = cls;
-        this.identifier = identifier;
-        this.descriptor = descriptor;
-        this.forceEager = false;
-        assert paramsLoaded();
+        this(cls, identifier, descriptor, false, false);
     }
 
     public LoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor, boolean forceEager) {
-        this.cls = cls;
-        this.identifier = identifier;
-        this.descriptor = descriptor;
-        this.forceEager = forceEager;
-        assert paramsLoaded();
+        this(cls, identifier, descriptor, forceEager, false);
     }
 
-    private boolean paramsLoaded() {
-        return cls != null && identifier != null && descriptor != null;
-    }
-
-    public Class<T> getEntityClass() {
-        return cls;
-    }
-
-    public URI getIdentifier() {
-        return identifier;
-    }
-
-    public Descriptor getDescriptor() {
-        return descriptor;
-    }
-
-    public boolean isForceEager() {
-        return forceEager;
-    }
-
-    public boolean shouldBypassCache() {
-        return bypassCache;
-    }
-
-    public void bypassCache() {
-        this.bypassCache = true;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof LoadingParameters<?> that)) {
-            return false;
-        }
-        if (forceEager != that.forceEager) {
-            return false;
-        }
-        if (bypassCache != that.bypassCache) {
-            return false;
-        }
-        return Objects.equals(cls, that.cls) && Objects.equals(identifier, that.identifier) &&
-                Objects.equals(descriptor, that.descriptor);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = cls.hashCode();
-        result = 31 * result + identifier.hashCode();
-        result = 31 * result + descriptor.hashCode();
-        result = 31 * result + (forceEager ? 1 : 0);
-        result = 31 * result + (bypassCache ? 1 : 0);
-        return result;
+    public LoadingParameters<T> withBypassCache() {
+        return new LoadingParameters<>(entityClass, identifier, descriptor, forceEager, true);
     }
 }
