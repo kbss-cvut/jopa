@@ -1,5 +1,12 @@
 # JOPA - Change Log
 
+### 2.7.0 - 2025-11-13
+
+- Do not start repository-level transaction for read-only access when relevant (Enhancement #386).
+- Support SPARQL 1.2 triple term expressions (Enhancement #384).
+- Reimplement read-only UoW to use cloning (allows full utilization of second-level cache).
+- Dependency updates: RDF4J 5.2.0.
+
 ### 2.6.4 - 2025-10-22
 
 - Support entity classes with subclasses by the entity loading optimizer (Enhancement #357).
