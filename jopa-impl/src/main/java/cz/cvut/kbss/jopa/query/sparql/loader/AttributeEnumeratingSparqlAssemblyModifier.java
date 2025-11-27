@@ -17,7 +17,7 @@ import java.util.List;
  * instances one by one after the query is evaluated, this optimizer modifies the query to fetch all available entity
  * attributes by injecting optional triple patterns for each of the entity attributes.
  * <p>
- * When not to use this modifies:
+ * When <b>not</b> to use this modifies:
  * <ul>
  *     <li>When the result type has {@literal Properties} field</li>
  *     <li>When the result type has subclasses</li>

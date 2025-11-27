@@ -62,8 +62,7 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
      * @return Query result loader
      */
     @Override
-    public <T> QueryResultLoader<T> getQueryResultLoader(Class<T> resultClass,
-                                                         Descriptor descriptor) {
+    public <T> QueryResultLoader<T> getQueryResultLoader(Class<T> resultClass, Descriptor descriptor) {
         if (uow.isEntityType(resultClass)) {
             if (canOptimize(resultClass)) {
                 return new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
