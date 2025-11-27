@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.iteration.ResultSetIterator;
 import cz.cvut.kbss.ontodriver.iteration.ResultSetSpliterator;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.stream.Stream;
@@ -56,6 +57,16 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      * @throws IllegalStateException If called on a closed result set
      */
     int getColumnCount();
+
+    /**
+     * Gets the names of the available columns.
+     * <p>
+     * The indices of the names in the returned list correspond to their indices, as they would be returned, for
+     * example, by {@link #findColumn(String)}.
+     *
+     * @return List of column names
+     */
+    List<String> getColumnNames();
 
     /**
      * Checks whether a value at the specified index is bound in the current result row.
@@ -107,8 +118,8 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      * @param columnLabel Label of the column
      * @return {@code boolean} value
      * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
-     *                               boolean} or there occurs some other error
+     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to
+     *                               {@code boolean} or there occurs some other error
      */
     boolean getBoolean(String columnLabel) throws OntoDriverException;
 
@@ -129,8 +140,8 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      * @param columnLabel Label of the column
      * @return {@code byte} value
      * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
-     *                               byte} or there occurs some other error
+     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to
+     *                               {@code byte} or there occurs some other error
      */
     byte getByte(String columnLabel) throws OntoDriverException;
 
@@ -151,8 +162,8 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      * @param columnLabel Label of the column
      * @return {@code double} value
      * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
-     *                               double} or there occurs some other error
+     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to
+     *                               {@code double} or there occurs some other error
      */
     double getDouble(String columnLabel) throws OntoDriverException;
 
@@ -173,8 +184,8 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      * @param columnLabel Label of the column
      * @return {@code float} value
      * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
-     *                               float} or there occurs some other error
+     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to
+     *                               {@code float} or there occurs some other error
      */
     float getFloat(String columnLabel) throws OntoDriverException;
 
@@ -195,8 +206,8 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      * @param columnLabel Label of the column
      * @return {@code int} value
      * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
-     *                               int} or there occurs some other error
+     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to
+     *                               {@code int} or there occurs some other error
      */
     int getInt(String columnLabel) throws OntoDriverException;
 
@@ -217,8 +228,8 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      * @param columnLabel Label of the column
      * @return {@code long} value
      * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
-     *                               long} or there occurs some other error
+     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to
+     *                               {@code long} or there occurs some other error
      */
     long getLong(String columnLabel) throws OntoDriverException;
 
@@ -303,8 +314,8 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      * @param columnLabel Label of the column
      * @return {@code short} value
      * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
-     *                               short} or there occurs some other error
+     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to
+     *                               {@code short} or there occurs some other error
      */
     short getShort(String columnLabel) throws OntoDriverException;
 
@@ -335,8 +346,8 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
      * @param columnLabel Label of the column
      * @return {@code String} value
      * @throws IllegalStateException If called on a closed result set
-     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
-     *                               String} or there occurs some other error
+     * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to
+     *                               {@code String} or there occurs some other error
      */
     String getString(String columnLabel) throws OntoDriverException;
 
@@ -408,8 +419,8 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
     /**
      * Closes this result set releasing any sub-resources it holds.
      * <p>
-     * After closing the result set is not usable any more and calling methods on it (except {@code close} and {@code
-     * isOpen}) will result in {@code OntoDriverException}.
+     * After closing the result set is not usable any more and calling methods on it (except {@code close} and
+     * {@code isOpen}) will result in {@code OntoDriverException}.
      * <p>
      * Calling {@code close} on already closed resource does nothing.
      * <p>

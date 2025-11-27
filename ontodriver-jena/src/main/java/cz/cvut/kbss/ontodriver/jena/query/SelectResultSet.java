@@ -29,6 +29,8 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.RDFNode;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class SelectResultSet extends AbstractResultSet {
@@ -52,6 +54,11 @@ public class SelectResultSet extends AbstractResultSet {
     public int getColumnCount() {
         ensureOpen();
         return jenaResult.getResultVars().size();
+    }
+
+    @Override
+    public List<String> getColumnNames() {
+        return Collections.unmodifiableList(jenaResult.getResultVars());
     }
 
     @Override

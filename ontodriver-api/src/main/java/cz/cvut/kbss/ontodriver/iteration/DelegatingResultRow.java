@@ -20,10 +20,12 @@ package cz.cvut.kbss.ontodriver.iteration;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
- * {@link ResultRow} implementation which delegates retrieval calls to the underlying {@link cz.cvut.kbss.ontodriver.ResultSet}.
+ * {@link ResultRow} implementation which delegates retrieval calls to the underlying
+ * {@link cz.cvut.kbss.ontodriver.ResultSet}.
  */
 public class DelegatingResultRow implements ResultRow {
 
@@ -41,6 +43,11 @@ public class DelegatingResultRow implements ResultRow {
     @Override
     public int getColumnCount() {
         return resultSet.getColumnCount();
+    }
+
+    @Override
+    public List<String> getColumnNames() {
+        return resultSet.getColumnNames();
     }
 
     @Override

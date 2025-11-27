@@ -21,6 +21,8 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 
+import java.util.List;
+
 public class AskResultSet extends AbstractResultSet {
 
     private final boolean result;
@@ -38,6 +40,18 @@ public class AskResultSet extends AbstractResultSet {
     @Override
     public int getColumnCount() {
         return 1;
+    }
+
+    /**
+     * Always returns a list with a single element "x".
+     * <p>
+     * Any column name will resolve to the boolean result represented by this result set.
+     *
+     * @return List of size one element - "x"
+     */
+    @Override
+    public List<String> getColumnNames() {
+        return List.of("x");
     }
 
     @Override

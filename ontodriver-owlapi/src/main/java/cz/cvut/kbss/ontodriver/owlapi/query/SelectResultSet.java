@@ -35,6 +35,8 @@ import org.semanticweb.owlapi.model.OWLObject;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -58,7 +60,7 @@ class SelectResultSet extends AbstractResultSet {
         this.iterator = queryResult.iterator();
         this.currentIndex = -1;
         final int bindingSize = queryResult.getResultVars().size();
-        this.namesToVariables = new HashMap<>(bindingSize);
+        this.namesToVariables = new LinkedHashMap<>(bindingSize);
         this.indexesToVariables = new HashMap<>(bindingSize);
         resolveVariableNamesAndIndexes();
     }
@@ -91,6 +93,11 @@ class SelectResultSet extends AbstractResultSet {
     public int getColumnCount() {
         ensureOpen();
         return namesToVariables.size();
+    }
+
+    @Override
+    public List<String> getColumnNames() {
+        return namesToVariables.keySet().stream().toList();
     }
 
     @Override

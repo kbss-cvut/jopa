@@ -31,6 +31,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -74,6 +75,11 @@ public class SelectResultSet extends AbstractResultSet {
     public int getColumnCount() {
         ensureOpen();
         return bindings.size();
+    }
+
+    @Override
+    public List<String> getColumnNames() {
+        return Collections.unmodifiableList(bindings);
     }
 
     @Override

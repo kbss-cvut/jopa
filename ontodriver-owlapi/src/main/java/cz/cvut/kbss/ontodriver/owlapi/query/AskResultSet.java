@@ -21,6 +21,8 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.owl2query.model.QueryResult;
 import org.semanticweb.owlapi.model.OWLObject;
 
+import java.util.List;
+
 class AskResultSet extends AbstractResultSet {
 
     private final boolean result;
@@ -39,6 +41,18 @@ class AskResultSet extends AbstractResultSet {
     @Override
     public int getColumnCount() {
         return 1;
+    }
+
+    /**
+     * Always returns a list with a single element "x".
+     * <p>
+     * Any column name will resolve to the boolean result represented by this result set.
+     *
+     * @return List of size one element - "x"
+     */
+    @Override
+    public List<String> getColumnNames() {
+        return List.of("x");
     }
 
     @Override
