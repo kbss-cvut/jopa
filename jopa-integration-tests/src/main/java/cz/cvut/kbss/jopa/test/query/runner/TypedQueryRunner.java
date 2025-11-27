@@ -394,4 +394,24 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                                                          .getResultList();
         assertThat(result, containsSameEntities(entities));
     }
+
+    @Test
+    public void querySupportsOptimizedEntityLoadingOfClassWithUnmappedProperties() {
+        final List<OWLClassB> entities = QueryTestEnvironment.getData(OWLClassB.class);
+        final List<OWLClassB> result = getEntityManager().createNativeQuery("SELECT ?x WHERE { ?x a ?type . }", OWLClassB.class)
+                                                         .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_B))
+                                                         .setHint(QueryHints.ENABLE_ENTITY_LOADING_OPTIMIZER, "true")
+                                                         .getResultList();
+        assertThat(result, containsSameEntities(entities));
+    }
+
+    @Test
+    public void querySupportsOptimizedEntityLoading() {
+        final List<OWLClassA> entities = QueryTestEnvironment.getData(OWLClassA.class);
+        final List<OWLClassA> result = getEntityManager().createNativeQuery("SELECT ?x WHERE { ?x a ?type . }", OWLClassA.class)
+                                                         .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_A))
+                                                         .setHint(QueryHints.ENABLE_ENTITY_LOADING_OPTIMIZER, "true")
+                                                         .getResultList();
+        assertThat(result, containsSameEntities(entities));
+    }
 }

@@ -77,7 +77,7 @@ public class TypedQueryTest extends TypedQueryRunner {
         final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
         final int offset = expected.size() / 2;
         final List<OWLClassA> result = getEntityManager().createNamedQuery("OWLClassA.findAll", OWLClassA.class)
-                .setFirstResult(offset).getResultList();
+                                                         .setFirstResult(offset).getResultList();
         assertEquals(expected.size() - offset, result.size());
         // OWL2Query does not support ORDER BY, so we can't use it to verify the offset
     }
@@ -101,5 +101,19 @@ public class TypedQueryTest extends TypedQueryRunner {
     @Override
     public void setUntypedParameterAllowSpecifyingFilterValue() {
         // OWL2Query does not support complex filters
+    }
+
+    @Disabled
+    @Test
+    @Override
+    public void querySupportsOptimizedEntityLoadingOfClassWithUnmappedProperties() {
+        // OWL2Query did not correct results
+    }
+
+    @Disabled
+    @Test
+    @Override
+    public void querySupportsOptimizedEntityLoading() {
+        // OWL2Query does not support OPTIONAL
     }
 }
