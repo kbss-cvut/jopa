@@ -1,10 +1,11 @@
-package cz.cvut.kbss.jopa.query.sparql;
+package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.model.BaseEntityQueryResultLoader;
 import cz.cvut.kbss.jopa.model.NonEntityQueryResultLoader;
 import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.query.QueryType;
+import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

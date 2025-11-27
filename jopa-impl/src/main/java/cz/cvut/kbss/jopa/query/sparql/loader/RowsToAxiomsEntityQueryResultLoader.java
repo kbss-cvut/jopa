@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.query.sparql;
+package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;

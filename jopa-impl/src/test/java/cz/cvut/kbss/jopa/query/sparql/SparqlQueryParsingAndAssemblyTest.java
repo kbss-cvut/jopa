@@ -4,6 +4,7 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
+import cz.cvut.kbss.jopa.query.sparql.loader.SparqlAssemblyModifier;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
@@ -282,7 +283,8 @@ public class SparqlQueryParsingAndAssemblyTest {
     @Test
     void parseAndAssembleQueryAllowsModifierToInsertClausesBeforeLastClosingCurlyBrace() {
         this.sut = queryParser.parseQuery(SIMPLE_QUERY);
-        final SparqlAssemblyModifier assemblyModifier = (sut, tokenRewriter, queryAttributes) -> tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), "?x ?y ?z . ");
+        final SparqlAssemblyModifier
+                assemblyModifier = (sut, tokenRewriter, queryAttributes) -> tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), "?x ?y ?z . ");
         sut.setAssemblyModifier(assemblyModifier);
 
         final String result = sut.assembleQuery();

@@ -1,7 +1,10 @@
-package cz.cvut.kbss.jopa.query.sparql;
+package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryType;
+import cz.cvut.kbss.jopa.query.sparql.QueryAttributes;
+import cz.cvut.kbss.jopa.query.sparql.TokenQueryParameter;
+import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.TokenStreamRewriter;

@@ -25,7 +25,7 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.query.QueryHolder;
-import cz.cvut.kbss.jopa.query.sparql.QueryResultLoadingOptimizer;
+import cz.cvut.kbss.jopa.query.sparql.loader.QueryResultLoadingOptimizer;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 

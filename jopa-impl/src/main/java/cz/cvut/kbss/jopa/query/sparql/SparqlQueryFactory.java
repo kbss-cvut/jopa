@@ -24,6 +24,8 @@ import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.mapper.SparqlResultMapper;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.soql.SoqlQueryParser;
+import cz.cvut.kbss.jopa.query.sparql.loader.QueryResultLoadingOptimizer;
+import cz.cvut.kbss.jopa.query.sparql.loader.SparqlQueryResultLoadingOptimizer;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
@@ -79,7 +81,8 @@ public class SparqlQueryFactory {
     private <T> TypedQueryImpl<T> createQueryImpl(String query, Class<T> resultClass, QueryParser parser) {
         Objects.requireNonNull(resultClass);
         final TokenStreamSparqlQueryHolder queryHolder = (TokenStreamSparqlQueryHolder) parser.parseQuery(query, resultClass);
-        final QueryResultLoadingOptimizer<TokenStreamSparqlQueryHolder> queryResultLoadingOptimizer = new SparqlQueryResultLoadingOptimizer(queryHolder, uow);
+        final QueryResultLoadingOptimizer<TokenStreamSparqlQueryHolder>
+                queryResultLoadingOptimizer = new SparqlQueryResultLoadingOptimizer(queryHolder, uow);
         return new TypedQueryImpl<>(queryHolder, resultClass, connection, queryResultLoadingOptimizer);
     }
 
