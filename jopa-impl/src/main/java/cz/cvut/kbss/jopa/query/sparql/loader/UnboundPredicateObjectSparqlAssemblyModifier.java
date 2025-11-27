@@ -25,7 +25,7 @@ public class UnboundPredicateObjectSparqlAssemblyModifier implements SparqlAssem
         assert queryHolder.getProjectedQueryParameters().size() == 1;
 
         final TokenQueryParameter<?> p = queryHolder.getProjectedQueryParameters().get(0);
-        tokenRewriter.insertAfter(p.getTokens().get(0), generateProjectionModification(p));
+        tokenRewriter.insertAfter(p.getSingleToken(), generateProjectionModification(p));
         tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), generateSelectionTriplePattern(p, tokenRewriter.getTokenStream(), queryAttributes.lastClosingCurlyBraceToken()));
     }
 
@@ -34,7 +34,7 @@ public class UnboundPredicateObjectSparqlAssemblyModifier implements SparqlAssem
         return " " + property(baseName) + " " + value(baseName);
     }
 
-    private static String getBaseParamName(QueryParameter<?> p) {
+    static String getBaseParamName(QueryParameter<?> p) {
         return p.getName() != null ? p.getName() : p.getPosition().toString();
     }
 

@@ -27,4 +27,8 @@ public class TokenQueryParameter<T> extends QueryParameter<T> {
     public List<Token> getTokens() {
         return tokens;
     }
+
+    public Token getSingleToken() {
+        return tokens.get(0);
+    }
 }
