@@ -28,7 +28,7 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
     public void optimizeQueryAssembly(Class<?> resultClass) {
         if (canOptimize(resultClass)) {
             LOG.trace("Processing query results with optimized entity loading.");
-            queryHolder.setAssemblyModifier(new EntityLoadingSparqlAssemblyModifier());
+            queryHolder.setAssemblyModifier(new UnboundPredicateObjectSparqlAssemblyModifier());
         }
     }
 
@@ -66,7 +66,7 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
                                                          Descriptor descriptor) {
         if (uow.isEntityType(resultClass)) {
             if (canOptimize(resultClass)) {
-                return new RowsToAxiomsEntityQueryResultLoader<>(uow, resultClass, descriptor);
+                return new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
             }
             return new BaseEntityQueryResultLoader<>(uow, resultClass, descriptor);
         }

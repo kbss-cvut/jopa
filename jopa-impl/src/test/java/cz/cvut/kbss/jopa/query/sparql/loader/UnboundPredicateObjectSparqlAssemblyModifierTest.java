@@ -14,13 +14,13 @@ import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class EntityLoadingSparqlAssemblyModifierTest {
+class UnboundPredicateObjectSparqlAssemblyModifierTest {
 
     private final ParameterValueFactory valueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
 
     private Sparql11QueryParser parser;
 
-    private final EntityLoadingSparqlAssemblyModifier sut = new EntityLoadingSparqlAssemblyModifier();
+    private final UnboundPredicateObjectSparqlAssemblyModifier sut = new UnboundPredicateObjectSparqlAssemblyModifier();
 
     @BeforeEach
     void setUp() {

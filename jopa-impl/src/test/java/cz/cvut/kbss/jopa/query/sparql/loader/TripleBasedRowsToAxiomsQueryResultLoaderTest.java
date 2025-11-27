@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class RowsToAxiomsEntityQueryResultLoaderTest {
+class TripleBasedRowsToAxiomsQueryResultLoaderTest {
 
     @Mock
     private UnitOfWork uow;
@@ -56,8 +56,8 @@ class RowsToAxiomsEntityQueryResultLoaderTest {
 
     @Test
     void loadEntityInstanceReadsInitialRowsIntoAxiomsAndLoadsEntityFromThem() throws OntoDriverException {
-        final RowsToAxiomsEntityQueryResultLoader<OWLClassA>
-                sut = new RowsToAxiomsEntityQueryResultLoader<>(uow, OWLClassA.class, descriptor);
+        final TripleBasedRowsToAxiomsQueryResultLoader<OWLClassA>
+                sut = new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor);
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         final List<ResultRow> firstResultRows = mockResultRows(instance);
         final ResultRow lastRow = mock(ResultRow.class);
@@ -91,8 +91,8 @@ class RowsToAxiomsEntityQueryResultLoaderTest {
 
     @Test
     void loadResultLoadsMultipleInstancesFromConsecutiveRows() throws OntoDriverException {
-        final RowsToAxiomsEntityQueryResultLoader<OWLClassA>
-                sut = new RowsToAxiomsEntityQueryResultLoader<>(uow, OWLClassA.class, descriptor);
+        final TripleBasedRowsToAxiomsQueryResultLoader<OWLClassA>
+                sut = new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor);
         final OWLClassA instanceOne = Generators.generateOwlClassAInstance();
         final List<ResultRow> firstResultRows = mockResultRows(instanceOne);
         final OWLClassA instanceTwo = Generators.generateOwlClassAInstance();
@@ -116,8 +116,8 @@ class RowsToAxiomsEntityQueryResultLoaderTest {
 
     @Test
     void loadLastPendingLoadsEntityInstanceFromPendingAxioms() throws OntoDriverException {
-        final RowsToAxiomsEntityQueryResultLoader<OWLClassA>
-                sut = new RowsToAxiomsEntityQueryResultLoader<>(uow, OWLClassA.class, descriptor);
+        final TripleBasedRowsToAxiomsQueryResultLoader<OWLClassA>
+                sut = new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor);
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         final List<ResultRow> firstResultRows = mockResultRows(instance);
         when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor))).thenReturn(instance);
@@ -131,8 +131,8 @@ class RowsToAxiomsEntityQueryResultLoaderTest {
 
     @Test
     void loadEntityInstanceLoadsEntityUsingNormalUoWLoadWhenLoadFromAxiomsThrowsCardinalityConstraintViolatedException() throws Exception {
-        final RowsToAxiomsEntityQueryResultLoader<OWLClassA>
-                sut = new RowsToAxiomsEntityQueryResultLoader<>(uow, OWLClassA.class, descriptor);
+        final TripleBasedRowsToAxiomsQueryResultLoader<OWLClassA>
+                sut = new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor);
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         final List<ResultRow> firstResultRows = mockResultRows(instance);
         final ResultRow lastRow = mock(ResultRow.class);

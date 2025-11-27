@@ -39,7 +39,7 @@ class SparqlQueryResultLoadingOptimizerTest {
         sut.enableOptimization();
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
         sut.optimizeQueryAssembly(OWLClassA.class);
-        verify(qh).setAssemblyModifier(any(EntityLoadingSparqlAssemblyModifier.class));
+        verify(qh).setAssemblyModifier(any(UnboundPredicateObjectSparqlAssemblyModifier.class));
     }
 
     @Test

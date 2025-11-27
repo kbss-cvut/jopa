@@ -14,9 +14,9 @@ import org.antlr.v4.runtime.TokenStreamRewriter;
  * <p>
  * This optimizer is applicable for SELECT queries that select instances of an entity class. Instead of loading the
  * instances one by one after the query is evaluated, this optimizer modifies the query to fetch all available entity
- * attributes.
+ * attributes by injecting a triple pattern with unbound predicate and object variables into the query.
  */
-public class EntityLoadingSparqlAssemblyModifier implements SparqlAssemblyModifier {
+public class UnboundPredicateObjectSparqlAssemblyModifier implements SparqlAssemblyModifier {
 
     @Override
     public void modify(TokenStreamSparqlQueryHolder queryHolder, TokenStreamRewriter tokenRewriter,
@@ -47,7 +47,7 @@ public class EntityLoadingSparqlAssemblyModifier implements SparqlAssemblyModifi
     }
 
     private static String generateSelectionTriplePattern(TokenQueryParameter<?> subjectParam, TokenStream tokenStream,
-                                                  Token lastClosingCurlyBracket) {
+                                                         Token lastClosingCurlyBracket) {
         final String baseName;
         final char varPrefix;
         if (subjectParam.getPosition() != null) {
