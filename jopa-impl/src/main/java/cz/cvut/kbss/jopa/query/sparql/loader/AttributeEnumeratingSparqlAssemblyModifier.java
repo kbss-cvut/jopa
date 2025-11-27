@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.sparql.QueryAttributes;
 import cz.cvut.kbss.jopa.query.sparql.TokenQueryParameter;
@@ -20,14 +21,14 @@ import java.util.List;
  * When <b>not</b> to use this modifies:
  * <ul>
  *     <li>When the result type has {@literal Properties} field</li>
- *     <li>When the result type has subclasses</li>
+ *     <li>When the result type has subclasses</li> TODO This can be resolved because IdentifiableEntityType has references to subtypes and we could gather subtype attributes for mapping from query
  * </ul>
  */
 public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssemblyModifier {
 
-    private final EntityType<?> resultType;
+    private final IdentifiableEntityType<?> resultType;
 
-    public AttributeEnumeratingSparqlAssemblyModifier(EntityType<?> resultType) {
+    public AttributeEnumeratingSparqlAssemblyModifier(IdentifiableEntityType<?> resultType) {
         this.resultType = resultType;
         assert resultType.getProperties() == null;
     }

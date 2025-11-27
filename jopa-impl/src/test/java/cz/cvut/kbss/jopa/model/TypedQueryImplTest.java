@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
@@ -25,6 +26,8 @@ import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHints;
@@ -443,18 +446,25 @@ class TypedQueryImplTest extends QueryTestBase {
 
     @Test
     void optimizeEntityResultLoadingHintAppliesEntityLoadingOptimizer() throws Exception {
-        final OWLClassA entity = Generators.generateOwlClassAInstance();
-        final TypedQuery<OWLClassA> query = create(SELECT_QUERY, OWLClassA.class);
+        final OWLClassB entity = new OWLClassB(Generators.createIndividualIdentifier());
+        final TypedQuery<OWLClassB> query = create(SELECT_QUERY, OWLClassB.class);
         query.setHint(QueryHints.ENABLE_ENTITY_LOADING_OPTIMIZER, true);
         when(resultSetMock.iterator()).thenReturn(resultSetIterator);
         when(resultSetIterator.hasNext()).thenReturn(true, false);
         when(resultSetIterator.next()).thenReturn(resultRow);
         when(resultRow.getObject(0, URI.class)).thenReturn(entity.getUri());
         when(resultRow.getObject(1, URI.class)).thenReturn(URI.create(RDF.TYPE));
-        when(resultRow.getObject(2)).thenReturn(URI.create(Vocabulary.c_OwlClassA));
+        when(resultRow.getObject(2)).thenReturn(URI.create(Vocabulary.c_OwlClassB));
         when(resultRow.getColumnCount()).thenReturn(3);
-        when(uowMock.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any())).thenReturn(entity);
-        final List<OWLClassA> res = query.getResultList();
+        when(uowMock.readObjectFromAxioms(eq(OWLClassB.class), anyCollection(), any())).thenReturn(entity);
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
+        when(uowMock.getMetamodel()).thenReturn(metamodel);
+        when(uowMock.isEntityType(OWLClassB.class)).thenReturn(true);
+        final IdentifiableEntityType<OWLClassB> et = mock(IdentifiableEntityType.class);
+        when(et.getProperties()).thenReturn(mock(PropertiesSpecification.class));
+        when(metamodel.entity(OWLClassB.class)).thenReturn(et);
+
+        final List<OWLClassB> res = query.getResultList();
         assertEquals(List.of(entity), res);
         verify(uowMock, never()).readObject(eq(OWLClassA.class), eq(entity.getUri()), any());
     }

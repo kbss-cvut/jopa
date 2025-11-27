@@ -4,6 +4,7 @@ import cz.cvut.kbss.jopa.model.BaseEntityQueryResultLoader;
 import cz.cvut.kbss.jopa.model.NonEntityQueryResultLoader;
 import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
@@ -26,10 +27,31 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
 
     @Override
     public void optimizeQueryAssembly(Class<?> resultClass) {
-        if (canOptimize(resultClass)) {
-            LOG.trace("Processing query results with optimized entity loading.");
-            queryHolder.setAssemblyModifier(new UnboundPredicateObjectSparqlAssemblyModifier());
+        switch (resolveOptimizerType(resultClass)) {
+            case TRIPLE_BASED:
+                LOG.trace("Processing query results with triple-based optimized entity loading.");
+                queryHolder.setAssemblyModifier(new UnboundPredicateObjectSparqlAssemblyModifier());
+                break;
+            case ATTRIBUTE_BASED:
+                LOG.trace("Processing query results with attribute enumeration-based optimized attribute loading.");
+                queryHolder.setAssemblyModifier(new AttributeEnumeratingSparqlAssemblyModifier(uow.getMetamodel()
+                                                                                                  .entity(resultClass)));
+                break;
+            default:
+                // Do nothing
+                break;
         }
+    }
+
+    private OptimizerType resolveOptimizerType(Class<?> resultClass) {
+        if (!canOptimize(resultClass)) {
+            return OptimizerType.NONE;
+        }
+        final IdentifiableEntityType<?> et = uow.getMetamodel().entity(resultClass);
+        if (et.getProperties() != null || et.hasSubtypes()) {
+            return OptimizerType.TRIPLE_BASED;
+        }
+        return OptimizerType.ATTRIBUTE_BASED;
     }
 
     private boolean canOptimize(Class<?> resultClass) {
@@ -63,12 +85,18 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
      */
     @Override
     public <T> QueryResultLoader<T> getQueryResultLoader(Class<T> resultClass, Descriptor descriptor) {
-        if (uow.isEntityType(resultClass)) {
-            if (canOptimize(resultClass)) {
-                return new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
-            }
-            return new BaseEntityQueryResultLoader<>(uow, resultClass, descriptor);
-        }
-        return new NonEntityQueryResultLoader<>(resultClass);
+        final OptimizerType optimizerType = resolveOptimizerType(resultClass);
+        return switch (optimizerType) {
+            case TRIPLE_BASED -> new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
+            case ATTRIBUTE_BASED -> new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
+            default ->
+                    uow.isEntityType(resultClass) ? new BaseEntityQueryResultLoader<>(uow, resultClass, descriptor) : new NonEntityQueryResultLoader<>(resultClass);
+        };
+    }
+
+    private enum OptimizerType {
+        TRIPLE_BASED,
+        ATTRIBUTE_BASED,
+        NONE
     }
 }

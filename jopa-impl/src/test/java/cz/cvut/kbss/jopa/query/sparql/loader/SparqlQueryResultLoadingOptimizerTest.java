@@ -1,6 +1,10 @@
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.sparql.Sparql11QueryParser;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
@@ -14,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.net.URI;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -33,13 +38,33 @@ class SparqlQueryResultLoadingOptimizerTest {
     }
 
     @Test
-    void optimizeQueryAssemblySetsAssemblyModifierWhenQueryIsSelectAndResultClassIsEntityType() {
+    void optimizeQueryAssemblySetsUnboundPredicateObjectAssemblyModifierWhenQueryIsSelectAndResultClassIsEntityTypeWithProperties() {
+        final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type }"));
+        final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow);
+        sut.enableOptimization();
+        when(uow.isEntityType(OWLClassB.class)).thenReturn(true);
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
+        when(uow.getMetamodel()).thenReturn(metamodel);
+        final IdentifiableEntityType<OWLClassB> et = mock(IdentifiableEntityType.class);
+        when(et.getProperties()).thenReturn(mock(PropertiesSpecification.class));
+        when(metamodel.entity(OWLClassB.class)).thenReturn(et);
+        sut.optimizeQueryAssembly(OWLClassB.class);
+        verify(qh).setAssemblyModifier(any(UnboundPredicateObjectSparqlAssemblyModifier.class));
+    }
+
+    @Test
+    void optimizeQueryAssemblySetsAttributeEnumeratingAssemblyModifierWhenQueryIsSelectAndResultClassIsEntityTypeWithoutProperties() {
         final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type }"));
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow);
         sut.enableOptimization();
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
+        when(uow.getMetamodel()).thenReturn(metamodel);
+        final IdentifiableEntityType<OWLClassA> et = mock(IdentifiableEntityType.class);
+        when(et.getProperties()).thenReturn(null);
+        when(metamodel.entity(OWLClassA.class)).thenReturn(et);
         sut.optimizeQueryAssembly(OWLClassA.class);
-        verify(qh).setAssemblyModifier(any(UnboundPredicateObjectSparqlAssemblyModifier.class));
+        verify(qh).setAssemblyModifier(any(AttributeEnumeratingSparqlAssemblyModifier.class));
     }
 
     @Test
