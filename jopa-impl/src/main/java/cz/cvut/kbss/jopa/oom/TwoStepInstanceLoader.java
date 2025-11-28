@@ -59,6 +59,9 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
                                                                                                                                      .isClassAssertion())
                                                                                                                      .map(ax -> (Axiom<URI>) ax)
                                                                                                                      .collect(Collectors.toSet())).determineActualEntityType();
+        if (et == null) {
+            return null;
+        }
         return reconstructEntityFromAxioms(loadingParameters, et, axioms);
     }
 

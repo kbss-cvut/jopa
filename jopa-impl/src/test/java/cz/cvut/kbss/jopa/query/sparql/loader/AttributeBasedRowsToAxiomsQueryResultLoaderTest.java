@@ -87,7 +87,11 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
             when(row.getColumnCount()).thenReturn(3);
             when(row.getColumnNames()).thenReturn(List.of("x", "xstringAttribute", "xtypes"));
             when(row.getObject(0, URI.class)).thenReturn(instance.getUri());
-            when(row.getObject("xstringAttribute")).thenReturn(instance.getStringAttribute());
+            if (instance.getStringAttribute() != null) {
+                when(row.isBound("xstringAttribute")).thenReturn(true);
+                when(row.getObject("xstringAttribute")).thenReturn(instance.getStringAttribute());
+            }
+            when(row.isBound("xtypes")).thenReturn(true);
             when(row.getObject("xtypes")).thenReturn(URI.create(type));
             rows.add(row);
         }

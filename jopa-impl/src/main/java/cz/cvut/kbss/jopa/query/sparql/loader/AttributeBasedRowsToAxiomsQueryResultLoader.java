@@ -6,6 +6,7 @@ import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
@@ -43,6 +44,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
 
     @Override
     public Optional<T> loadResult(ResultRow resultRow) {
+        assert resultRow.getColumnCount() > 0;
         try {
             final URI subject = resultRow.getObject(0, URI.class);
             if (currentSubject == null) {
@@ -71,18 +73,17 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
     private void rowToAxioms(ResultRow row) throws OntoDriverException {
         final String subjectVarName = row.getColumnNames().get(0);
         for (Attribute<? super T, ?> attribute : entityType.getAttributes()) {
-            final Object result = row.getObject(subjectVarName + attribute.getName());
-            addAxiomWithValue(attributeToAssertion(attribute), result);
+            final String varName = subjectVarName + attribute.getName();
+            if (row.isBound(varName)) {
+                currentEntityAxioms.add(new AxiomImpl<>(currentSubject, attributeToAssertion(attribute), new Value<>(row.getObject(varName))));
+            }
         }
-        if (entityType.getTypes() != null) {
-            final Object result = row.getObject(subjectVarName + entityType.getTypes().getName());
-            addAxiomWithValue(Assertion.createClassAssertion(false), result);
-        }
-    }
-
-    private void addAxiomWithValue(Assertion assertion, Object result) {
-        if (result != null) {
-            currentEntityAxioms.add(new AxiomImpl<>(currentSubject, assertion, new Value<>(result)));
+        final TypesSpecification<? super T, ?> typesSpec = entityType.getTypes();
+        if (typesSpec != null) {
+            final String varName = subjectVarName + typesSpec.getName();
+            if (row.isBound(varName)) {
+                currentEntityAxioms.add(new AxiomImpl<>(currentSubject, Assertion.createClassAssertion(typesSpec.isInferred()), new Value<>(row.getObject(varName))));
+            }
         }
     }
 
