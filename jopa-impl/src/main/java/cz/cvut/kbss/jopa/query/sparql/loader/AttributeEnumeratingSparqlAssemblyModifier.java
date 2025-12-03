@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.QueryType;
@@ -11,6 +12,7 @@ import org.antlr.v4.runtime.TokenStreamRewriter;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,10 +23,9 @@ import java.util.Optional;
  * instances one by one after the query is evaluated, this optimizer modifies the query to fetch all available entity
  * attributes by injecting optional triple patterns for each of the entity attributes.
  * <p>
- * When <b>not</b> to use this modifies:
+ * When <b>not</b> to use this modifier:
  * <ul>
  *     <li>When the result type has {@literal Properties} field</li>
- *     <li>When the result type has subclasses</li> TODO This can be resolved because IdentifiableEntityType has references to subtypes and we could gather subtype attributes for mapping from query
  * </ul>
  */
 public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssemblyModifier {
@@ -58,7 +59,7 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         final String subjectParamName = UnboundPredicateObjectSparqlAssemblyModifier.getBaseParamName(queryHolder.getProjectedQueryParameters()
                                                                                                                  .get(0));
         final String subjectVariable = "?" + subjectParamName;
-        resultType.getAttributes().forEach(att -> {
+        attributes().forEach(att -> {
             final String variable = "?" + subjectParamName + att.getName();
             variables.add(variable);
             attributePatterns.append("OPTIONAL { ");
@@ -68,7 +69,7 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
                              .append("> ").append(variable).append(" } ");
             ctx.ifPresent(uri -> attributePatterns.append("} "));
         });
-        if (resultType.getTypes() != null) {
+        if (hasTypes()) {
             final String variable = "?" + subjectParamName + "types";
             variables.add(variable);
             attributePatterns.append("OPTIONAL { ");
@@ -80,6 +81,22 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         }
         tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), attributePatterns.toString());
         return variables;
+    }
+
+    private Collection<Attribute<?, ?>> attributes() {
+        final List<Attribute<?, ?>> atts = new ArrayList<>(resultType.getAttributes());
+        resultType.getSubtypes().stream()
+                  .flatMap(subtype -> subtype.getAttributes().stream())
+                  .forEach(atts::add);
+        return atts;
+    }
+
+    private boolean hasTypes() {
+        if (resultType.getTypes() != null) {
+            return true;
+        }
+        return resultType.getSubtypes().stream()
+                         .anyMatch(subtype -> subtype.getTypes() != null);
     }
 
     private Optional<String> context(FieldSpecification<?, ?> att) {

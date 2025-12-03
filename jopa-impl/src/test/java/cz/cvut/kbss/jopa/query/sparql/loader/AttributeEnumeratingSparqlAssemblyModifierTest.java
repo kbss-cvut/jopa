@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
 import static org.mockito.Mockito.mock;
 
@@ -92,5 +94,16 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xstringAttribute ?xtypes WHERE { ?x a ?type . " +
                 "OPTIONAL { GRAPH <" + ctx + "> { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?xstringAttribute } } " +
                 "OPTIONAL { ?x a ?xtypes } }"));
+    }
+
+    @Test
+    void modifyAddsOptionalTriplePatternsForSubtypeAttributes() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassS().entityType());
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, containsString(Vocabulary.P_R_STRING_ATTRIBUTE));
+        assertThat(result, containsString(Vocabulary.P_HAS_A));
     }
 }
