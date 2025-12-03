@@ -1,5 +1,7 @@
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.sparql.QueryAttributes;
@@ -7,8 +9,10 @@ import cz.cvut.kbss.jopa.query.sparql.TokenQueryParameter;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
 import org.antlr.v4.runtime.TokenStreamRewriter;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Optimizes entity loading by modifying the query to fetch all named attributes.
@@ -27,8 +31,11 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
 
     private final IdentifiableEntityType<?> resultType;
 
-    public AttributeEnumeratingSparqlAssemblyModifier(IdentifiableEntityType<?> resultType) {
+    private final Descriptor descriptor;
+
+    public AttributeEnumeratingSparqlAssemblyModifier(IdentifiableEntityType<?> resultType, Descriptor descriptor) {
         this.resultType = resultType;
+        this.descriptor = descriptor;
         assert resultType.getProperties() == null;
     }
 
@@ -54,16 +61,28 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         resultType.getAttributes().forEach(att -> {
             final String variable = "?" + subjectParamName + att.getName();
             variables.add(variable);
-            attributePatterns.append("OPTIONAL { ").append(subjectVariable).append(" <").append(att.getIRI())
+            attributePatterns.append("OPTIONAL { ");
+            final Optional<String> ctx = context(att);
+            ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
+            attributePatterns.append(subjectVariable).append(" <").append(att.getIRI())
                              .append("> ").append(variable).append(" } ");
+            ctx.ifPresent(uri -> attributePatterns.append("} "));
         });
         if (resultType.getTypes() != null) {
             final String variable = "?" + subjectParamName + "types";
             variables.add(variable);
-            attributePatterns.append("OPTIONAL { ").append(subjectVariable).append(" a ").append(variable)
+            attributePatterns.append("OPTIONAL { ");
+            final Optional<String> ctx = context(resultType.getTypes());
+            ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
+            attributePatterns.append(subjectVariable).append(" a ").append(variable)
                              .append(" } ");
+            ctx.ifPresent(uri -> attributePatterns.append("} "));
         }
         tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), attributePatterns.toString());
         return variables;
+    }
+
+    private Optional<String> context(FieldSpecification<?, ?> att) {
+        return descriptor.getSingleAttributeContext(att).map(URI::toString);
     }
 }

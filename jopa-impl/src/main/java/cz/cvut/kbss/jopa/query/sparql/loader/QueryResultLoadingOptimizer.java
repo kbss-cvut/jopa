@@ -25,14 +25,15 @@ public abstract class QueryResultLoadingOptimizer<H extends QueryHolder> {
      * Modifies the query assembly for optimized entity loading, if possible.
      *
      * @param resultClass Query result class
+     * @param descriptor  Descriptor specified for query result loading
      */
-    public abstract void optimizeQueryAssembly(Class<?> resultClass);
+    public abstract void optimizeQueryAssembly(Class<?> resultClass, Descriptor descriptor);
 
     /**
      * Gets loader of query results for the specified query.
      * <p>
      * If possible, a version supporting optimized entity loading is returned (depending on whether
-     * {@link #optimizeQueryAssembly(Class)} has been called and the assembled query optimized).
+     * {@link #optimizeQueryAssembly(Class, Descriptor)} has been called and the assembled query optimized).
      *
      * @param resultClass Query result class
      * @param descriptor  Descriptor specified for results

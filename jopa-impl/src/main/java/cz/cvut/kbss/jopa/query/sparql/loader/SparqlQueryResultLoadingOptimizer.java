@@ -26,8 +26,8 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
     }
 
     @Override
-    public void optimizeQueryAssembly(Class<?> resultClass) {
-        switch (resolveOptimizerType(resultClass)) {
+    public void optimizeQueryAssembly(Class<?> resultClass, Descriptor descriptor) {
+        switch (resolveOptimizerType(resultClass, descriptor)) {
             case TRIPLE_BASED:
                 LOG.trace("Processing query results with triple-based optimized entity loading.");
                 queryHolder.setAssemblyModifier(new UnboundPredicateObjectSparqlAssemblyModifier());
@@ -35,7 +35,7 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
             case ATTRIBUTE_BASED:
                 LOG.trace("Processing query results with attribute enumeration-based optimized attribute loading.");
                 queryHolder.setAssemblyModifier(new AttributeEnumeratingSparqlAssemblyModifier(uow.getMetamodel()
-                                                                                                  .entity(resultClass)));
+                                                                                                  .entity(resultClass), descriptor));
                 break;
             default:
                 // Do nothing
@@ -43,20 +43,23 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
         }
     }
 
-    private OptimizerType resolveOptimizerType(Class<?> resultClass) {
-        if (!canOptimize(resultClass)) {
+    private OptimizerType resolveOptimizerType(Class<?> resultClass, Descriptor descriptor) {
+        if (!canOptimize(resultClass, descriptor)) {
             return OptimizerType.NONE;
         }
         final IdentifiableEntityType<?> et = uow.getMetamodel().entity(resultClass);
-        if (et.getProperties() != null || et.hasSubtypes()) {
+        if (et.getProperties() == null && !et.hasSubtypes()) {
+            return OptimizerType.ATTRIBUTE_BASED;
+        }
+        if (!queryContainsGraphOrServiceClause()) {
             return OptimizerType.TRIPLE_BASED;
         }
-        return OptimizerType.ATTRIBUTE_BASED;
+        return OptimizerType.NONE;
     }
 
-    private boolean canOptimize(Class<?> resultClass) {
+    private boolean canOptimize(Class<?> resultClass, Descriptor descriptor) {
         return optimizationEnabled && queryHolder.getQueryType() == QueryType.SELECT
-                && projectsEntity(resultClass) && limitOrOffsetNotSet() && queryDoesNotContainGraphOrServiceClause();
+                && projectsEntity(resultClass) && limitOrOffsetNotSet() && descriptorSpecifiesAtMostOneContext(descriptor);
     }
 
     private boolean projectsEntity(Class<?> resultClass) {
@@ -67,10 +70,21 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
         return !queryHolder.hasOffset() && !queryHolder.hasLimit();
     }
 
-    private boolean queryDoesNotContainGraphOrServiceClause() {
-        // Do not optimize a query containing GRAPH or SERVICE. The optimization pattern uses the default context, and it
-        // could lead to incorrect results
-        return !queryHolder.getQueryAttributes().hasGraphOrService();
+    /**
+     * Descriptor specifies at most one repository context for the root entity and all its attributes.
+     *
+     * @param descriptor Descriptor to examine
+     * @return {@code true} if at most one context is used, {@code false} otherwise
+     */
+    private boolean descriptorSpecifiesAtMostOneContext(Descriptor descriptor) {
+        return descriptor.getContexts().size() <= 1 && descriptor.getAttributeDescriptors().stream()
+                                                                 .allMatch(d -> d.getContexts().size() <= 1);
+    }
+
+    private boolean queryContainsGraphOrServiceClause() {
+        // Do not optimize a query containing GRAPH or SERVICE with unbound predicate.
+        // The optimization pattern (?x ?p ?v) has no control over individual property/attribute contexts, and it could lead to incorrect results
+        return queryHolder.getQueryAttributes().hasGraphOrService();
     }
 
     /**
@@ -85,7 +99,7 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
      */
     @Override
     public <T> QueryResultLoader<T> getQueryResultLoader(Class<T> resultClass, Descriptor descriptor) {
-        final OptimizerType optimizerType = resolveOptimizerType(resultClass);
+        final OptimizerType optimizerType = resolveOptimizerType(resultClass, descriptor);
         return switch (optimizerType) {
             case TRIPLE_BASED -> new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
             case ATTRIBUTE_BASED -> new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);

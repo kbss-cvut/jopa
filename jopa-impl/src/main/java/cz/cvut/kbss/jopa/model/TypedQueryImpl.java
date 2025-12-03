@@ -65,7 +65,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     private List<X> getResultListImpl() throws OntoDriverException {
         final List<X> res = new ArrayList<>();
-        queryResultLoadingOptimizer.optimizeQueryAssembly(resultType);
+        queryResultLoadingOptimizer.optimizeQueryAssembly(resultType, descriptor);
         final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor);
 
         executeQuery(rr -> resultLoader.loadResult(rr).ifPresent(res::add));
@@ -102,7 +102,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public Stream<X> getResultStream() {
-        queryResultLoadingOptimizer.optimizeQueryAssembly(resultType);
+        queryResultLoadingOptimizer.optimizeQueryAssembly(resultType, descriptor);
         final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor);
         try {
             return executeQueryForStream(resultLoader);
