@@ -23,6 +23,24 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Loads query results as axioms and then uses {@link cz.cvut.kbss.jopa.sessions.UnitOfWork} to create the actual entity
+ * instances.
+ * <p>
+ * Groups rows concerning the same subject so that plural attribute values are supported.
+ * <p>
+ * Assumptions made by this loader:
+ * <ul>
+ *     <li>Query result contains at least one column</li>
+ *     <li>The first column contains the subject URI</li>
+ *     <li>The remaining columns contain attribute values. Each column is named as {@code subjectName + attributeName}</li>
+ * </ul>
+ * <p>
+ * If the loader is unable to load the entity (e.g., due to cardinality constraint violation), it falls back to
+ * regular entity loading.
+ *
+ * @param <T> Result type
+ */
 class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoader<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AttributeBasedRowsToAxiomsQueryResultLoader.class);

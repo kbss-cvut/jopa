@@ -29,6 +29,9 @@ import java.util.Optional;
  * {@link UnitOfWork#readObjectFromAxioms(Class, Collection, Descriptor)} to read the entity.
  * <p>
  * It expects the query result rows to have three columns corresponding to the triple subject, property and object.
+ * <p>
+ * If the loader is unable to load the entity (e.g., due to cardinality constraint violation), it falls back to regular
+ * entity loading.
  *
  * @param <T> Result type
  */

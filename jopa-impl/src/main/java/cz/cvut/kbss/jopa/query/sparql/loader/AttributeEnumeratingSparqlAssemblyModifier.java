@@ -21,7 +21,20 @@ import java.util.Optional;
  * <p>
  * This optimizer is applicable for SELECT queries that select instances of an entity class. Instead of loading the
  * instances one by one after the query is evaluated, this optimizer modifies the query to fetch all available entity
- * attributes by injecting optional triple patterns for each of the entity attributes.
+ * attributes by injecting optional triple patterns for each of the entity attributes and projecting the values from
+ * the query. If the result type has subclasses, all attributes of the subclasses are enumerated in the query so that
+ * the instance loading can then determine the result type and load the appropriate instance with all the relevant
+ * attribute data.
+ * <p>
+ * The injected patterns look like this:
+ * <pre>
+ * OPTIONAL { ?subject <property> ?value }
+ * </pre>
+ * If a descriptor with at most one context (for each attribute) is provided, the injected patterns look like this:
+ * <pre>
+ * OPTIONAL { GRAPH ?g { ?subject <property> ?value } }
+ * </pre>
+ * Where {@literal ?g} is determined from the descriptor.
  * <p>
  * When <b>not</b> to use this modifier:
  * <ul>
@@ -100,6 +113,7 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
     }
 
     private Optional<String> context(FieldSpecification<?, ?> att) {
+        assert descriptor.getAttributeContexts(att).size() == 1;
         return descriptor.getSingleAttributeContext(att).map(URI::toString);
     }
 }
