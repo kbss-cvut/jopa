@@ -113,7 +113,7 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
     }
 
     private Optional<String> context(FieldSpecification<?, ?> att) {
-        assert descriptor.getAttributeContexts(att).size() == 1;
+        assert descriptor.getAttributeContexts(att).size() <= 1;
         return descriptor.getSingleAttributeContext(att).map(URI::toString);
     }
 }
