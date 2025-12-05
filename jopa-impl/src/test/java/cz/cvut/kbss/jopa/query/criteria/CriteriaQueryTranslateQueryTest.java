@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.query.criteria;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassA_;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassD_;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
@@ -42,6 +43,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -145,16 +147,16 @@ public class CriteriaQueryTranslateQueryTest {
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
 
-    @Test
-    void testTranslateQueryCountProperty() {
-        CriteriaQueryImpl<Integer> query = cb.createQuery(Integer.class);
-        Root<OWLClassD> root = query.from(OWLClassD.class);
-        query.select(cb.count(root.getAttr("owlClassA")));
+        @Test
+        void testTranslateQueryCountProperty() {
+            CriteriaQueryImpl<Integer> query = cb.createQuery(Integer.class);
+            Root<OWLClassD> root = query.from(OWLClassD.class);
+            query.select(cb.count(root.getAttr("owlClassA")));
 
-        final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
-        final String expectedSoqlQuery = "SELECT COUNT(owlclassd.owlClassA) FROM OWLClassD owlclassd";
-        assertEquals(expectedSoqlQuery, generatedSoqlQuery);
-    }
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "SELECT COUNT(owlclassd.owlClassA) FROM OWLClassD owlclassd";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
 
         @Test
         void testTranslateQueryDistinctCountProperty() {
@@ -183,7 +185,7 @@ public class CriteriaQueryTranslateQueryTest {
             CriteriaQueryImpl<Integer> query = cb.createQuery(Integer.class);
             Root<OWLClassD> root = query.from(OWLClassD.class);
             query.select(cb.count(root.getAttr("owlClassA"))).distinct()
-                    .where(cb.equal(root.getAttr("owlClassA").getAttr("stringAttribute"), ""));
+                 .where(cb.equal(root.getAttr("owlClassA").getAttr("stringAttribute"), ""));
 
             final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
             final String expectedSoqlQuery = "SELECT DISTINCT COUNT(owlclassd.owlClassA) FROM OWLClassD owlclassd WHERE owlclassd.owlClassA.stringAttribute = :generatedName0";
@@ -574,6 +576,18 @@ public class CriteriaQueryTranslateQueryTest {
             final Root<OWLClassF> root = query.from(OWLClassF.class);
             query.select(root).where(cb.isNotMember(Generators.createPropertyIdentifier(), root.getAttr("simpleSet")));
             final String expectedSoql = "SELECT owlclassf FROM OWLClassF owlclassf WHERE :generatedName0 NOT MEMBER OF owlclassf.simpleSet";
+            assertEquals(expectedSoql, query.translateQuery(criteriaParameterFiller));
+        }
+
+        @Test
+        void translateQueryTranslatesMultipleIsMemberRestrictionsForRdfContainer() {
+            final CriteriaQueryImpl<OWLClassC> query = cb.createQuery(OWLClassC.class);
+            final Root<OWLClassC> root = query.from(OWLClassC.class);
+            final List<URI> values = List.of(Generators.createIndividualIdentifier(), Generators.createIndividualIdentifier());
+            final List<Predicate> predicates = values.stream().map(elem -> cb.isMember(elem, root.getAttr("rdfSeq")))
+                                                     .toList();
+            query.select(root).where(predicates.toArray(new Predicate[0]));
+            final String expectedSoql = "SELECT owlclassc FROM OWLClassC owlclassc WHERE :generatedName0 MEMBER OF owlclassc.rdfSeq AND :generatedName1 MEMBER OF owlclassc.rdfSeq";
             assertEquals(expectedSoql, query.translateQuery(criteriaParameterFiller));
         }
     }

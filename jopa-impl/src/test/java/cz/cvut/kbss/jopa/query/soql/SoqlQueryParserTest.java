@@ -43,6 +43,7 @@ import org.mockito.quality.Strictness;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -915,5 +916,12 @@ public class SoqlQueryParserTest {
                 "/(" + strUri(SequencesVocabulary.s_p_hasNext) + "*/" + strUri(SequencesVocabulary.s_p_hasContents) + ") ?param . " +
                 "FILTER (!isBlank(?param)) }";
         parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQueryExtractsMultipleItemsFromRdfContainer() {
+        final String soql = "SELECT owlclassc FROM OWLClassC owlclassc WHERE :generatedName0 MEMBER OF owlclassc.rdfSeq AND :generatedName1 MEMBER OF owlclassc.rdfSeq";
+        final String result = sut.parseQuery(soql).getQuery();
+        assertThat(result, matchesPattern("(.*FILTER.*){2}"));
     }
 }
