@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.exception.SoqlException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
@@ -67,6 +68,8 @@ public class SoqlQueryListener extends SoqlBaseListener {
     private final List<SoqlGroupParameter> groupAttributes;
 
     private final Map<String, String> objectTypes;
+
+    private final Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers = new HashMap<>();
 
     private boolean isSelectedParamDistinct = false;
 
@@ -615,7 +618,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     private List<String> processAttribute(SoqlAttribute attr) {
-        return attr.getBasicGraphPattern(rootVariable);
+        return attr.getBasicGraphPattern(rootVariable, tpEnhancers);
     }
 
     private String buildOrdering() {

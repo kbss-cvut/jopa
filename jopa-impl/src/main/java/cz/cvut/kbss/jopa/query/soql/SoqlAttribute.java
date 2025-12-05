@@ -17,12 +17,14 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.query.sparql.SparqlConstants;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 class SoqlAttribute extends SoqlParameter {
 
@@ -118,18 +120,18 @@ class SoqlAttribute extends SoqlParameter {
         }
     }
 
-    public List<String> getBasicGraphPattern(String rootVariable) {
+    public List<String> getBasicGraphPattern(String rootVariable, Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers) {
         if (isInstanceOf()) {
             return List.of(rootVariable + " " + SoqlConstants.RDF_TYPE + " " + toIri(getFirstNode()) + TRIPLE_END);
         } else {
             if (isObject()) {
                 return List.of();
             }
-            return buildTriplePatterns(rootVariable);
+            return buildTriplePatterns(rootVariable, tpEnhancers);
         }
     }
 
-    private List<String> buildTriplePatterns(String rootVariable) {
+    private List<String> buildTriplePatterns(String rootVariable, Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers) {
         final List<String> triplePatterns = new ArrayList<>();
         StringBuilder buildParam = new StringBuilder("?");
         buildParam.append(getFirstNode().getValue());
@@ -143,7 +145,7 @@ class SoqlAttribute extends SoqlParameter {
             final String variable = triplePatterns.isEmpty() ? rootVariable : "?" + pointer.getValue();
             buildParam.append(newPointer.getCapitalizedValue());
             final String param = buildTriplePatternObject(newPointer, buildParam);
-            final TriplePatternEnhancer triplePatternEnhancer = TriplePatternEnhancer.create(newPointer.getAttribute());
+            final TriplePatternEnhancer triplePatternEnhancer = tpEnhancers.computeIfAbsent(newPointer.getAttribute(), TriplePatternEnhancer::create);
             triplePatterns.addAll(triplePatternEnhancer.getTriplePatterns(variable, toIri(newPointer), param));
             pointer = newPointer;
         } while (pointer.hasChild());
