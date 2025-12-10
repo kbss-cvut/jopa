@@ -121,6 +121,6 @@ public class TypedQueryTest extends TypedQueryRunner {
     @Test
     @Override
     public void optimizedEntityLoadingWorksForEntityClassesWithoutTypesField() {
-        super.optimizedEntityLoadingWorksForEntityClassesWithoutTypesField();
+        // OWL2Query does not support OPTIONAL
     }
 }
