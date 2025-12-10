@@ -363,14 +363,14 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
             assertEquals(matching.size(), result.size());
             matching.forEach(m -> assertTrue(result.stream().anyMatch(rm -> rm.getKey().equals(m.getKey()))));
         } finally {
-            cleanupTestData(Vocabulary.C_OWL_CLASS_M);
+            cleanupClassMTestData();
         }
     }
 
-    protected void cleanupTestData(String type) {
+    protected void cleanupClassMTestData() {
         getEntityManager().getTransaction().begin();
         getEntityManager().createNativeQuery("DELETE WHERE { ?x a ?type . ?x ?y ?z . }")
-                          .setParameter("type", URI.create(type)).executeUpdate();
+                          .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_M)).executeUpdate();
         getEntityManager().getTransaction().commit();
     }
 

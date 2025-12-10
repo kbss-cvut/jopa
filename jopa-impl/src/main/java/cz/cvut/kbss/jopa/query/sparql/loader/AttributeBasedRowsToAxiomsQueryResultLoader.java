@@ -6,6 +6,7 @@ import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -96,12 +97,12 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
                 currentEntityAxioms.add(new AxiomImpl<>(currentSubject, attributeToAssertion(attribute), new Value<>(row.getObject(varName))));
             }
         }
-        final TypesSpecification<? super T, ?> typesSpec = entityType.getTypes();
-        if (typesSpec != null) {
-            final String varName = subjectVarName + typesSpec.getName();
-            if (row.isBound(varName)) {
-                currentEntityAxioms.add(new AxiomImpl<>(currentSubject, Assertion.createClassAssertion(typesSpec.isInferred()), new Value<>(row.getObject(varName))));
-            }
+        final Optional<TypesSpecification<? super T, ?>> typesSpec = Optional.ofNullable(entityType.getTypes());
+        final String varName = subjectVarName + AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_SUFFIX;
+        if (row.isBound(varName)) {
+            currentEntityAxioms.add(new AxiomImpl<>(currentSubject,
+                    Assertion.createClassAssertion(typesSpec.map(FieldSpecification::isInferred).orElse(false)),
+                    new Value<>(row.getObject(varName))));
         }
     }
 

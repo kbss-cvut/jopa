@@ -116,4 +116,11 @@ public class TypedQueryTest extends TypedQueryRunner {
     public void querySupportsOptimizedEntityLoading() {
         // OWL2Query does not support OPTIONAL
     }
+
+    @Disabled
+    @Test
+    @Override
+    public void optimizedEntityLoadingWorksForEntityClassesWithoutTypesField() {
+        super.optimizedEntityLoadingWorksForEntityClassesWithoutTypesField();
+    }
 }

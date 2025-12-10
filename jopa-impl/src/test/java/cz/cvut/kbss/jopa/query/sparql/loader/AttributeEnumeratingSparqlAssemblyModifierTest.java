@@ -34,14 +34,15 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
     }
 
     @Test
-    void modifyAddsOptionalTriplePatternForEntityAttributesAndProjectsAttributeValues() {
+    void modifyAlwaysAddsOptionalTriplePatternForEntityTypes() {
         final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
         final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassD().entityType());
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xowlClassA WHERE { ?x a ?type . " +
-                "OPTIONAL { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> ?xowlClassA } }"));
+        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xowlClassA ?xtypes WHERE { ?x a ?type . " +
+                "OPTIONAL { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> ?xowlClassA } " +
+                "OPTIONAL { ?x a ?xtypes } }"));
     }
 
     private static <X> AttributeEnumeratingSparqlAssemblyModifier createSut(IdentifiableEntityType<X> et) {
@@ -54,7 +55,7 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
     }
 
     @Test
-    void modifyAddsTypesOptionalTriplePatternAndProjection() {
+    void modifyAddsOptionalTriplePatternForEntityAttributesAndProjectsAttributeValues() {
         final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
         final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassA().entityType());
         holder.setAssemblyModifier(sut);

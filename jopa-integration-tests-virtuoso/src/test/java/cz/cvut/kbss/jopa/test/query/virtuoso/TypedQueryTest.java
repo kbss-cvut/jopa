@@ -80,11 +80,11 @@ public class TypedQueryTest extends TypedQueryRunner {
     }
 
     @Override
-    protected void cleanupTestData(String type) {
+    protected void cleanupClassMTestData() {
         // Virtuoso requires a graph to be always specified
         getEntityManager().getTransaction().begin();
         getEntityManager().createNativeQuery("DELETE WHERE { GRAPH ?g { ?x a ?type . ?x ?y ?z . } }")
-                          .setParameter("type", URI.create(type)).executeUpdate();
+                          .setParameter("type", URI.create(cz.cvut.kbss.jopa.test.Vocabulary.C_OWL_CLASS_M)).executeUpdate();
         getEntityManager().getTransaction().commit();
     }
 }
