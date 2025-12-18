@@ -130,9 +130,19 @@ public class SoqlConstants {
         public static final String FLOOR = "FLOOR";
 
         /**
-         * Returns language tag of a literal, if it has one. Returns an empty string if it has no language tag.
+         * Concatenates the provided arguments.
+         */
+        public static final String CONCAT = "CONCAT";
+
+        /**
+         * Returns language tag of a literal if it has one. Returns an empty string if it has no language tag.
          */
         public static final String LANG = "LANG";
+
+        /**
+         * Tests if a string language tag matches the specified argument.
+         */
+        public static final String LANG_MATCHES = "LANGMATCHES";
 
         private Functions() {
             throw new AssertionError();

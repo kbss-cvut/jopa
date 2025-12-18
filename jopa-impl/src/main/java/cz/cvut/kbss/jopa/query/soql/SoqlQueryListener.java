@@ -29,6 +29,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.sparql.SparqlConstants;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -324,6 +325,10 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     @Override
     public void exitFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
+        createFunctionNode(ctx);
+    }
+
+    private void createFunctionNode(RuleContext ctx) {
         final String functionName = ctx.getChild(0).getText();
         final FunctionNode node = new FunctionNode(attrPointer.getFirstNode(), functionName);
         attrPointer.setFirstNode(node);
@@ -331,9 +336,12 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     @Override
     public void exitFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
-        final String functionName = ctx.getChild(0).getText();
-        final FunctionNode node = new FunctionNode(attrPointer.getFirstNode(), functionName);
-        attrPointer.setFirstNode(node);
+        createFunctionNode(ctx);
+    }
+
+    @Override
+    public void exitFunctionsReturningBoolean(SoqlParser.FunctionsReturningBooleanContext ctx) {
+        createFunctionNode(ctx);
     }
 
     @Override
@@ -395,7 +403,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
         return firstNode;
     }
 
-    //Methods to help parse tree
+    // Methods to help parse the tree
     private String getOwnerFromParam(ParserRuleContext ctx) {
         return ctx.getChild(0).getChild(0).getText();
     }

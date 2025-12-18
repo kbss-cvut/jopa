@@ -93,6 +93,8 @@ public class Vocabulary {
     public static final String P_W_LIST_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "listStringAttribute";
     public static final String P_W_COLLECTION_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "collectionStringAttribute";
 
+    public static final String p_p_firstName = ATTRIBUTE_BASE + "firstName";
+    public static final String p_p_lastName = ATTRIBUTE_BASE + "lastName";
     public static final String p_p_username = ATTRIBUTE_BASE + "username";
     public static final String p_p_age = ATTRIBUTE_BASE + "age";
     public static final String p_p_hasPhone = ATTRIBUTE_BASE + "hasPhone";

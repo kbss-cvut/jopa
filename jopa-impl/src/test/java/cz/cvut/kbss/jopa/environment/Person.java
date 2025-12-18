@@ -29,6 +29,12 @@ public class Person implements HasUri {
     @Id
     private URI uri;
 
+    @OWLDataProperty(iri = Vocabulary.p_p_firstName, simpleLiteral = true)
+    private String firstName;
+
+    @OWLDataProperty(iri = Vocabulary.p_p_lastName, simpleLiteral = true)
+    private String lastName;
+
     @OWLDataProperty(iri = Vocabulary.p_p_username)
     private String username;
 
@@ -50,6 +56,22 @@ public class Person implements HasUri {
 
     public void setUri(URI uri) {
         this.uri = uri;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getUsername() {

@@ -45,6 +45,7 @@ simpleConditionalExpression
    | likeExpression
    | inExpression
    | memberOfExpression
+   | functionsReturningBoolean
    ;
 
 inExpression
@@ -125,6 +126,10 @@ functionsReturningNumerics
    | 'CEIL' '(' simpleArithmeticExpression ')'
    | 'FLOOR' '(' simpleArithmeticExpression ')'
    ;
+
+functionsReturningBoolean
+    : 'LANGMATCHES' '(' stringExpression ',' stringExpression ')'
+    ;
 
 orderByClause: ORDER BY orderByItem (',' orderByItem)* ;
 

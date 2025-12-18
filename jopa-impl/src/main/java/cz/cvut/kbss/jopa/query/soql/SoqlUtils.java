@@ -20,7 +20,7 @@ package cz.cvut.kbss.jopa.query.soql;
 /**
  * SOQL parsing and processing utilities.
  */
-public class SoqlUtils {
+class SoqlUtils {
 
     private SoqlUtils() {
         throw new AssertionError();

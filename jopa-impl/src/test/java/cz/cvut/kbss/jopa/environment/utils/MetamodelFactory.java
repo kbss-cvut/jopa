@@ -932,7 +932,10 @@ public class MetamodelFactory {
         initIdentifier(etMock, idMock, Phone.class.getDeclaredField("uri"), false);
     }
 
-    public static void initPersonMocks(IdentifiableEntityType<Person> etMock, SingularAttributeImpl usernameAttMock,
+    public static void initPersonMocks(IdentifiableEntityType<Person> etMock,
+                                       SingularAttributeImpl firstNameAttMock,
+                                       SingularAttributeImpl lastNameAttMock,
+                                       SingularAttributeImpl usernameAttMock,
                                        SingularAttributeImpl genderAttMock,
                                        SingularAttributeImpl ageAttMock, SingularAttributeImpl phoneAttMock,
                                        AbstractIdentifiableType<Phone> etPhone,
@@ -943,6 +946,10 @@ public class MetamodelFactory {
         when(etMock.getAttributes()).thenReturn(Set.of(usernameAttMock, genderAttMock, ageAttMock, phoneAttMock));
         when(etMock.getFieldSpecifications()).thenReturn(Set.of(usernameAttMock, genderAttMock, ageAttMock, phoneAttMock, idMock));
 
+        initAttribute(etMock, firstNameAttMock, new AttributeInfo(Person.class.getDeclaredField("firstName"),
+                Attribute.PersistentAttributeType.DATA).language(null));
+        initAttribute(etMock, lastNameAttMock, new AttributeInfo(Person.class.getDeclaredField("lastName"),
+                Attribute.PersistentAttributeType.DATA).language(null));
         initAttribute(etMock, usernameAttMock, new AttributeInfo(Person.class.getDeclaredField("username"),
                 Attribute.PersistentAttributeType.DATA).language(null));
         initAttribute(etMock, genderAttMock, new AttributeInfo(Person.class.getDeclaredField("gender"),

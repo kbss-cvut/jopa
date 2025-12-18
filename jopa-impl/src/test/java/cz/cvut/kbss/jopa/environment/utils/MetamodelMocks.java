@@ -358,6 +358,10 @@ public class MetamodelMocks {
     @Mock
     private Identifier<Person, URI> idPerson;
     @Mock
+    private SingularAttributeImpl<Person, String> personFirstNameAtt;
+    @Mock
+    private SingularAttributeImpl<Person, String> personLastNameAtt;
+    @Mock
     private SingularAttributeImpl<Person, String> personUsernameAtt;
     @Mock
     private SingularAttributeImpl<Person, String> personGenderAtt;
@@ -417,7 +421,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassWithQueryAttrMocks(etQA, qaStringQueryAtt, qaStringAtt, qaEntityQueryAtt,
                                                         qaEntityAtt, etA, idQA);
         MetamodelFactory.initPhoneMocks(etPhone, phoneNumberAtt, phoneBrandAtt, idPhone);
-        MetamodelFactory.initPersonMocks(etPerson, personUsernameAtt, personGenderAtt, personAgeAtt, personPhoneAtt,
+        MetamodelFactory.initPersonMocks(etPerson, personFirstNameAtt, personLastNameAtt, personUsernameAtt, personGenderAtt, personAgeAtt, personPhoneAtt,
                                          etPhone, personTypes, idPerson);
     }
 
@@ -1108,6 +1112,14 @@ public class MetamodelMocks {
 
         public Identifier<Person, URI> identifier() {
             return MetamodelMocks.this.idPerson;
+        }
+
+        public SingularAttributeImpl<Person, String> firstNameAttribute() {
+            return MetamodelMocks.this.personFirstNameAtt;
+        }
+
+        public SingularAttributeImpl<Person, String> lastNameAttribute() {
+            return MetamodelMocks.this.personLastNameAtt;
         }
 
         public SingularAttributeImpl<Person, String> usernameAttribute() {

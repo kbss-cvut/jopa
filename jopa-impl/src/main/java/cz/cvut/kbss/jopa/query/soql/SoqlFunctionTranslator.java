@@ -34,7 +34,9 @@ class SoqlFunctionTranslator {
             SoqlConstants.Functions.ABS, "ABS",
             SoqlConstants.Functions.CEIL, "CEIL",
             SoqlConstants.Functions.FLOOR, "FLOOR",
-            SoqlConstants.Functions.LANG, "lang"
+            SoqlConstants.Functions.CONCAT, "concat",
+            SoqlConstants.Functions.LANG, "lang",
+            SoqlConstants.Functions.LANG_MATCHES, "langMatches"
     );
 
     private SoqlFunctionTranslator() {

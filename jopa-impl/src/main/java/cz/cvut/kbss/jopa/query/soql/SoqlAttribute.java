@@ -22,7 +22,6 @@ import cz.cvut.kbss.jopa.query.sparql.SparqlConstants;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -110,9 +109,9 @@ class SoqlAttribute extends SoqlParameter {
             filterParam = getFirstNode().toFilterExpression(filterParam, filterValue);
         }
         if (operator != null && operator.requiresFilterExpression()) {
-            return Collections.singletonList(operator.toFilterExpression(filterParam, filterValue));
+            return List.of(operator.toFilterExpression(filterParam, filterValue));
         } else {
-            return Collections.singletonList(filterParam + " = " + filterValue);
+            return List.of(filterParam + " = " + filterValue);
         }
     }
 
