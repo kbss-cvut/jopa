@@ -354,9 +354,6 @@ public class SoqlQueryListener extends SoqlBaseListener {
         final FunctionNode node = new FunctionNode(functionName, functionArguments.pop().stream()
                                                                                   .peek(n -> n.setOccursInFilter(true))
                                                                                   .toArray(SoqlNode[]::new));
-        // TODO Should iterate over attributes already processed and set their corresponding nodes as occurring in filter
-        // This would handle queries where attribute is first mentioned in non-filter context (such as equality) and then
-        // also in a function
         attrPointer.setFirstNode(node);
         if (functionCallDepth > 1) {
             functionArguments.peek().add(node);
