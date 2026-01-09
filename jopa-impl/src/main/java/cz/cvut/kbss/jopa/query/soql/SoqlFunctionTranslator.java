@@ -32,6 +32,7 @@ class SoqlFunctionTranslator {
             SoqlConstants.Functions.LOWER, "LCASE",
             SoqlConstants.Functions.LENGTH, "STRLEN",
             SoqlConstants.Functions.ABS, "ABS",
+            SoqlConstants.Functions.ROUND, "ROUND",
             SoqlConstants.Functions.CEIL, "CEIL",
             SoqlConstants.Functions.FLOOR, "FLOOR",
             SoqlConstants.Functions.CONCAT, "CONCAT",

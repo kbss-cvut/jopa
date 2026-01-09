@@ -120,6 +120,11 @@ public class SoqlConstants {
         public static final String ABS = "ABS";
 
         /**
+         * Returns the number with no fractional part that is closest to the argument.
+         */
+        public static final String ROUND = "ROUND";
+
+        /**
          * Returns the smallest number with no fractional part that is not less than the argument.
          */
         public static final String CEIL = "CEIL";

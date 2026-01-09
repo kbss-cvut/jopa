@@ -21,8 +21,6 @@ class SoqlParameter {
 
     private SoqlNode firstNode;
 
-    public SoqlParameter() {}
-
     public SoqlParameter(SoqlNode firstNode) {
         this.firstNode = firstNode;
     }
@@ -40,10 +38,10 @@ class SoqlParameter {
     }
 
     public String getAsValue(String rootVariable) {
-        StringBuilder buildParam = new StringBuilder("?");
         if (!firstNode.hasChild()) {
             return rootVariable;
         }
+        StringBuilder buildParam = new StringBuilder("?");
         SoqlNode pointer = firstNode.getChild();
         buildParam.append(pointer.getValue());
         while (pointer.hasChild()) {
