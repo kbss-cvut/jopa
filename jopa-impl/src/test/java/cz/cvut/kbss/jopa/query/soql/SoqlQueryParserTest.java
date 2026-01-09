@@ -924,4 +924,23 @@ public class SoqlQueryParserTest {
         final String result = sut.parseQuery(soql).getQuery();
         assertThat(result, matchesPattern("(.*FILTER.*){2}"));
     }
+
+    @Test
+    void parseQuerySupportsMultiParameterFunctions() {
+        final String soql = "SELECT p FROM Person p WHERE CONCAT(p.firstName, p.lastName) = :name";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . " +
+                "?x " + strUri(Vocabulary.p_p_firstName) + " ?pFirstName . " +
+                "?x " + strUri(Vocabulary.p_p_lastName) + " ?pLastName . " +
+                "FILTER (CONCAT(?pFirstName, ?pLastName) = ?name) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
+
+    @Test
+    void parseQuerySupportsLangMatchesFunction() {
+        final String soql = "SELECT u FROM OWLClassU u WHERE LANGMATCHES(LANG(u.singularStringAtt), :language)";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassU) + " . " +
+                "?x " + strUri(Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE) + " ?uSingularStringAtt . " +
+                "FILTER (langMatches(lang(?uSingularStringAtt), ?language)) }";
+        parseAndAssertEquality(soql, expectedSparql);
+    }
 }

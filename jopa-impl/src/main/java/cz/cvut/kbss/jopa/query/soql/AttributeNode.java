@@ -69,6 +69,6 @@ class AttributeNode extends SoqlNode {
 
     @Override
     public String toString() {
-        return getValue() + (getChild() != null ? "." + getChild() : "");
+        return getValue() + (hasChild() ? "." + getChild() : "");
     }
 }

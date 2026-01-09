@@ -17,23 +17,18 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
-public class SoqlParameter {
+class SoqlParameter {
 
     private SoqlNode firstNode;
+
+    public SoqlParameter() {}
 
     public SoqlParameter(SoqlNode firstNode) {
         this.firstNode = firstNode;
     }
 
     public String getAsParam() {
-        StringBuilder buildParam = new StringBuilder("?");
-        buildParam.append(firstNode.getValue());
-        SoqlNode pointer = firstNode;
-        while (pointer.hasChild()) {
-            pointer = pointer.getChild();
-            buildParam.append(pointer.getCapitalizedValue());
-        }
-        return buildParam.toString();
+        return SoqlUtils.nodeAsQueryVariable(firstNode);
     }
 
     public void setFirstNode(SoqlNode firstNode) {

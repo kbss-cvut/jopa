@@ -19,12 +19,17 @@ package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
+import java.util.ArrayList;
+import java.util.List;
+
 abstract class SoqlNode implements FilterableExpression {
 
     SoqlNode parent;
-    SoqlNode child;
+    final List<SoqlNode> children = new ArrayList<>();
 
     private FieldSpecification<?, ?> attribute;
+
+    private boolean occursInFilter;
 
     SoqlNode() {
     }
@@ -33,20 +38,32 @@ abstract class SoqlNode implements FilterableExpression {
         this.parent = parent;
     }
 
+    SoqlNode(SoqlNode... children) {
+        this.children.addAll(List.of(children));
+    }
+
     public boolean hasChild() {
-        return child != null;
+        return !children.isEmpty();
     }
 
     public SoqlNode getChild() {
-        return child;
+        return children.get(0);
+    }
+
+    public List<SoqlNode> getChildren() {
+        return children;
     }
 
     public SoqlNode getParent() {
         return parent;
     }
 
-    public void setChild(SoqlNode child) {
-        this.child = child;
+    public void addChild(SoqlNode child) {
+        children.add(child);
+    }
+
+    public void clearChildren() {
+        children.clear();
     }
 
     public void setParent(SoqlNode parent) {
@@ -70,4 +87,13 @@ abstract class SoqlNode implements FilterableExpression {
     public abstract String getIri();
 
     public abstract void setIri(String iri);
+
+    public boolean occursInFilter() {
+        return occursInFilter;
+    }
+
+    public void setOccursInFilter(boolean occursInFilter) {
+        this.occursInFilter = occursInFilter;
+        children.forEach(n -> n.setOccursInFilter(occursInFilter));
+    }
 }

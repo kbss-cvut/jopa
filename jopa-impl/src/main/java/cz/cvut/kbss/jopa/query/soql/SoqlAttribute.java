@@ -31,13 +31,13 @@ class SoqlAttribute extends SoqlParameter {
 
     private String value;
 
-    private boolean isNot = false;
+    private boolean isNot;
 
     private FilterableExpression operator;
 
-    private boolean isOrderBy = false;
+    private boolean isOrderBy;
 
-    private boolean isGroupBy = false;
+    private boolean isGroupBy;
 
     private boolean projected;
 
@@ -127,34 +127,36 @@ class SoqlAttribute extends SoqlParameter {
     }
 
     private List<String> buildTriplePatterns(String rootVariable, Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers) {
-        final List<String> triplePatterns = new ArrayList<>();
-        StringBuilder buildParam = new StringBuilder("?");
-        buildParam.append(getFirstNode().getValue());
+        String buildParam = "?" + getFirstNode().getValue();
         SoqlNode pointer = getFirstNode();
 
-        do {
-            SoqlNode newPointer = pointer.getChild();
+        return triplePatterns(pointer, 0, rootVariable, buildParam, tpEnhancers);
+    }
+
+    private List<String> triplePatterns(SoqlNode pointer, int depth, String rootVariable, String buildParam, Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers) {
+        final List<String> triplePatterns = new ArrayList<>();
+        for (SoqlNode newPointer: pointer.getChildren()) {
             if (newPointer.getIri().isEmpty()) {
-                break;
+                triplePatterns.addAll(triplePatterns(newPointer, depth, rootVariable, buildParam, tpEnhancers));
+                continue;
             }
-            final String variable = triplePatterns.isEmpty() ? rootVariable : "?" + pointer.getValue();
-            buildParam.append(newPointer.getCapitalizedValue());
+            final String variable = depth == 0 ? rootVariable : "?" + pointer.getValue();
+            buildParam += newPointer.getCapitalizedValue();
             final String param = buildTriplePatternObject(newPointer, buildParam);
             final TriplePatternEnhancer triplePatternEnhancer = tpEnhancers.computeIfAbsent(newPointer.getAttribute(), TriplePatternEnhancer::create);
             triplePatterns.addAll(triplePatternEnhancer.getTriplePatterns(variable, toIri(newPointer), param));
-            pointer = newPointer;
-        } while (pointer.hasChild());
-
+            triplePatterns.addAll(triplePatterns(newPointer, depth + 1, rootVariable, buildParam, tpEnhancers));
+        }
         return triplePatterns;
     }
 
-    private String buildTriplePatternObject(SoqlNode newPointer, StringBuilder buildParam) {
+    private String buildTriplePatternObject(SoqlNode newPointer, String buildParam) {
         final String param;
-        if (newPointer.hasChild() || value == null) {
+        if (newPointer.hasChild() || value == null && !newPointer.occursInFilter()) {
             param = "?" + newPointer.getValue();
         } else {
-            if (requiresFilter()) {
-                param = buildParam.toString();
+            if (requiresFilter() || newPointer.occursInFilter()) {
+                param = buildParam;
             } else {
                 param = SoqlUtils.soqlVariableToSparqlVariable(value);
             }

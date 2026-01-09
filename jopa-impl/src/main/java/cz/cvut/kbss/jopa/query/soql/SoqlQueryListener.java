@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 public class SoqlQueryListener extends SoqlBaseListener {
@@ -63,6 +64,9 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     // keeps index of first object of SoqlAttribute after OR operator
     private final Set<SoqlAttribute> objectOfNextOr;
+
+    private final Stack<List<SoqlNode>> functionArguments = new Stack<>();
+    private int functionCallDepth = 0;
 
     private final List<SoqlOrderParameter> orderAttributes;
 
@@ -142,7 +146,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
             ctx = (ParserRuleContext) ctx.getChild(2);
             SoqlNode prevNode = currentNode;
             currentNode = new AttributeNode(prevNode, ctx.getChild(0).getText());
-            prevNode.setChild(currentNode);
+            prevNode.addChild(currentNode);
         }
         setIris(firstNode);
         if (currentNode.getIri().isEmpty()) {
@@ -164,6 +168,9 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     private void pushNewAttribute(SoqlAttribute myAttr) {
+        if (functionCallDepth > 0) {
+            functionArguments.peek().add(myAttr.getFirstNode());
+        }
         attributes.add(myAttr);
         this.attrPointer = myAttr;
     }
@@ -242,7 +249,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     private SoqlAttribute createSyntheticAttributeForEntityId() {
         if (attrPointer.getFirstNode().hasChild()) {
-            attrPointer.getFirstNode().getChild().setChild(null);
+            attrPointer.getFirstNode().getChild().clearChildren();
             return new SoqlAttribute(attrPointer.getFirstNode().getChild());
         }
 
@@ -324,24 +331,53 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     @Override
+    public void enterFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
+        functionArguments.push(new ArrayList<>());
+        functionCallDepth++;
+    }
+
+    @Override
     public void exitFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
         createFunctionNode(ctx);
+        functionCallDepth--;
     }
 
     private void createFunctionNode(RuleContext ctx) {
         final String functionName = ctx.getChild(0).getText();
-        final FunctionNode node = new FunctionNode(attrPointer.getFirstNode(), functionName);
+        final FunctionNode node = new FunctionNode(functionName, functionArguments.pop().stream()
+                                                                                  .peek(n -> n.setOccursInFilter(true))
+                                                                                  .toArray(SoqlNode[]::new));
+        // TODO Should iterate over attributes already processed and set their corresponding nodes as occurring in filter
+        // This would handle queries where attribute is first mentioned in non-filter context (such as equality) and then
+        // also in a function
         attrPointer.setFirstNode(node);
+        if (functionCallDepth > 1) {
+            functionArguments.peek().add(node);
+        }
+    }
+
+    @Override
+    public void enterFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
+        functionArguments.push(new ArrayList<>());
+        functionCallDepth++;
     }
 
     @Override
     public void exitFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
         createFunctionNode(ctx);
+        functionCallDepth--;
+    }
+
+    @Override
+    public void enterFunctionsReturningBoolean(SoqlParser.FunctionsReturningBooleanContext ctx) {
+        functionArguments.push(new ArrayList<>());
+        functionCallDepth++;
     }
 
     @Override
     public void exitFunctionsReturningBoolean(SoqlParser.FunctionsReturningBooleanContext ctx) {
         createFunctionNode(ctx);
+        functionCallDepth--;
     }
 
     @Override
@@ -393,11 +429,11 @@ public class SoqlQueryListener extends SoqlBaseListener {
         for (int i = 2; i < ctx.getChild(0).getChildCount(); i += 2) {
             SoqlNode prevNode = currentNode;
             currentNode = new AttributeNode(prevNode, ctx.getChild(0).getChild(i).getText());
-            prevNode.setChild(currentNode);
+            prevNode.addChild(currentNode);
         }
         setIris(firstNode);
         if (currentNode.getIri().isEmpty()) {
-            currentNode.getParent().setChild(null);
+            currentNode.getParent().clearChildren();
             this.isInObjectIdentifierExpression = true;
         }
         return firstNode;

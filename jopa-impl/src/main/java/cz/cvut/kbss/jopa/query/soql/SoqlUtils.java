@@ -30,4 +30,15 @@ class SoqlUtils {
         assert variable.length() >= 2 && (variable.charAt(0) == ':' || variable.charAt(0) == '?');
         return "?" + variable.substring(1);
     }
+
+    static String nodeAsQueryVariable(SoqlNode node) {
+        StringBuilder buildParam = new StringBuilder("?");
+        buildParam.append(node.getValue());
+        SoqlNode pointer = node;
+        while (pointer.hasChild()) {
+            pointer = pointer.getChild();
+            buildParam.append(pointer.getCapitalizedValue());
+        }
+        return buildParam.toString();
+    }
 }

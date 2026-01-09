@@ -17,66 +17,65 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
+import java.util.stream.Collectors;
+
 class FunctionNode extends SoqlNode {
 
     // SOQL function name
     private final String functionName;
 
-    FunctionNode(SoqlNode child, String functionName) {
-        assert child != null;
+    FunctionNode(String functionName, SoqlNode... args) {
+        super(args);
+        assert args != null && args.length > 0;
         assert functionName != null && !functionName.isEmpty();
-        this.child = child;
         this.functionName = functionName;
     }
 
     @Override
     public boolean hasChild() {
-        return child.hasChild();
+        return children.stream().anyMatch(SoqlNode::hasChild);
     }
 
     @Override
     public SoqlNode getChild() {
-        return child.getChild();
-    }
-
-    @Override
-    public void setChild(SoqlNode child) {
-        child.setChild(child);
+        return children.get(0).getChild();
     }
 
     @Override
     public String getValue() {
-        return child.getValue();
+        return children.get(0).getValue();
     }
 
     @Override
     public void setValue(String value) {
-        child.setValue(value);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public String getCapitalizedValue() {
-        return child.getCapitalizedValue();
+        return children.get(0).getCapitalizedValue();
     }
 
     @Override
     public String getIri() {
-        return child.getIri();
+        return children.get(0).getIri();
     }
 
     @Override
     public void setIri(String iri) {
-        child.setIri(iri);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public String toFilterExpression(String filterParam, String filterValue) {
-        return SoqlFunctionTranslator.getSparqlFunction(functionName) + "(" + child.toFilterExpression(filterParam,
-                                                                                                       filterValue) + ")";
+        return SoqlFunctionTranslator.getSparqlFunction(functionName) + "(" +
+                children.stream().map(SoqlUtils::nodeAsQueryVariable)
+                        .collect(Collectors.joining(", "))
+                + ")";
     }
 
     @Override
     public String toString() {
-        return functionName + "(" + (child != null ? child.toString() : "") + ")";
+        return functionName + "(" + children.stream().map(SoqlNode::toString).collect(Collectors.joining(", ")) + ")";
     }
 }
