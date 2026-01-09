@@ -104,14 +104,14 @@ class SoqlAttribute extends SoqlParameter {
     public List<String> getFilterExpressions() {
         assert requiresFilter();
         String filterParam = getAsParam();
-        final String filterValue = SoqlUtils.soqlVariableToSparqlVariable(value);
+        final String filterValue = value != null ? SoqlUtils.soqlVariableToSparqlVariable(value) : null;
         if (getFirstNode().requiresFilterExpression()) {
             filterParam = getFirstNode().toFilterExpression(filterParam, filterValue);
         }
         if (operator != null && operator.requiresFilterExpression()) {
             return List.of(operator.toFilterExpression(filterParam, filterValue));
         } else {
-            return List.of(filterParam + " = " + filterValue);
+            return List.of(filterValue != null ? filterParam + " = " + filterValue : filterParam);
         }
     }
 

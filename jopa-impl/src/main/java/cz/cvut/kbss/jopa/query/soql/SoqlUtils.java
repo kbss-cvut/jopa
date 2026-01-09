@@ -31,6 +31,10 @@ class SoqlUtils {
         return "?" + variable.substring(1);
     }
 
+    static String capitalize(String value) {
+        return value.substring(0, 1).toUpperCase() + value.substring(1);
+    }
+
     static String nodeAsQueryVariable(SoqlNode node) {
         StringBuilder buildParam = new StringBuilder("?");
         buildParam.append(node.getValue());

@@ -69,7 +69,7 @@ class FunctionNode extends SoqlNode {
     @Override
     public String toFilterExpression(String filterParam, String filterValue) {
         return SoqlFunctionTranslator.getSparqlFunction(functionName) + "(" +
-                children.stream().map(SoqlUtils::nodeAsQueryVariable)
+                children.stream().map(n -> n.toFilterExpression(filterParam, filterValue))
                         .collect(Collectors.joining(", "))
                 + ")";
     }

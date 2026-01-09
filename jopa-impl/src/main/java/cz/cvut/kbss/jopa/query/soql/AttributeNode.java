@@ -39,7 +39,7 @@ class AttributeNode extends SoqlNode {
     @Override
     public String getCapitalizedValue() {
         assert value != null;
-        return value.substring(0, 1).toUpperCase() + value.substring(1);
+        return SoqlUtils.capitalize(value);
     }
 
     @Override
@@ -64,7 +64,7 @@ class AttributeNode extends SoqlNode {
 
     @Override
     public String toFilterExpression(String filterParam, String filterValue) {
-        return filterParam;
+        return SoqlUtils.nodeAsQueryVariable(this);
     }
 
     @Override

@@ -286,6 +286,13 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     @Override
+    public void exitInputParameter(SoqlParser.InputParameterContext ctx) {
+        if (functionCallDepth > 0) {
+            functionArguments.peek().add(new AttributeNode(ctx.getText().substring(1)));
+        }
+    }
+
+    @Override
     public void exitComparisonExpression(SoqlParser.ComparisonExpressionContext ctx) {
         String operator = ctx.getChild(1).getText();
 
