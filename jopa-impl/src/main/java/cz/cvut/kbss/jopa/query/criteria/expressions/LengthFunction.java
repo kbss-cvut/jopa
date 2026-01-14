@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 public class LengthFunction extends AbstractFunctionExpression<Integer> {
 
     public LengthFunction(AbstractPathExpression argumentExpression, CriteriaBuilder cb) {
-        super(Integer.class, argumentExpression, cb);
+        super(Integer.class, cb, argumentExpression);
     }
 
     @Override

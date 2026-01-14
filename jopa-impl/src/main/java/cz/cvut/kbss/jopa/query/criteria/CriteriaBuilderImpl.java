@@ -43,6 +43,7 @@ import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionNotLikeImpl;
 import cz.cvut.kbss.jopa.query.criteria.expressions.FloorFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.IsMemberExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.LangFunction;
+import cz.cvut.kbss.jopa.query.criteria.expressions.LangMatchesFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.LengthFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.LowerFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.OrderImpl;
@@ -149,6 +150,11 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     public Expression<String> lang(Path<String> x) {
         validateFunctionArgument(x);
         return new LangFunction((AbstractPathExpression) x, this);
+    }
+
+    @Override
+    public Expression<Boolean> langMatches(Expression<String> value, Expression<String> range) {
+        return new LangMatchesFunction(this, (AbstractExpression<String>) value, (AbstractExpression<String>) range);
     }
 
     @Override
@@ -338,9 +344,9 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
 
     /**
      * Method wraps given boolean expression to Predicate and if path expression occur, it wrap it to
-     * ExpressionEqualsImpl before. For example: {@literal Expression<Boolean> expression =
-     * factory.get("attributeName");} Looks like boolean expression but in fact it is not boolean expression, so we need
-     * to fix this.
+     * ExpressionEqualsImpl before. For example:
+     * {@literal Expression<Boolean> expression = factory.get("attributeName");} Looks like boolean expression but in
+     * fact it is not boolean expression, so we need to fix this.
      *
      * @param expression - boolean or path expression
      * @return Expression wrapped in Predicate

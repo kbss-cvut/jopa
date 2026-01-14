@@ -26,7 +26,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 public class LangFunction extends AbstractFunctionExpression<String> {
 
     public LangFunction(AbstractPathExpression internExpression, CriteriaBuilder cb) {
-        super(String.class, internExpression, cb);
+        super(String.class, cb, internExpression);
     }
 
     @Override

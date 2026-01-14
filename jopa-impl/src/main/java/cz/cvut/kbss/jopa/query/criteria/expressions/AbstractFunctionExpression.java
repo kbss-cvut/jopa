@@ -20,19 +20,26 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
+import java.util.List;
+
 public abstract class AbstractFunctionExpression<X> extends AbstractExpression<X> {
 
-    protected final AbstractPathExpression argumentExpression;
+    protected final List<AbstractPathExpression> argumentExpression;
 
-    public AbstractFunctionExpression(Class<X> type, AbstractPathExpression argumentExpression, CriteriaBuilder cb) {
+    public AbstractFunctionExpression(Class<X> type, CriteriaBuilder cb, AbstractPathExpression ...argumentExpression) {
         super(type, cb);
-        this.argumentExpression = argumentExpression;
+        this.argumentExpression = List.of(argumentExpression);
     }
 
     @Override
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         query.append(getFunctionName()).append("(");
-        argumentExpression.setExpressionToQuery(query, parameterFiller);
+        for (int i = 0; i < argumentExpression.size(); i++) {
+            argumentExpression.get(i).setExpressionToQuery(query, parameterFiller);
+            if (i < argumentExpression.size() - 1) {
+                query.append(',');
+            }
+        }
         query.append(")");
     }
 

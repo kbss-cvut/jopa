@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 public class CountFunction extends AbstractFunctionExpression<Integer> {
 
     public CountFunction(AbstractPathExpression expression, CriteriaBuilder cb) {
-        super(Integer.class, expression, cb);
+        super(Integer.class, cb, expression);
     }
 
     @Override

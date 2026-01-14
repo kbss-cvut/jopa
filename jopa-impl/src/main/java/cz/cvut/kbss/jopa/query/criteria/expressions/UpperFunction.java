@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 public class UpperFunction extends AbstractFunctionExpression<String> {
 
     public UpperFunction(AbstractPathExpression internExpression, CriteriaBuilder cb) {
-        super(String.class, internExpression, cb);
+        super(String.class, cb, internExpression);
     }
 
     @Override

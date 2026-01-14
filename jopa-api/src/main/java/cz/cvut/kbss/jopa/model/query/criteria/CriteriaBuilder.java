@@ -132,6 +132,15 @@ public interface CriteriaBuilder extends PredicateFactory {
     Expression<String> lang(Path<String> x);
 
     /**
+     * Creates an expression for checking if the specified value matches the specified language range.
+     *
+     * @param value Language tag value
+     * @param range Language range
+     * @return Expression
+     */
+    Expression<Boolean> langMatches(Expression<String> value, Expression<String> range);
+
+    /**
      * Create an ordering by the ascending value of the expression.
      *
      * @param x expression used to define the ordering

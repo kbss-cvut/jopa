@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 public class FloorFunction<Y extends Number> extends AbstractFunctionExpression<Y> {
 
     public FloorFunction(Class<Y> type, AbstractPathExpression argumentExpression, CriteriaBuilder cb) {
-        super(type, argumentExpression, cb);
+        super(type, cb, argumentExpression);
     }
 
     @Override
