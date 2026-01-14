@@ -20,7 +20,6 @@ package cz.cvut.kbss.ontodriver.owlapi.connector;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -33,19 +32,24 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.file.Files;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 public class BasicConnectorFactoryTest {
 
-    private static OntologyStorageProperties storageProperties;
+    private OntologyStorageProperties storageProperties;
 
     private BasicConnectorFactory factory;
 
-    @BeforeAll
-    public static void setUpBeforeClass() throws Exception {
-        final URI ontologyUri = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/ConnectorFactoryTest");
+    @BeforeEach
+    public void setUp() throws Exception {
+        final URI ontologyUri = URI.create("https://onto.fel.cvut.cz/ontologies/jopa/ConnectorFactoryTest");
         final File targetFile = Files.createTempFile("connectortest", ".owl").toFile();
         targetFile.deleteOnExit();
         final OWLOntologyManager om = OWLManager.createOWLOntologyManager();
@@ -54,10 +58,6 @@ public class BasicConnectorFactoryTest {
         final URI physicalUri = targetFile.toURI();
         storageProperties = OntologyStorageProperties.ontologyUri(ontologyUri).physicalUri(physicalUri).driver(
                 OwlapiDataSource.class.getCanonicalName()).build();
-    }
-
-    @BeforeEach
-    public void setUp() {
         this.factory = new BasicConnectorFactory();
     }
 
