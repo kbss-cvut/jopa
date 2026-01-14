@@ -34,11 +34,11 @@ public class QMappedSuperclass implements HasUri {
     @OWLAnnotationProperty(iri = RDFS.LABEL)
     private String label;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#QParent-stringAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_q_parentStringAttribute)
     private String parentString;
 
     @ParticipationConstraints(nonEmpty = true)
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA", fetch = FetchType.EAGER)
+    @OWLObjectProperty(iri = Vocabulary.p_h_hasA, fetch = FetchType.EAGER)
     private OWLClassA owlClassA;
 
     public URI getUri() {

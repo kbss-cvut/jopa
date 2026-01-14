@@ -67,6 +67,12 @@ class FunctionNode extends SoqlNode {
     }
 
     @Override
+    public SoqlAttribute getSoqlAttribute() {
+        assert !children.isEmpty();
+        return children.get(0).getSoqlAttribute();
+    }
+
+    @Override
     public String toFilterExpression(String filterParam, String filterValue) {
         return SoqlFunctionTranslator.getSparqlFunction(functionName) + "(" +
                 children.stream().map(n -> n.toFilterExpression(filterParam, filterValue))

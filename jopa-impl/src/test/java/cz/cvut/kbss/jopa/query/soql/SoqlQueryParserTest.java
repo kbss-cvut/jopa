@@ -31,6 +31,7 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -955,6 +956,16 @@ public class SoqlQueryParserTest {
         final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassA) + " . " +
                 "?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?aStringAttribute . " +
                 "FILTER (STRLEN(?aStringAttribute) < ?minLength && lang(?aStringAttribute) = ?lang) }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsLangMatchesWithLanguageArgumentValueOfAnotherAttribute() {
+        final String soql = "SELECT q FROM OWLClassQ q WHERE LANGMATCHES(LANG(q.label), q.parentString)";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassQ) + " . " +
+                "?x " + strUri(RDFS.LABEL) + " ?qLabel . " +
+                "?x " + strUri(Vocabulary.p_q_parentStringAttribute) + " ?qParentString . " +
+                "FILTER (langMatches(lang(?qLabel), ?qParentString)) }";
         parseAndAssertEquality(expectedSparql, soql);
     }
 }

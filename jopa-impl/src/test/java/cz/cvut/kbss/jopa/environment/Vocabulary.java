@@ -35,6 +35,7 @@ public class Vocabulary {
     public static final String c_OwlClassL = CLASS_BASE + "OWLClassL";
     public static final String c_OwlClassM = CLASS_BASE + "OWLClassM";
     public static final String c_OwlClassN = CLASS_BASE + "OWLClassN";
+    public static final String c_OwlClassQ = CLASS_BASE + "OWLClassQ";
     public static final String C_OWLClassR = CLASS_BASE + "OWLClassR";
     public static final String c_OwlClassS = CLASS_BASE + "OWLClassS";
     public static final String c_OwlClassT = CLASS_BASE + "OWLClassT";
@@ -70,6 +71,9 @@ public class Vocabulary {
     public static final String p_m_explicitDatatype = ATTRIBUTE_BASE + "m-explicitDatatype";
     public static final String p_m_withConverter = ATTRIBUTE_BASE + "m-withConverter";
     public static final String p_m_objectOneOfEnumAttribute = ATTRIBUTE_BASE + "m-objectOneOfEnumAttribute";
+
+    public static final String p_q_parentStringAttribute = ATTRIBUTE_BASE + "q-parentStringAttribute";
+    public static final String p_q_stringAttribute = ATTRIBUTE_BASE + "q-stringAttribute";
 
     public static final String P_R_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "R-stringAttribute";
     public static final String P_HAS_A = ATTRIBUTE_BASE + "hasA";

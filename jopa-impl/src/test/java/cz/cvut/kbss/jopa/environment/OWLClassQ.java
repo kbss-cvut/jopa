@@ -25,10 +25,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassQ")
+@OWLClass(iri = Vocabulary.c_OwlClassQ)
 public class OWLClassQ extends QMappedSuperclass {
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#Q-stringAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_q_stringAttribute)
     private String stringAttribute;
 
     public String getStringAttribute() {

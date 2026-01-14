@@ -43,6 +43,7 @@ class SoqlAttribute extends SoqlParameter {
 
     public SoqlAttribute(SoqlNode firstNode) {
         super(firstNode);
+        firstNode.setSoqlAttribute(this);
     }
 
     public String getValue() {
@@ -79,6 +80,12 @@ class SoqlAttribute extends SoqlParameter {
 
     public void setGroupBy(boolean groupBy) {
         isGroupBy = groupBy;
+    }
+
+    @Override
+    public void setFirstNode(SoqlNode firstNode) {
+        super.setFirstNode(firstNode);
+        firstNode.setSoqlAttribute(this);
     }
 
     public boolean isProjected() {

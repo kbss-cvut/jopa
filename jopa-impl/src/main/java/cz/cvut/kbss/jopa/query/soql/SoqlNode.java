@@ -25,6 +25,7 @@ import java.util.List;
 abstract class SoqlNode implements FilterableExpression {
 
     SoqlNode parent;
+    SoqlAttribute soqlAttribute;
     final List<SoqlNode> children = new ArrayList<>();
 
     private FieldSpecification<?, ?> attribute;
@@ -76,6 +77,14 @@ abstract class SoqlNode implements FilterableExpression {
 
     public void setAttribute(FieldSpecification<?, ?> attribute) {
         this.attribute = attribute;
+    }
+
+    public SoqlAttribute getSoqlAttribute() {
+        return soqlAttribute;
+    }
+
+    public void setSoqlAttribute(SoqlAttribute soqlAttribute) {
+        this.soqlAttribute = soqlAttribute;
     }
 
     public abstract String getValue();

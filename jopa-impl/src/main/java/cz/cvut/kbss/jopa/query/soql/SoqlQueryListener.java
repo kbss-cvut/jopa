@@ -354,7 +354,8 @@ public class SoqlQueryListener extends SoqlBaseListener {
         final FunctionNode node = new FunctionNode(functionName, functionArguments.pop().stream()
                                                                                   .peek(n -> n.setOccursInFilter(true))
                                                                                   .toArray(SoqlNode[]::new));
-        attrPointer.setFirstNode(node);
+        node.getChildren().get(0).getSoqlAttribute().setFirstNode(node);
+        this.attrPointer = node.getSoqlAttribute();
         if (functionCallDepth > 1) {
             functionArguments.peek().add(node);
         }
