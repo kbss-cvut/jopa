@@ -158,6 +158,11 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     }
 
     @Override
+    public Expression<Boolean> langMatches(Expression<String> value, String range) {
+        return langMatches(value, new ExpressionLiteralImpl<>(range, this));
+    }
+
+    @Override
     public Order asc(Expression<?> x) {
         return new OrderImpl(x);
     }

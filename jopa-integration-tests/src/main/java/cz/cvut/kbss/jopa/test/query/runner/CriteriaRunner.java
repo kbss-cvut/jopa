@@ -558,11 +558,27 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         final CriteriaQuery<OWLClassC> query = cb.createQuery(OWLClassC.class);
         final Root<OWLClassC> root = query.from(OWLClassC.class);
-        query.select(root).where(cb.isMember(sample, root.getAttr("rdfBag")), cb.isMember(sample, root.getAttr("simpleList")));
+        query.select(root)
+             .where(cb.isMember(sample, root.getAttr("rdfBag")), cb.isMember(sample, root.getAttr("simpleList")));
 
         final TypedQuery<OWLClassC> tq = getEntityManager().createQuery(query);
         final List<OWLClassC> result = tq.getResultList();
         assertEquals(owners.size(), result.size());
         assertThat(result, containsSameEntities(owners));
+    }
+
+    @Test
+    void testSelectionByLangMatches() {
+        final List<OWLClassA> expected = QueryTestEnvironment.getData(OWLClassA.class);
+        final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        final Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root)
+             .where(cb.langMatches(cb.lang(root.getAttr("stringAttribute")), TestEnvironment.PERSISTENCE_LANGUAGE));
+
+        final TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query);
+        final List<OWLClassA> result = tq.getResultList();
+        assertEquals(expected.size(), result.size());
+        assertThat(result, containsSameEntities(expected));
     }
 }
