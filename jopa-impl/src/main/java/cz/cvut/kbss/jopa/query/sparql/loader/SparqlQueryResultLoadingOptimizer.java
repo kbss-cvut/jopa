@@ -7,6 +7,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
+import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,9 +21,13 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
 
     private final UnitOfWork uow;
 
-    public SparqlQueryResultLoadingOptimizer(TokenStreamSparqlQueryHolder queryHolder, UnitOfWork uow) {
+    private final ConnectionWrapper connection;
+
+    public SparqlQueryResultLoadingOptimizer(TokenStreamSparqlQueryHolder queryHolder, UnitOfWork uow,
+                                             ConnectionWrapper connection) {
         super(queryHolder);
         this.uow = uow;
+        this.connection = connection;
     }
 
     @Override
@@ -35,7 +40,7 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
             case ATTRIBUTE_BASED:
                 LOG.trace("Processing query results with attribute enumeration-based optimized attribute loading.");
                 queryHolder.setAssemblyModifier(new AttributeEnumeratingSparqlAssemblyModifier(uow.getMetamodel()
-                                                                                                  .entity(resultClass), descriptor));
+                                                                                                  .entity(resultClass), descriptor, connection));
                 break;
             default:
                 // Do nothing

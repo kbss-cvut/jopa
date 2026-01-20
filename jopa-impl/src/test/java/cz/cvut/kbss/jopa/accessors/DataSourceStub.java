@@ -177,6 +177,11 @@ public class DataSourceStub implements DataSource {
         public void close() {}
 
         @Override
+        public RepositoryMetadata getRepositoryMetadata() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public <T> T unwrap(Class<T> cls) {
             return null;
         }

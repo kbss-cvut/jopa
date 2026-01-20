@@ -9,9 +9,15 @@ import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.sparql.Sparql11QueryParser;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
+import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
 
@@ -19,10 +25,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class AttributeEnumeratingSparqlAssemblyModifierTest {
 
     private static MetamodelMocks metamodelMocks;
+
+    @Mock
+    private ConnectionWrapper connectionWrapper;
 
     private final ParameterValueFactory valueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
 
@@ -33,6 +44,11 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         metamodelMocks = new MetamodelMocks();
     }
 
+    @BeforeEach
+    void setUp() {
+        when(connectionWrapper.getRepositoryMetadata()).thenReturn(() -> "test");
+    }
+
     @Test
     void modifyAlwaysAddsTriplePatternForEntityTypes() {
         final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
@@ -41,17 +57,21 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
         final String result = holder.assembleQuery();
         assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xowlClassA ?xtypes WHERE { ?x a ?type . " +
-                "OPTIONAL { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> ?xowlClassA . } " +
+                "OPTIONAL { ?x " + strUri(Vocabulary.p_h_hasA) + " ?xowlClassA . } " +
                 "?x a ?xtypes . }"));
     }
 
-    private static <X> AttributeEnumeratingSparqlAssemblyModifier createSut(IdentifiableEntityType<X> et) {
+    private static String strUri(String uri) {
+        return IdentifierTransformer.stringifyIri(uri);
+    }
+
+    private <X> AttributeEnumeratingSparqlAssemblyModifier createSut(IdentifiableEntityType<X> et) {
         return createSut(et, new EntityDescriptor());
     }
 
-    private static <X> AttributeEnumeratingSparqlAssemblyModifier createSut(IdentifiableEntityType<X> et,
-                                                                            Descriptor descriptor) {
-        return new AttributeEnumeratingSparqlAssemblyModifier(et, descriptor);
+    private <X> AttributeEnumeratingSparqlAssemblyModifier createSut(IdentifiableEntityType<X> et,
+                                                                     Descriptor descriptor) {
+        return new AttributeEnumeratingSparqlAssemblyModifier(et, descriptor, connectionWrapper);
     }
 
     @Test
@@ -62,7 +82,7 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
         final String result = holder.assembleQuery();
         assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xstringAttribute ?xtypes WHERE { ?x a ?type . " +
-                "OPTIONAL { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?xstringAttribute . } " +
+                "OPTIONAL { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?xstringAttribute . } " +
                 "?x a ?xtypes . }"));
     }
 
@@ -77,7 +97,7 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
         final String result = holder.assembleQuery();
         assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xstringAttribute ?xtypes WHERE { ?x a ?type . " +
-                "OPTIONAL { GRAPH <" + ctx + "> { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?xstringAttribute . } } " +
+                "OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?xstringAttribute . } } " +
                 "GRAPH <" + ctx + "> { ?x a ?xtypes . } }"));
     }
 
@@ -93,7 +113,7 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
         final String result = holder.assembleQuery();
         assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xstringAttribute ?xtypes WHERE { ?x a ?type . " +
-                "OPTIONAL { GRAPH <" + ctx + "> { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?xstringAttribute . } } " +
+                "OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?xstringAttribute . } } " +
                 "?x a ?xtypes . }"));
     }
 
@@ -116,7 +136,21 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
         final String result = holder.assembleQuery();
         assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xowlClassA ?xtypes WHERE { ?x a ?type . " +
-                "?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> ?xowlClassA . " +
+                "?x " + strUri(Vocabulary.p_h_hasA) + " ?xowlClassA . " +
                 "?x a ?xtypes . }"));
+    }
+
+    @Test
+    void modifyUsesDefaultContextForInferredAttributeWhenRepositoryProductIsGraphDBAndNonDefaultContextIsProvided() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+        final URI ctx = Generators.createIndividualIdentifier();
+        final EntityDescriptor descriptor = new EntityDescriptor(ctx);
+        when(connectionWrapper.getRepositoryMetadata()).thenReturn(() -> "GraphDB");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassF()
+                                                                                       .entityType(), descriptor);
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, containsString("OPTIONAL { ?x " + strUri(Vocabulary.p_f_stringAttribute) + " ?xsecondStringAttribute . }"));
     }
 }

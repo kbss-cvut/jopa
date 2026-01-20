@@ -82,7 +82,7 @@ public class SparqlQueryFactory {
         Objects.requireNonNull(resultClass);
         final TokenStreamSparqlQueryHolder queryHolder = (TokenStreamSparqlQueryHolder) parser.parseQuery(query, resultClass);
         final QueryResultLoadingOptimizer<TokenStreamSparqlQueryHolder>
-                queryResultLoadingOptimizer = new SparqlQueryResultLoadingOptimizer(queryHolder, uow);
+                queryResultLoadingOptimizer = new SparqlQueryResultLoadingOptimizer(queryHolder, uow, connection);
         return new TypedQueryImpl<>(queryHolder, resultClass, connection, queryResultLoadingOptimizer);
     }
 

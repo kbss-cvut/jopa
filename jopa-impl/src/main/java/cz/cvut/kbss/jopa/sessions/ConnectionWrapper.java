@@ -28,6 +28,7 @@ import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.RepositoryMetadata;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -158,6 +159,10 @@ public class ConnectionWrapper implements Wrapper {
         } catch (OntoDriverException e) {
             throw new OWLPersistenceException(e);
         }
+    }
+
+    public RepositoryMetadata getRepositoryMetadata() {
+        return connection.getRepositoryMetadata();
     }
 
     @Override

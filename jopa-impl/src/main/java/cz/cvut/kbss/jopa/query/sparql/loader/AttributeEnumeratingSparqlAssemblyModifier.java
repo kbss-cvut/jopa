@@ -11,6 +11,7 @@ import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.sparql.QueryAttributes;
 import cz.cvut.kbss.jopa.query.sparql.TokenQueryParameter;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
+import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import org.antlr.v4.runtime.TokenStreamRewriter;
 
 import java.net.URI;
@@ -55,10 +56,18 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
 
     private final Descriptor descriptor;
 
-    public AttributeEnumeratingSparqlAssemblyModifier(IdentifiableEntityType<?> resultType, Descriptor descriptor) {
+    private final boolean inferretAttsInDefault;
+
+    public AttributeEnumeratingSparqlAssemblyModifier(IdentifiableEntityType<?> resultType, Descriptor descriptor,
+                                                      ConnectionWrapper connection) {
         this.resultType = resultType;
         this.descriptor = descriptor;
+        this.inferretAttsInDefault = resolveInferenceContext(connection);
         assert resultType.getProperties() == null;
+    }
+
+    private boolean resolveInferenceContext(ConnectionWrapper connection) {
+        return "GraphDB".equals(connection.getRepositoryMetadata().getProductName());
     }
 
     @Override
@@ -93,7 +102,7 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
             attributePatterns.append(subjectVariable).append(" <").append(att.getIRI())
                              .append("> ").append(variable).append(" . ");
             if (min < 1) {
-                attributePatterns.append(" } ");
+                attributePatterns.append("} ");
             }
             ctx.ifPresent(uri -> attributePatterns.append("} "));
         });
@@ -117,6 +126,9 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
 
     private Optional<String> context(FieldSpecification<?, ?> att) {
         assert descriptor.getAttributeContexts(att).size() <= 1;
+        if (att.isInferred() && inferretAttsInDefault) {
+            return Optional.empty();
+        }
         return descriptor.getSingleAttributeContext(att).map(URI::toString);
     }
 
