@@ -106,7 +106,7 @@ public class StorageConnection implements RepoConnection {
         return withConnection(conn -> new ConnectionStatementExecutor(conn).executeBooleanQuery(query));
     }
 
-    protected  <R> R withConnection(ThrowingFunction<RepositoryConnection, R> call) throws Rdf4jDriverException {
+    protected <R> R withConnection(ThrowingFunction<RepositoryConnection, R> call) throws Rdf4jDriverException {
         if (connection != null) {
             return call.apply(connection);
         } else {
@@ -290,5 +290,10 @@ public class StorageConnection implements RepoConnection {
             return cls.cast(connection);
         }
         return connectionProvider.unwrap(cls);
+    }
+
+    @Override
+    public String getProductName() {
+        return "Virtuoso";
     }
 }

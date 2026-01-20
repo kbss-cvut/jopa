@@ -58,4 +58,9 @@ public class GraphDBStorageConnection extends StorageConnection {
             }
         });
     }
+
+    @Override
+    public String getProductName() {
+        return "GraphDB";
+    }
 }

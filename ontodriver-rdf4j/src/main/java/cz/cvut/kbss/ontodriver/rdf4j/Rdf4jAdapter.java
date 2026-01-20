@@ -18,6 +18,7 @@
 package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.Closeable;
+import cz.cvut.kbss.ontodriver.RepositoryMetadata;
 import cz.cvut.kbss.ontodriver.Wrapper;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
@@ -198,7 +199,7 @@ public class Rdf4jAdapter implements Closeable, Wrapper {
         final Statement s = valueFactory.createStatement(Rdf4jUtils.toRdf4jIri(axiom.getSubject(), valueFactory),
                 Rdf4jUtils.toRdf4jIri(axiom.getAssertion(), valueFactory), value);
         return connector.isInferred(s, contexts.stream().map(c -> Rdf4jUtils.toRdf4jIri(c, valueFactory))
-                .collect(Collectors.toSet()));
+                                               .collect(Collectors.toSet()));
     }
 
     Collection<Axiom<?>> find(AxiomDescriptor axiomDescriptor) throws Rdf4jDriverException {
@@ -245,6 +246,10 @@ public class Rdf4jAdapter implements Closeable, Wrapper {
     ContainerHandler getContainerHandler() throws Rdf4jDriverException {
         startTransactionIfNotActive();
         return new ContainerHandler(connector, valueFactory);
+    }
+
+    public RepositoryMetadata getRepositoryMetadata() {
+        return new Rdf4jRepositoryMetadata(connector.getProductName());
     }
 
     @Override

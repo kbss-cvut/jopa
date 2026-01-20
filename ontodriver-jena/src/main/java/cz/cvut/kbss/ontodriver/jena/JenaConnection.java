@@ -20,6 +20,7 @@ package cz.cvut.kbss.ontodriver.jena;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Containers;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
+import cz.cvut.kbss.ontodriver.RepositoryMetadata;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -253,5 +254,11 @@ public class JenaConnection implements Connection {
         if (!open) {
             throw new IllegalStateException("This connection is closed.");
         }
+    }
+
+    @Override
+    public RepositoryMetadata getRepositoryMetadata() {
+        ensureOpen();
+        return new JenaRepositoryMetadata();
     }
 }

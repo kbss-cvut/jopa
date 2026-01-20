@@ -22,6 +22,7 @@ import cz.cvut.kbss.ontodriver.Containers;
 import cz.cvut.kbss.ontodriver.Lists;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Properties;
+import cz.cvut.kbss.ontodriver.RepositoryMetadata;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
@@ -285,6 +286,12 @@ public class Rdf4jConnection implements Connection {
         if (autoCommit) {
             adapter.commit();
         }
+    }
+
+    @Override
+    public RepositoryMetadata getRepositoryMetadata() {
+        ensureOpen();
+        return adapter.getRepositoryMetadata();
     }
 
     @Override

@@ -189,4 +189,13 @@ public interface RepoConnection extends Closeable, StatementExecutor, Wrapper {
      * @throws Rdf4jDriverException If a repository access error occurs
      */
     void removePropertyValues(Collection<SubjectPredicateContext> spc) throws Rdf4jDriverException;
+
+    /**
+     * Gets the underlying repository product name.
+     *
+     * @return Product name
+     */
+    default String getProductName() {
+        return "RDF4J";
+    }
 }

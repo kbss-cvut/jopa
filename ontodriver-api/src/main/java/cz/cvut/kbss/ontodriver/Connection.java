@@ -251,4 +251,11 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @return Containers handler
      */
     Containers containers();
+
+    /**
+     * Gets metadata about the underlying repository and database server.
+     *
+     * @return Repository metadata
+     */
+    RepositoryMetadata getRepositoryMetadata();
 }
