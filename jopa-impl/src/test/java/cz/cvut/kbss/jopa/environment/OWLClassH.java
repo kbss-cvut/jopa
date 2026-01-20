@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.environment;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Objects;
 
 import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
@@ -74,6 +75,19 @@ public class OWLClassH implements HasUri {
 
     public OWLClassG getOwlClassG() {
         return owlClassG;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof OWLClassH owlClassH)) {
+            return false;
+        }
+        return Objects.equals(uri, owlClassH.uri);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(uri);
     }
 
     public void setOwlClassG(OWLClassG owlClassG) {

@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.utils;
 import cz.cvut.kbss.jopa.exception.InstantiationException;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Utility functions using Java Reflection API.
@@ -45,8 +46,39 @@ public class ReflectionUtils {
         // calls can be replaced after migrating to newer Java version
         try {
             return cls.getDeclaredConstructor().newInstance();
-        } catch (java.lang.InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (java.lang.InstantiationException | IllegalAccessException | NoSuchMethodException |
+                 InvocationTargetException e) {
             throw new InstantiationException(e);
+        }
+    }
+
+    /**
+     * Checks if the specified class overrides the {@link Object#equals(Object)} method.
+     *
+     * @param cls Class to investigate
+     * @return {@code true} if the class overrides {@code equals}, {@code false} otherwise
+     */
+    public static boolean overridesEquals(Class<?> cls) {
+        try {
+            final Method m = cls.getDeclaredMethod("equals", Object.class);
+            return !m.getDeclaringClass().equals(Object.class);
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Checks if the specified class overrides the {@link Object#hashCode()} method.
+     *
+     * @param cls Class to investigate
+     * @return {@code true} if the class overrides {@code hasCode}, {@code false} otherwise
+     */
+    public static boolean overridesHashCode(Class<?> cls) {
+        try {
+            final Method m = cls.getDeclaredMethod("hashCode");
+            return !m.getDeclaringClass().equals(Object.class);
+        } catch (NoSuchMethodException e) {
+            return false;
         }
     }
 }

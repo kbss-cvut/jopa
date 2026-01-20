@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.gen.PersistenceContextAwareClassGenerator;
 import cz.cvut.kbss.jopa.model.metamodel.gen.PersistentPropertySetterMatcher;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.utils.ReflectionUtils;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.NamingStrategy;
 import net.bytebuddy.description.modifier.FieldPersistence;
@@ -31,6 +32,7 @@ import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
+import net.bytebuddy.implementation.bind.annotation.Argument;
 import net.bytebuddy.implementation.bind.annotation.FieldValue;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
@@ -42,7 +44,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
+import static net.bytebuddy.matcher.ElementMatchers.isEquals;
 import static net.bytebuddy.matcher.ElementMatchers.isGetter;
+import static net.bytebuddy.matcher.ElementMatchers.isHashCode;
 import static net.bytebuddy.matcher.ElementMatchers.isSetter;
 import static net.bytebuddy.matcher.ElementMatchers.isToString;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -62,27 +66,34 @@ public class LazyLoadingEntityProxyGenerator implements PersistenceContextAwareC
     public <T> Class<? extends T> generate(Class<T> entityClass) {
         Objects.requireNonNull(entityClass);
         LOG.trace("Generating lazy loading proxy for entity class {}.", entityClass);
-        DynamicType.Unloaded<? extends T> typeDef = byteBuddy.subclass(entityClass)
-                                                             .annotateType(new GeneratedLazyLoadingProxyImpl())
-                                                             .defineField("persistenceContext", UnitOfWork.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
-                                                             .defineField("owner", Object.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
-                                                             .defineField("fieldSpec", FieldSpecification.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
-                                                             // Have to use Object, because otherwise it won't generate a setter for us
-                                                             .defineField("value", entityClass, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
-                                                             .implement(TypeDescription.Generic.Builder.parameterizedType(LazyLoadingProxyPropertyAccessor.class, entityClass).build())
-                                                             .intercept(FieldAccessor.ofBeanProperty())
-                                                             .implement(LazyLoadingEntityProxy.class)
-                                                             .method(isSetter().and(new PersistentPropertySetterMatcher<>(entityClass)))
-                                                             .intercept(MethodDelegation.to(SetterInterceptor.class))
-                                                             .method(isGetter().and(new PersistentPropertyGetterMatcher<>(entityClass)))
-                                                             .intercept(MethodDelegation.to(GetterInterceptor.class))
-                                                             .method(isToString())
-                                                             .intercept(MethodDelegation.toMethodReturnOf("stringify"))
-                                                             .method(named("isLoaded"))
-                                                             .intercept(MethodDelegation.to(ProxyMethodsInterceptor.class))
-                                                             .method(named("getLoadedValue"))
-                                                             .intercept(MethodDelegation.to(ProxyMethodsInterceptor.class))
-                                                             .make();
+        DynamicType.Builder<T> builder = byteBuddy.subclass(entityClass)
+                                                  .annotateType(new GeneratedLazyLoadingProxyImpl())
+                                                  .defineField("persistenceContext", UnitOfWork.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
+                                                  .defineField("owner", Object.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
+                                                  .defineField("fieldSpec", FieldSpecification.class, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
+                                                  // Have to use Object, because otherwise it won't generate a setter for us
+                                                  .defineField("value", entityClass, Visibility.PRIVATE, FieldPersistence.TRANSIENT)
+                                                  .implement(TypeDescription.Generic.Builder.parameterizedType(LazyLoadingProxyPropertyAccessor.class, entityClass)
+                                                                                            .build())
+                                                  .intercept(FieldAccessor.ofBeanProperty())
+                                                  .implement(LazyLoadingEntityProxy.class)
+                                                  .method(isSetter().and(new PersistentPropertySetterMatcher<>(entityClass)))
+                                                  .intercept(MethodDelegation.to(SetterInterceptor.class))
+                                                  .method(isGetter().and(new PersistentPropertyGetterMatcher<>(entityClass)))
+                                                  .intercept(MethodDelegation.to(GetterInterceptor.class))
+                                                  .method(isToString())
+                                                  .intercept(MethodDelegation.toMethodReturnOf("stringify"))
+                                                  .method(named("isLoaded"))
+                                                  .intercept(MethodDelegation.to(ProxyMethodsInterceptor.class))
+                                                  .method(named("getLoadedValue"))
+                                                  .intercept(MethodDelegation.to(ProxyMethodsInterceptor.class));
+        if (ReflectionUtils.overridesEquals(entityClass)) {
+            builder = builder.method(isEquals()).intercept(MethodDelegation.to(EqualsInterceptor.class));
+        }
+        if (ReflectionUtils.overridesHashCode(entityClass)) {
+            builder = builder.method(isHashCode()).intercept(MethodDelegation.to(GetterInterceptor.class));
+        }
+        final DynamicType.Unloaded<? extends T> typeDef = builder.make();
         LOG.debug("Generated dynamic type {} for entity class {}.", typeDef, entityClass);
         return typeDef.load(getClass().getClassLoader()).getLoaded();
     }
@@ -98,6 +109,22 @@ public class LazyLoadingEntityProxyGenerator implements PersistenceContextAwareC
             final Object loaded = proxy.triggerLazyLoading();
             try {
                 return getter.invoke(loaded);
+            } catch (InvocationTargetException | IllegalAccessException e) {
+                throw new LazyLoadingException("Unable to invoke getter after lazily loading object.", e);
+            }
+        }
+    }
+
+    public static class EqualsInterceptor {
+        private EqualsInterceptor() {
+            throw new AssertionError();
+        }
+
+        public static <T> boolean equals(@This LazyLoadingEntityProxy<T> proxy, @Origin Method equals,
+                                         @Argument(0) Object arg) {
+            final Object loaded = proxy.triggerLazyLoading();
+            try {
+                return (boolean) equals.invoke(loaded, arg);
             } catch (InvocationTargetException | IllegalAccessException e) {
                 throw new LazyLoadingException("Unable to invoke getter after lazily loading object.", e);
             }
