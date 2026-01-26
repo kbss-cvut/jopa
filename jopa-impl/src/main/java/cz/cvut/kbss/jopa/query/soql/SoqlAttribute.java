@@ -108,9 +108,9 @@ class SoqlAttribute extends SoqlParameter {
         return !getFirstNode().hasChild() && operator == null;
     }
 
-    public List<String> getFilterExpressions() {
+    public List<String> getFilterExpressions(String rootVariable) {
         assert requiresFilter();
-        String filterParam = getAsParam();
+        String filterParam = getAsParam(rootVariable);
         final String filterValue = value != null ? SoqlUtils.soqlVariableToSparqlVariable(value) : null;
         if (getFirstNode().requiresFilterExpression()) {
             filterParam = getFirstNode().toFilterExpression(filterParam, filterValue);
@@ -159,7 +159,7 @@ class SoqlAttribute extends SoqlParameter {
 
     private String buildTriplePatternObject(SoqlNode newPointer, String buildParam) {
         final String param;
-        if (newPointer.hasChild() || value == null && !newPointer.occursInFilter()) {
+        if ((newPointer.hasChild() && !newPointer.getChild().isIdentifier()) || value == null && !newPointer.occursInFilter()) {
             param = "?" + newPointer.getValue();
         } else {
             if (requiresFilter() || newPointer.occursInFilter()) {

@@ -64,7 +64,7 @@ class SoqlUtils {
         StringBuilder buildParam = new StringBuilder("?");
         buildParam.append(node.getValue());
         SoqlNode pointer = node;
-        while (pointer.hasChild()) {
+        while (pointer.hasChild() && !pointer.getChild().isIdentifier()) {
             pointer = pointer.getChild();
             buildParam.append(pointer.getCapitalizedValue());
         }

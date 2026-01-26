@@ -33,8 +33,8 @@ class SoqlGroupParameter extends SoqlParameter {
         this.attribute = attribute;
     }
 
-    public String getGroupByPart() {
-        String param = attribute.requiresFilter() ? getAsParam().substring(1) : attribute.getValue().substring(1);
+    public String getGroupByPart(String rootVariable) {
+        String param = attribute.requiresFilter() ? getAsParam(rootVariable).substring(1) : attribute.getValue().substring(1);
         return "?" + param + " ";
     }
 }

@@ -25,7 +25,10 @@ class SoqlParameter {
         this.firstNode = firstNode;
     }
 
-    public String getAsParam() {
+    public String getAsParam(String rootVariable) {
+        if (!firstNode.hasChild() || firstNode.getChild().isIdentifier()) {
+            return rootVariable;
+        }
         return SoqlUtils.nodeAsQueryVariable(firstNode);
     }
 

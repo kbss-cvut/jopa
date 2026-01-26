@@ -32,6 +32,8 @@ abstract class SoqlNode implements FilterableExpression {
 
     private boolean occursInFilter;
 
+    private boolean isIdentifier;
+
     SoqlNode() {
     }
 
@@ -104,5 +106,13 @@ abstract class SoqlNode implements FilterableExpression {
     public void setOccursInFilter(boolean occursInFilter) {
         this.occursInFilter = occursInFilter;
         children.forEach(n -> n.setOccursInFilter(occursInFilter));
+    }
+
+    public boolean isIdentifier() {
+        return isIdentifier;
+    }
+
+    public void setIdentifier(boolean identifier) {
+        isIdentifier = identifier;
     }
 }
