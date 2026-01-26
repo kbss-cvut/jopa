@@ -19,21 +19,13 @@ package cz.cvut.kbss.jopa.query.soql;
 
 class SoqlOrderParameter extends SoqlParameter {
 
-    private String orderingBy;
+    private final String orderingBy;
 
     private SoqlAttribute attribute;
 
     public SoqlOrderParameter(SoqlNode firstNode, String orderingBy) {
         super(firstNode);
         this.orderingBy = orderingBy.isEmpty() ? SoqlConstants.ASC : orderingBy;
-    }
-
-    public String getOrderingBy() {
-        return orderingBy;
-    }
-
-    public void setOrderingBy(String orderingBy) {
-        this.orderingBy = orderingBy;
     }
 
     public SoqlAttribute getAttribute() {
