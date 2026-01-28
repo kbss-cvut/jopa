@@ -294,7 +294,8 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
         if (isInObjectIdentifierExpression) {
             assert Objects.equals(operator, "=");
-            if (attrPointer.isProjected()) {
+            // Ensure that it is the identifier of the root entity
+            if (!attrPointer.requiresFilter() && isRootIdentifier(attrPointer)) {
                 this.rootVariable = SoqlUtils.soqlVariableToSparqlVariable(whereClauseValue.getText());
             }
             if (attributes.size() > 1) {
