@@ -55,6 +55,7 @@ public class ModelGenProcessor extends AbstractProcessor {
     public static final String SOURCE_PACKAGE_PARAM = "sourcePackage";
     public static final String DEBUG_PARAM = "debugOption";
     public static final String OUTPUT_PROPERTY_IRIS_PARAM = "outputPropertyIris";
+    public static final String OUTPUT_IRI_AS_STRING_PARAM = "outputIriAsString";
 
     Messager messager;
 
@@ -64,6 +65,7 @@ public class ModelGenProcessor extends AbstractProcessor {
     private String outputDirectory;
     private boolean debugOption;
     private boolean outputPropertyIris;
+    private boolean outputIriAsString;
 
     @Override
     public void init(ProcessingEnvironment env) {
@@ -74,6 +76,7 @@ public class ModelGenProcessor extends AbstractProcessor {
         this.outputDirectory = env.getOptions().get(OUTPUT_DIRECTORY_PARAM);
         this.debugOption = Boolean.parseBoolean(env.getOptions().get(DEBUG_PARAM));
         this.outputPropertyIris = Boolean.parseBoolean(env.getOptions().get(OUTPUT_PROPERTY_IRIS_PARAM));
+        this.outputIriAsString = Boolean.parseBoolean(env.getOptions().get(OUTPUT_IRI_AS_STRING_PARAM));
     }
 
     @Override
@@ -102,7 +105,7 @@ public class ModelGenProcessor extends AbstractProcessor {
             }
         }
         debug("Generating output files.");
-        final OutputConfig outputConfig = new OutputConfig(outputDirectory, outputPropertyIris);
+        final OutputConfig outputConfig = new OutputConfig(outputDirectory, outputPropertyIris, outputIriAsString);
         final OutputFilesGenerator outputGenerator = new OutputFilesGenerator(outputConfig, debugOption, messager);
         outputGenerator.generateOutputFiles(classes.values());
         return true;

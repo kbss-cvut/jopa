@@ -131,14 +131,8 @@ public class OutputFilesGenerator {
                  .append(cls.getPckg())
                  .append(";\n\n");
         }
-        cls.getImports().forEach(imp -> sbOut.append("import ")
-                                             .append(imp)
-                                             .append(";\n"));
-        if (!cls.getExtend().isEmpty()) {
-            sbOut.append("import ")
-                 .append(cls.getExtend())
-                 .append("_;\n");
-        }
+        generateImports(cls, sbOut);
+
         sbOut.append("\n@Generated(value = \"")
              .append("cz.cvut.kbss.jopa.modelgen.ModelGenProcessor\")\n")
              .append("@StaticMetamodel(")
@@ -152,11 +146,31 @@ public class OutputFilesGenerator {
         return sbOut.toString();
     }
 
-    private static Optional<String> generateClassIriField(MetamodelClass cls) {
+    private void generateImports(MetamodelClass cls, StringBuilder sbOut) {
+        cls.getImports().forEach(imp -> sbOut.append("import ")
+                                             .append(imp)
+                                             .append(";\n"));
+        if (cls.isEntityClass() && !outputConfig.outputIriAsString()) {
+            sbOut.append("import ")
+                 .append("cz.cvut.kbss.jopa.model.IRI;")
+                 .append("\n");
+        }
+        if (!cls.getExtend().isEmpty()) {
+            sbOut.append("import ")
+                 .append(cls.getExtend())
+                 .append("_;\n");
+        }
+    }
+
+    private Optional<String> generateClassIriField(MetamodelClass cls) {
         if (cls.isEntityClass()) {
-            return Optional.of(INDENT + "public static volatile IRI entityClassIRI;\n\n");
+            return Optional.of(INDENT + "public static volatile " + iriType() + " entityClassIRI;\n\n");
         }
         return Optional.empty();
+    }
+
+    private String iriType() {
+        return outputConfig.outputIriAsString() ? "String" : "IRI";
     }
 
     private Optional<String> generatePropertyIris(MetamodelClass cls) {
@@ -168,7 +182,9 @@ public class OutputFilesGenerator {
             if (isAnnotatedWith(field, MappingAnnotations.DATA_PROPERTY)
                     || isAnnotatedWith(field, MappingAnnotations.OBJECT_PROPERTY)
                     || isAnnotatedWith(field, MappingAnnotations.ANNOTATION_PROPERTY)) {
-                sb.append(INDENT + "public static volatile IRI ");
+                sb.append(INDENT + "public static volatile ");
+                sb.append(iriType());
+                sb.append(" ");
                 sb.append(field.getName());
                 sb.append("PropertyIRI;\n");
             }

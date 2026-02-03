@@ -153,7 +153,7 @@ class OutputFilesGeneratorTests {
 
         @BeforeAll
         static void setUpBeforeAll() throws IOException {
-            new OutputFilesGenerator(new OutputConfig("./src/test/java", false), false, null).generateOutputFiles(List.of(metamodelClass));
+            new OutputFilesGenerator(new OutputConfig("./src/test/java", false, false), false, null).generateOutputFiles(List.of(metamodelClass));
 
             actualResult = readFileAsString(new File(OUTPUT_FILE));
         }
@@ -206,12 +206,33 @@ class OutputFilesGeneratorTests {
 
         @Test
         void containsPropertyIris() throws IOException {
-            new OutputFilesGenerator(new OutputConfig("./src/test/java", true), false, null).generateOutputFiles(List.of(metamodelClass));
+            new OutputFilesGenerator(new OutputConfig("./src/test/java", true, false), false, null).generateOutputFiles(List.of(metamodelClass));
             String actualResult = readFileAsString(new File(OUTPUT_FILE));
 
             assertThat(actualResult, containsString("public static volatile IRI objectPropertyIRI;"));
             assertThat(actualResult, containsString("public static volatile IRI dataListPropertyIRI;"));
             assertThat(actualResult, containsString("public static volatile IRI dataSetPropertyIRI;"));
+        }
+    }
+
+    @Nested
+    class GeneratedOutputWithIrisAsStringsTest {
+
+        @AfterEach
+        void tearDown() throws IOException {
+            File file = new File(OUTPUT_FILE);
+            Files.deleteIfExists(file.toPath());
+        }
+
+        @Test
+        void containsIrisAsStrings() throws IOException {
+            new OutputFilesGenerator(new OutputConfig("./src/test/java", true, true), false, null).generateOutputFiles(List.of(metamodelClass));
+            String actualResult = readFileAsString(new File(OUTPUT_FILE));
+
+            assertThat(actualResult, containsString("public static volatile String entityClassIRI;"));
+            assertThat(actualResult, containsString("public static volatile String objectPropertyIRI;"));
+            assertThat(actualResult, containsString("public static volatile String dataListPropertyIRI;"));
+            assertThat(actualResult, containsString("public static volatile String dataSetPropertyIRI;"));
         }
     }
 }
