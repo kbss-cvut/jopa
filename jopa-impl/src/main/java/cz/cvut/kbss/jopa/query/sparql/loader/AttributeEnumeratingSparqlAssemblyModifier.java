@@ -56,13 +56,13 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
 
     private final Descriptor descriptor;
 
-    private final boolean inferretAttsInDefault;
+    private final boolean inferredAttsInDefault;
 
     public AttributeEnumeratingSparqlAssemblyModifier(IdentifiableEntityType<?> resultType, Descriptor descriptor,
                                                       ConnectionWrapper connection) {
         this.resultType = resultType;
         this.descriptor = descriptor;
-        this.inferretAttsInDefault = resolveInferenceContext(connection);
+        this.inferredAttsInDefault = resolveInferenceContext(connection);
         assert resultType.getProperties() == null;
     }
 
@@ -126,7 +126,7 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
 
     private Optional<String> context(FieldSpecification<?, ?> att) {
         assert descriptor.getAttributeContexts(att).size() <= 1;
-        if (att.isInferred() && inferretAttsInDefault) {
+        if (att.isInferred() && inferredAttsInDefault) {
             return Optional.empty();
         }
         return descriptor.getSingleAttributeContext(att).map(URI::toString);

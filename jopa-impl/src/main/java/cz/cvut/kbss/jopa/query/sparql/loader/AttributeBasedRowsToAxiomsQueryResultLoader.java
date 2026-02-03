@@ -90,20 +90,28 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
     }
 
     private void rowToAxioms(ResultRow row) throws OntoDriverException {
-        final String subjectVarName = row.getColumnNames().get(0);
+        final VariableNameMapper varNameMapper = createVarNameMapper(row);
         for (Attribute<? super T, ?> attribute : entityType.getAttributes()) {
-            final String varName = subjectVarName + attribute.getName();
+            final String varName = varNameMapper.getAttributeVarName(attribute);
             if (row.isBound(varName)) {
                 currentEntityAxioms.add(new AxiomImpl<>(currentSubject, attributeToAssertion(attribute), new Value<>(row.getObject(varName))));
             }
         }
         final Optional<TypesSpecification<? super T, ?>> typesSpec = Optional.ofNullable(entityType.getTypes());
-        final String varName = subjectVarName + AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_SUFFIX;
+        final String varName = varNameMapper.getTypesVarName(typesSpec.orElse(null));
         if (row.isBound(varName)) {
             currentEntityAxioms.add(new AxiomImpl<>(currentSubject,
                     Assertion.createClassAssertion(typesSpec.map(FieldSpecification::isInferred).orElse(false)),
                     new Value<>(row.getObject(varName))));
         }
+    }
+
+    private VariableNameMapper createVarNameMapper(ResultRow row) {
+        assert !row.getColumnNames().isEmpty();
+        final String subjectVarName = row.getColumnNames().get(0);
+        final boolean optimized = row.getColumnNames().stream()
+                .allMatch(name -> name.startsWith(subjectVarName));
+        return optimized ? new OptimizedQueryVariableNameMapper(subjectVarName) : new DefaultVariableNameMapper();
     }
 
     private static Assertion attributeToAssertion(Attribute<?, ?> attribute) {
@@ -135,5 +143,34 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
             return Optional.ofNullable(loadEntity());
         }
         return Optional.empty();
+    }
+
+    private interface VariableNameMapper {
+        String getAttributeVarName(Attribute<?, ?> attribute);
+        String getTypesVarName(TypesSpecification<?, ?> types);
+    }
+
+    private record OptimizedQueryVariableNameMapper(String subjectVarName) implements VariableNameMapper {
+        @Override
+            public String getAttributeVarName(Attribute<?, ?> attribute) {
+                return subjectVarName + attribute.getName();
+            }
+
+            @Override
+            public String getTypesVarName(TypesSpecification<?, ?> types) {
+                return subjectVarName + AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_SUFFIX;
+            }
+        }
+
+    private static class DefaultVariableNameMapper implements VariableNameMapper {
+        @Override
+        public String getAttributeVarName(Attribute<?, ?> attribute) {
+            return attribute.getName();
+        }
+
+        @Override
+        public String getTypesVarName(TypesSpecification<?, ?> types) {
+            return types != null ? types.getName() : AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_SUFFIX;
+        }
     }
 }
