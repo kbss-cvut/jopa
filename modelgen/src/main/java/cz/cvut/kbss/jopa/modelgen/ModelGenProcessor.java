@@ -47,29 +47,33 @@ import java.util.Set;
 @SupportedOptions({
         ModelGenProcessor.OUTPUT_DIRECTORY_PARAM,
         ModelGenProcessor.SOURCE_PACKAGE_PARAM,
-        ModelGenProcessor.DEBUG_PARAM
+        ModelGenProcessor.DEBUG_PARAM,
+        ModelGenProcessor.OUTPUT_PROPERTY_IRIS_PARAM
 })
 public class ModelGenProcessor extends AbstractProcessor {
     public static final String OUTPUT_DIRECTORY_PARAM = "outputDirectory";
     public static final String SOURCE_PACKAGE_PARAM = "sourcePackage";
     public static final String DEBUG_PARAM = "debugOption";
+    public static final String OUTPUT_PROPERTY_IRIS_PARAM = "outputPropertyIris";
+
     Messager messager;
 
-    private Map<String, MetamodelClass> classes;
+    private final Map<String, MetamodelClass> classes = new HashMap<>();
 
     private String sourcePackage;
     private String outputDirectory;
     private boolean debugOption;
+    private boolean outputPropertyIris;
 
     @Override
     public void init(ProcessingEnvironment env) {
         super.init(env);
         this.messager = env.getMessager();
         messager.printMessage(Diagnostic.Kind.NOTE, "Initializing ModelGenProcessor.");
-        this.classes = new HashMap<>();
-        sourcePackage = env.getOptions().get(SOURCE_PACKAGE_PARAM);
-        outputDirectory = env.getOptions().get(OUTPUT_DIRECTORY_PARAM);
-        debugOption = Boolean.parseBoolean(env.getOptions().get(DEBUG_PARAM));
+        this.sourcePackage = env.getOptions().get(SOURCE_PACKAGE_PARAM);
+        this.outputDirectory = env.getOptions().get(OUTPUT_DIRECTORY_PARAM);
+        this.debugOption = Boolean.parseBoolean(env.getOptions().get(DEBUG_PARAM));
+        this.outputPropertyIris = Boolean.parseBoolean(env.getOptions().get(OUTPUT_PROPERTY_IRIS_PARAM));
     }
 
     @Override
@@ -83,33 +87,23 @@ public class ModelGenProcessor extends AbstractProcessor {
                         parentClass.makeEntityClass();
                     }
 
-                    if (debugOption) {
-                        messager.printMessage(Diagnostic.Kind.NOTE,
-                                "\t - Started processing class '" + parentClass.getName() + "'");
-                    }
+                    debug("\t - Started processing class '" + parentClass.getName() + "'");
                     List<? extends Element> properties = elParent.getEnclosedElements();
                     for (Element elProperty : properties) {
                         if (isPropertyPersistent(elProperty)) {
                             Field field = new Field(elProperty, elParent);
-                            if (debugOption) {
-                                messager.printMessage(Diagnostic.Kind.NOTE,
-                                        "\t\t - Processing field '" + field.getName() + "'");
-                            }
+                            debug("\t\t - Processing field '" + field.getName() + "'");
                             parentClass.addField(field);
                         }
                     }
                     classes.put(elParent.toString(), parentClass);
-                    if (debugOption) {
-                        messager.printMessage(Diagnostic.Kind.NOTE,
-                                "\t - Finished processing class '" + parentClass.getName() + "'");
-                    }
+                    debug("\t - Finished processing class '" + parentClass.getName() + "'");
                 }
             }
         }
-        if (debugOption) {
-            messager.printMessage(Diagnostic.Kind.NOTE, "Generating output files.");
-        }
-        final OutputFilesGenerator outputGenerator = new OutputFilesGenerator(outputDirectory, debugOption, messager);
+        debug("Generating output files.");
+        final OutputConfig outputConfig = new OutputConfig(outputDirectory, outputPropertyIris);
+        final OutputFilesGenerator outputGenerator = new OutputFilesGenerator(outputConfig, debugOption, messager);
         outputGenerator.generateOutputFiles(classes.values());
         return true;
     }
@@ -151,6 +145,12 @@ public class ModelGenProcessor extends AbstractProcessor {
 
     private static boolean isAnnotationWithOwlClass(Element element) {
         return isAnnotatedWith(element, "cz.cvut.kbss.jopa.model.annotations.OWLClass");
+    }
+
+    private void debug(String message) {
+        if (debugOption) {
+            messager.printMessage(Diagnostic.Kind.NOTE, message);
+        }
     }
 
     @Override

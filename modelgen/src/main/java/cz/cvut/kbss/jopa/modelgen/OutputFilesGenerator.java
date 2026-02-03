@@ -43,13 +43,13 @@ public class OutputFilesGenerator {
 
     private static final String INDENT = "    ";
 
-    private final String targetDir;
+    private final OutputConfig outputConfig;
     private final boolean debugMode;
 
     private final Messager messager;
 
-    public OutputFilesGenerator(String targetDir, boolean debugMode, Messager messager) {
-        this.targetDir = targetDir;
+    public OutputFilesGenerator(OutputConfig outputConfig, boolean debugMode, Messager messager) {
+        this.outputConfig = outputConfig;
         this.debugMode = debugMode;
         this.messager = messager;
     }
@@ -75,6 +75,7 @@ public class OutputFilesGenerator {
         final File targetFile = createTargetFile(cls);
         final StringBuilder content = new StringBuilder(generateClassPreamble(cls));
         generateClassIriField(cls).ifPresent(content::append);
+        generatePropertyIris(cls).ifPresent(content::append);
         content.append(generateAttributes(cls));
         content.append(generateClassSuffix());
         try {
@@ -86,7 +87,7 @@ public class OutputFilesGenerator {
     }
 
     private File createTargetFile(MetamodelClass cls) {
-        final StringBuilder fileName = new StringBuilder(targetDir);
+        final StringBuilder fileName = new StringBuilder(outputConfig.targetDir());
         fileName.append("/");
         String pack = cls.getPckg();
         while (pack.contains(".")) {
@@ -156,6 +157,24 @@ public class OutputFilesGenerator {
             return Optional.of(INDENT + "public static volatile IRI entityClassIRI;\n\n");
         }
         return Optional.empty();
+    }
+
+    private Optional<String> generatePropertyIris(MetamodelClass cls) {
+        if (!outputConfig.outputPropertyIris()) {
+            return Optional.empty();
+        }
+        final StringBuilder sb = new StringBuilder();
+        for (Field field : cls.getFields()) {
+            if (isAnnotatedWith(field, MappingAnnotations.DATA_PROPERTY)
+                    || isAnnotatedWith(field, MappingAnnotations.OBJECT_PROPERTY)
+                    || isAnnotatedWith(field, MappingAnnotations.ANNOTATION_PROPERTY)) {
+                sb.append(INDENT + "public static volatile IRI ");
+                sb.append(field.getName());
+                sb.append("PropertyIRI;\n");
+            }
+        }
+        sb.append('\n');
+        return Optional.of(sb.toString());
     }
 
     private static String generateAttributes(MetamodelClass cls) {

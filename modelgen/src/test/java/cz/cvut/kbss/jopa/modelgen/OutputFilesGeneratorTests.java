@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Type;
 import cz.test.ex.TestingClassOWL;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,17 +43,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OutputFilesGeneratorTests {
 
-    private static String actualResult = "";
+    private static final String OUTPUT_FILE = "./src/test/java/cz/test/ex/TestingClassOWL_.java";
+
+    private static MetamodelClass metamodelClass;
 
     @BeforeAll
-    static void createSMClass() throws IOException {
-        MetamodelClass cl = new MetamodelClass();
+    static void createSMClass() {
+        metamodelClass = new MetamodelClass();
         Class<TestingClassOWL> testingClass = TestingClassOWL.class;
-        cl.setName(testingClass.getSimpleName());
-        cl.setPckg(testingClass.getPackage().getName());
-        cl.getImports().add(testingClass.getName());
-        cl.makeEntityClass();
-        cl.setExtend("");
+        metamodelClass.setName(testingClass.getSimpleName());
+        metamodelClass.setPckg(testingClass.getPackage().getName());
+        metamodelClass.getImports().add(testingClass.getName());
+        metamodelClass.makeEntityClass();
+        metamodelClass.setExtend("");
 
         Field field1 = new Field();
         field1.setAnnotatedWith(Collections.singletonList(MappingAnnotations.ID));
@@ -62,21 +65,21 @@ class OutputFilesGeneratorTests {
         type1.setTypeName("Test");
         type1.setSimpleName("Test");
         field1.setType(type1);
-        cl.addField(field1);
+        metamodelClass.addField(field1);
 
         Field field2 = new Field();
         field2.setAnnotatedWith(Collections.singletonList(MappingAnnotations.OBJECT_PROPERTY));
         field2.setName("object");
         field2.setParentName("cz.test.ex.TestingClassOWL");
         field2.setType(type1);
-        cl.addField(field2);
+        metamodelClass.addField(field2);
 
         Field field3 = new Field();
         field3.setAnnotatedWith(Collections.singletonList(MappingAnnotations.TYPES));
         field3.setName("types");
         field3.setParentName("cz.test.ex.TestingClassOWL");
         field3.setType(type1);
-        cl.addField(field3);
+        metamodelClass.addField(field3);
 
         Field field5 = new Field();
         field5.setAnnotatedWith(Collections.singletonList(MappingAnnotations.DATA_PROPERTY));
@@ -89,7 +92,7 @@ class OutputFilesGeneratorTests {
         field5.setType(type5);
         type5.setTypes(Collections.singletonList(type1));
         field5.setType(type5);
-        cl.addField(field5);
+        metamodelClass.addField(field5);
 
         Field field6 = new Field();
         field6.setAnnotatedWith(Collections.singletonList(MappingAnnotations.DATA_PROPERTY));
@@ -102,7 +105,7 @@ class OutputFilesGeneratorTests {
         field6.setType(type6);
         type6.setTypes(Collections.singletonList(type1));
         field6.setType(type6);
-        cl.addField(field6);
+        metamodelClass.addField(field6);
 
         Field field8 = new Field();
         field8.setAnnotatedWith(Collections.singletonList(MappingAnnotations.PROPERTIES));
@@ -111,18 +114,7 @@ class OutputFilesGeneratorTests {
         field8.setType(type6);
         type6.setTypes(Collections.singletonList(type1));
         field8.setType(type6);
-        cl.addField(field8);
-
-        new OutputFilesGenerator("./src/test/java", false, null).generateOutputFiles(List.of(cl));
-
-        actualResult = readFileAsString(new File("./src/test/java/cz/test/ex/TestingClassOWL_.java"));
-    }
-
-
-    @AfterAll
-    static void deleteSMClass() {
-        File file = new File("./src/test/java/cz/test/ex/TestingClassOWL_.java");
-        file.delete();
+        metamodelClass.addField(field8);
     }
 
     @Test
@@ -154,7 +146,22 @@ class OutputFilesGeneratorTests {
     }
 
     @Nested
-    class GenerateOutputFilesTest {
+    class BasicGeneratedOutputTest {
+
+        private static String actualResult = "";
+
+        @BeforeAll
+        static void setUpBeforeAll() throws IOException {
+            new OutputFilesGenerator(new OutputConfig("./src/test/java", false), false, null).generateOutputFiles(List.of(metamodelClass));
+
+            actualResult = readFileAsString(new File(OUTPUT_FILE));
+        }
+
+        @AfterAll
+        static void deleteSMClass() {
+            File file = new File(OUTPUT_FILE);
+            file.delete();
+        }
 
         @Test
         void containsClassIri() {
@@ -184,6 +191,26 @@ class OutputFilesGeneratorTests {
         @Test
         void containsSetAttribute() {
             assertThat(actualResult, containsString("public static volatile SetAttribute<TestingClassOWL, Test> dataSet;"));
+        }
+    }
+
+    @Nested
+    class GeneratedOutputWithPropertyIrisTest {
+
+        @AfterEach
+        void tearDown() {
+            File file = new File(OUTPUT_FILE);
+            file.delete();
+        }
+
+        @Test
+        void containsPropertyIris() throws IOException {
+            new OutputFilesGenerator(new OutputConfig("./src/test/java", true), false, null).generateOutputFiles(List.of(metamodelClass));
+            String actualResult = readFileAsString(new File(OUTPUT_FILE));
+
+            assertThat(actualResult, containsString("public static volatile IRI objectPropertyIRI;"));
+            assertThat(actualResult, containsString("public static volatile IRI dataListPropertyIRI;"));
+            assertThat(actualResult, containsString("public static volatile IRI dataSetPropertyIRI;"));
         }
     }
 }
