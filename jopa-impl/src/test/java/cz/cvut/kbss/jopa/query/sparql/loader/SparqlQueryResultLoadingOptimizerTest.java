@@ -2,8 +2,10 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
@@ -22,6 +24,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.net.URI;
 import java.util.Set;
 
+import static cz.cvut.kbss.jopa.utils.IdentifierTransformer.stringifyIri;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -128,5 +132,20 @@ class SparqlQueryResultLoadingOptimizerTest {
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
         sut.optimizeQueryAssembly(OWLClassA.class, new EntityDescriptor(Set.of(Generators.createIndividualIdentifier(), Generators.createIndividualIdentifier())));
         verify(qh, never()).setAssemblyModifier(any());
+    }
+
+    @Test
+    void getQueryResultLoaderReturnsAttributeBasedRowsToAxiomsResultLoaderWhenQueryProjectsMultipleVariablesAndResultTypeIsEntity() {
+        final TokenStreamSparqlQueryHolder qh = parser.parseQuery("SELECT ?x ?stringAttribute ?types WHERE {" +
+                "?x a " + stringifyIri(Vocabulary.c_OwlClassA) + " ;" +
+                stringifyIri(Vocabulary.p_a_stringAttribute) + " ?stringAttribute ;" +
+                "a ?types . }");
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
+        when(uow.getMetamodel()).thenReturn(metamodel);
+        final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
+        sut.disableOptimization();
+        when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
+        final QueryResultLoader<OWLClassA> result = sut.getQueryResultLoader(OWLClassA.class, new EntityDescriptor());
+        assertInstanceOf(AttributeBasedRowsToAxiomsQueryResultLoader.class, result);
     }
 }

@@ -104,13 +104,25 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
      */
     @Override
     public <T> QueryResultLoader<T> getQueryResultLoader(Class<T> resultClass, Descriptor descriptor) {
-        final OptimizerType optimizerType = resolveOptimizerType(resultClass, descriptor);
+        final OptimizerType optimizerType = resolveOptimizerTypeForResultLoader(resultClass, descriptor);
         return switch (optimizerType) {
             case TRIPLE_BASED -> new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
             case ATTRIBUTE_BASED -> new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
             default ->
                     uow.isEntityType(resultClass) ? new BaseEntityQueryResultLoader<>(uow, resultClass, descriptor) : new NonEntityQueryResultLoader<>(resultClass);
         };
+    }
+
+    private <T> OptimizerType resolveOptimizerTypeForResultLoader(Class<T> resultClass, Descriptor descriptor) {
+        final OptimizerType ot = resolveOptimizerType(resultClass, descriptor);
+        if (ot != OptimizerType.NONE) {
+            return ot;
+        }
+        if (uow.isEntityType(resultClass) && queryHolder.getProjectedQueryParameters().size() > 1) {
+            // Entity attributes are projected from the query
+            return OptimizerType.ATTRIBUTE_BASED;
+        }
+        return ot;
     }
 
     private enum OptimizerType {
