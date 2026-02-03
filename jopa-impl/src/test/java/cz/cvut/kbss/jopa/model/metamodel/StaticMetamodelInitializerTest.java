@@ -245,7 +245,8 @@ class StaticMetamodelInitializerTest {
     void initializeStaticMetamodelInitializesMetamodelForMappedSuperclasses() {
         when(metamodel.getEntities()).thenReturn(Collections.singleton(metamodelMocks.forOwlClassQ().entityType()));
         doReturn(new HashSet<>(Arrays.asList(metamodelMocks.forOwlClassQ().entityType(),
-                metamodelMocks.forOwlClassQ().entityType().getSupertypes().iterator().next()))).when(metamodel).getManagedTypes();
+                metamodelMocks.forOwlClassQ().entityType().getSupertypes().iterator().next()))).when(metamodel)
+                                                                                               .getManagedTypes();
         sut.initializeStaticMetamodel();
         assertEquals(metamodelMocks.forOwlClassQ().identifier(), QMappedSuperclass_.uri);
         assertEquals(metamodelMocks.forOwlClassQ().qLabelAtt(), QMappedSuperclass_.label);
@@ -323,5 +324,12 @@ class StaticMetamodelInitializerTest {
         public static volatile Identifier<SimpleClass, URI> uri;
 
         private static String test;
+    }
+
+    @Test
+    void initializeStaticMetamodelInitializesPropertyIriFields() {
+        when(metamodel.getEntities()).thenReturn(Collections.singleton(metamodelMocks.forOwlClassA().entityType()));
+        sut.initializeStaticMetamodel();
+        assertEquals(metamodelMocks.forOwlClassA().stringAttribute().getIRI(), OWLClassA_.stringAttributePropertyIRI);
     }
 }

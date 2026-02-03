@@ -47,6 +47,12 @@ public class StaticMetamodelInitializer {
      */
     private static final String ENTITY_CLASS_IRI_FIELD = "entityClassIRI";
 
+    /**
+     * Suffix added to the name of an attribute to create the name of the field containing the attribute property IRI in
+     * a static metamodel class.
+     */
+    private static final String PROPERTY_IRI_SUFFIX = "PropertyIRI";
+
     private final Metamodel metamodel;
 
     public StaticMetamodelInitializer(Metamodel metamodel) {
@@ -125,6 +131,10 @@ public class StaticMetamodelInitializer {
                 setFieldValue(f, ((EntityType<T>) et).getIRI());
                 continue;
             }
+            if (isPropertyIRIField(f, et)) {
+                setPropertyIriFieldValue(et, f);
+                continue;
+            }
             final FieldSpecification<T, ?> att = getMetamodelMember(f, et);
             setFieldValue(f, att);
         }
@@ -135,12 +145,27 @@ public class StaticMetamodelInitializer {
     }
 
     private static boolean isEntityClassIRIField(Field field, ManagedType<?> type) {
-        return type.getPersistenceType() == Type.PersistenceType.ENTITY && field.getName().equals(ENTITY_CLASS_IRI_FIELD);
+        return type.getPersistenceType() == Type.PersistenceType.ENTITY && field.getName()
+                                                                                .equals(ENTITY_CLASS_IRI_FIELD);
     }
 
     private static void setFieldValue(Field field, Object value) throws IllegalAccessException {
         assert isCanonicalMetamodelField(field);
         field.set(null, value);
+    }
+
+    private static boolean isPropertyIRIField(Field field, ManagedType<?> type) {
+        return type.getPersistenceType() == Type.PersistenceType.ENTITY && field.getName()
+                                                                                .endsWith(PROPERTY_IRI_SUFFIX);
+    }
+
+    private static <T> void setPropertyIriFieldValue(ManagedType<T> et, Field f) throws IllegalAccessException {
+        final String attributeName = f.getName()
+                                      .substring(0, f.getName().length() - PROPERTY_IRI_SUFFIX.length());
+        final Optional<FieldSpecification<T, ?>> att = getDeclaredAttribute(attributeName, et);
+        if (att.isPresent()) {
+            setFieldValue(f, ((Attribute<T, ?>) att.get()).getIRI());
+        }
     }
 
     private <T> FieldSpecification<T, ?> getMetamodelMember(Field field, ManagedType<T> type) {
@@ -168,8 +193,12 @@ public class StaticMetamodelInitializer {
     }
 
     private static <T> Optional<FieldSpecification<T, ?>> getDeclaredAttribute(Field field, ManagedType<T> type) {
+        return getDeclaredAttribute(field.getName(), type);
+    }
+
+    private static <T> Optional<FieldSpecification<T, ?>> getDeclaredAttribute(String fieldName, ManagedType<T> type) {
         try {
-            return Optional.of(type.getDeclaredAttribute(field.getName()));
+            return Optional.of(type.getDeclaredAttribute(fieldName));
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }

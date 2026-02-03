@@ -30,6 +30,8 @@ public class OWLClassA_ {
 
     public static volatile IRI entityClassIRI;
 
+    public static volatile IRI stringAttributePropertyIRI;
+
     public static volatile Identifier<OWLClassA, URI> uri;
 
     public static volatile SingularAttribute<OWLClassA, String> stringAttribute;
