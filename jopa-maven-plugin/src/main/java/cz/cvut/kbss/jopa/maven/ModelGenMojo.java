@@ -48,6 +48,7 @@ public class ModelGenMojo extends AbstractMojo {
     private static final String ADDITIONAL_SOURCES_PARAM = "additional-sources";
     private static final String SOURCE_PACKAGE_PARAM = "source-package";
     public static final String DEBUG_PARAM = "debug-option";
+    public static final String OUTPUT_PROPERTY_IRIS_PARAM = "output-property-iris";
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -57,6 +58,8 @@ public class ModelGenMojo extends AbstractMojo {
     private String sourcePackage;
     @Parameter(name = DEBUG_PARAM, defaultValue = "false")
     private String debugOption;
+    @Parameter(name = OUTPUT_PROPERTY_IRIS_PARAM, defaultValue = "false")
+    private String outputPropertyIris;
     @Parameter(name = ADDITIONAL_SOURCES_PARAM)
     private String additionalSources;
 
@@ -94,6 +97,10 @@ public class ModelGenMojo extends AbstractMojo {
 
         if (isNotBlank(debugOption)) {
             options.add("-AdebugOption=" + debugOption);
+        }
+
+        if (isNotBlank(outputPropertyIris)) {
+            options.add("-AoutputPropertyIris=" + outputPropertyIris);
         }
 
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
@@ -213,5 +220,6 @@ public class ModelGenMojo extends AbstractMojo {
         Utils.logParameterValue(SOURCE_PACKAGE_PARAM, sourcePackage, getLog());
         Utils.logParameterValue(DEBUG_PARAM, debugOption, getLog());
         Utils.logParameterValue(ADDITIONAL_SOURCES_PARAM, additionalSources, getLog());
+        Utils.logParameterValue(OUTPUT_PROPERTY_IRIS_PARAM, outputPropertyIris, getLog());
     }
 }
