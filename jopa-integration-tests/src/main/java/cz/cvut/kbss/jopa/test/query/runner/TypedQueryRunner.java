@@ -49,6 +49,7 @@ import java.util.stream.IntStream;
 
 import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -426,5 +427,27 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                                                          .setHint(QueryHints.ENABLE_ENTITY_LOADING_OPTIMIZER, "true")
                                                          .getResultList();
         assertThat(result, containsSameEntities(entities));
+    }
+
+    @Test
+    public void querySupportsMappingResultsDirectlyToEntity() {
+        final List<OWLClassA> entities = QueryTestEnvironment.getData(OWLClassA.class);
+        final List<OWLClassA> result = getEntityManager().createNativeQuery("""
+                                                                 SELECT ?x ?stringAttribute ?types WHERE {
+                                                                 ?x a ?type ;
+                                                                 ?hasString ?stringAttribute;
+                                                                 a ?types .
+                                                                 }""", OWLClassA.class)
+                                                         .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_A))
+                                                         .setParameter("hasString", URI.create(Vocabulary.P_A_STRING_ATTRIBUTE))
+                                                         .getResultList();
+        entities.sort(Comparator.comparing(OWLClassA::getUri));
+        result.sort(Comparator.comparing(OWLClassA::getUri));   // Sort here instead of in the query due to OWL2Query lacking proper sorting support
+        assertEquals(entities.size(), result.size());
+        for (int i = 0; i < entities.size(); i++) {
+            assertEquals(entities.get(i).getUri(), result.get(i).getUri());
+            assertEquals(entities.get(i).getStringAttribute(), result.get(i).getStringAttribute());
+            assertThat(result.get(i).getTypes(), hasItems(entities.get(i).getTypes().toArray(new String[]{})));
+        }
     }
 }
