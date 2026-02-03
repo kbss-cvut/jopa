@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -158,9 +159,9 @@ class OutputFilesGeneratorTests {
         }
 
         @AfterAll
-        static void deleteSMClass() {
+        static void tearDownAfterAll() throws IOException {
             File file = new File(OUTPUT_FILE);
-            file.delete();
+            Files.deleteIfExists(file.toPath());
         }
 
         @Test
@@ -198,9 +199,9 @@ class OutputFilesGeneratorTests {
     class GeneratedOutputWithPropertyIrisTest {
 
         @AfterEach
-        void tearDown() {
+        void tearDown() throws IOException {
             File file = new File(OUTPUT_FILE);
-            file.delete();
+            Files.deleteIfExists(file.toPath());
         }
 
         @Test
