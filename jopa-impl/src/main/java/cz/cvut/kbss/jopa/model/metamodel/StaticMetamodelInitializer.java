@@ -123,8 +123,7 @@ public class StaticMetamodelInitializer {
 
         final Field[] fields = smClass.getDeclaredFields();
         for (Field f : fields) {
-            if (!isCanonicalMetamodelField(f)) {
-                LOG.debug("Skipping field {}, it is not canonical (public static).", f);
+            if (shouldSkipField(f)) {
                 continue;
             }
             if (isEntityClassIRIField(f, et)) {
@@ -138,6 +137,18 @@ public class StaticMetamodelInitializer {
             final FieldSpecification<T, ?> att = getMetamodelMember(f, et);
             setFieldValue(f, att);
         }
+    }
+
+    private static boolean shouldSkipField(Field field) {
+        if (!isCanonicalMetamodelField(field)) {
+            LOG.debug("Skipping field {}, it is not canonical (public static).", field);
+            return true;
+        }
+        if (Modifier.isFinal(field.getModifiers())) {
+            LOG.trace("Skipping field {}, it is final and assumed to be initialized by modelgen.", field);
+            return true;
+        }
+        return false;
     }
 
     private static boolean isCanonicalMetamodelField(Field field) {
