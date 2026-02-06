@@ -101,7 +101,6 @@ public class MetamodelClass {
 
     public void makeEntityClass() {
         this.entityClass = true;
-        imports.add(0, "cz.cvut.kbss.jopa.model.IRI");
     }
 
     public void addField(Field field) {

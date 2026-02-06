@@ -147,14 +147,14 @@ public class OutputFilesGenerator {
     }
 
     private void generateImports(MetamodelClass cls, StringBuilder sbOut) {
-        cls.getImports().forEach(imp -> sbOut.append("import ")
-                                             .append(imp)
-                                             .append(";\n"));
         if (cls.isEntityClass() && !outputConfig.outputIriAsString()) {
             sbOut.append("import ")
                  .append("cz.cvut.kbss.jopa.model.IRI;")
                  .append("\n");
         }
+        cls.getImports().forEach(imp -> sbOut.append("import ")
+                                             .append(imp)
+                                             .append(";\n"));
         if (!cls.getExtend().isEmpty()) {
             sbOut.append("import ")
                  .append(cls.getExtend())

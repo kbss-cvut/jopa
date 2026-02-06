@@ -48,7 +48,8 @@ import java.util.Set;
         ModelGenProcessor.OUTPUT_DIRECTORY_PARAM,
         ModelGenProcessor.SOURCE_PACKAGE_PARAM,
         ModelGenProcessor.DEBUG_PARAM,
-        ModelGenProcessor.OUTPUT_PROPERTY_IRIS_PARAM
+        ModelGenProcessor.OUTPUT_PROPERTY_IRIS_PARAM,
+        ModelGenProcessor.OUTPUT_IRI_AS_STRING_PARAM
 })
 public class ModelGenProcessor extends AbstractProcessor {
     public static final String OUTPUT_DIRECTORY_PARAM = "outputDirectory";
