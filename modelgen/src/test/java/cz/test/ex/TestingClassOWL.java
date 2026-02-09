@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@OWLClass(iri="")
+@OWLClass(iri="http://krizik.felk.cvut.cz/ontologies/jopa/classes/TestingClassOWL")
 public class TestingClassOWL {
     @Id(generated = true)
     private URI uri;
