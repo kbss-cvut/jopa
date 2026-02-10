@@ -20,11 +20,13 @@ package cz.test.ex;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.Inferred;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +38,7 @@ public class TestingClassOWL {
     private URI uri;
 
     @CustomAnnotation
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute")
+    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#objectProperty")
     private TestingClassOWL testingClassOWL;
 
     @Inferred
@@ -44,9 +46,9 @@ public class TestingClassOWL {
     private Map<String, Set<String>> properties;
     @Properties
     private Map<URI, Set<Object>> propertie;
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
+    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#stringList")
     private List<String> listAttribute;
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
+    @OWLAnnotationProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#stringSet")
     private Set<String> setAttribute;
 
     public URI getUri() {
@@ -57,4 +59,11 @@ public class TestingClassOWL {
         this.uri = uri;
     }
 
+    public static Field field(String name) {
+        try {
+            return TestingClassOWL.class.getDeclaredField(name);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

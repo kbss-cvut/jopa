@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.modelgen;
 
 import cz.cvut.kbss.jopa.modelgen.classmodel.Field;
-import cz.cvut.kbss.jopa.modelgen.classmodel.MappingAnnotations;
+import cz.cvut.kbss.jopa.modelgen.classmodel.MappingAnnotation;
 import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Type;
 import cz.cvut.kbss.jopa.modelgen.exception.ModelGenException;
@@ -181,14 +181,26 @@ public class OutputFilesGenerator {
         }
         final StringBuilder sb = new StringBuilder();
         for (Field field : cls.getFields()) {
-            if (field.isAnnotatedWith(MappingAnnotations.DATA_PROPERTY)
-                    || field.isAnnotatedWith(MappingAnnotations.OBJECT_PROPERTY)
-                    || field.isAnnotatedWith(MappingAnnotations.ANNOTATION_PROPERTY)) {
-                sb.append(INDENT + "public static volatile ");
-                sb.append(iriType());
-                sb.append(" ");
-                sb.append(field.getName());
-                sb.append("PropertyIRI;\n");
+            if (field.isAnnotatedWith(MappingAnnotation.DATA_PROPERTY)
+                    || field.isAnnotatedWith(MappingAnnotation.OBJECT_PROPERTY)
+                    || field.isAnnotatedWith(MappingAnnotation.ANNOTATION_PROPERTY)) {
+                if (outputConfig.initializeIris()) {
+                    sb.append(INDENT)
+                      .append("public static final ")
+                      .append(iriType())
+                      .append(' ')
+                      .append(field.getName())
+                      .append("PropertyIRI = ")
+                      .append(iriValue(field.getPropertyIri()))
+                      .append(";\n");
+                } else {
+                    sb.append(INDENT)
+                      .append("public static volatile ")
+                      .append(iriType())
+                      .append(' ')
+                      .append(field.getName())
+                      .append("PropertyIRI;\n");
+                }
             }
         }
         sb.append('\n');
@@ -201,14 +213,14 @@ public class OutputFilesGenerator {
             final String declaringClass = field.getParentName().substring(field.getParentName().lastIndexOf('.') + 1);
             attributes.append(INDENT + "public static volatile ");
             //@Id
-            if (field.isAnnotatedWith(MappingAnnotations.ID)) {
+            if (field.isAnnotatedWith(MappingAnnotation.ID)) {
                 attributes.append("Identifier<")
                           .append(declaringClass)
                           .append(", ")
                           .append(field.getType().getTypeName()
                                        .substring(field.getType().getTypeName().lastIndexOf(".") + 1));
                 //@Types
-            } else if (field.isAnnotatedWith(MappingAnnotations.TYPES)) {
+            } else if (field.isAnnotatedWith(MappingAnnotation.TYPES)) {
                 attributes.append("TypesSpecification<")
                           .append(declaringClass)
                           .append(", ");
@@ -218,7 +230,7 @@ public class OutputFilesGenerator {
                     attributes.append(field.getType().getTypes().get(0).getSimpleName());
                 }
                 //@Properties
-            } else if (field.isAnnotatedWith(MappingAnnotations.PROPERTIES)) {
+            } else if (field.isAnnotatedWith(MappingAnnotation.PROPERTIES)) {
                 attributes.append("PropertiesSpecification<")
                           .append(declaringClass)
                           .append(", ");
@@ -233,9 +245,9 @@ public class OutputFilesGenerator {
                               .append(", ")
                               .append(type.getTypes().get(1).getTypes().get(0).getSimpleName());
                 }
-            } else if (field.isAnnotatedWith(MappingAnnotations.DATA_PROPERTY)
-                    || field.isAnnotatedWith(MappingAnnotations.OBJECT_PROPERTY)
-                    || field.isAnnotatedWith(MappingAnnotations.ANNOTATION_PROPERTY)) {
+            } else if (field.isAnnotatedWith(MappingAnnotation.DATA_PROPERTY)
+                    || field.isAnnotatedWith(MappingAnnotation.OBJECT_PROPERTY)
+                    || field.isAnnotatedWith(MappingAnnotation.ANNOTATION_PROPERTY)) {
                 Type type = field.getType();
                 if (type.getIsSimple()) {
                     attributes.append("SingularAttribute<")

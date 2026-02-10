@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.modelgen;
 
 
 import cz.cvut.kbss.jopa.modelgen.classmodel.Field;
-import cz.cvut.kbss.jopa.modelgen.classmodel.MappingAnnotations;
+import cz.cvut.kbss.jopa.modelgen.classmodel.MappingAnnotation;
 import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -125,7 +125,7 @@ public class ModelGenProcessor extends AbstractProcessor {
                 if (paramAnnotation.toString().contains("cz.cvut.kbss.jopa.model.annotations.Transient")) {
                     return false;
                 }
-                for (MappingAnnotations anEnum : MappingAnnotations.values()) {
+                for (MappingAnnotation anEnum : MappingAnnotation.values()) {
                     if (paramAnnotation.toString().contains(anEnum.getAnnotation())) {
                         containsWanted = true;
                         break;

@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.modelgen.classmodel;
 
 import cz.cvut.kbss.jopa.modelgen.exception.ModelGenException;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,9 +30,10 @@ import java.util.Optional;
 public class Field {
     private final List<String> imports = new ArrayList<>();
     private String name;
+    private String propertyIri;
     private Type type;
     private String parentName;
-    private MappingAnnotations annotatedWith;
+    private MappingAnnotation annotatedWith;
 
     public Field() {
         name = "";
@@ -42,7 +44,15 @@ public class Field {
         this.name = elProperty.toString();
         this.type = new Type(elProperty.asType());
         this.parentName = elParent.toString();
-        this.annotatedWith = resolveFieldMappingAnnotation(elProperty).orElse(null);
+        final Optional<AnnotationRecord> mappingAnnotation = resolveFieldMappingAnnotation(elProperty);
+        mappingAnnotation.ifPresent(r -> {
+            this.annotatedWith = r.mappingAnnotation();
+            if (r.mappingAnnotation == MappingAnnotation.OBJECT_PROPERTY || r.mappingAnnotation == MappingAnnotation.DATA_PROPERTY || r.mappingAnnotation == MappingAnnotation.ANNOTATION_PROPERTY) {
+                this.propertyIri = r.annotationMirror().getElementValues().entrySet().stream()
+                                    .filter(e -> e.getKey().getSimpleName().contentEquals("iri"))
+                                    .map(e -> e.getValue().toString()).findAny().orElse(null);
+            }
+        });
         if (type.getIsSimple()) {
             imports.add(type.getTypeName());
         } else {
@@ -53,15 +63,19 @@ public class Field {
         }
     }
 
-    private static Optional<MappingAnnotations> resolveFieldMappingAnnotation(Element field) {
-        final List<MappingAnnotations> annotations = Arrays.stream(MappingAnnotations.values())
-                                                           .filter(annotationEnum -> field.getAnnotationMirrors()
-                                                                                          .stream()
-                                                                                          .anyMatch(annotationMirror ->
-                                                                                                  annotationMirror.getAnnotationType()
-                                                                                                                  .toString()
-                                                                                                                  .contains(annotationEnum.getAnnotation())))
-                                                           .toList();
+    private static Optional<AnnotationRecord> resolveFieldMappingAnnotation(Element field) {
+        final List<AnnotationRecord> annotations = Arrays.stream(MappingAnnotation.values())
+                                                         .map(annotationEnum -> {
+                                                             final Optional<? extends AnnotationMirror> am = field.getAnnotationMirrors()
+                                                                                                        .stream()
+                                                                                                        .filter(annotationMirror ->
+                                                                                                                annotationMirror.getAnnotationType()
+                                                                                                                                .toString()
+                                                                                                                                .contains(annotationEnum.getAnnotation()))
+                                                                                                        .findFirst();
+                                                             return am.map(amr -> new AnnotationRecord(amr, annotationEnum));
+                                                         }).flatMap(Optional::stream)
+                                                         .toList();
         if (annotations.size() > 1) {
             throw new ModelGenException("Field " + field + " is annotated by multiple mapping annotation.");
         }
@@ -74,6 +88,14 @@ public class Field {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPropertyIri() {
+        return propertyIri;
+    }
+
+    public void setPropertyIri(String propertyIri) {
+        this.propertyIri = propertyIri;
     }
 
     public Type getType() {
@@ -92,11 +114,11 @@ public class Field {
         this.parentName = parentName;
     }
 
-    public MappingAnnotations getAnnotatedWith() {
+    public MappingAnnotation getAnnotatedWith() {
         return annotatedWith;
     }
 
-    public void setAnnotatedWith(MappingAnnotations annotatedWith) {
+    public void setAnnotatedWith(MappingAnnotation annotatedWith) {
         this.annotatedWith = annotatedWith;
     }
 
@@ -106,11 +128,13 @@ public class Field {
      * @param annotation Annotation to check
      * @return {@code true} if this field is annotated with the specified annotation, {@code false} otherwise
      */
-    public boolean isAnnotatedWith(MappingAnnotations annotation) {
+    public boolean isAnnotatedWith(MappingAnnotation annotation) {
         return Objects.equals(this.annotatedWith, annotation);
     }
 
     public List<String> getImports() {
         return imports;
     }
+
+    private record AnnotationRecord(AnnotationMirror annotationMirror, MappingAnnotation mappingAnnotation) {}
 }

@@ -17,13 +17,10 @@
  */
 package cz.cvut.kbss.jopa.modelgen.classmodel;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * JOPA mapping annotations.
  */
-public enum MappingAnnotations {
+public enum MappingAnnotation {
     ID("cz.cvut.kbss.jopa.model.annotations.Id"),
     PROPERTIES("cz.cvut.kbss.jopa.model.annotations.Properties"),
     OBJECT_PROPERTY("cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty"),
@@ -33,16 +30,11 @@ public enum MappingAnnotations {
 
     private final String annotation;
 
-    MappingAnnotations(String annotation) {
+    MappingAnnotation(String annotation) {
         this.annotation = annotation;
     }
 
     public String getAnnotation() {
         return annotation;
     }
-
-    public static List<MappingAnnotations> getAll() {
-        return Arrays.asList(PROPERTIES, OBJECT_PROPERTY, DATA_PROPERTY, ANNOTATION_PROPERTY, TYPES, ID);
-    }
-
 }
