@@ -59,6 +59,7 @@ public class ModelGenMojo extends AbstractMojo {
     public static final String DEBUG_PARAM = "debug-option";
     public static final String OUTPUT_PROPERTY_IRIS_PARAM = "output-property-iris";
     public static final String OUTPUT_IRI_AS_STRING_PARAM = "output-iri-as-string";
+    public static final String INITIALIZE_IRIS_PARAM = "initialize-iris";
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -72,6 +73,8 @@ public class ModelGenMojo extends AbstractMojo {
     private String outputPropertyIris;
     @Parameter(name = OUTPUT_IRI_AS_STRING_PARAM, defaultValue = "false")
     private String outputIriAsString;
+    @Parameter(name = INITIALIZE_IRIS_PARAM, defaultValue = "false")
+    private String initializeIris;
     @Parameter(name = ADDITIONAL_SOURCES_PARAM)
     private String additionalSources;
 
@@ -175,6 +178,10 @@ public class ModelGenMojo extends AbstractMojo {
 
         if (isNotBlank(outputIriAsString)) {
             options.add("-AoutputIriAsString=" + outputIriAsString);
+        }
+
+        if (isNotBlank(initializeIris)) {
+            options.add("-AinitializeIris=" + initializeIris);
         }
     }
 

@@ -147,7 +147,7 @@ public class OutputFilesGenerator {
     }
 
     private void generateImports(MetamodelClass cls, StringBuilder sbOut) {
-        if (cls.isEntityClass() && !outputConfig.outputIriAsString()) {
+        if (!outputConfig.outputIriAsString() && (cls.isEntityClass() || !cls.getFields().isEmpty())) {
             sbOut.append("import cz.cvut.kbss.jopa.model.IRI;\n");
         }
         cls.getImports().forEach(imp -> sbOut.append("import ").append(imp).append(";\n"));
@@ -172,6 +172,9 @@ public class OutputFilesGenerator {
     }
 
     private String iriValue(String iri) {
+        if (iri.charAt(0) == '\"' && iri.charAt(iri.length() - 1) == '\"') {
+            iri = iri.substring(1, iri.length() - 1);
+        }
         return outputConfig.outputIriAsString() ? "\"" + iri + "\"" : "IRI.create(\"" + iri + "\")";
     }
 

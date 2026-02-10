@@ -37,8 +37,9 @@ public class Type {
     private Boolean isSimple;
     private List<Type> types;
 
-    public Type() {
-        typeName = "";
+    public Type(String typeName, String simpleName) {
+        this.typeName = typeName;
+        this.simpleName = simpleName;
         isSimple = true;
         types = new ArrayList<>();
     }
@@ -116,5 +117,10 @@ public class Type {
                 && !typeName.contains(List.class.getName())
                 && !typeName.contains(Collection.class.getName())
                 && !typeName.contains(Map.class.getName());
+    }
+
+    @Override
+    public String toString() {
+        return simpleName + (isSimple ? "" : types);
     }
 }

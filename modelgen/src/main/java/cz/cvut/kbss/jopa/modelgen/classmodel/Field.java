@@ -136,5 +136,13 @@ public class Field {
         return imports;
     }
 
+    @Override
+    public String toString() {
+        return "Field{" +
+                "type=" + type +
+                ", name='" + name + '\'' +
+                '}';
+    }
+
     private record AnnotationRecord(AnnotationMirror annotationMirror, MappingAnnotation mappingAnnotation) {}
 }
