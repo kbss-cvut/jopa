@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.modelgen.classmodel;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.util.ArrayList;
@@ -25,9 +26,9 @@ import java.util.List;
 public class MetamodelClass {
     private String pckg;
     private String name;
-    private String extend;
+    private String classIri;
+    private String superClass;
     private final List<String> imports;
-    private boolean entityClass = false;
     private final List<Field> fields = new ArrayList<>();
 
     public MetamodelClass() {
@@ -45,12 +46,11 @@ public class MetamodelClass {
             this.pckg = "";
         }
         this.name = elClass.getSimpleName().toString();
-        this.extend = ((TypeElement) elClass).getSuperclass().toString();
-        if (extend.equals(Object.class.getName())) {
-            extend = "";
-        }
-        else if (extend.contains("<")) {
-            this.extend = extend.substring(0, extend.indexOf("<"));
+        this.superClass = ((TypeElement) elClass).getSuperclass().toString();
+        if (superClass.equals(Object.class.getName())) {
+            superClass = "";
+        } else if (superClass.contains("<")) {
+            this.superClass = superClass.substring(0, superClass.indexOf("<"));
         }
         this.imports = initDefaultImports();
         imports.add(fullName);
@@ -79,12 +79,20 @@ public class MetamodelClass {
         this.name = name;
     }
 
-    public String getExtend() {
-        return extend;
+    public String getClassIri() {
+        return classIri;
     }
 
-    public void setExtend(String extend) {
-        this.extend = extend;
+    public void setClassIri(String classIri) {
+        this.classIri = classIri;
+    }
+
+    public String getSuperClass() {
+        return superClass;
+    }
+
+    public void setSuperClass(String superClass) {
+        this.superClass = superClass;
     }
 
     public List<String> getImports() {
@@ -96,11 +104,13 @@ public class MetamodelClass {
     }
 
     public boolean isEntityClass() {
-        return entityClass;
+        return classIri != null;
     }
 
-    public void makeEntityClass() {
-        this.entityClass = true;
+    public void makeEntityClass(AnnotationMirror owlClassAnnotation) {
+        this.classIri = owlClassAnnotation.getElementValues().entrySet().stream()
+                                          .filter(e -> e.getKey().getSimpleName().contentEquals("iri"))
+                                          .map(e -> e.getValue().toString()).findFirst().orElse(null);
     }
 
     public void addField(Field field) {

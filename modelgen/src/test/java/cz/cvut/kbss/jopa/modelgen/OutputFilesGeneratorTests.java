@@ -17,14 +17,14 @@
  */
 package cz.cvut.kbss.jopa.modelgen;
 
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Field;
 import cz.cvut.kbss.jopa.modelgen.classmodel.MappingAnnotations;
 import cz.cvut.kbss.jopa.modelgen.classmodel.MetamodelClass;
 import cz.cvut.kbss.jopa.modelgen.classmodel.Type;
 import cz.test.ex.TestingClassOWL;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -45,17 +45,17 @@ class OutputFilesGeneratorTests {
 
     private static final String OUTPUT_FILE = "./src/test/java/cz/test/ex/TestingClassOWL_.java";
 
-    private static MetamodelClass metamodelClass;
+    private MetamodelClass metamodelClass;
 
-    @BeforeAll
-    static void createSMClass() {
-        metamodelClass = new MetamodelClass();
+    @BeforeEach
+    void createSMClass() {
+        this.metamodelClass = new MetamodelClass();
         Class<TestingClassOWL> testingClass = TestingClassOWL.class;
         metamodelClass.setName(testingClass.getSimpleName());
         metamodelClass.setPckg(testingClass.getPackage().getName());
         metamodelClass.getImports().add(testingClass.getName());
-        metamodelClass.makeEntityClass();
-        metamodelClass.setExtend("");
+        metamodelClass.setSuperClass("");
+        metamodelClass.setClassIri(TestingClassOWL.class.getAnnotation(OWLClass.class).iri());
 
         Field field1 = new Field();
         field1.setAnnotatedWith(MappingAnnotations.ID);
@@ -120,48 +120,29 @@ class OutputFilesGeneratorTests {
     @Nested
     class BasicGeneratedOutputTest {
 
-        private static String actualResult = "";
-
-        @BeforeAll
-        static void setUpBeforeAll() throws IOException {
-            new OutputFilesGenerator(new OutputConfig("./src/test/java", false, false, false), false, null).generateOutputFiles(List.of(metamodelClass));
-
-            actualResult = readFileAsString(new File(OUTPUT_FILE));
-        }
-
-        @AfterAll
-        static void tearDownAfterAll() throws IOException {
+        @AfterEach
+        void tearDown() throws IOException {
             deleteTestFile(OUTPUT_FILE);
         }
 
         @Test
-        void containsClassIri() {
-            assertThat(actualResult, containsString("public static volatile IRI entityClassIRI;"));
-        }
+        void containsAllMetamodelFields() throws IOException {
+            new OutputFilesGenerator(new OutputConfig("./src/test/java", false, false, false), false, null).generateOutputFiles(List.of(metamodelClass));
+            String actualResult = readFileAsString(new File(OUTPUT_FILE));
 
-        @Test
-        void containsIdentifier() {
             assertThat(actualResult, containsString("public static volatile Identifier<TestingClassOWL, Test> uri;"));
-        }
-
-        @Test
-        void containsSingular() {
             assertThat(actualResult, containsString("public static volatile SingularAttribute<TestingClassOWL, Test> object;"));
-        }
-
-        @Test
-        void containsTypedProperties() {
+            assertThat(actualResult, containsString("public static volatile ListAttribute<TestingClassOWL, Test> dataList;"));
+            assertThat(actualResult, containsString("public static volatile SetAttribute<TestingClassOWL, Test> dataSet;"));
             assertThat(actualResult, containsString("public static volatile PropertiesSpecification<TestingClassOWL, Test> properties;"));
         }
 
         @Test
-        void containsListAttribute() {
-            assertThat(actualResult, containsString("public static volatile ListAttribute<TestingClassOWL, Test> dataList;"));
-        }
+        void containsClassIriField() throws IOException {
+            new OutputFilesGenerator(new OutputConfig("./src/test/java", false, false, false), false, null).generateOutputFiles(List.of(metamodelClass));
+            String actualResult = readFileAsString(new File(OUTPUT_FILE));
 
-        @Test
-        void containsSetAttribute() {
-            assertThat(actualResult, containsString("public static volatile SetAttribute<TestingClassOWL, Test> dataSet;"));
+            assertThat(actualResult, containsString("public static volatile IRI entityClassIRI;"));
         }
     }
 
@@ -204,7 +185,6 @@ class OutputFilesGeneratorTests {
         }
     }
 
-    @Disabled
     @Nested
     class GenerateOutputWithInitializedIriFieldsTest {
 
@@ -214,11 +194,20 @@ class OutputFilesGeneratorTests {
         }
 
         @Test
-        void containsIriFieldsAsFinalStringWithValue() throws IOException {
-            new OutputFilesGenerator(new OutputConfig("./src/test/java", true, true, true), false, null).generateOutputFiles(List.of(metamodelClass));
+        void containsClassIriFieldFinalStringWithValue() throws IOException {
+            new OutputFilesGenerator(new OutputConfig("./src/test/java", false, true, true), false, null).generateOutputFiles(List.of(metamodelClass));
             String actualResult = readFileAsString(new File(OUTPUT_FILE));
 
-            // TODO
+            assertThat(actualResult, containsString("public static final String entityClassIRI = \"" + metamodelClass.getClassIri() + "\";"));
+        }
+
+        @Test
+        void containsClassIriFieldFinalIriWithValue() throws IOException {
+            new OutputFilesGenerator(new OutputConfig("./src/test/java", false, false, true), false, null).generateOutputFiles(List.of(metamodelClass));
+            String actualResult = readFileAsString(new File(OUTPUT_FILE));
+
+            assertThat(actualResult, containsString("import cz.cvut.kbss.jopa.model.IRI;"));
+            assertThat(actualResult, containsString("public static final IRI entityClassIRI = IRI.create(\"" + metamodelClass.getClassIri() + "\");"));
         }
     }
 }

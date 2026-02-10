@@ -116,12 +116,12 @@ public class OutputFilesGenerator {
 
     public String generateClassPreamble(MetamodelClass cls) {
         String extend = "";
-        if (!cls.getExtend().isEmpty()) {
+        if (!cls.getSuperClass().isEmpty()) {
             extend = "extends ";
-            if (cls.getExtend().contains(".")) {
-                extend += cls.getExtend().substring(cls.getExtend().lastIndexOf(".") + 1) + "_ ";
+            if (cls.getSuperClass().contains(".")) {
+                extend += cls.getSuperClass().substring(cls.getSuperClass().lastIndexOf(".") + 1) + "_ ";
             } else {
-                extend += cls.getExtend();
+                extend += cls.getSuperClass();
             }
         }
         StringBuilder sbOut = new StringBuilder();
@@ -148,29 +148,31 @@ public class OutputFilesGenerator {
 
     private void generateImports(MetamodelClass cls, StringBuilder sbOut) {
         if (cls.isEntityClass() && !outputConfig.outputIriAsString()) {
-            sbOut.append("import ")
-                 .append("cz.cvut.kbss.jopa.model.IRI;")
-                 .append("\n");
+            sbOut.append("import cz.cvut.kbss.jopa.model.IRI;\n");
         }
-        cls.getImports().forEach(imp -> sbOut.append("import ")
-                                             .append(imp)
-                                             .append(";\n"));
-        if (!cls.getExtend().isEmpty()) {
-            sbOut.append("import ")
-                 .append(cls.getExtend())
-                 .append("_;\n");
+        cls.getImports().forEach(imp -> sbOut.append("import ").append(imp).append(";\n"));
+        if (!cls.getSuperClass().isEmpty()) {
+            sbOut.append("import ").append(cls.getSuperClass()).append("_;\n");
         }
     }
 
     private Optional<String> generateClassIriField(MetamodelClass cls) {
         if (cls.isEntityClass()) {
-            return Optional.of(INDENT + "public static volatile " + iriType() + " entityClassIRI;\n\n");
+            if (outputConfig.initializeIris()) {
+                return Optional.of(INDENT + "public static final " + iriType() + " entityClassIRI = " + iriValue(cls.getClassIri()) + ";\n\n");
+            } else {
+                return Optional.of(INDENT + "public static volatile " + iriType() + " entityClassIRI;\n\n");
+            }
         }
         return Optional.empty();
     }
 
     private String iriType() {
         return outputConfig.outputIriAsString() ? "String" : "IRI";
+    }
+
+    private String iriValue(String iri) {
+        return outputConfig.outputIriAsString() ? "\"" + iri + "\"" : "IRI.create(\"" + iri + "\")";
     }
 
     private Optional<String> generatePropertyIris(MetamodelClass cls) {

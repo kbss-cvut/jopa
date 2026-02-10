@@ -36,6 +36,7 @@ import javax.tools.Diagnostic;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -49,7 +50,8 @@ import java.util.Set;
         ModelGenProcessor.SOURCE_PACKAGE_PARAM,
         ModelGenProcessor.DEBUG_PARAM,
         ModelGenProcessor.OUTPUT_PROPERTY_IRIS_PARAM,
-        ModelGenProcessor.OUTPUT_IRI_AS_STRING_PARAM
+        ModelGenProcessor.OUTPUT_IRI_AS_STRING_PARAM,
+        ModelGenProcessor.INITIALIZE_IRI_FIELDS_PARAM
 })
 public class ModelGenProcessor extends AbstractProcessor {
     public static final String OUTPUT_DIRECTORY_PARAM = "outputDirectory";
@@ -57,6 +59,7 @@ public class ModelGenProcessor extends AbstractProcessor {
     public static final String DEBUG_PARAM = "debugOption";
     public static final String OUTPUT_PROPERTY_IRIS_PARAM = "outputPropertyIris";
     public static final String OUTPUT_IRI_AS_STRING_PARAM = "outputIriAsString";
+    public static final String INITIALIZE_IRI_FIELDS_PARAM = "initializeIris";
 
     Messager messager;
 
@@ -67,6 +70,7 @@ public class ModelGenProcessor extends AbstractProcessor {
     private boolean debugOption;
     private boolean outputPropertyIris;
     private boolean outputIriAsString;
+    private boolean initializeIris;
 
     @Override
     public void init(ProcessingEnvironment env) {
@@ -78,35 +82,36 @@ public class ModelGenProcessor extends AbstractProcessor {
         this.debugOption = Boolean.parseBoolean(env.getOptions().get(DEBUG_PARAM));
         this.outputPropertyIris = Boolean.parseBoolean(env.getOptions().get(OUTPUT_PROPERTY_IRIS_PARAM));
         this.outputIriAsString = Boolean.parseBoolean(env.getOptions().get(OUTPUT_IRI_AS_STRING_PARAM));
+        this.initializeIris = Boolean.parseBoolean(env.getOptions().get(INITIALIZE_IRI_FIELDS_PARAM));
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (TypeElement te : annotations) {
-            for (Element elParent : roundEnv.getElementsAnnotatedWith(te)) {
-                if (!isAnnotatedWithNonEntity(elParent) && (sourcePackage == null || elParent.asType().toString()
+            for (Element clsElement : roundEnv.getElementsAnnotatedWith(te)) {
+                if (!isAnnotatedWithNonEntity(clsElement) && (sourcePackage == null || clsElement.asType().toString()
                                                                                              .contains(sourcePackage))) {
-                    MetamodelClass parentClass = new MetamodelClass(elParent);
-                    if (isAnnotationWithOwlClass(elParent)) {
-                        parentClass.makeEntityClass();
-                    }
+                    MetamodelClass modelClass = new MetamodelClass(clsElement);
+                    debug("\t - Started processing class '" + modelClass.getName() + "'");
 
-                    debug("\t - Started processing class '" + parentClass.getName() + "'");
-                    List<? extends Element> properties = elParent.getEnclosedElements();
+                    final Optional<AnnotationMirror> owlClassAnn = resolveOwlClassAnnotation(clsElement);
+                    owlClassAnn.ifPresent(modelClass::makeEntityClass);
+
+                    List<? extends Element> properties = clsElement.getEnclosedElements();
                     for (Element elProperty : properties) {
                         if (isPropertyPersistent(elProperty)) {
-                            Field field = new Field(elProperty, elParent);
+                            Field field = new Field(elProperty, clsElement);
                             debug("\t\t - Processing field '" + field.getName() + "'");
-                            parentClass.addField(field);
+                            modelClass.addField(field);
                         }
                     }
-                    classes.put(elParent.toString(), parentClass);
-                    debug("\t - Finished processing class '" + parentClass.getName() + "'");
+                    classes.put(clsElement.toString(), modelClass);
+                    debug("\t - Finished processing class '" + modelClass.getName() + "'");
                 }
             }
         }
         debug("Generating output files.");
-        final OutputConfig outputConfig = new OutputConfig(outputDirectory, outputPropertyIris, outputIriAsString);
+        final OutputConfig outputConfig = new OutputConfig(outputDirectory, outputPropertyIris, outputIriAsString, initializeIris);
         final OutputFilesGenerator outputGenerator = new OutputFilesGenerator(outputConfig, debugOption, messager);
         outputGenerator.generateOutputFiles(classes.values());
         return true;
@@ -133,22 +138,22 @@ public class ModelGenProcessor extends AbstractProcessor {
     }
 
     private static boolean isAnnotatedWithNonEntity(Element element) {
-        return isAnnotatedWith(element, "cz.cvut.kbss.jopa.model.annotations.util.NonEntity");
+        return resolveAnnotation(element, "cz.cvut.kbss.jopa.model.annotations.util.NonEntity").isPresent();
     }
 
-    private static boolean isAnnotatedWith(Element element, String annotationCls) {
+    private static Optional<AnnotationMirror> resolveAnnotation(Element element, String annotationCls) {
         TypeElement typeElement = (TypeElement) element;
         List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
         for (AnnotationMirror annotation : annotations) {
             if (annotationCls.equals(annotation.getAnnotationType().toString())) {
-                return true;
+                return Optional.of(annotation);
             }
         }
-        return false;
+        return Optional.empty();
     }
 
-    private static boolean isAnnotationWithOwlClass(Element element) {
-        return isAnnotatedWith(element, "cz.cvut.kbss.jopa.model.annotations.OWLClass");
+    private static Optional<AnnotationMirror> resolveOwlClassAnnotation(Element element) {
+        return resolveAnnotation(element, "cz.cvut.kbss.jopa.model.annotations.OWLClass");
     }
 
     private void debug(String message) {

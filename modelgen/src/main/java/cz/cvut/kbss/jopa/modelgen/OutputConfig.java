@@ -1,4 +1,4 @@
 package cz.cvut.kbss.jopa.modelgen;
 
-public record OutputConfig(String targetDir, boolean outputPropertyIris, boolean outputIriAsString) {
+public record OutputConfig(String targetDir, boolean outputPropertyIris, boolean outputIriAsString, boolean initializeIris) {
 }
