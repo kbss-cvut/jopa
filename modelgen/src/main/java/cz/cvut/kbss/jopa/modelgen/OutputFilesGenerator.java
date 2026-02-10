@@ -179,9 +179,9 @@ public class OutputFilesGenerator {
         }
         final StringBuilder sb = new StringBuilder();
         for (Field field : cls.getFields()) {
-            if (isAnnotatedWith(field, MappingAnnotations.DATA_PROPERTY)
-                    || isAnnotatedWith(field, MappingAnnotations.OBJECT_PROPERTY)
-                    || isAnnotatedWith(field, MappingAnnotations.ANNOTATION_PROPERTY)) {
+            if (field.isAnnotatedWith(MappingAnnotations.DATA_PROPERTY)
+                    || field.isAnnotatedWith(MappingAnnotations.OBJECT_PROPERTY)
+                    || field.isAnnotatedWith(MappingAnnotations.ANNOTATION_PROPERTY)) {
                 sb.append(INDENT + "public static volatile ");
                 sb.append(iriType());
                 sb.append(" ");
@@ -199,14 +199,14 @@ public class OutputFilesGenerator {
             final String declaringClass = field.getParentName().substring(field.getParentName().lastIndexOf('.') + 1);
             attributes.append(INDENT + "public static volatile ");
             //@Id
-            if (isAnnotatedWith(field, MappingAnnotations.ID)) {
+            if (field.isAnnotatedWith(MappingAnnotations.ID)) {
                 attributes.append("Identifier<")
                           .append(declaringClass)
                           .append(", ")
                           .append(field.getType().getTypeName()
                                        .substring(field.getType().getTypeName().lastIndexOf(".") + 1));
                 //@Types
-            } else if (isAnnotatedWith(field, MappingAnnotations.TYPES)) {
+            } else if (field.isAnnotatedWith(MappingAnnotations.TYPES)) {
                 attributes.append("TypesSpecification<")
                           .append(declaringClass)
                           .append(", ");
@@ -216,7 +216,7 @@ public class OutputFilesGenerator {
                     attributes.append(field.getType().getTypes().get(0).getSimpleName());
                 }
                 //@Properties
-            } else if (isAnnotatedWith(field, MappingAnnotations.PROPERTIES)) {
+            } else if (field.isAnnotatedWith(MappingAnnotations.PROPERTIES)) {
                 attributes.append("PropertiesSpecification<")
                           .append(declaringClass)
                           .append(", ");
@@ -231,9 +231,9 @@ public class OutputFilesGenerator {
                               .append(", ")
                               .append(type.getTypes().get(1).getTypes().get(0).getSimpleName());
                 }
-            } else if (isAnnotatedWith(field, MappingAnnotations.DATA_PROPERTY)
-                    || isAnnotatedWith(field, MappingAnnotations.OBJECT_PROPERTY)
-                    || isAnnotatedWith(field, MappingAnnotations.ANNOTATION_PROPERTY)) {
+            } else if (field.isAnnotatedWith(MappingAnnotations.DATA_PROPERTY)
+                    || field.isAnnotatedWith(MappingAnnotations.OBJECT_PROPERTY)
+                    || field.isAnnotatedWith(MappingAnnotations.ANNOTATION_PROPERTY)) {
                 Type type = field.getType();
                 if (type.getIsSimple()) {
                     attributes.append("SingularAttribute<")
@@ -261,26 +261,5 @@ public class OutputFilesGenerator {
 
     private static String generateClassSuffix() {
         return "}";
-    }
-
-    /**
-     * Checking method whether Field has at least one of the given annotations.
-     *
-     * @param field              Field to check
-     * @param mappingAnnotations Annotations for which to check
-     * @return {@code true} if the field is annotated with at least one of the mapping annotations, {@code false}
-     * otherwise
-     */
-    static boolean isAnnotatedWith(Field field, MappingAnnotations mappingAnnotations) {
-        List<MappingAnnotations> annotations = field.getAnnotatedWith();
-        if (annotations.isEmpty()) {
-            return false;
-        }
-        for (MappingAnnotations an : annotations) {
-            if (an.equals(mappingAnnotations)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
