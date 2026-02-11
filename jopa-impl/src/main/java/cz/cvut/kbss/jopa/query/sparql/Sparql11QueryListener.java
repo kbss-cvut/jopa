@@ -133,7 +133,7 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
                 throw new QueryParserException(ctx.VAR2().getText() + " is not a valid parameter position.", e);
             }
         }
-        param.setProjected(param.isProjected() || inProjection);
+        param.setProjected(param.isProjected() || inProjection, depth);
         // There should be only one token representing the variable
         param.getTokens().add(ctx.getStart());
     }

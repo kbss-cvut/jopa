@@ -67,7 +67,7 @@ public class TokenStreamSparqlQueryHolder implements QueryHolder {
 
     @Override
     public List<TokenQueryParameter<?>> getProjectedQueryParameters() {
-        return parameterSet.values().stream().filter(QueryParameter::isProjected).collect(Collectors.toList());
+        return parameterSet.values().stream().filter(QueryParameter::isProjectedTopLevel).collect(Collectors.toList());
     }
 
     @Override

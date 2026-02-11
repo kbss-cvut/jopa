@@ -27,7 +27,7 @@ public class QueryParameter<T> implements Parameter<T> {
 
     private final String name;
     private final Integer position;
-    private boolean projected;
+    private Projection projected = Projection.NONE;
 
     private final ParameterValueFactory valueFactory;
 
@@ -69,12 +69,20 @@ public class QueryParameter<T> implements Parameter<T> {
         return value;
     }
 
-    public void setProjected(boolean projected) {
-        this.projected = projected;
+    public void setProjected(boolean projected, int queryDepth) {
+        if (!projected) {
+            this.projected = Projection.NONE;
+        } else if (this.projected != Projection.TOP_LEVEL) {
+            this.projected = queryDepth > 0 ? Projection.SUB_QUERY : Projection.TOP_LEVEL;
+        }
     }
 
     public boolean isProjected() {
-        return projected;
+        return projected != Projection.NONE;
+    }
+
+    public boolean isProjectedTopLevel() {
+        return projected == Projection.TOP_LEVEL;
     }
 
     public void setValue(Object value) {
@@ -127,5 +135,9 @@ public class QueryParameter<T> implements Parameter<T> {
     @Override
     public int hashCode() {
         return Objects.hash(getName(), getPosition());
+    }
+
+    public enum Projection {
+        TOP_LEVEL, SUB_QUERY, NONE
     }
 }
