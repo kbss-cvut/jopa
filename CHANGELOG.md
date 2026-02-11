@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+### 2.9.1 - 2026-02-11
+
+- Fix an issue in recognizing variables projected from SPARQL query.
+
 ### 2.9.0 - 2026-02-10
 
 - Support mapping native SPARQL results directly to entities (Enhancement #394).
