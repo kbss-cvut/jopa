@@ -326,4 +326,18 @@ public class SparqlQueryParsingAndAssemblyTest {
         final String result = sut.assembleQuery();
         assertEquals("SELECT ?annotationProperty ?annotationValue WHERE { << " + IdentifierTransformer.stringifyIri(xUri) + " ?property ?value >> ?annotationProperty ?annotationValue . }", result);
     }
+
+    @Test
+    void parseQueryRecognizesTopLevelProjectedVariablesFromSubQueryProjectedVariables() {
+        this.sut = queryParser.parseQuery("SELECT DISTINCT ?term WHERE {" +
+                "SELECT DISTINCT ?term ?hasLocaleLabel WHERE {" +
+                "?term a ?type ;" +
+                "?hasLabel ?label ." +
+                "BIND((lang(?label) = ?labelLang) as ?hasLocaleLabel) ." +
+                "} ORDER BY DESC(?hasLocaleLabel) lang(?label)" +
+                "}");
+
+        assertEquals(1, sut.getProjectedQueryParameters().size());
+        assertEquals("term", sut.getProjectedQueryParameters().get(0).getName());
+    }
 }
