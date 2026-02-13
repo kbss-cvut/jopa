@@ -381,4 +381,21 @@ public class ChangeTrackingStorageConnectorTest {
         connector.executeUpdate(query, StatementOntology.SHARED);
         verify(centralConnector).executeUpdate(query, StatementOntology.SHARED);
     }
+
+    /**
+     * Bug #421
+     */
+    @Test
+    void findInReadOnlyTransactionReturnsData() throws Exception {
+        centralConnector.begin();
+        final Statement existing = ResourceFactory
+                .createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
+                        createResource(TYPE_ONE));
+        centralConnector.add(Collections.singletonList(existing), null);
+        centralConnector.commit();
+        connector.setReadOnly(true);
+        connector.begin();
+        final Collection<Statement> result = connector.find(existing.getSubject(), null, null, Set.of());
+        assertEquals(List.of(existing), result);
+    }
 }
