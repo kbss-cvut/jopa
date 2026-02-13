@@ -19,7 +19,7 @@ class DummyLocalModel implements LocalModel {
     @Override
     public Collection<Statement> enhanceStatements(Collection<Statement> statements, Resource subject,
                                                    Property property, RDFNode value, Collection<String> contexts) {
-        return List.of();
+        return statements;
     }
 
     @Override
