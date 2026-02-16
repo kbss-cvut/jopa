@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+### 2.9.2 - 2026-02-16
+
+- Fix incorrect transactional behavior in the Jena OntoDriver (Bug #421).
+
 ### 2.9.1 - 2026-02-11
 
 - Fix an issue in recognizing variables projected from SPARQL query.

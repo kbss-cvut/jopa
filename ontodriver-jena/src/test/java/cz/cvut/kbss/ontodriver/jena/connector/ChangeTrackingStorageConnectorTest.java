@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2025 Czech Technical University in Prague
+ * Copyright (C) 2026 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -380,5 +380,22 @@ public class ChangeTrackingStorageConnectorTest {
         final String query = "INSERT DATA { _:a a <" + Generator.generateUri() + "> . }";
         connector.executeUpdate(query, StatementOntology.SHARED);
         verify(centralConnector).executeUpdate(query, StatementOntology.SHARED);
+    }
+
+    /**
+     * Bug #421
+     */
+    @Test
+    void findInReadOnlyTransactionReturnsData() throws Exception {
+        centralConnector.begin();
+        final Statement existing = ResourceFactory
+                .createStatement(createResource(SUBJECT), createProperty(Vocabulary.RDF_TYPE),
+                        createResource(TYPE_ONE));
+        centralConnector.add(Collections.singletonList(existing), null);
+        centralConnector.commit();
+        connector.setReadOnly(true);
+        connector.begin();
+        final Collection<Statement> result = connector.find(existing.getSubject(), null, null, Set.of());
+        assertEquals(List.of(existing), result);
     }
 }

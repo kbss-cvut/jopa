@@ -1,6 +1,6 @@
 /*
  * JOPA
- * Copyright (C) 2025 Czech Technical University in Prague
+ * Copyright (C) 2026 Czech Technical University in Prague
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,9 +34,11 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -44,7 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.Stack;
 import java.util.stream.Collectors;
 
 public class SoqlQueryListener extends SoqlBaseListener {
@@ -66,7 +67,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
     // keeps index of first object of SoqlAttribute after OR operator
     private final Set<SoqlAttribute> objectOfNextOr;
 
-    private final Stack<List<SoqlNode>> functionArguments = new Stack<>();
+    private final Deque<List<SoqlNode>> functionArguments = new ArrayDeque<>();
     private int functionCallDepth = 0;
 
     private final List<SoqlOrderParameter> orderAttributes;
@@ -161,6 +162,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     private void pushNewAttribute(SoqlAttribute myAttr) {
         if (functionCallDepth > 0) {
+            assert !functionArguments.isEmpty();
             functionArguments.peek().add(myAttr.getFirstNode());
         }
         attributes.add(myAttr);
@@ -282,6 +284,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
     @Override
     public void exitInputParameter(SoqlParser.InputParameterContext ctx) {
         if (functionCallDepth > 0) {
+            assert !functionArguments.isEmpty();
             functionArguments.peek().add(new AttributeNode(ctx.getText().substring(1)));
         }
     }
@@ -352,6 +355,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
         node.getChildren().get(0).getSoqlAttribute().setFirstNode(node);
         this.attrPointer = node.getSoqlAttribute();
         if (functionCallDepth > 1) {
+            assert !functionArguments.isEmpty();
             functionArguments.peek().add(node);
         }
     }
