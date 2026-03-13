@@ -22,6 +22,7 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.util.ThrowingRunnable;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
@@ -39,12 +40,14 @@ public class Rdf4jStatement implements Statement {
 
     private boolean inferenceDisabled = false;
     private final StatementExecutor queryExecutor;
+    private final ThrowingRunnable<Rdf4jDriverException> afterUpdate;
     private ResultSet resultSet;
 
     private boolean open;
 
-    public Rdf4jStatement(StatementExecutor queryExecutor) {
+    public Rdf4jStatement(StatementExecutor queryExecutor, ThrowingRunnable<Rdf4jDriverException> afterUpdate) {
         this.queryExecutor = queryExecutor;
+        this.afterUpdate = afterUpdate;
         this.open = true;
     }
 
@@ -88,6 +91,7 @@ public class Rdf4jStatement implements Statement {
         validateQueryParams(sparql);
         closeCurrentResultSet();
         queryExecutor.executeUpdate(querySpec(sparql));
+        afterUpdate.run();
     }
 
     @Override
