@@ -17,21 +17,23 @@
  */
 package cz.cvut.kbss.ontodriver.jena;
 
+import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.Wrapper;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.connector.InferredStorageConnector;
+import cz.cvut.kbss.ontodriver.jena.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.container.ContainerHandler;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.list.ReferencedListHandler;
 import cz.cvut.kbss.ontodriver.jena.list.SimpleListHandler;
-import cz.cvut.kbss.ontodriver.jena.query.JenaPreparedStatement;
-import cz.cvut.kbss.ontodriver.jena.query.JenaStatement;
+import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import cz.cvut.kbss.ontodriver.jena.util.IdentifierGenerator;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.util.Transaction;
+import org.apache.jena.query.Query;
 
 import java.net.URI;
 import java.util.Collection;
@@ -48,7 +50,7 @@ import java.util.stream.Collectors;
  * href="https://jena.apache.org/documentation/notes/typed-literals.html">https://jena.apache.org/documentation/notes/typed-literals.html</a></li>
  * </ul>
  */
-public class JenaAdapter implements Wrapper {
+public class JenaAdapter implements StatementExecutor, Wrapper {
 
     private final Transaction transaction = new Transaction();
 
@@ -162,16 +164,6 @@ public class JenaAdapter implements Wrapper {
         return new ContainerHandler(connector);
     }
 
-    JenaStatement createStatement() {
-        beginTransactionIfNotActive();
-        return new JenaStatement(inferenceConnector);
-    }
-
-    JenaPreparedStatement prepareStatement(String sparql) {
-        beginTransactionIfNotActive();
-        return new JenaPreparedStatement(inferenceConnector, sparql);
-    }
-
     void close() throws JenaDriverException {
         connector.close();
     }
@@ -182,5 +174,25 @@ public class JenaAdapter implements Wrapper {
             return cls.cast(this);
         }
         return connector.unwrap(cls);
+    }
+
+    @Override
+    public AbstractResultSet executeSelectQuery(Query query,
+                                                Statement.StatementOntology target) throws JenaDriverException {
+        beginTransactionIfNotActive();
+        return inferenceConnector.executeSelectQuery(query, target);
+    }
+
+    @Override
+    public AbstractResultSet executeAskQuery(Query query,
+                                             Statement.StatementOntology target) throws JenaDriverException {
+        beginTransactionIfNotActive();
+        return inferenceConnector.executeAskQuery(query, target);
+    }
+
+    @Override
+    public void executeUpdate(String query, Statement.StatementOntology target) throws JenaDriverException {
+        beginTransactionIfNotActive();
+        inferenceConnector.executeUpdate(query, target);
     }
 }
