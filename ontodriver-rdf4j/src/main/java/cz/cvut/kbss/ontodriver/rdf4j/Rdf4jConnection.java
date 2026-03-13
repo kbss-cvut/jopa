@@ -149,7 +149,7 @@ public class Rdf4jConnection implements Connection {
     @Override
     public Statement createStatement() {
         ensureOpen();
-        return new Rdf4jStatement(adapter.getQueryExecutor(), this::commitIfAuto);
+        return new Rdf4jStatement(adapter, this::commitIfAuto);
     }
 
     @Override
@@ -159,7 +159,7 @@ public class Rdf4jConnection implements Connection {
         if (sparql.isEmpty()) {
             throw new IllegalArgumentException("The value for prepared statement cannot be empty.");
         }
-        return new Rdf4jPreparedStatement(adapter.getQueryExecutor(), this::commitIfAuto, sparql);
+        return new Rdf4jPreparedStatement(adapter, this::commitIfAuto, sparql);
     }
 
     @Override
