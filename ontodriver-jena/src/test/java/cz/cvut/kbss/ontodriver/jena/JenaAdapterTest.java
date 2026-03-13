@@ -17,20 +17,21 @@
  */
 package cz.cvut.kbss.ontodriver.jena;
 
+import cz.cvut.kbss.ontodriver.Statement.StatementOntology;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.connector.InferredStorageConnector;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.connector.SubjectPredicateContext;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
-import cz.cvut.kbss.ontodriver.jena.query.JenaPreparedStatement;
-import cz.cvut.kbss.ontodriver.jena.query.JenaStatement;
+import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -39,10 +40,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,12 +54,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -220,9 +222,6 @@ class JenaAdapterTest {
     @Test
     void updateRemovesOldStatementsAndInsertsNewOnes() {
         final Assertion assertion = Assertion.createObjectPropertyAssertion(Generator.generateUri(), false);
-        final Statement s = ResourceFactory
-                .createStatement(SUBJECT_RESOURCE, assertionToProperty(assertion),
-                        ResourceFactory.createResource(Generator.generateUri().toString()));
         final URI newValue = Generator.generateUri();
         final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(SUBJECT);
         descriptor.addAssertionValue(assertion, new Value<>(NamedResource.create(newValue)));
@@ -239,40 +238,6 @@ class JenaAdapterTest {
     }
 
     @Test
-    void createStatementReturnsNewJenaStatement() throws Exception {
-        final JenaStatement result = adapter.createStatement();
-        assertNotNull(result);
-        final Field execField = JenaStatement.class.getDeclaredField("executor");
-        execField.setAccessible(true);
-        assertSame(inferredConnectorMock, execField.get(result));
-    }
-
-    @Test
-    void createStatementStartsTransactionIfNotAlreadyActive() throws OntoDriverException {
-        try (JenaStatement s = adapter.createStatement()) {
-            assertNotNull(s);
-            verify(connectorMock).begin();
-        }
-    }
-
-    @Test
-    void prepareStatementReturnsNewPreparedStatement() throws Exception {
-        final JenaPreparedStatement result = adapter.prepareStatement("SELECT * WHERE {?x ?y ?z . }");
-        assertNotNull(result);
-        final Field execField = JenaStatement.class.getDeclaredField("executor");
-        execField.setAccessible(true);
-        assertSame(inferredConnectorMock, execField.get(result));
-    }
-
-    @Test
-    void prepareStatementStartsTransactionIfNotAlreadyActive() throws OntoDriverException {
-        try (JenaPreparedStatement s = adapter.prepareStatement("SELECT * WHERE {?x ?y ?z . }")) {
-            assertNotNull(s);
-            verify(connectorMock).begin();
-        }
-    }
-
-    @Test
     void isConsistentChecksForConsistencyOnInferredConnector() {
         adapter.isConsistent(null);
         verify(inferredConnectorMock).isConsistent(null);
@@ -284,5 +249,38 @@ class JenaAdapterTest {
         adapter.isConsistent(context);
         verify(connectorMock).begin();
         verify(inferredConnectorMock).isConsistent(context.toString());
+    }
+
+    @Test
+    void executeSelectQueryStartsTransactionIfNotAlreadyActiveAndExecutesQuery() throws Exception {
+        final Query query = QueryFactory.create("SELECT * WHERE { ?x ?y ?z . }");
+        final AbstractResultSet rs = mock(AbstractResultSet.class);
+        when(inferredConnectorMock.executeSelectQuery(any(), any())).thenReturn(rs);
+        final AbstractResultSet result = adapter.executeSelectQuery(query, StatementOntology.SHARED);
+        assertEquals(rs, result);
+        final InOrder inOrder = Mockito.inOrder(inferredConnectorMock, connectorMock);
+        inOrder.verify(connectorMock).begin();
+        inOrder.verify(inferredConnectorMock).executeSelectQuery(query, StatementOntology.SHARED);
+    }
+
+    @Test
+    void executeAskQueryStartsTransactionIfNotAlreadyActiveAndExecutesQuery() throws Exception {
+        final Query query = QueryFactory.create("ASK WHERE { ?x ?y ?z . }");
+        final AbstractResultSet rs = mock(AbstractResultSet.class);
+        when(inferredConnectorMock.executeAskQuery(any(), any())).thenReturn(rs);
+        final AbstractResultSet result = adapter.executeAskQuery(query, StatementOntology.TRANSACTIONAL);
+        assertEquals(rs, result);
+        final InOrder inOrder = Mockito.inOrder(inferredConnectorMock, connectorMock);
+        inOrder.verify(connectorMock).begin();
+        inOrder.verify(inferredConnectorMock).executeAskQuery(query, StatementOntology.TRANSACTIONAL);
+    }
+
+    @Test
+    void executeUpdateQueryStartsTransactionIfNotAlreadyActiveAndExecutesQuery() throws Exception {
+        adapter.executeUpdate("INSERT DATA { ex:a a ex:b }", StatementOntology.TRANSACTIONAL);
+        final InOrder inOrder = Mockito.inOrder(inferredConnectorMock, connectorMock);
+        inOrder.verify(connectorMock).begin();
+        inOrder.verify(inferredConnectorMock)
+               .executeUpdate("INSERT DATA { ex:a a ex:b }", StatementOntology.TRANSACTIONAL);
     }
 }

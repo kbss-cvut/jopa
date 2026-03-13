@@ -26,6 +26,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.list.JenaLists;
+import cz.cvut.kbss.ontodriver.jena.query.JenaPreparedStatement;
 import cz.cvut.kbss.ontodriver.jena.query.JenaStatement;
 import cz.cvut.kbss.ontodriver.jena.util.ConnectionListener;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -109,13 +110,13 @@ public class JenaConnection implements Connection {
     @Override
     public JenaStatement createStatement() {
         ensureOpen();
-        return adapter.createStatement();
+        return new JenaStatement(adapter, this::commitIfAuto);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sparql) {
         ensureOpen();
-        return adapter.prepareStatement(Objects.requireNonNull(sparql));
+        return new JenaPreparedStatement(adapter, this::commitIfAuto, Objects.requireNonNull(sparql));
     }
 
     @Override
