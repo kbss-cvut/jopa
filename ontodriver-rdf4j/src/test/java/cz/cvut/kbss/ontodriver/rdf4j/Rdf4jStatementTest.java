@@ -19,14 +19,17 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StatementExecutor;
+import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.query.AskResultSet;
 import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import cz.cvut.kbss.ontodriver.rdf4j.query.Rdf4jStatement;
 import cz.cvut.kbss.ontodriver.rdf4j.query.SelectResultSet;
+import cz.cvut.kbss.ontodriver.rdf4j.util.ThrowingRunnable;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -44,11 +47,14 @@ public class Rdf4jStatementTest {
     @Mock
     private StatementExecutor executorMock;
 
+    @Mock
+    private ThrowingRunnable<Rdf4jDriverException> afterUpdate;
+
     private Rdf4jStatement statement;
 
     @BeforeEach
     public void setUp() {
-        this.statement = new Rdf4jStatement(executorMock);
+        this.statement = new Rdf4jStatement(executorMock, afterUpdate);
     }
 
     @Test
@@ -111,5 +117,13 @@ public class Rdf4jStatementTest {
         assertNotNull(rs);
         assertInstanceOf(AskResultSet.class, rs);
         verify(executorMock).executeBooleanQuery(QuerySpecification.query(askWithPrefix));
+    }
+
+    @Test
+    void executeUpdateCallsAfterUpdate() throws Exception {
+        statement.executeUpdate("INSERT DATA { ?x ?y ?z .}");
+        final InOrder inOrder = inOrder(executorMock, afterUpdate);
+        inOrder.verify(executorMock).executeUpdate(any(QuerySpecification.class));
+        inOrder.verify(afterUpdate).run();
     }
 }

@@ -21,6 +21,8 @@ import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StatementExecutor;
+import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.util.ThrowingRunnable;
 import cz.cvut.kbss.ontodriver.util.StatementHolder;
 
 import java.util.Objects;
@@ -29,8 +31,9 @@ public class Rdf4jPreparedStatement extends Rdf4jStatement implements PreparedSt
 
     private final StatementHolder statementHolder;
 
-    public Rdf4jPreparedStatement(StatementExecutor executor, String statement) {
-        super(executor);
+    public Rdf4jPreparedStatement(StatementExecutor executor, ThrowingRunnable<Rdf4jDriverException> afterUpdate,
+                                  String statement) {
+        super(executor, afterUpdate);
         this.statementHolder = new StatementHolder(statement);
         if (statementHolder.getStatement().isEmpty()) {
             throw new IllegalArgumentException("The statement string cannot be empty.");
