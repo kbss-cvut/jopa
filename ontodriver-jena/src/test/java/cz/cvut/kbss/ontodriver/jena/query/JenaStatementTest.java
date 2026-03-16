@@ -21,11 +21,13 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.jena.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.jena.util.Procedure;
 import org.apache.jena.query.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,17 +41,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class JenaStatementTest {
 
     @Mock
     private StatementExecutor executor;
+    @Mock
+    private Procedure afterUpdate;
 
     private JenaStatement statement;
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        this.statement = new JenaStatement(executor);
+        this.statement = new JenaStatement(executor, afterUpdate);
     }
 
     @Test
@@ -127,6 +131,12 @@ public class JenaStatementTest {
         statement.close();
         assertThrows(IllegalStateException.class,
                 () -> statement.executeUpdate("INSERT DATA { _:b1 a <http://xmlns.com/foaf/0.1/Person> . }"));
+    }
+
+    @Test
+    void executeUpdateCallsAfterUpdate() throws JenaDriverException {
+        statement.executeUpdate("INSERT DATA { _:b1 a <http://xmlns.com/foaf/0.1/Person> . }");
+        verify(afterUpdate).execute();
     }
 
     @Test

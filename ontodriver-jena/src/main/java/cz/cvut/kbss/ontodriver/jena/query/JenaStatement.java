@@ -21,6 +21,7 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.jena.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.jena.util.Procedure;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QueryParseException;
@@ -30,14 +31,16 @@ import java.util.Objects;
 public class JenaStatement implements Statement {
 
     private final StatementExecutor executor;
+    protected final Procedure afterUpdate;
 
     private StatementOntology targetOntology = StatementOntology.TRANSACTIONAL;
     private boolean open = true;
 
     private AbstractResultSet currentResultSet;
 
-    public JenaStatement(StatementExecutor executor) {
+    public JenaStatement(StatementExecutor executor, Procedure afterUpdate) {
         this.executor = executor;
+        this.afterUpdate = afterUpdate;
     }
 
     @Override
@@ -83,6 +86,7 @@ public class JenaStatement implements Statement {
         Objects.requireNonNull(sparql);
         closeCurrentResultSet();
         executor.executeUpdate(sparql, targetOntology);
+        afterUpdate.execute();
     }
 
     @Override

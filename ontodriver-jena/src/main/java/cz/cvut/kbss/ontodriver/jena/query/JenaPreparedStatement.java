@@ -21,6 +21,7 @@ import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.jena.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
+import cz.cvut.kbss.ontodriver.jena.util.Procedure;
 import cz.cvut.kbss.ontodriver.util.StatementHolder;
 
 import java.util.Objects;
@@ -29,8 +30,8 @@ public class JenaPreparedStatement extends JenaStatement implements PreparedStat
 
     private final StatementHolder holder;
 
-    public JenaPreparedStatement(StatementExecutor executor, String sparql) {
-        super(executor);
+    public JenaPreparedStatement(StatementExecutor executor, Procedure afterUpdate, String sparql) {
+        super(executor, afterUpdate);
         this.holder = new StatementHolder(sparql);
         if (holder.getStatement().isEmpty()) {
             throw new IllegalArgumentException("Statement cannot be empty.");

@@ -20,6 +20,7 @@ package cz.cvut.kbss.ontodriver.jena.query;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.jena.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
+import cz.cvut.kbss.ontodriver.jena.util.Procedure;
 import cz.cvut.kbss.ontodriver.util.StatementHolder;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.query.QueryFactory;
@@ -49,13 +50,16 @@ public class JenaPreparedStatementTest {
     private StatementExecutor executor;
 
     @Mock
+    private Procedure afterUpdate;
+
+    @Mock
     private AbstractResultSet resultSet;
 
     private JenaPreparedStatement statement;
 
     @Test
     public void constructorAnalyzesQueryPassedAsParameter() throws Exception {
-        this.statement = new JenaPreparedStatement(executor, QUERY);
+        this.statement = new JenaPreparedStatement(executor, afterUpdate, QUERY);
         final StatementHolder holder = getStatementHolder();
         assertNotNull(holder);
         assertEquals(QUERY, holder.getStatement());
@@ -70,14 +74,14 @@ public class JenaPreparedStatementTest {
     @Test
     public void constructorThrowsIllegalArgumentForEmptyQuery() {
         final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> this.statement = new JenaPreparedStatement(executor, ""));
+                () -> this.statement = new JenaPreparedStatement(executor, afterUpdate, ""));
         assertThat(ex.getMessage(), containsString("Statement cannot be empty"));
 
     }
 
     @Test
     public void setParameterSetsParameterOnQuery() throws Exception {
-        this.statement = new JenaPreparedStatement(executor, QUERY);
+        this.statement = new JenaPreparedStatement(executor, afterUpdate, QUERY);
         final String value = "<" + Vocabulary.RDF_TYPE + ">";
         statement.setObject("y", value);
         final StatementHolder holder = getStatementHolder();
@@ -86,7 +90,7 @@ public class JenaPreparedStatementTest {
 
     @Test
     public void setParameterThrowsIllegalStateOnClosedStatement() throws Exception {
-        this.statement = new JenaPreparedStatement(executor, QUERY);
+        this.statement = new JenaPreparedStatement(executor, afterUpdate, QUERY);
         statement.close();
         final IllegalStateException ex = assertThrows(IllegalStateException.class,
                 () -> statement.setObject("y", "rdf:type"));
@@ -96,7 +100,7 @@ public class JenaPreparedStatementTest {
     @Test
     public void executeQueryExecutesStatementWithParameter() throws Exception {
         when(executor.executeSelectQuery(any(), any())).thenReturn(resultSet);
-        this.statement = new JenaPreparedStatement(executor, QUERY);
+        this.statement = new JenaPreparedStatement(executor, afterUpdate, QUERY);
         final String value = "<" + Vocabulary.RDF_TYPE + ">";
         statement.setObject("y", value);
         final String expected = QUERY.replace("?y", value);
@@ -107,7 +111,7 @@ public class JenaPreparedStatementTest {
 
     @Test
     public void executeQueryThrowsIllegalStateForClosedStatement() throws Exception {
-        this.statement = new JenaPreparedStatement(executor, QUERY);
+        this.statement = new JenaPreparedStatement(executor, afterUpdate, QUERY);
         statement.close();
         final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> statement.executeQuery());
         assertThat(ex.getMessage(), containsString("Statement is closed"));
@@ -116,7 +120,7 @@ public class JenaPreparedStatementTest {
     @Test
     public void executeUpdateExecutesUpdateStatement() throws Exception {
         final String update = "INSERT DATA { _:a1 a ?type . }";
-        this.statement = new JenaPreparedStatement(executor, update);
+        this.statement = new JenaPreparedStatement(executor, afterUpdate, update);
         final String value = "<" + Generator.generateUri() + ">";
         statement.setObject("type", value);
         final String expected = update.replace("?type", value);
@@ -127,7 +131,7 @@ public class JenaPreparedStatementTest {
     @Test
     public void executeUpdateThrowsIllegalStateForClosedStatement() throws Exception {
         final String update = "INSERT DATA { _:a1 a ?type . }";
-        this.statement = new JenaPreparedStatement(executor, update);
+        this.statement = new JenaPreparedStatement(executor, afterUpdate, update);
         statement.close();
         final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> statement.executeUpdate());
         assertThat(ex.getMessage(), containsString("Statement is closed"));
@@ -136,7 +140,7 @@ public class JenaPreparedStatementTest {
     @Test
     public void clearParametersClearsAlreadySetParameters() throws Exception {
         when(executor.executeSelectQuery(any(), any())).thenReturn(resultSet);
-        this.statement = new JenaPreparedStatement(executor, QUERY);
+        this.statement = new JenaPreparedStatement(executor, afterUpdate, QUERY);
         final String value = "<" + Vocabulary.RDF_TYPE + ">";
         statement.setObject("y", value);
         statement.clearParameters();
@@ -147,7 +151,7 @@ public class JenaPreparedStatementTest {
 
     @Test
     public void clearParametersThrowsIllegalStateForClosedStatement() throws Exception {
-        this.statement = new JenaPreparedStatement(executor, QUERY);
+        this.statement = new JenaPreparedStatement(executor, afterUpdate, QUERY);
         final String value = "<" + Vocabulary.RDF_TYPE + ">";
         statement.setObject("y", value);
         statement.close();

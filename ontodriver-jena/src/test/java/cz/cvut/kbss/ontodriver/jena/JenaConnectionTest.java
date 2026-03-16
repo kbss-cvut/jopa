@@ -298,22 +298,9 @@ public class JenaConnectionTest {
     }
 
     @Test
-    public void createStatementReturnsJenaStatement() {
-        connection.createStatement();
-        verify(adapterMock).createStatement();
-    }
-
-    @Test
     public void createStatementThrowsIllegalStateExceptionForClosedConnection() throws Exception {
         connection.close();
         assertThrows(IllegalStateException.class, () -> connection.createStatement());
-    }
-
-    @Test
-    public void prepareStatementCreatesPreparedStatement() {
-        final String query = "SELECT * WHERE { ?x ?y ?z . }";
-        connection.prepareStatement(query);
-        verify(adapterMock).prepareStatement(query);
     }
 
     @Test

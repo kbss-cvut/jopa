@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+### 2.9.3 - 2026-03-16
+
+- Fix driver-level transaction not being started when JOPA transaction starts with a query (Bug #426).
+
 ### 2.9.2 - 2026-02-16
 
 - Fix incorrect transactional behavior in the Jena OntoDriver (Bug #421).

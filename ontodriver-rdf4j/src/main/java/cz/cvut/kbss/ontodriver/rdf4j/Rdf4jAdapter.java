@@ -33,6 +33,7 @@ import cz.cvut.kbss.ontodriver.rdf4j.container.ContainerHandler;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.list.ReferencedListHandler;
 import cz.cvut.kbss.ontodriver.rdf4j.list.SimpleListHandler;
+import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import cz.cvut.kbss.ontodriver.util.Transaction;
@@ -41,6 +42,7 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -50,7 +52,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class Rdf4jAdapter implements Closeable, Wrapper {
+public class Rdf4jAdapter implements StatementExecutor, Closeable, Wrapper {
 
     /**
      * Maximum number of attempts to generate a unique identifier
@@ -260,5 +262,23 @@ public class Rdf4jAdapter implements Closeable, Wrapper {
             return cls.cast(valueFactory);
         }
         return connector.unwrap(cls);
+    }
+
+    @Override
+    public TupleQueryResult executeSelectQuery(QuerySpecification query) throws Rdf4jDriverException {
+        startTransactionIfNotActive();
+        return connector.executeSelectQuery(query);
+    }
+
+    @Override
+    public boolean executeBooleanQuery(QuerySpecification query) throws Rdf4jDriverException {
+        startTransactionIfNotActive();
+        return connector.executeBooleanQuery(query);
+    }
+
+    @Override
+    public void executeUpdate(QuerySpecification query) throws Rdf4jDriverException {
+        startTransactionIfNotActive();
+        connector.executeUpdate(query);
     }
 }

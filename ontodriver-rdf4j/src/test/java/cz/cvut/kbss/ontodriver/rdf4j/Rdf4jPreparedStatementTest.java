@@ -20,16 +20,20 @@ package cz.cvut.kbss.ontodriver.rdf4j;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.rdf4j.connector.StatementExecutor;
+import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
 import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import cz.cvut.kbss.ontodriver.rdf4j.query.Rdf4jPreparedStatement;
+import cz.cvut.kbss.ontodriver.rdf4j.util.ThrowingRunnable;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +42,8 @@ public class Rdf4jPreparedStatementTest {
 
     @Mock
     private StatementExecutor executorMock;
+    @Mock
+    private ThrowingRunnable<Rdf4jDriverException> afterUpdateMock;
     @Mock
     private TupleQueryResult resultMock;
 
@@ -49,7 +55,7 @@ public class Rdf4jPreparedStatementTest {
     }
 
     private void initStatement(final String query) {
-        this.statement = new Rdf4jPreparedStatement(executorMock, query);
+        this.statement = new Rdf4jPreparedStatement(executorMock, afterUpdateMock, query);
     }
 
     @Test
@@ -90,5 +96,15 @@ public class Rdf4jPreparedStatementTest {
         assertTrue(rsTwo.isOpen());
         assertFalse(rsOne.isOpen());
         assertNotSame(rsOne, rsTwo);
+    }
+
+    @Test
+    void executeUpdateCallsAfterUpdate() throws Exception {
+        initStatement("INSERT DATA { <http://example.com/bill> foaf:givenName ?name .}");
+        statement.setObject("name", "'Bill'");
+        statement.executeUpdate();
+        final InOrder inOrder = inOrder(executorMock, afterUpdateMock);
+        inOrder.verify(executorMock).executeUpdate(any(QuerySpecification.class));
+        inOrder.verify(afterUpdateMock).run();
     }
 }
