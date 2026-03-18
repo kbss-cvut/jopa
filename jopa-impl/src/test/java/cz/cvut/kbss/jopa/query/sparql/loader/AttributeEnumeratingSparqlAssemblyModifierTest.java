@@ -78,8 +78,8 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
         final String result = holder.assembleQuery();
         assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?x_owlClassA ?x_types WHERE { ?x a ?type . " +
-                "OPTIONAL { ?x " + strUri(Vocabulary.p_h_hasA) + " ?x_owlClassA . } " +
-                "?x a ?x_types . }"));
+                "?x a ?x_types . " +
+                "OPTIONAL { ?x " + strUri(Vocabulary.p_h_hasA) + " ?x_owlClassA . } }"));
     }
 
     private static String strUri(String uri) {
@@ -105,8 +105,8 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
         final String result = holder.assembleQuery();
         assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?x_stringAttribute ?x_types WHERE { ?x a ?type . " +
-                "OPTIONAL { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?x_stringAttribute . } " +
-                "?x a ?x_types . }"));
+                "?x a ?x_types . " +
+                "OPTIONAL { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?x_stringAttribute . } }"));
     }
 
     @Test
@@ -120,8 +120,8 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
         final String result = holder.assembleQuery();
         assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?x_stringAttribute ?x_types WHERE { ?x a ?type . " +
-                "OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?x_stringAttribute . } } " +
-                "GRAPH <" + ctx + "> { ?x a ?x_types . } }"));
+                "GRAPH <" + ctx + "> { ?x a ?x_types . } " +
+                "OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?x_stringAttribute . } } }"));
     }
 
     @Test
@@ -136,8 +136,8 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
         final String result = holder.assembleQuery();
         assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?x_stringAttribute ?x_types WHERE { ?x a ?type . " +
-                "OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?x_stringAttribute . } } " +
-                "?x a ?x_types . }"));
+                "?x a ?x_types . " +
+                "OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?x_stringAttribute . } } } "));
     }
 
     @Test

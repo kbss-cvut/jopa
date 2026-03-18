@@ -73,6 +73,7 @@ class EntityMappingQueryModifier {
 
     private QueryModification modifyImpl(List<AttributeNode<?>> attributeNodes, String subjectVar) {
         final StringBuilder attributePatterns = new StringBuilder();
+        final StringBuilder optionalAttributesPatterns = new StringBuilder();
         final List<String> variables = new ArrayList<>();
         final List<String> variablesToAppend = new ArrayList<>();
         final String subjectVariable = "?" + subjectVar;
@@ -82,36 +83,37 @@ class EntityMappingQueryModifier {
                                   .min(Comparator.naturalOrder()).orElse(0);
             final String variable = "?" + varName(subjectVar, att.getName());
             variables.add(variable);
+            final StringBuilder target = min < 1 ? optionalAttributesPatterns : attributePatterns;
             if (min < 1) {
-                attributePatterns.append("OPTIONAL { ");
+                target.append("OPTIONAL { ");
             }
             final Optional<String> ctx = context(att);
-            ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
-            attributePatterns.append(subjectVariable).append(" <").append(att.getIRI())
-                             .append("> ").append(variable).append(" . ");
+            ctx.ifPresent(uri -> target.append("GRAPH <").append(uri).append("> { "));
+            target.append(subjectVariable).append(" <").append(att.getIRI())
+                  .append("> ").append(variable).append(" . ");
             if (!attNode.getSubgraphs().isEmpty()) {
                 attNode.getSubgraphs().forEach((cls, graph) -> {
                     final IdentifiableEntityType<?> subType = metamodel.entity(cls);
                     final EntityMappingQueryModifier subModifier = new EntityMappingQueryModifier(metamodel, subType, descriptor.getAttributeDescriptor(att), inferredAttsInDefault);
                     final QueryModification mod = subModifier.modify(graph, varName(subjectVar, att.getName()));
-                    attributePatterns.append(mod.queryPart());
+                    target.append(mod.queryPart());
                     variablesToAppend.addAll(mod.variables());
                 });
             }
             if (min < 1) {
-                attributePatterns.append("} ");
+                target.append("} ");
             }
-            ctx.ifPresent(uri -> attributePatterns.append("} "));
-            // TODO Order, put optionals to the end
+            ctx.ifPresent(uri -> target.append("} "));
         });
-        final String variable = "?" + subjectVar + TYPES_VAR_SUFFIX;
-        variables.add(variable);
+        final String typesVariable = "?" + subjectVar + TYPES_VAR_SUFFIX;
+        variables.add(typesVariable);
         final Optional<String> ctx = typesContext();
         ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
-        attributePatterns.append(subjectVariable).append(" a ").append(variable).append(" . ");
+        attributePatterns.append(subjectVariable).append(" a ").append(typesVariable).append(" . ");
         ctx.ifPresent(uri -> attributePatterns.append("} "));
         variables.addAll(variablesToAppend);
-        return new QueryModification(variables, attributePatterns.toString());
+        // PERF: Put OPTIONAL patterns to the end
+        return new QueryModification(variables, attributePatterns + optionalAttributesPatterns.toString());
     }
 
     private static String varName(String subjectVar, String attName) {
