@@ -67,7 +67,7 @@ class EntityMappingQueryModifierTest {
         assertThat(result.variables(), hasItems("?x_owlClassA", "?x_types", "?x_owlClassA_stringAttribute", "?x_owlClassA_types"));
         assertThat(result.queryPart(), containsString("?x a ?x_types"));
         assertThat(result.queryPart(), containsString("OPTIONAL { ?x " + stringifyIri(Vocabulary.P_HAS_A) + " ?x_owlClassA . " +
-                "OPTIONAL { ?x_owlClassA " + stringifyIri(Vocabulary.p_a_stringAttribute) + " ?x_owlClassA_stringAttribute . } " +
-                "?x_owlClassA a ?x_owlClassA_types . }"));
+                "?x_owlClassA a ?x_owlClassA_types . " +
+                "OPTIONAL { ?x_owlClassA " + stringifyIri(Vocabulary.p_a_stringAttribute) + " ?x_owlClassA_stringAttribute . } }"));
     }
 }
