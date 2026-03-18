@@ -102,14 +102,14 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         for (String type : allTypes) {
             final ResultRow row = mock(ResultRow.class);
             when(row.getColumnCount()).thenReturn(3);
-            when(row.getColumnNames()).thenReturn(List.of("x", "xstringAttribute", "xtypes"));
+            when(row.getColumnNames()).thenReturn(List.of("x", "x_stringAttribute", "x_types"));
             when(row.getObject(0, URI.class)).thenReturn(instance.getUri());
             if (instance.getStringAttribute() != null) {
-                when(row.isBound("xstringAttribute")).thenReturn(true);
-                when(row.getObject("xstringAttribute")).thenReturn(instance.getStringAttribute());
+                when(row.isBound("x_stringAttribute")).thenReturn(true);
+                when(row.getObject("x_stringAttribute")).thenReturn(instance.getStringAttribute());
             }
-            when(row.isBound("xtypes")).thenReturn(true);
-            when(row.getObject("xtypes")).thenReturn(URI.create(type));
+            when(row.isBound("x_types")).thenReturn(true);
+            when(row.getObject("x_types")).thenReturn(URI.create(type));
             rows.add(row);
         }
         return rows;

@@ -19,10 +19,10 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.EntityGraphImpl;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.sparql.QueryAttributes;
 import cz.cvut.kbss.jopa.query.sparql.TokenQueryParameter;
@@ -61,9 +61,9 @@ import java.util.List;
  */
 public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssemblyModifier {
 
-    static final String TYPES_VAR_SUFFIX = "types";
+    static final String TYPES_VAR_SUFFIX = "_types";
 
-    private final Metamodel metamodel;
+    private final MetamodelImpl metamodel;
 
     private final IdentifiableEntityType<?> resultType;
 
@@ -71,7 +71,7 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
 
     private final boolean inferredAttsInDefault;
 
-    public AttributeEnumeratingSparqlAssemblyModifier(Metamodel metamodel, IdentifiableEntityType<?> resultType,
+    public AttributeEnumeratingSparqlAssemblyModifier(MetamodelImpl metamodel, IdentifiableEntityType<?> resultType,
                                                       Descriptor descriptor,
                                                       ConnectionWrapper connection) {
         this.metamodel = metamodel;
@@ -101,7 +101,7 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
                                                QueryAttributes queryAttributes) {
         final String subjectParamName = UnboundPredicateObjectSparqlAssemblyModifier.getBaseParamName(queryHolder.getProjectedQueryParameters()
                                                                                                                  .get(0));
-        final EntityMappingQueryModifier queryModifier = new EntityMappingQueryModifier(resultType, descriptor, inferredAttsInDefault);
+        final EntityMappingQueryModifier queryModifier = new EntityMappingQueryModifier(metamodel, resultType, descriptor, inferredAttsInDefault);
         final EntityMappingQueryModifier.QueryModification mod = queryModifier.modify(generateEntityGraph(), subjectParamName);
         tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), mod.queryPart());
         return mod.variables();

@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 import cz.cvut.kbss.jopa.model.AttributeNode;
 import cz.cvut.kbss.jopa.model.AttributeNodeImpl;
 import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.Subgraph;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -22,16 +23,21 @@ import java.util.Optional;
 
 import static cz.cvut.kbss.jopa.query.sparql.loader.AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_SUFFIX;
 
+/**
+ * Creates a basic graph pattern corresponding to the specified entity fetch graph.
+ */
 class EntityMappingQueryModifier {
 
+    private final MetamodelImpl metamodel;
     private final IdentifiableEntityType<?> resultType;
 
     private final Descriptor descriptor;
 
     private final boolean inferredAttsInDefault;
 
-    EntityMappingQueryModifier(IdentifiableEntityType<?> resultType, Descriptor descriptor,
+    EntityMappingQueryModifier(MetamodelImpl metamodel, IdentifiableEntityType<?> resultType, Descriptor descriptor,
                                boolean inferredAttsInDefault) {
+        this.metamodel = metamodel;
         this.resultType = resultType;
         this.descriptor = descriptor;
         this.inferredAttsInDefault = inferredAttsInDefault;
@@ -68,12 +74,13 @@ class EntityMappingQueryModifier {
     private QueryModification modifyImpl(List<AttributeNode<?>> attributeNodes, String subjectVar) {
         final StringBuilder attributePatterns = new StringBuilder();
         final List<String> variables = new ArrayList<>();
+        final List<String> variablesToAppend = new ArrayList<>();
         final String subjectVariable = "?" + subjectVar;
         attributeNodes.forEach(attNode -> {
             final Attribute<?, ?> att = attribute(attNode);
             final int min = Arrays.stream(att.getConstraints()).map(ParticipationConstraint::min)
                                   .min(Comparator.naturalOrder()).orElse(0);
-            final String variable = "?" + subjectVar + att.getName();
+            final String variable = "?" + varName(subjectVar, att.getName());
             variables.add(variable);
             if (min < 1) {
                 attributePatterns.append("OPTIONAL { ");
@@ -82,11 +89,20 @@ class EntityMappingQueryModifier {
             ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
             attributePatterns.append(subjectVariable).append(" <").append(att.getIRI())
                              .append("> ").append(variable).append(" . ");
+            if (!attNode.getSubgraphs().isEmpty()) {
+                attNode.getSubgraphs().forEach((cls, graph) -> {
+                    final IdentifiableEntityType<?> subType = metamodel.entity(cls);
+                    final EntityMappingQueryModifier subModifier = new EntityMappingQueryModifier(metamodel, subType, descriptor.getAttributeDescriptor(att), inferredAttsInDefault);
+                    final QueryModification mod = subModifier.modify(graph, varName(subjectVar, att.getName()));
+                    attributePatterns.append(mod.queryPart());
+                    variablesToAppend.addAll(mod.variables());
+                });
+            }
             if (min < 1) {
                 attributePatterns.append("} ");
             }
             ctx.ifPresent(uri -> attributePatterns.append("} "));
-            // TODO handle subgraphs
+            // TODO Order, put optionals to the end
         });
         final String variable = "?" + subjectVar + TYPES_VAR_SUFFIX;
         variables.add(variable);
@@ -94,7 +110,12 @@ class EntityMappingQueryModifier {
         ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
         attributePatterns.append(subjectVariable).append(" a ").append(variable).append(" . ");
         ctx.ifPresent(uri -> attributePatterns.append("} "));
+        variables.addAll(variablesToAppend);
         return new QueryModification(variables, attributePatterns.toString());
+    }
+
+    private static String varName(String subjectVar, String attName) {
+        return subjectVar + "_" + attName;
     }
 
     private Attribute<?, ?> attribute(AttributeNode<?> node) {

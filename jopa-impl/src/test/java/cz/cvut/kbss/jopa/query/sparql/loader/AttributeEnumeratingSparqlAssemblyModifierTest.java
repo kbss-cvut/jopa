@@ -20,10 +20,10 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.sparql.Sparql11QueryParser;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
@@ -77,9 +77,9 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xowlClassA ?xtypes WHERE { ?x a ?type . " +
-                "OPTIONAL { ?x " + strUri(Vocabulary.p_h_hasA) + " ?xowlClassA . } " +
-                "?x a ?xtypes . }"));
+        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?x_owlClassA ?x_types WHERE { ?x a ?type . " +
+                "OPTIONAL { ?x " + strUri(Vocabulary.p_h_hasA) + " ?x_owlClassA . } " +
+                "?x a ?x_types . }"));
     }
 
     private static String strUri(String uri) {
@@ -92,7 +92,7 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
     private <X> AttributeEnumeratingSparqlAssemblyModifier createSut(IdentifiableEntityType<X> et,
                                                                      Descriptor descriptor) {
-        final Metamodel metamodel = mock(Metamodel.class);
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
         metamodelMocks.setMocks(metamodel);
         return new AttributeEnumeratingSparqlAssemblyModifier(metamodel, et, descriptor, connectionWrapper);
     }
@@ -104,9 +104,9 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xstringAttribute ?xtypes WHERE { ?x a ?type . " +
-                "OPTIONAL { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?xstringAttribute . } " +
-                "?x a ?xtypes . }"));
+        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?x_stringAttribute ?x_types WHERE { ?x a ?type . " +
+                "OPTIONAL { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?x_stringAttribute . } " +
+                "?x a ?x_types . }"));
     }
 
     @Test
@@ -119,9 +119,9 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xstringAttribute ?xtypes WHERE { ?x a ?type . " +
-                "OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?xstringAttribute . } } " +
-                "GRAPH <" + ctx + "> { ?x a ?xtypes . } }"));
+        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?x_stringAttribute ?x_types WHERE { ?x a ?type . " +
+                "OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?x_stringAttribute . } } " +
+                "GRAPH <" + ctx + "> { ?x a ?x_types . } }"));
     }
 
     @Test
@@ -135,9 +135,9 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xstringAttribute ?xtypes WHERE { ?x a ?type . " +
-                "OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?xstringAttribute . } } " +
-                "?x a ?xtypes . }"));
+        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?x_stringAttribute ?x_types WHERE { ?x a ?type . " +
+                "OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?x_stringAttribute . } } " +
+                "?x a ?x_types . }"));
     }
 
     @Test
@@ -158,9 +158,9 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xowlClassA ?xtypes WHERE { ?x a ?type . " +
-                "?x " + strUri(Vocabulary.p_h_hasA) + " ?xowlClassA . " +
-                "?x a ?xtypes . }"));
+        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?x_owlClassA ?x_types WHERE { ?x a ?type . " +
+                "?x " + strUri(Vocabulary.p_h_hasA) + " ?x_owlClassA . " +
+                "?x a ?x_types . }"));
     }
 
     @Test
@@ -174,6 +174,6 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, containsString("OPTIONAL { ?x " + strUri(Vocabulary.p_f_stringAttribute) + " ?xsecondStringAttribute . }"));
+        assertThat(result, containsString("OPTIONAL { ?x " + strUri(Vocabulary.p_f_stringAttribute) + " ?x_secondStringAttribute . }"));
     }
 }
