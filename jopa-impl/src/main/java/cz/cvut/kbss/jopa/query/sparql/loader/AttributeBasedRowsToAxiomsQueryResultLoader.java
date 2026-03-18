@@ -170,7 +170,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
     private record OptimizedQueryVariableNameMapper(String subjectVarName) implements VariableNameMapper {
         @Override
             public String getAttributeVarName(Attribute<?, ?> attribute) {
-                return subjectVarName + attribute.getName();
+                return subjectVarName + "_" + attribute.getName();
             }
 
             @Override
