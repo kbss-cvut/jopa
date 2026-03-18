@@ -285,6 +285,27 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         });
     }
 
+    public AbstractAttribute<? super X, ?> getAttributeIncludingSubTypes(String name) {
+        return getDeclaredAttributeImpl(name).orElseGet(() -> {
+            final AbstractAttribute<? super X, ?> subAtt = recursivelyGetDeclaredAttribute(name);
+            if (subAtt != null) {
+                return subAtt;
+            }
+            if (classSupertype != null) {
+                return classSupertype.getAttribute(name, javaType);
+            }
+            throw attributeMissing(name, false);
+        });
+    }
+
+    private AbstractAttribute<? super X, ?> recursivelyGetDeclaredAttribute(String name) {
+        return getDeclaredAttributeImpl(name).orElseGet(() -> (AbstractAttribute<? super X, ?>) subtypes.stream()
+                                                                                                        .map(ait -> ait.recursivelyGetDeclaredAttribute(name))
+                                                                                                        .filter(Objects::nonNull)
+                                                                                                        .findFirst()
+                                                                                                        .orElse(null));
+    }
+
     /**
      * Gets attribute with the specified name.
      * <p>

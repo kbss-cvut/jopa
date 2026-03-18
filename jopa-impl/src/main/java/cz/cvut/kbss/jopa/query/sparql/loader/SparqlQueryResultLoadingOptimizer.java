@@ -56,7 +56,7 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
                 break;
             case ATTRIBUTE_BASED:
                 LOG.trace("Processing query results with attribute enumeration-based optimized attribute loading.");
-                queryHolder.setAssemblyModifier(new AttributeEnumeratingSparqlAssemblyModifier(uow.getMetamodel()
+                queryHolder.setAssemblyModifier(new AttributeEnumeratingSparqlAssemblyModifier(uow.getMetamodel(), uow.getMetamodel()
                                                                                                   .entity(resultClass), descriptor, connection));
                 break;
             default:

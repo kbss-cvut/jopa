@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.sparql.Sparql11QueryParser;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
@@ -35,6 +36,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 
@@ -45,6 +48,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class AttributeEnumeratingSparqlAssemblyModifierTest {
 
     private static MetamodelMocks metamodelMocks;
@@ -88,7 +92,9 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
     private <X> AttributeEnumeratingSparqlAssemblyModifier createSut(IdentifiableEntityType<X> et,
                                                                      Descriptor descriptor) {
-        return new AttributeEnumeratingSparqlAssemblyModifier(et, descriptor, connectionWrapper);
+        final Metamodel metamodel = mock(Metamodel.class);
+        metamodelMocks.setMocks(metamodel);
+        return new AttributeEnumeratingSparqlAssemblyModifier(metamodel, et, descriptor, connectionWrapper);
     }
 
     @Test
