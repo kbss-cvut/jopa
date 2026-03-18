@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -418,4 +419,13 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * @return Criteria query builder
      */
     CriteriaBuilder getCriteriaBuilder();
+
+    /**
+     * Creates an {@link EntityGraph} instance that can be used to specify an entity graph.
+     *
+     * @param rootType Root entity class
+     * @param <T>      Root entity class type
+     * @return Entity graph
+     */
+    <T> EntityGraph<T> createEntityGraph(Class<T> rootType);
 }

@@ -50,6 +50,14 @@ public class QueryHints {
      */
     public static final String ENABLE_ENTITY_LOADING_OPTIMIZER = "cz.cvut.kbss.jopa.query.enableEntityLoadingOptimizer";
 
+    /**
+     * Allows specifying the graph to be used for fetching the entities.
+     * <p>
+     * A {@literal fetch graph} specifies the attributes that the query should load. All other attributes are loaded
+     * lazily.
+     */
+    public static final String FETCH_GRAPH = "cz.cvut.kbss.jopa.query.fetchGraph";
+
     private QueryHints() {
         throw new AssertionError();
     }

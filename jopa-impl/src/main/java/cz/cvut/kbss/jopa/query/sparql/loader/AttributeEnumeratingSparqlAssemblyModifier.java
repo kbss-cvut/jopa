@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
@@ -69,20 +70,29 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
 
     private final Descriptor descriptor;
 
+    private final EntityGraph<?> fetchGraph;
+
     private final boolean inferredAttsInDefault;
 
     public AttributeEnumeratingSparqlAssemblyModifier(MetamodelImpl metamodel, IdentifiableEntityType<?> resultType,
-                                                      Descriptor descriptor,
+                                                      Descriptor descriptor, EntityGraph<?> fetchGraph,
                                                       ConnectionWrapper connection) {
         this.metamodel = metamodel;
         this.resultType = resultType;
         this.descriptor = descriptor;
+        this.fetchGraph = fetchGraph != null ? fetchGraph : generateFetchGraph();
         this.inferredAttsInDefault = resolveInferenceContext(connection);
         assert resultType.getProperties() == null;
     }
 
-    private boolean resolveInferenceContext(ConnectionWrapper connection) {
+    private static boolean resolveInferenceContext(ConnectionWrapper connection) {
         return "GraphDB".equals(connection.getRepositoryMetadata().getProductName());
+    }
+
+    private EntityGraph<?> generateFetchGraph() {
+        final EntityGraph<?> graph = new EntityGraphImpl<>(resultType, metamodel);
+        graph.addAttributeNodes(attributes().toArray(Attribute[]::new));
+        return graph;
     }
 
     @Override
@@ -92,31 +102,20 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         assert queryHolder.getProjectedQueryParameters().size() == 1;
 
         final TokenQueryParameter<?> p = queryHolder.getProjectedQueryParameters().get(0);
-        final List<String> variablesToProject = addAttributeSelection(queryHolder, tokenRewriter, queryAttributes);
-        tokenRewriter.insertAfter(p.getSingleToken(), " " + String.join(" ", variablesToProject));
-    }
-
-    private List<String> addAttributeSelection(TokenStreamSparqlQueryHolder queryHolder,
-                                               TokenStreamRewriter tokenRewriter,
-                                               QueryAttributes queryAttributes) {
-        final String subjectParamName = UnboundPredicateObjectSparqlAssemblyModifier.getBaseParamName(queryHolder.getProjectedQueryParameters()
-                                                                                                                 .get(0));
+        final String subjectParamName = UnboundPredicateObjectSparqlAssemblyModifier.getBaseParamName(p);
         final EntityMappingQueryModifier queryModifier = new EntityMappingQueryModifier(metamodel, resultType, descriptor, inferredAttsInDefault);
-        final EntityMappingQueryModifier.QueryModification mod = queryModifier.modify(generateEntityGraph(), subjectParamName);
+        final EntityMappingQueryModifier.QueryModification mod = queryModifier.modify(fetchGraph, subjectParamName);
         tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), mod.queryPart());
-        return mod.variables();
-    }
-
-    private EntityGraph<?> generateEntityGraph() {
-        final EntityGraph<?> graph = new EntityGraphImpl<>(resultType, metamodel);
-        graph.addAttributeNodes(attributes().toArray(new Attribute[0]));
-        return graph;
+        tokenRewriter.insertAfter(p.getSingleToken(), " " + String.join(" ", mod.variables()));
     }
 
     private Collection<Attribute<?, ?>> attributes() {
-        final List<Attribute<?, ?>> atts = new ArrayList<>(resultType.getAttributes());
+        final List<Attribute<?, ?>> atts = new ArrayList<>(resultType.getAttributes().stream()
+                                                                     .filter(att -> att.getFetchType() == FetchType.EAGER)
+                                                                     .toList());
         resultType.getSubtypes().stream()
                   .flatMap(subtype -> subtype.getAttributes().stream())
+                  .filter(att -> att.getFetchType() == FetchType.EAGER)
                   .forEach(atts::add);
         return atts;
     }

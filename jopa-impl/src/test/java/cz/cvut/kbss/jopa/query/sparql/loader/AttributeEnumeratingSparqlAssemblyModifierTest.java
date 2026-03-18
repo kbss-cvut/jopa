@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
@@ -94,7 +95,7 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
                                                                      Descriptor descriptor) {
         final MetamodelImpl metamodel = mock(MetamodelImpl.class);
         metamodelMocks.setMocks(metamodel);
-        return new AttributeEnumeratingSparqlAssemblyModifier(metamodel, et, descriptor, connectionWrapper);
+        return new AttributeEnumeratingSparqlAssemblyModifier(metamodel, et, descriptor, null, connectionWrapper);
     }
 
     @Test
@@ -142,24 +143,47 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
     @Test
     void modifyAddsOptionalTriplePatternsForSubtypeAttributes() {
-        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
-        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassS().entityType());
-        holder.setAssemblyModifier(sut);
+        when(metamodelMocks.forOwlClassR().rOwlClassAAtt().getFetchType()).thenReturn(FetchType.EAGER);
+        try {
+            final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+            final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassS()
+                                                                                           .entityType());
+            holder.setAssemblyModifier(sut);
 
-        final String result = holder.assembleQuery();
-        assertThat(result, containsString(Vocabulary.P_R_STRING_ATTRIBUTE));
-        assertThat(result, containsString(Vocabulary.P_HAS_A));
+            final String result = holder.assembleQuery();
+            assertThat(result, containsString(Vocabulary.P_R_STRING_ATTRIBUTE));
+            assertThat(result, containsString(Vocabulary.P_HAS_A));
+        } finally {
+            when(metamodelMocks.forOwlClassR().rOwlClassAAtt().getFetchType()).thenReturn(FetchType.LAZY);
+        }
     }
 
     @Test
     void modifyAddsTriplePatternWithoutOptionalWhenMinimumParticipationConstraintIsPresentAndGreaterThanZero() {
+        when(metamodelMocks.forOwlClassJ().setAttribute().getFetchType()).thenReturn(FetchType.EAGER);
+        try {
+            final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+            final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassJ()
+                                                                                           .entityType());
+            holder.setAssemblyModifier(sut);
+
+            final String result = holder.assembleQuery();
+            assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?x_owlClassA ?x_types WHERE { ?x a ?type . " +
+                    "?x " + strUri(Vocabulary.p_h_hasA) + " ?x_owlClassA . " +
+                    "?x a ?x_types . }"));
+        } finally {
+            when(metamodelMocks.forOwlClassJ().setAttribute().getFetchType()).thenReturn(FetchType.LAZY);
+        }
+    }
+
+    @Test
+    void modifyExcludesLazilyLoadedAttributesFromFetching() {
         final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
         final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassJ().entityType());
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?x_owlClassA ?x_types WHERE { ?x a ?type . " +
-                "?x " + strUri(Vocabulary.p_h_hasA) + " ?x_owlClassA . " +
+        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?x_types WHERE { ?x a ?type . " +
                 "?x a ?x_types . }"));
     }
 

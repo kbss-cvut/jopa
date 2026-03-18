@@ -77,7 +77,7 @@ class SparqlQueryResultLoadingOptimizerTest {
         final IdentifiableEntityType<OWLClassB> et = mock(IdentifiableEntityType.class);
         when(et.getProperties()).thenReturn(mock(PropertiesSpecification.class));
         when(metamodel.entity(OWLClassB.class)).thenReturn(et);
-        sut.optimizeQueryAssembly(OWLClassB.class, new EntityDescriptor());
+        sut.optimizeQueryAssembly(OWLClassB.class, new EntityDescriptor(), null);
         verify(qh).setAssemblyModifier(any(UnboundPredicateObjectSparqlAssemblyModifier.class));
     }
 
@@ -93,7 +93,7 @@ class SparqlQueryResultLoadingOptimizerTest {
         final IdentifiableEntityType<OWLClassA> et = mock(IdentifiableEntityType.class);
         when(et.getProperties()).thenReturn(null);
         when(metamodel.entity(OWLClassA.class)).thenReturn(et);
-        sut.optimizeQueryAssembly(OWLClassA.class, new EntityDescriptor());
+        sut.optimizeQueryAssembly(OWLClassA.class, new EntityDescriptor(), null);
         verify(qh).setAssemblyModifier(any(AttributeEnumeratingSparqlAssemblyModifier.class));
     }
 
@@ -102,7 +102,7 @@ class SparqlQueryResultLoadingOptimizerTest {
         final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type }"));
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.enableOptimization();
-        sut.optimizeQueryAssembly(URI.class, new EntityDescriptor());
+        sut.optimizeQueryAssembly(URI.class, new EntityDescriptor(), null);
         verify(qh, never()).setAssemblyModifier(any());
     }
 
@@ -112,7 +112,7 @@ class SparqlQueryResultLoadingOptimizerTest {
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.enableOptimization();
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
-        sut.optimizeQueryAssembly(OWLClassA.class, new EntityDescriptor());
+        sut.optimizeQueryAssembly(OWLClassA.class, new EntityDescriptor(), null);
         verify(qh, never()).setAssemblyModifier(any());
     }
 
@@ -122,7 +122,7 @@ class SparqlQueryResultLoadingOptimizerTest {
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.enableOptimization();
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
-        sut.optimizeQueryAssembly(OWLClassA.class, new EntityDescriptor());
+        sut.optimizeQueryAssembly(OWLClassA.class, new EntityDescriptor(), null);
         verify(qh, never()).setAssemblyModifier(any());
     }
 
@@ -137,7 +137,7 @@ class SparqlQueryResultLoadingOptimizerTest {
         when(uow.getMetamodel()).thenReturn(metamodel);
         final IdentifiableEntityType<OWLClassA> et = mock(IdentifiableEntityType.class);
         when(metamodel.entity(OWLClassA.class)).thenReturn(et);
-        sut.optimizeQueryAssembly(OWLClassA.class, new EntityDescriptor());
+        sut.optimizeQueryAssembly(OWLClassA.class, new EntityDescriptor(), null);
         verify(qh).setAssemblyModifier(any(AttributeEnumeratingSparqlAssemblyModifier.class));
     }
 
@@ -147,7 +147,7 @@ class SparqlQueryResultLoadingOptimizerTest {
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.enableOptimization();
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
-        sut.optimizeQueryAssembly(OWLClassA.class, new EntityDescriptor(Set.of(Generators.createIndividualIdentifier(), Generators.createIndividualIdentifier())));
+        sut.optimizeQueryAssembly(OWLClassA.class, new EntityDescriptor(Set.of(Generators.createIndividualIdentifier(), Generators.createIndividualIdentifier())), null);
         verify(qh, never()).setAssemblyModifier(any());
     }
 
@@ -162,7 +162,7 @@ class SparqlQueryResultLoadingOptimizerTest {
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.disableOptimization();
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
-        final QueryResultLoader<OWLClassA> result = sut.getQueryResultLoader(OWLClassA.class, new EntityDescriptor());
+        final QueryResultLoader<OWLClassA> result = sut.getQueryResultLoader(OWLClassA.class, new EntityDescriptor(), null);
         assertInstanceOf(AttributeBasedRowsToAxiomsQueryResultLoader.class, result);
     }
 }
