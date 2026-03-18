@@ -15,6 +15,10 @@ public class AttributeNodeImpl<X> implements AttributeNode<X> {
         this.attribute = attribute;
     }
 
+    public Attribute<?, X> getAttribute() {
+        return attribute;
+    }
+
     @Override
     public String getAttributeName() {
         return attribute.getName();
@@ -27,5 +31,10 @@ public class AttributeNodeImpl<X> implements AttributeNode<X> {
 
     void addSubgraph(EntityGraphImpl<?> graph) {
         subgraphs.put(graph.getClassType(), graph);
+    }
+
+    @Override
+    public String toString() {
+        return attribute.toString();
     }
 }
