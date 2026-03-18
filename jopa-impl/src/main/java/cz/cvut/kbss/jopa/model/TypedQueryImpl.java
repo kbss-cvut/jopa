@@ -25,7 +25,7 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.query.QueryHolder;
-import cz.cvut.kbss.jopa.query.sparql.loader.QueryResultLoadingOptimizer;
+import cz.cvut.kbss.jopa.query.sparql.loader.SparqlQueryResultLoadingOptimizer;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
@@ -38,12 +38,12 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     private final Class<X> resultType;
 
-    private final QueryResultLoadingOptimizer<? extends QueryHolder> queryResultLoadingOptimizer;
+    private final SparqlQueryResultLoadingOptimizer queryResultLoadingOptimizer;
 
     private Descriptor descriptor = new EntityDescriptor();
 
     public TypedQueryImpl(QueryHolder query, Class<X> resultType, ConnectionWrapper connection,
-                          QueryResultLoadingOptimizer<? extends QueryHolder> queryResultLoadingOptimizer) {
+                          SparqlQueryResultLoadingOptimizer queryResultLoadingOptimizer) {
         super(query, connection);
         this.resultType = Objects.requireNonNull(resultType);
         this.queryResultLoadingOptimizer = queryResultLoadingOptimizer;
@@ -65,12 +65,22 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     private List<X> getResultListImpl() throws OntoDriverException {
         final List<X> res = new ArrayList<>();
-        queryResultLoadingOptimizer.optimizeQueryAssembly(resultType, descriptor);
-        final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor);
+        final EntityGraph<X> fetchGraph = getFetchGraph();
+        queryResultLoadingOptimizer.optimizeQueryAssembly(resultType, descriptor, fetchGraph);
+        final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor, fetchGraph);
 
         executeQuery(rr -> resultLoader.loadResult(rr).ifPresent(res::add));
         resultLoader.loadLastPending().ifPresent(res::add);
         return res;
+    }
+
+    @SuppressWarnings("unchecked")
+    private EntityGraph<X> getFetchGraph() {
+        final Object fetchGraph = getHints().get(QueryHints.FETCH_GRAPH);
+        if (fetchGraph != null && !(fetchGraph instanceof EntityGraph<?>)) {
+            throw new IllegalArgumentException("Fetch graph query hint value must be an instance of " + EntityGraph.class.getName());
+        }
+        return (EntityGraph<X>) fetchGraph;
     }
 
     public Descriptor getDescriptor() {
@@ -102,8 +112,9 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
 
     @Override
     public Stream<X> getResultStream() {
-        queryResultLoadingOptimizer.optimizeQueryAssembly(resultType, descriptor);
-        final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor);
+        final EntityGraph<X> fetchGraph = getFetchGraph();
+        queryResultLoadingOptimizer.optimizeQueryAssembly(resultType, descriptor, fetchGraph);
+        final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor, fetchGraph);
         try {
             return executeQueryForStream(resultLoader);
         } catch (OntoDriverException e) {

@@ -20,8 +20,8 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.proxy.IndirectWrapper;
-import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
+import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.LoadState;
@@ -33,8 +33,10 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.proxy.IndirectWrapper;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.change.Change;
 import cz.cvut.kbss.jopa.sessions.change.ChangeCalculator;
@@ -486,8 +488,8 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     /**
-     * This method calculates the changes to the registered entities and adds these changes into the given
-     * change set for future commit to the ontology.
+     * This method calculates the changes to the registered entities and adds these changes into the given change set
+     * for future commit to the ontology.
      */
     void calculateChanges() {
         if (hasNew) {
@@ -960,12 +962,19 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         return loadStateRegistry.contains(entity) ? loadStateRegistry.get(entity).isLoaded() : LoadState.UNKNOWN;
     }
 
+    @Override
     public SparqlQueryFactory sparqlQueryFactory() {
         return queryFactory;
     }
 
+    @Override
     public CriteriaBuilder getCriteriaBuilder() {
         return parent.getCriteriaBuilder();
+    }
+
+    @Override
+    public <T> EntityGraph<T> createEntityGraph(Class<T> rootType) {
+        return new EntityGraphImpl<>(getMetamodel().entity(rootType), getMetamodel());
     }
 
     void registerEntityWithOntologyContext(Object entity, Descriptor descriptor) {

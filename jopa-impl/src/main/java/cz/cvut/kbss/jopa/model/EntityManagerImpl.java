@@ -571,6 +571,12 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     @Override
+    public <T> EntityGraph<T> createEntityGraph(Class<T> rootType) {
+        ensureOpen();
+        return getCurrentPersistenceContext().createEntityGraph(rootType);
+    }
+
+    @Override
     public <T> T unwrap(Class<T> cls) {
         ensureOpen();
         if (cls.isAssignableFrom(this.getClass())) {
