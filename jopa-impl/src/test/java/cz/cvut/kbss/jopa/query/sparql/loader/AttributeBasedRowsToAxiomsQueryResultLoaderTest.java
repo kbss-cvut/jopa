@@ -20,9 +20,13 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
@@ -81,7 +85,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
     @Test
     void loadEntityInstanceReadsRowIntoAxiomsAndLoadsEntityFromThem() throws OntoDriverException {
         final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut =
-                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor);
+                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, createFetchGraph(), "x");
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setTypes(Set.of());
         final List<ResultRow> resultRows = Stream.concat(mockResultRows(instance).stream(), mockResultRows(
@@ -93,6 +97,13 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         assertTrue(result.isPresent());
         assertEquals(instance, result.get());
         verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor));
+    }
+
+    private EntityGraph<OWLClassA> createFetchGraph() {
+        final IdentifiableEntityType<OWLClassA> et = metamodel.entity(OWLClassA.class);
+        final EntityGraph<OWLClassA> fetchGraph = new EntityGraphImpl<>(et, metamodel);
+        fetchGraph.addAttributeNodes(et.getAttributes().toArray(Attribute[]::new));
+        return fetchGraph;
     }
 
     private static List<ResultRow> mockResultRows(OWLClassA instance) throws OntoDriverException {
@@ -118,7 +129,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
     @Test
     void loadLastPendingLoadsLastPendingEntity() throws Exception {
         final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut =
-                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor);
+                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, createFetchGraph(), "x");
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setTypes(Set.of());
         final List<ResultRow> resultRows = mockResultRows(instance);
@@ -136,7 +147,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
     @Test
     void loadResultDoesNotDuplicateAlreadyPresentAttributes() throws Exception {
         final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut =
-                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor);
+                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, createFetchGraph(), "x");
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setTypes(Set.of());
         final List<ResultRow> resultRows = mockResultRows(instance);
@@ -156,7 +167,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
     @Test
     void loadResultHandlesUnboundAttributeVariables() throws Exception {
         final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut =
-                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor);
+                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, createFetchGraph(), "x");
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setTypes(Set.of());
         instance.setStringAttribute(null);

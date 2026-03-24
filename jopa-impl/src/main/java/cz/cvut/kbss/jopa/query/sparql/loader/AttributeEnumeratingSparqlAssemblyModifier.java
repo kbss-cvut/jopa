@@ -18,11 +18,8 @@
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.model.EntityGraph;
-import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.sparql.QueryAttributes;
@@ -30,10 +27,6 @@ import cz.cvut.kbss.jopa.query.sparql.TokenQueryParameter;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import org.antlr.v4.runtime.TokenStreamRewriter;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Optimizes entity loading by modifying the query to fetch all named attributes.
@@ -62,7 +55,7 @@ import java.util.List;
  */
 public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssemblyModifier {
 
-    static final String TYPES_VAR_SUFFIX = "_types";
+    static final String TYPES_VAR_NAME = "types";
 
     private final MetamodelImpl metamodel;
 
@@ -80,7 +73,7 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         this.metamodel = metamodel;
         this.resultType = resultType;
         this.descriptor = descriptor;
-        this.fetchGraph = fetchGraph != null ? fetchGraph : generateFetchGraph();
+        this.fetchGraph = fetchGraph != null ? fetchGraph : generateDefaultFetchGraph();
         this.inferredAttsInDefault = resolveInferenceContext(connection);
         assert resultType.getProperties() == null;
     }
@@ -89,10 +82,8 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         return "GraphDB".equals(connection.getRepositoryMetadata().getProductName());
     }
 
-    private EntityGraph<?> generateFetchGraph() {
-        final EntityGraph<?> graph = new EntityGraphImpl<>(resultType, metamodel);
-        graph.addAttributeNodes(attributes().toArray(Attribute[]::new));
-        return graph;
+    private EntityGraph<?> generateDefaultFetchGraph() {
+        return new FetchGraphProcessor(metamodel).generateDefaultFetchGraph(resultType);
     }
 
     @Override
@@ -106,17 +97,7 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         final EntityMappingQueryModifier queryModifier = new EntityMappingQueryModifier(metamodel, resultType, descriptor, inferredAttsInDefault);
         final EntityMappingQueryModifier.QueryModification mod = queryModifier.modify(fetchGraph, subjectParamName);
         tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), mod.queryPart());
+        // TODO PERF: Use GROUP_CONCAT to optimize plural attribute projection
         tokenRewriter.insertAfter(p.getSingleToken(), " " + String.join(" ", mod.variables()));
-    }
-
-    private Collection<Attribute<?, ?>> attributes() {
-        final List<Attribute<?, ?>> atts = new ArrayList<>(resultType.getAttributes().stream()
-                                                                     .filter(att -> att.getFetchType() == FetchType.EAGER)
-                                                                     .toList());
-        resultType.getSubtypes().stream()
-                  .flatMap(subtype -> subtype.getAttributes().stream())
-                  .filter(att -> att.getFetchType() == FetchType.EAGER)
-                  .forEach(atts::add);
-        return atts;
     }
 }
