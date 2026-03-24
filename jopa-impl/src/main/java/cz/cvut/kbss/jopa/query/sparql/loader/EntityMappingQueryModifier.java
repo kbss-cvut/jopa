@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static cz.cvut.kbss.jopa.query.sparql.loader.AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_SUFFIX;
+import static cz.cvut.kbss.jopa.query.sparql.loader.AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_NAME;
 
 /**
  * Creates a basic graph pattern corresponding to the specified entity fetch graph.
@@ -105,7 +105,7 @@ class EntityMappingQueryModifier {
             }
             ctx.ifPresent(uri -> target.append("} "));
         });
-        final String typesVariable = "?" + subjectVar + TYPES_VAR_SUFFIX;
+        final String typesVariable = "?" + varName(subjectVar, TYPES_VAR_NAME);
         variables.add(typesVariable);
         final Optional<String> ctx = typesContext();
         ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
@@ -116,7 +116,7 @@ class EntityMappingQueryModifier {
         return new QueryModification(variables, attributePatterns + optionalAttributesPatterns.toString());
     }
 
-    private static String varName(String subjectVar, String attName) {
+    static String varName(String subjectVar, String attName) {
         return subjectVar + "_" + attName;
     }
 

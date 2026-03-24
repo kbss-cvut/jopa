@@ -19,11 +19,12 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -37,9 +38,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Loads query results as axioms and then uses {@link cz.cvut.kbss.jopa.sessions.UnitOfWork} to create the actual entity
@@ -51,7 +57,7 @@ import java.util.Set;
  * <ul>
  *     <li>Query result contains at least one column</li>
  *     <li>The first column contains the subject URI</li>
- *     <li>The remaining columns contain attribute values. Each column is named as {@code subjectName + attributeName}</li>
+ *     <li>The remaining columns contain attribute values. Each column is named as {@code subjectName + "_" + attributeName}</li>
  * </ul>
  * <p>
  * If the loader is unable to load the entity (e.g., due to cardinality constraint violation), it falls back to
@@ -66,16 +72,49 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
     private final UnitOfWork uow;
     private final Class<T> resultType;
     private final Descriptor descriptor;
-    private final EntityType<T> entityType;
+    private final IdentifiableEntityType<T> entityType;
+
+    private List<FetchGraphProcessor.QueryProjectionToAxiomMapping> mappings;
 
     private Set<Axiom<?>> currentEntityAxioms = Set.of();
     private NamedResource currentSubject;
 
-    AttributeBasedRowsToAxiomsQueryResultLoader(UnitOfWork uow, Class<T> resultType, Descriptor descriptor) {
+    AttributeBasedRowsToAxiomsQueryResultLoader(UnitOfWork uow, Class<T> resultType, Descriptor descriptor,
+                                                EntityGraph<T> fetchGraph, String subjectVariable) {
         this.uow = uow;
         this.resultType = resultType;
         this.descriptor = descriptor;
         this.entityType = uow.getMetamodel().entity(resultType);
+        if (fetchGraph != null) {
+            this.mappings = new FetchGraphProcessor(uow.getMetamodel()).mapFetchGraphToProjection(fetchGraph, entityType, subjectVariable);
+        }
+    }
+
+    private void createProjectionMappings(List<String> projectedVars) {
+        if (mappings != null) {
+            return;
+        }
+        assert !projectedVars.isEmpty();
+        final String subjectVar = projectedVars.get(0);
+        final List<FetchGraphProcessor.QueryProjectionToAxiomMapping> mappings = new ArrayList<>(projectedVars.size() - 1);
+        final Map<String, Attribute<?, ?>> atts = FetchGraphProcessor.attributes(entityType).stream()
+                                                                     .collect(Collectors.toMap(Attribute::getName, Function.identity()));
+        for (int i = 1; i < projectedVars.size(); i++) {
+            final String projectedVar = projectedVars.get(i);
+            if (atts.containsKey(projectedVar)) {
+                // ?stringAttribute
+                mappings.add(new FetchGraphProcessor.QueryProjectionToAxiomMapping(subjectVar, projectedVar, atts.get(projectedVar)));
+            } else if (atts.containsKey(projectedVar.substring(subjectVar.length() + 1))) {
+                // ?x_stringAttribute
+                mappings.add(new FetchGraphProcessor.QueryProjectionToAxiomMapping(subjectVar, projectedVar, atts.get(projectedVar.substring(subjectVar.length() + 1))));
+            } else if (projectedVar.endsWith(AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_NAME)) {
+                // ?x_types or ?types
+                mappings.add(new FetchGraphProcessor.QueryProjectionToAxiomMapping(subjectVar, projectedVar, null));
+            } else {
+                LOG.warn("Variable '{}' projected from the query cannot be mapped to any attributes in entity class {}.", projectedVar, entityType);
+            }
+        }
+        this.mappings = mappings;
     }
 
     @Override
@@ -85,6 +124,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
             final URI subject = resultRow.getObject(0, URI.class);
             if (currentSubject == null) {
                 reset(NamedResource.create(subject));
+                createProjectionMappings(resultRow.getColumnNames());
             }
             if (subject.equals(currentSubject.getIdentifier())) {
                 rowToAxioms(resultRow);
@@ -107,37 +147,31 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
     }
 
     private void rowToAxioms(ResultRow row) throws OntoDriverException {
-        final VariableNameMapper varNameMapper = createVarNameMapper(row);
-        for (Attribute<? super T, ?> attribute : entityType.getAttributes()) {
-            final String varName = varNameMapper.getAttributeVarName(attribute);
-            if (row.isBound(varName)) {
-                currentEntityAxioms.add(new AxiomImpl<>(currentSubject, attributeToAssertion(attribute), new Value<>(row.getObject(varName))));
+        for (FetchGraphProcessor.QueryProjectionToAxiomMapping mapping : mappings) {
+            if (row.isBound(mapping.objectVariable())) {
+                currentEntityAxioms.add(new AxiomImpl<>(currentSubject, attributeToAssertion(mapping.field()), new Value<>(row.getObject(mapping.objectVariable()))));
             }
         }
-        final Optional<TypesSpecification<? super T, ?>> typesSpec = Optional.ofNullable(entityType.getTypes());
-        final String varName = varNameMapper.getTypesVarName(typesSpec.orElse(null));
-        if (row.isBound(varName)) {
-            currentEntityAxioms.add(new AxiomImpl<>(currentSubject,
-                    Assertion.createClassAssertion(typesSpec.map(FieldSpecification::isInferred).orElse(false)),
-                    new Value<>(row.getObject(varName))));
+    }
+
+    private static Assertion attributeToAssertion(FieldSpecification<?, ?> fs) {
+        if (fs != null && fs.isMappedAttribute()) {
+            final Attribute<?, ?> attribute = (Attribute<?, ?>) fs;
+            return switch (attribute.getPersistentAttributeType()) {
+                case OBJECT ->
+                        Assertion.createObjectPropertyAssertion(attribute.getIRI().toURI(), attribute.isInferred());
+                case DATA -> Assertion.createDataPropertyAssertion(attribute.getIRI().toURI(), attribute.isInferred());
+                case ANNOTATION ->
+                        Assertion.createAnnotationPropertyAssertion(attribute.getIRI().toURI(), attribute.isInferred());
+            };
+        } else {
+            if (fs != null) {
+                assert fs instanceof TypesSpecification<?, ?>;
+                return Assertion.createClassAssertion(fs.isInferred());
+            } else {
+                return Assertion.createClassAssertion(false);
+            }
         }
-    }
-
-    private VariableNameMapper createVarNameMapper(ResultRow row) {
-        assert !row.getColumnNames().isEmpty();
-        final String subjectVarName = row.getColumnNames().get(0);
-        final boolean optimized = row.getColumnNames().stream()
-                .allMatch(name -> name.startsWith(subjectVarName));
-        return optimized ? new OptimizedQueryVariableNameMapper(subjectVarName) : new DefaultVariableNameMapper();
-    }
-
-    private static Assertion attributeToAssertion(Attribute<?, ?> attribute) {
-        return switch (attribute.getPersistentAttributeType()) {
-            case OBJECT -> Assertion.createObjectPropertyAssertion(attribute.getIRI().toURI(), attribute.isInferred());
-            case DATA -> Assertion.createDataPropertyAssertion(attribute.getIRI().toURI(), attribute.isInferred());
-            case ANNOTATION ->
-                    Assertion.createAnnotationPropertyAssertion(attribute.getIRI().toURI(), attribute.isInferred());
-        };
     }
 
     private T loadEntity() {
@@ -160,34 +194,5 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
             return Optional.ofNullable(loadEntity());
         }
         return Optional.empty();
-    }
-
-    private interface VariableNameMapper {
-        String getAttributeVarName(Attribute<?, ?> attribute);
-        String getTypesVarName(TypesSpecification<?, ?> types);
-    }
-
-    private record OptimizedQueryVariableNameMapper(String subjectVarName) implements VariableNameMapper {
-        @Override
-            public String getAttributeVarName(Attribute<?, ?> attribute) {
-                return subjectVarName + "_" + attribute.getName();
-            }
-
-            @Override
-            public String getTypesVarName(TypesSpecification<?, ?> types) {
-                return subjectVarName + AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_SUFFIX;
-            }
-        }
-
-    private static class DefaultVariableNameMapper implements VariableNameMapper {
-        @Override
-        public String getAttributeVarName(Attribute<?, ?> attribute) {
-            return attribute.getName();
-        }
-
-        @Override
-        public String getTypesVarName(TypesSpecification<?, ?> types) {
-            return types != null ? types.getName() : AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_SUFFIX;
-        }
     }
 }

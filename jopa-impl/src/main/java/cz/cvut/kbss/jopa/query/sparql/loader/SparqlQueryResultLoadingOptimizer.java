@@ -142,8 +142,8 @@ public class SparqlQueryResultLoadingOptimizer {
         final OptimizerType optimizerType = resolveOptimizerTypeForResultLoader(resultClass, descriptor, fetchGraph);
         return switch (optimizerType) {
             case TRIPLE_BASED -> new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
-            case ATTRIBUTE_BASED -> new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
-            // TODO FetchGraph-based loader
+            case ATTRIBUTE_BASED, FETCH_GRAPH_BASED ->
+                    new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor, fetchGraph, resolveSubjectVariable());
             default ->
                     uow.isEntityType(resultClass) ? new BaseEntityQueryResultLoader<>(uow, resultClass, descriptor) : new NonEntityQueryResultLoader<>(resultClass);
         };
@@ -160,6 +160,11 @@ public class SparqlQueryResultLoadingOptimizer {
             return OptimizerType.ATTRIBUTE_BASED;
         }
         return ot;
+    }
+
+    private String resolveSubjectVariable() {
+        assert !queryHolder.getProjectedQueryParameters().isEmpty();
+        return queryHolder.getProjectedQueryParameters().get(0).getName();
     }
 
     private enum OptimizerType {
