@@ -149,7 +149,9 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
     private void rowToAxioms(ResultRow row) throws OntoDriverException {
         for (FetchGraphProcessor.QueryProjectionToAxiomMapping mapping : mappings) {
             if (row.isBound(mapping.objectVariable())) {
-                currentEntityAxioms.add(new AxiomImpl<>(currentSubject, attributeToAssertion(mapping.field()), new Value<>(row.getObject(mapping.objectVariable()))));
+                assert row.isBound(mapping.subjectVariable());
+                final Axiom<?> ax = new AxiomImpl<>(NamedResource.create(row.getObject(mapping.subjectVariable(), URI.class)), attributeToAssertion(mapping.field()), new Value<>(row.getObject(mapping.objectVariable())));
+                currentEntityAxioms.add(ax);
             }
         }
     }

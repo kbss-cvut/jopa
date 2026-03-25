@@ -483,6 +483,8 @@ class TypedQueryImplTest extends QueryTestBase {
         when(resultSetIterator.next()).thenReturn(resultRow);
         when(resultRow.getColumnNames()).thenReturn(List.of("x", "stringAttribute", "types"));
         when(resultRow.getObject(0, URI.class)).thenReturn(entity.getUri());
+        when(resultRow.isBound("x")).thenReturn(true);
+        when(resultRow.getObject("x", URI.class)).thenReturn(entity.getUri());
         when(resultRow.isBound("stringAttribute")).thenReturn(true);
         when(resultRow.getObject("stringAttribute")).thenReturn(entity.getStringAttribute());
         when(resultRow.isBound("types")).thenReturn(true);
