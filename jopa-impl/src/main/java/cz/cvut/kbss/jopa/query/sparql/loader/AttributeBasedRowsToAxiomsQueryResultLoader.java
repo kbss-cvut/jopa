@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -180,7 +181,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
 
     private T loadEntity() {
         try {
-            return uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor, fetchGraph);
+            return uow.readObjectFromAxioms(resultType, currentEntityAxioms, new AxiomBasedLoadingConfigGroup(currentSubject.getIdentifier(), descriptor, fetchGraph));
         } catch (CardinalityConstraintViolatedException e) {
             // Axioms may contain more statements than expected due to query evaluation containing inferred results.
             // If the entity class declares ICs on non-inferred attributes, this may lead to IC violation exception.

@@ -33,6 +33,7 @@ import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxyGenerator;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
@@ -562,14 +563,14 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
                 new AxiomImpl<>(idResource, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(OWLClassA.getClassIri()))),
                 new AxiomImpl<>(idResource, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>(entityA.getStringAttribute()))
         );
-        when(storageMock.loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, descriptor, false, null, axioms))).thenReturn(entityA);
+        when(storageMock.loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup(id, descriptor)))).thenReturn(entityA);
 
-        final OWLClassA result = uow.readObjectFromAxioms(OWLClassA.class, axioms, descriptor, null);
+        final OWLClassA result = uow.readObjectFromAxioms(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup(id, descriptor));
         assertNotNull(result);
         assertEquals(entityA.getUri(), result.getUri());
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
         assertTrue(uow.contains(result));
-        verify(storageMock).loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, descriptor, false, null, axioms));
+        verify(storageMock).loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup(id, descriptor)));
         assertNotSame(entityA, result);
     }
 }

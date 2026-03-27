@@ -163,16 +163,17 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         if (loadingParameters.axioms().isEmpty()) {
             return null;
         }
-        final URI identifier = loadingParameters.axioms().iterator().next().getSubject().getIdentifier();
         final IdentifiableEntityType<T> et = getEntityType(loadingParameters.cls());
-        final LoadingParameters<T> params = new LoadingParameters<>(loadingParameters.cls(), identifier, loadingParameters.descriptor(), false, loadingParameters.bypassCache());
+        final LoadingParameters<T> params = new LoadingParameters<>(loadingParameters.cls(),
+                loadingParameters.config().subject(),
+                loadingParameters.config().descriptor(), false, loadingParameters.bypassCache());
         final T result;
         if (et.hasSubtypes()) {
             result = twoStepInstanceLoader.loadEntityFromAxioms(params, loadingParameters.axioms());
         } else {
             result = defaultInstanceLoader.loadEntityFromAxioms(params, loadingParameters.axioms());
         }
-        if (result != null) {
+        if (result != null && loadingParameters.config().fetchGraph() == null) {
             cacheLoadedEntity(params, result);
         }
         return result;

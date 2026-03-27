@@ -46,6 +46,7 @@ import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
@@ -358,16 +359,16 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     @Override
-    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor, EntityGraph<T> fetchGraph) {
+    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, AxiomBasedLoadingConfigGroup config) {
         Objects.requireNonNull(cls);
         Objects.requireNonNull(axioms);
-        Objects.requireNonNull(descriptor);
+        Objects.requireNonNull(config);
 
-        final T result = storage.loadFromAxioms(new AxiomBasedLoadingParameters<>(cls, descriptor, false, fetchGraph, axioms));
+        final T result = storage.loadFromAxioms(new AxiomBasedLoadingParameters<>(cls, axioms, config));
         if (result == null) {
             return null;
         }
-        final Object clone = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor).postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel()))));
+        final Object clone = registerExistingObject(result, new CloneRegistrationDescriptor(config.descriptor()).postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel()))));
         return cls.cast(clone);
     }
 

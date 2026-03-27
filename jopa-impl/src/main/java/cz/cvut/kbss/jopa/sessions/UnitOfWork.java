@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.utils.Wrapper;
@@ -178,15 +179,13 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * The axioms may represent an entity graph, i.e. multiple interconnected entities. It is the responsibility of the
      * loader to ensure the entity graph is reconstructed correctly w.r.t. the provided fetch graph.
      *
-     * @param cls        Expected result class
-     * @param axioms     Axioms representing the object(s)
-     * @param descriptor Entity descriptor
-     * @param fetchGraph Fetch graph describing the axioms
-     * @param <T>        Return type
+     * @param cls    Expected result class
+     * @param axioms Axioms representing the object(s)
+     * @param config Additional loading configuration
+     * @param <T>    Return type
      * @return The retrieved object or {@code null} if no object of the expected target class can be reconstructed
      */
-    <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor,
-                               EntityGraph<T> fetchGraph);
+    <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, AxiomBasedLoadingConfigGroup config);
 
     /**
      * Retrieves a reference to an object with the specified identifier.
