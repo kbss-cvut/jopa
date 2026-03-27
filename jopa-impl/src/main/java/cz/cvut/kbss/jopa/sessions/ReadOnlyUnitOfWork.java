@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -140,12 +141,13 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     @Override
-    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor) {
+    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor,
+                                      EntityGraph<T> fetchGraph) {
         Objects.requireNonNull(cls);
         Objects.requireNonNull(axioms);
         Objects.requireNonNull(descriptor);
 
-        final AxiomBasedLoadingParameters<T> loadingParameters = new AxiomBasedLoadingParameters<>(cls, descriptor, true, axioms);
+        final AxiomBasedLoadingParameters<T> loadingParameters = new AxiomBasedLoadingParameters<>(cls, descriptor, true, fetchGraph, axioms);
         final T result = storage.loadFromAxioms(loadingParameters);
         if (result == null) {
             return null;

@@ -73,6 +73,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
     private final Class<T> resultType;
     private final Descriptor descriptor;
     private final IdentifiableEntityType<T> entityType;
+    private final EntityGraph<T> fetchGraph;
 
     private List<FetchGraphProcessor.QueryProjectionToAxiomMapping> mappings;
 
@@ -85,6 +86,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
         this.resultType = resultType;
         this.descriptor = descriptor;
         this.entityType = uow.getMetamodel().entity(resultType);
+        this.fetchGraph = fetchGraph;
         if (fetchGraph != null) {
             this.mappings = new FetchGraphProcessor(uow.getMetamodel()).mapFetchGraphToProjection(fetchGraph, entityType, subjectVariable);
         }
@@ -178,7 +180,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
 
     private T loadEntity() {
         try {
-            return uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor);
+            return uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor, fetchGraph);
         } catch (CardinalityConstraintViolatedException e) {
             // Axioms may contain more statements than expected due to query evaluation containing inferred results.
             // If the entity class declares ICs on non-inferred attributes, this may lead to IC violation exception.

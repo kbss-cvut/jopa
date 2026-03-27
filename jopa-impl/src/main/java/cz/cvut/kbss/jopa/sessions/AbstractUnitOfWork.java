@@ -358,12 +358,12 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     @Override
-    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor) {
+    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor, EntityGraph<T> fetchGraph) {
         Objects.requireNonNull(cls);
         Objects.requireNonNull(axioms);
         Objects.requireNonNull(descriptor);
 
-        final T result = storage.loadFromAxioms(new AxiomBasedLoadingParameters<>(cls, descriptor, false, axioms));
+        final T result = storage.loadFromAxioms(new AxiomBasedLoadingParameters<>(cls, descriptor, false, fetchGraph, axioms));
         if (result == null) {
             return null;
         }
