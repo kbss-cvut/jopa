@@ -31,6 +31,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -92,19 +93,20 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
 
     @Test
     void loadEntityInstanceReadsRowIntoAxiomsAndLoadsEntityFromThem() throws OntoDriverException {
+        final EntityGraph<OWLClassA> fetchGraph = createFetchGraph();
         final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut =
-                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, createFetchGraph(), "x");
+                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, fetchGraph, "x");
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setTypes(Set.of());
         final List<ResultRow> resultRows = Stream.concat(mockResultRows(instance).stream(), mockResultRows(
                                                          Generators.generateOwlClassAInstance()).stream())
                                                  .toList();
-        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor), any())).thenReturn(instance);
+        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
         final Optional<OWLClassA> result = resultRows.stream().map(sut::loadResult).filter(Optional::isPresent)
                                                      .map(Optional::get).findFirst();
         assertTrue(result.isPresent());
         assertEquals(instance, result.get());
-        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor), any());
+        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup(instance.getUri(), descriptor, fetchGraph)));
     }
 
     private EntityGraph<OWLClassA> createFetchGraph() {
@@ -144,7 +146,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setTypes(Set.of());
         final List<ResultRow> resultRows = mockResultRows(instance);
-        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor), any())).thenReturn(instance);
+        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
         resultRows.forEach(row -> {
             final Optional<OWLClassA> opt = sut.loadResult(row);
             assertFalse(opt.isPresent());
@@ -152,17 +154,18 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         final Optional<OWLClassA> result = sut.loadLastPending();
         assertTrue(result.isPresent());
         assertEquals(instance, result.get());
-        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor), eq(fetchGraph));
+        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup(instance.getUri(), descriptor, fetchGraph)));
     }
 
     @Test
     void loadResultDoesNotDuplicateAlreadyPresentAttributes() throws Exception {
+        final EntityGraph<OWLClassA> fetchGraph = createFetchGraph();
         final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut =
-                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, createFetchGraph(), "x");
+                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, fetchGraph, "x");
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setTypes(Set.of());
         final List<ResultRow> resultRows = mockResultRows(instance);
-        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor), any())).thenReturn(instance);
+        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
         resultRows.forEach(row -> {
             final Optional<OWLClassA> opt = sut.loadResult(row);
             assertFalse(opt.isPresent());
@@ -170,7 +173,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         final Optional<OWLClassA> result = sut.loadLastPending();
         assertTrue(result.isPresent());
         final ArgumentCaptor<Collection<Axiom<?>>> captor = ArgumentCaptor.forClass(Collection.class);
-        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), captor.capture(), eq(descriptor), any());
+        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), captor.capture(), eq(new AxiomBasedLoadingConfigGroup(instance.getUri(), descriptor, fetchGraph)));
         assertEquals(1, captor.getValue().stream()
                               .filter(ax -> ax.getValue().equals(new Value<>(instance.getStringAttribute()))).count());
     }
@@ -183,7 +186,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         instance.setTypes(Set.of());
         instance.setStringAttribute(null);
         final List<ResultRow> resultRows = mockResultRows(instance);
-        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor), any())).thenReturn(instance);
+        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
         resultRows.forEach(row -> {
             final Optional<OWLClassA> opt = sut.loadResult(row);
             assertFalse(opt.isPresent());
@@ -209,7 +212,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         });
         sut.loadLastPending();
         final ArgumentCaptor<Collection<Axiom<?>>> captor = ArgumentCaptor.forClass(Collection.class);
-        verify(uow).readObjectFromAxioms(eq(OWLClassD.class), captor.capture(), eq(descriptor), any());
+        verify(uow).readObjectFromAxioms(eq(OWLClassD.class), captor.capture(), eq(new AxiomBasedLoadingConfigGroup(instance.getUri(), descriptor, fetchGraph)));
         assertThat(captor.getValue(), hasItem(
                 new AxiomImpl<>(NamedResource.create(instance.getUri()), Assertion.createClassAssertion(false), new Value<>(URI.create(Vocabulary.c_OwlClassD)))));
         assertThat(captor.getValue(), hasItem(new AxiomImpl<>(NamedResource.create(instance.getUri()), Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_h_hasA), false), new Value<>(instance.getOwlClassA()
