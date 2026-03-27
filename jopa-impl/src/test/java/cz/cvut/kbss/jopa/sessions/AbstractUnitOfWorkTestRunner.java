@@ -562,14 +562,14 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
                 new AxiomImpl<>(idResource, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(OWLClassA.getClassIri()))),
                 new AxiomImpl<>(idResource, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>(entityA.getStringAttribute()))
         );
-        when(storageMock.loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, descriptor, false, axioms))).thenReturn(entityA);
+        when(storageMock.loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, descriptor, false, null, axioms))).thenReturn(entityA);
 
-        final OWLClassA result = uow.readObjectFromAxioms(OWLClassA.class, axioms, descriptor);
+        final OWLClassA result = uow.readObjectFromAxioms(OWLClassA.class, axioms, descriptor, null);
         assertNotNull(result);
         assertEquals(entityA.getUri(), result.getUri());
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
         assertTrue(uow.contains(result));
-        verify(storageMock).loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, descriptor, false, axioms));
+        verify(storageMock).loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, descriptor, false, null, axioms));
         assertNotSame(entityA, result);
     }
 }

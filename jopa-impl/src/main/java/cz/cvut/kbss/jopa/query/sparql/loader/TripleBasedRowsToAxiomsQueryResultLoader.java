@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -43,7 +44,7 @@ import java.util.Optional;
 
 /**
  * Loads entity by aggregating rows with the same subject into axioms and then using
- * {@link UnitOfWork#readObjectFromAxioms(Class, Collection, Descriptor)} to read the entity.
+ * {@link UnitOfWork#readObjectFromAxioms(Class, Collection, Descriptor, EntityGraph)} to read the entity.
  * <p>
  * It expects the query result rows to have three columns corresponding to the triple subject, property and object.
  * <p>
@@ -112,7 +113,7 @@ class TripleBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoader<T
 
     private T loadEntity() {
         try {
-            return uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor);
+            return uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor, null);
         } catch (CardinalityConstraintViolatedException e) {
             // Axioms may contain more statements than expected due to query evaluation containing inferred results.
             // If the entity class declares ICs on non-inferred attributes, this may lead to IC violation exception.

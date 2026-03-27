@@ -174,14 +174,19 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * Reads an object from the specified axioms.
      * <p>
      * It is assumed the axioms correspond to the provided descriptor.
+     * <p>
+     * The axioms may represent an entity graph, i.e. multiple interconnected entities. It is the responsibility of the
+     * loader to ensure the entity graph is reconstructed correctly w.r.t. the provided fetch graph.
      *
      * @param cls        Expected result class
-     * @param axioms     Axioms representing the object
+     * @param axioms     Axioms representing the object(s)
      * @param descriptor Entity descriptor
+     * @param fetchGraph Fetch graph describing the axioms
      * @param <T>        Return type
      * @return The retrieved object or {@code null} if no object of the expected target class can be reconstructed
      */
-    <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor);
+    <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor,
+                               EntityGraph<T> fetchGraph);
 
     /**
      * Retrieves a reference to an object with the specified identifier.

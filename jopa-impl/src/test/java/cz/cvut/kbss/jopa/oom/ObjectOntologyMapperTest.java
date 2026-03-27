@@ -701,7 +701,7 @@ class ObjectOntologyMapperTest {
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("value"))
         );
 
-        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, axioms));
+        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, null, axioms));
         assertNotNull(result);
         assertEquals(IDENTIFIER, result.getUri());
         assertEquals("value", result.getStringAttribute());
@@ -710,7 +710,7 @@ class ObjectOntologyMapperTest {
 
     @Test
     void loadEntityFromAxiomsReturnsNullWhenAxiomsAreEmpty() {
-        assertNull(mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, List.of())));
+        assertNull(mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, null, List.of())));
     }
 
     @Test
@@ -720,7 +720,7 @@ class ObjectOntologyMapperTest {
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("value"))
         );
 
-        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, axioms));
+        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, null, axioms));
         verify(cacheMock).add(IDENTIFIER, result, new Descriptors(aDescriptor, loadStateRegistry.get(result)));
     }
 
@@ -732,7 +732,7 @@ class ObjectOntologyMapperTest {
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(RDFS.LABEL), false), new Value<>("value"))
         );
 
-        final OWLClassS result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassS.class, new EntityDescriptor(), false, axioms));
+        final OWLClassS result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassS.class, new EntityDescriptor(), false, null, axioms));
         assertInstanceOf(OWLClassR.class, result);
     }
 }

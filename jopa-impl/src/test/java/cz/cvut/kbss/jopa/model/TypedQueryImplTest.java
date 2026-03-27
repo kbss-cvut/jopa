@@ -458,7 +458,7 @@ class TypedQueryImplTest extends QueryTestBase {
         when(resultRow.getObject(1, URI.class)).thenReturn(URI.create(RDF.TYPE));
         when(resultRow.getObject(2)).thenReturn(URI.create(Vocabulary.c_OwlClassB));
         when(resultRow.getColumnCount()).thenReturn(3);
-        when(uowMock.readObjectFromAxioms(eq(OWLClassB.class), anyCollection(), any())).thenReturn(entity);
+        when(uowMock.readObjectFromAxioms(eq(OWLClassB.class), anyCollection(), any(), any())).thenReturn(entity);
         final MetamodelImpl metamodel = mock(MetamodelImpl.class);
         when(uowMock.getMetamodel()).thenReturn(metamodel);
         when(uowMock.isEntityType(OWLClassB.class)).thenReturn(true);
@@ -490,7 +490,7 @@ class TypedQueryImplTest extends QueryTestBase {
         when(resultRow.isBound("types")).thenReturn(true);
         when(resultRow.getObject("types")).thenReturn(URI.create(Vocabulary.c_OwlClassA));
         when(resultRow.getColumnCount()).thenReturn(3);
-        when(uowMock.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any())).thenReturn(entity);
+        when(uowMock.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(), any())).thenReturn(entity);
         final MetamodelImpl metamodel = mock(MetamodelImpl.class);
         when(uowMock.getMetamodel()).thenReturn(metamodel);
         final MetamodelMocks mocks = new MetamodelMocks();

@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions.util;
 
+import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
@@ -28,9 +29,11 @@ import java.util.Collection;
  * @param cls         Entity class
  * @param descriptor  Entity descriptor
  * @param bypassCache Whether to bypass cache
+ * @param fetchGraph  Fetch graph describing the graph of properties that should be available in the axioms. Possibly
+ *                    {@code null}
  * @param axioms      Axioms to load the entity from
  * @param <T>         Entity type
  */
 public record AxiomBasedLoadingParameters<T>(Class<T> cls, Descriptor descriptor, boolean bypassCache,
-                                             Collection<Axiom<?>> axioms) {
+                                             EntityGraph<T> fetchGraph, Collection<Axiom<?>> axioms) {
 }
