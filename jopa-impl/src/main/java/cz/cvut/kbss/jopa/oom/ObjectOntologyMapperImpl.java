@@ -81,8 +81,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     private final EntityInstanceLoader defaultInstanceLoader;
     private final EntityInstanceLoader twoStepInstanceLoader;
 
-    private final EntityReferenceFactory referenceFactory;
-
     public ObjectOntologyMapperImpl(AbstractUnitOfWork uow, Connection connection) {
         this.uow = Objects.requireNonNull(uow);
         this.storageConnection = Objects.requireNonNull(connection);
@@ -102,7 +100,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
                                                           .descriptorFactory(descriptorFactory)
                                                           .entityBuilder(entityBuilder).cache(getCache())
                                                           .loadStateRegistry(uow.getLoadStateRegistry()).build();
-        this.referenceFactory = new EntityReferenceFactory(uow.getMetamodel(), uow);
     }
 
     private CacheManager getCache() {
@@ -183,17 +180,12 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public <T> T getReference(LoadingParameters<T> loadingParameters) {
         assert loadingParameters != null;
 
-        return referenceFactory.createReferenceProxy(loadingParameters);
+        return new EntityReferenceFactory(uow.getMetamodel(), uow).createReferenceProxy(loadingParameters);
     }
 
     @Override
     public <T> IdentifiableEntityType<T> getEntityType(Class<T> cls) {
         return uow.getMetamodel().entity(cls);
-    }
-
-    @Override
-    public boolean isManagedType(Class<?> cls) {
-        return uow.isEntityType(cls);
     }
 
     @Override

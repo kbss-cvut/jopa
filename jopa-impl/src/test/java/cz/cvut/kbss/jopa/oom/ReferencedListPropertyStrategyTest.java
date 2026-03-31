@@ -182,7 +182,6 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 
     @Test
     void extractsValuesIntoAxiomsForSave() throws Exception {
-        when(mapperMock.isManagedType(OWLClassA.class)).thenReturn(true);
         final OWLClassC c = new OWLClassC(IDENTIFIER);
         c.setReferencedList(list);
         strategy.buildAxiomValuesFromInstance(c, builder);
