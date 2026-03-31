@@ -58,6 +58,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,8 +76,10 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     private final AxiomDescriptorFactory descriptorFactory;
     private final EntityConstructor entityBuilder;
     private final EntityDeconstructor entityBreaker;
-    private Map<URI, Object> instanceRegistry;
     private final PendingReferenceRegistry pendingReferences;
+
+    private Map<URI, Object> instanceRegistry;
+    private Map<URI, Set<Axiom<?>>> axiomsPerEntity = Map.of();
 
     private final EntityInstanceLoader defaultInstanceLoader;
     private final EntityInstanceLoader twoStepInstanceLoader;
@@ -160,17 +163,26 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         if (loadingParameters.axioms().isEmpty()) {
             return null;
         }
-        final IdentifiableEntityType<T> et = getEntityType(loadingParameters.cls());
+        this.axiomsPerEntity = new HashMap<>();
+        loadingParameters.axioms().forEach(ax -> axiomsPerEntity.computeIfAbsent(ax.getSubject()
+                                                                                   .getIdentifier(), k -> new HashSet<>())
+                                                                .add(ax));
         final LoadingParameters<T> params = new LoadingParameters<>(loadingParameters.cls(),
                 loadingParameters.config().subject(),
                 loadingParameters.config().descriptor(), false, loadingParameters.bypassCache());
+        return loadEntityFromAxioms(params);
+    }
+
+    private <T> T loadEntityFromAxioms(LoadingParameters<T> params) {
+        final IdentifiableEntityType<T> et = getEntityType(params.entityClass());
         final T result;
         if (et.hasSubtypes()) {
-            result = twoStepInstanceLoader.loadEntityFromAxioms(params, loadingParameters.axioms());
+            result = twoStepInstanceLoader.loadEntityFromAxioms(params, axiomsPerEntity.get(params.identifier()));
         } else {
-            result = defaultInstanceLoader.loadEntityFromAxioms(params, loadingParameters.axioms());
+            result = defaultInstanceLoader.loadEntityFromAxioms(params, axiomsPerEntity.get(params.identifier()));
         }
-        if (result != null && loadingParameters.config().fetchGraph() == null) {
+        // TODO Fetch graph, do not cache if fetch graph provided
+        if (result != null) {
             cacheLoadedEntity(params, result);
         }
         return result;
@@ -290,7 +302,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             } else {
                 // setup loading params
                 LoadingParameters<T> params = initEntityLoadingParameters(cls, identifier, descriptor);
-                return loadEntityInternal(params);
+                return axiomsPerEntity.containsKey(identifier) ? loadEntityFromAxioms(params) : loadEntityInternal(params);
             }
         });
     }
