@@ -631,8 +631,8 @@ class ObjectOntologyMapperTest {
                 Assertion.createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasNext), false);
         final Assertion valueProp =
                 Assertion.createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasContents), false);
-        final ReferencedListValueDescriptor listDesc =
-                new ReferencedListValueDescriptor(ID_RESOURCE, listProp, nextProp, valueProp);
+        final ReferencedListValueDescriptor<OWLClassA> listDesc =
+                new ReferencedListValueDescriptor<>(ID_RESOURCE, listProp, nextProp, valueProp);
         mapper.registerPendingListReference(pending, listDesc, owner.getReferencedList());
 
         when(entityDeconstructorMock.mapEntityToAxioms(pending.getUri(), pending, etAMock, aDescriptor))
