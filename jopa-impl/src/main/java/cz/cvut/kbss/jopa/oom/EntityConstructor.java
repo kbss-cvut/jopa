@@ -37,6 +37,7 @@ import cz.cvut.kbss.jopa.oom.query.SingularQueryAttributeStrategy;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
@@ -87,7 +88,9 @@ class EntityConstructor {
         }
         final T instance = createEntityInstance(constructionParams.id(), et);
         mapper.registerInstance(constructionParams.id(), instance);
-        final LoadStateDescriptor<T> loadStateDescriptor = LoadStateDescriptorFactory.createAllUnknown(instance, et);
+        final LoadStateDescriptor<T> loadStateDescriptor = constructionParams.fetchGraph().isPresent()
+                ? LoadStateDescriptorFactory.createNotLoadedForFetchGraph(instance, et, constructionParams.fetchGraph())
+                : LoadStateDescriptorFactory.createAllUnknown(instance, et);
         loadStateRegistry.put(instance, loadStateDescriptor);
         populateAttributes(instance, constructionParams, axioms, loadStateDescriptor);
         populateQueryAttributes(instance, et, loadStateDescriptor);
@@ -133,7 +136,7 @@ class EntityConstructor {
                 }
                 continue;
             }
-            if (fs.attribute.getFetchType() == FetchType.LAZY && !constructionParams.forceEager()) {
+            if (isLazilyLoaded(fs.attribute, constructionParams)) {
                 fs.lazilyAddAxiomValue(ax);
             } else {
                 fs.addAxiomValue(ax);
@@ -142,7 +145,7 @@ class EntityConstructor {
         // We need to build the field values separately because some may be plural, and we have to wait until all values are prepared
         for (FieldStrategy<? extends FieldSpecification<?, ?>, ?> fs : fieldLoaders.values()) {
             fs.buildInstanceFieldValue(instance);
-            if (fs.attribute.getFetchType() == FetchType.LAZY && !constructionParams.forceEager() && fs.hasValue()) {
+            if (isLazilyLoaded(fs.attribute, constructionParams) && fs.hasValue()) {
                 loadStateDescriptor.setLoaded((FieldSpecification<? super T, ?>) fs.attribute, LoadState.NOT_LOADED);
             } else {
                 loadStateDescriptor.setLoaded((FieldSpecification<? super T, ?>) fs.attribute, LoadState.LOADED);
@@ -179,6 +182,10 @@ class EntityConstructor {
             loaders.put(att, FieldStrategy.createFieldStrategy(et, att, desc, mapper));
         }
         return loaders.get(att);
+    }
+
+    private boolean isLazilyLoaded(FieldSpecification<?, ?> att, EntityConstructionParameters<?> constructionParams) {
+        return att.getFetchType() == FetchType.LAZY && !constructionParams.fetchGraph().hasAttribute(att) && !constructionParams.forceEager();
     }
 
     /**
@@ -274,7 +281,7 @@ class EntityConstructor {
     private <T> void processEmptyAttributes(T entity, EntityType<T> et, LoadStateDescriptor<T> loadStateDescriptor) {
         et.getFieldSpecifications().stream()
           .filter(fs -> {
-              final Object value= EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
+              final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
               return value == null || (value instanceof Collection<?> && ((Collection<?>) value).isEmpty());
           })
           .forEach(fs -> {
@@ -332,9 +339,10 @@ class EntityConstructor {
      * @param id         Entity identifier
      * @param entityType Entity type
      * @param descriptor Entity descriptor, specifies e.g., repository contexts
+     * @param fetchGraph Entity fetch graph
      * @param forceEager Whether all attributes have to be loaded eagerly
      * @param <T>        Entity type
      */
     record EntityConstructionParameters<T>(URI id, IdentifiableEntityType<T> entityType, Descriptor descriptor,
-                                           boolean forceEager) {}
+                                           FetchGraphWrapper fetchGraph, boolean forceEager) {}
 }

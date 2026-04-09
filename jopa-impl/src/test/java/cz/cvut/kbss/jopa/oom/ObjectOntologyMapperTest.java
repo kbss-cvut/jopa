@@ -702,7 +702,7 @@ class ObjectOntologyMapperTest {
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("value"))
         );
 
-        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup(IDENTIFIER, aDescriptor, null)));
+        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup<>(IDENTIFIER, aDescriptor, null)));
         assertNotNull(result);
         assertEquals(IDENTIFIER, result.getUri());
         assertEquals("value", result.getStringAttribute());
@@ -711,7 +711,7 @@ class ObjectOntologyMapperTest {
 
     @Test
     void loadEntityFromAxiomsReturnsNullWhenAxiomsAreEmpty() {
-        assertNull(mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, List.of(), new AxiomBasedLoadingConfigGroup(IDENTIFIER, aDescriptor))));
+        assertNull(mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, List.of(), new AxiomBasedLoadingConfigGroup<>(IDENTIFIER, aDescriptor))));
     }
 
     @Test
@@ -721,7 +721,7 @@ class ObjectOntologyMapperTest {
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("value"))
         );
 
-        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup(IDENTIFIER, aDescriptor)));
+        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup<>(IDENTIFIER, aDescriptor)));
         assertNotNull(result);
         verify(cacheMock, never()).add(eq(IDENTIFIER), any(), any());
     }
@@ -734,7 +734,7 @@ class ObjectOntologyMapperTest {
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(RDFS.LABEL), false), new Value<>("value"))
         );
 
-        final OWLClassS result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassS.class, axioms, new AxiomBasedLoadingConfigGroup(IDENTIFIER, new EntityDescriptor(), null)));
+        final OWLClassS result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassS.class, axioms, new AxiomBasedLoadingConfigGroup<>(IDENTIFIER, new EntityDescriptor(), null)));
         assertInstanceOf(OWLClassR.class, result);
     }
 }

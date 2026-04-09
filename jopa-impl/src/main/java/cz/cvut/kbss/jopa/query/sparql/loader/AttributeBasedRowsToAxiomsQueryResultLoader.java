@@ -181,7 +181,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
 
     private T loadEntity() {
         try {
-            return uow.readObjectFromAxioms(resultType, currentEntityAxioms, new AxiomBasedLoadingConfigGroup(currentSubject.getIdentifier(), descriptor, fetchGraph));
+            return uow.readObjectFromAxioms(resultType, currentEntityAxioms, new AxiomBasedLoadingConfigGroup<>(currentSubject.getIdentifier(), descriptor, fetchGraph));
         } catch (CardinalityConstraintViolatedException e) {
             // Axioms may contain more statements than expected due to query evaluation containing inferred results.
             // If the entity class declares ICs on non-inferred attributes, this may lead to IC violation exception.

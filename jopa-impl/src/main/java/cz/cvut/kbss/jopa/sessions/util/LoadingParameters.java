@@ -21,17 +21,23 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 import java.net.URI;
 
-public record LoadingParameters<T> (Class<T> entityClass, URI identifier, Descriptor descriptor, boolean forceEager, boolean bypassCache) {
+public record LoadingParameters<T>(Class<T> entityClass, URI identifier, Descriptor descriptor,
+                                   FetchGraphWrapper fetchGraph, boolean forceEager, boolean bypassCache) {
 
     public LoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor) {
-        this(cls, identifier, descriptor, false, false);
+        this(cls, identifier, descriptor, new FetchGraphWrapper(), false, false);
     }
 
     public LoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor, boolean forceEager) {
-        this(cls, identifier, descriptor, forceEager, false);
+        this(cls, identifier, descriptor, new FetchGraphWrapper(), forceEager, false);
+    }
+
+    public LoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor, boolean forceEager,
+                             boolean bypassCache) {
+        this(cls, identifier, descriptor, new FetchGraphWrapper(), forceEager, bypassCache);
     }
 
     public LoadingParameters<T> withBypassCache() {
-        return new LoadingParameters<>(entityClass, identifier, descriptor, forceEager, true);
+        return new LoadingParameters<>(entityClass, identifier, descriptor, fetchGraph, forceEager, true);
     }
 }

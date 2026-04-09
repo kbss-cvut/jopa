@@ -731,14 +731,14 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
                 new AxiomImpl<>(idResource, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(OWLClassA.getClassIri()))),
                 new AxiomImpl<>(idResource, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>(entityA.getStringAttribute()))
         );
-        when(storageMock.loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup(id, descriptor, null)))).thenReturn(entityA);
+        when(storageMock.loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup<>(id, descriptor, null)))).thenReturn(entityA);
 
-        final OWLClassA result = uow.readObjectFromAxioms(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup(id, descriptor, null));
+        final OWLClassA result = uow.readObjectFromAxioms(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup<>(id, descriptor, null));
         assertNotNull(result);
         assertEquals(entityA.getUri(), result.getUri());
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
         assertTrue(uow.contains(result));
-        verify(storageMock).loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup(id, descriptor, null)));
+        verify(storageMock).loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup<>(id, descriptor, null)));
         assertSame(entityA, result);
     }
 }
