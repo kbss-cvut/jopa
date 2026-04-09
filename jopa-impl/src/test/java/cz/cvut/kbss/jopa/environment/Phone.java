@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.environment;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
 import java.net.URI;
 
@@ -34,4 +35,46 @@ public class Phone {
 
     @OWLDataProperty(iri = Vocabulary.p_p_phoneBrand, simpleLiteral = true)
     private String brand;
+
+    public Phone() {
+    }
+
+    public Phone(URI uri, String number, String brand) {
+        this.uri = uri;
+        this.number = number;
+        this.brand = brand;
+    }
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
+
+    @Override
+    public String toString() {
+        return "Phone{" +
+                IdentifierTransformer.stringifyIri(uri) +
+                ", number='" + number + '\'' +
+                ", brand='" + brand + '\'' +
+                '}';
+    }
 }

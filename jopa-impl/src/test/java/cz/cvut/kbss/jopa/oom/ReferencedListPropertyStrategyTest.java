@@ -22,10 +22,10 @@ import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassP;
 import cz.cvut.kbss.jopa.environment.OneOfEnum;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
@@ -81,8 +81,8 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
     public void setUp() throws Exception {
         super.setUp();
         this.refListMock = mocks.forOwlClassC().referencedListAtt();
-        this.strategy = new ReferencedListPropertyStrategy<>(mocks.forOwlClassC().entityType(), refListMock, descriptor,
-                mapperMock);
+        this.strategy = new ReferencedListPropertyStrategy<>(mocks.forOwlClassC()
+                                                                  .entityType(), refListMock, new ObjectGraphInfo(descriptor), mapperMock);
         strategy.setReferenceSavingResolver(new ReferenceSavingResolver(mapperMock));
     }
 
@@ -136,7 +136,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
                             refListMock.getHasContentsPropertyIRI()
                                        .toURI(), refListMock.isInferred()),
                     new Value<>(NamedResource.create(a.getUri())));
-            when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(a.getUri()), any(Descriptor.class))).thenReturn(a);
+            when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(a.getUri()), any(ObjectGraphInfo.class))).thenReturn(a);
             axioms.add(content);
             previous = nodeUri;
             i++;
@@ -164,7 +164,8 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
     void buildsInstanceFieldWithPlainIdentifiers() throws Exception {
         final ListAttributeImpl<OWLClassP, URI> listAtt = mocks.forOwlClassP().pReferencedListAttribute();
         final ReferencedListPropertyStrategy<OWLClassP> strategy =
-                new ReferencedListPropertyStrategy<>(mocks.forOwlClassP().entityType(), listAtt, descriptor,
+                new ReferencedListPropertyStrategy<>(mocks.forOwlClassP()
+                                                          .entityType(), listAtt, new ObjectGraphInfo(descriptor),
                         mapperMock);
         final List<Axiom<?>> axioms = initRefListAxioms(true);
         when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(axioms);
@@ -248,7 +249,8 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
     void extractsValuesIntoAxiomsFromListOfPlainIdentifiers() throws Exception {
         final ListAttributeImpl<OWLClassP, URI> listAtt = mocks.forOwlClassP().pReferencedListAttribute();
         final ReferencedListPropertyStrategy<OWLClassP> strategy =
-                new ReferencedListPropertyStrategy<>(mocks.forOwlClassP().entityType(), listAtt, descriptor,
+                new ReferencedListPropertyStrategy<>(mocks.forOwlClassP()
+                                                          .entityType(), listAtt, new ObjectGraphInfo(descriptor),
                         mapperMock);
         final OWLClassP p = new OWLClassP();
         p.setUri(IDENTIFIER);
@@ -268,7 +270,8 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         final List<URI> nonNulls = p.getReferencedList().stream().filter(Objects::nonNull).collect(Collectors.toList());
         final ListAttributeImpl<OWLClassP, URI> refList = mocks.forOwlClassP().pReferencedListAttribute();
         final ReferencedListPropertyStrategy<OWLClassP> strategy =
-                new ReferencedListPropertyStrategy<>(mocks.forOwlClassP().entityType(), refList, descriptor,
+                new ReferencedListPropertyStrategy<>(mocks.forOwlClassP()
+                                                          .entityType(), refList, new ObjectGraphInfo(descriptor),
                         mapperMock);
 
         strategy.buildAxiomValuesFromInstance(p, builder);
@@ -296,7 +299,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         when(et.getIdentifier()).thenReturn(id);
         final ListAttributeImpl<WithEnumList, OneOfEnum> att = initEnumListAttribute();
         final ReferencedListPropertyStrategy<WithEnumList> sut =
-                new ReferencedListPropertyStrategy<>(et, att, descriptor, mapperMock);
+                new ReferencedListPropertyStrategy<>(et, att, new ObjectGraphInfo(descriptor), mapperMock);
         final WithEnumList instance = new WithEnumList();
         instance.uri = IDENTIFIER;
         instance.enumList = Arrays.asList(OneOfEnum.DATATYPE_PROPERTY, OneOfEnum.OBJECT_PROPERTY);

@@ -170,7 +170,8 @@ public class MetamodelFactory {
         initIdentifier(etMock, idMock, OWLClassA.class.getDeclaredField("uri"), false);
     }
 
-    private static <X> void initEntityType(IdentifiableEntityType<X> et, Class<X> cls, EntityLifecycleListenerManager listenerManager) {
+    private static <X> void initEntityType(IdentifiableEntityType<X> et, Class<X> cls,
+                                           EntityLifecycleListenerManager listenerManager) {
         when(et.getJavaType()).thenReturn(cls);
         when(et.getInstantiableJavaType()).thenReturn((Class) instantiableTypeGenerator.generate(cls));
         when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
@@ -347,7 +348,7 @@ public class MetamodelFactory {
         when(rdfCollectionMock.getName()).thenReturn(OWLClassC.getRdfCollectionField().getName());
         when(etMock.getFieldSpecification(rdfCollectionMock.getName())).thenReturn(rdfCollectionMock);
         when(rdfCollectionMock.getIRI()).thenReturn(IRI.create(OWLClassC.getRdfCollectionField()
-                                                                                       .getAnnotation(OWLObjectProperty.class).iri()));
+                                                                        .getAnnotation(OWLObjectProperty.class).iri()));
         when(rdfCollectionMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(rdfCollectionMock.getElementType()).thenReturn(etAMock);
         when(rdfCollectionMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
@@ -460,7 +461,7 @@ public class MetamodelFactory {
                                           SingularAttributeImpl clsGMock, IdentifiableEntityType<OWLClassA> etAMock,
                                           IdentifiableEntityType<OWLClassG> etGMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
-        initEntityType(etMock, OWLClassH.class,  EntityLifecycleListenerManager.empty());
+        initEntityType(etMock, OWLClassH.class, EntityLifecycleListenerManager.empty());
         when(etMock.getAttributes()).thenReturn(Set.of(clsAMock, clsGMock));
         when(etMock.getFieldSpecifications()).thenReturn(Set.of(clsAMock, clsGMock, idMock));
 
@@ -474,7 +475,7 @@ public class MetamodelFactory {
     public static void initOWLClassIMocks(IdentifiableEntityType<OWLClassI> etMock, SingularAttributeImpl aAttMock,
                                           IdentifiableEntityType<OWLClassA> etAMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
-        initEntityType(etMock, OWLClassI.class,  EntityLifecycleListenerManager.empty());
+        initEntityType(etMock, OWLClassI.class, EntityLifecycleListenerManager.empty());
         when(etMock.getAttributes()).thenReturn(Collections.singleton(aAttMock));
         when(etMock.getFieldSpecifications()).thenReturn(Set.of(aAttMock, idMock));
 
@@ -486,33 +487,33 @@ public class MetamodelFactory {
     public static void initOWLClassJMocks(IdentifiableEntityType<OWLClassJ> etMock, AbstractPluralAttribute setAMock,
                                           IdentifiableEntityType<OWLClassA> etAMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
-        initEntityType(etMock, OWLClassJ.class,EntityLifecycleListenerManager.empty());
+        initEntityType(etMock, OWLClassJ.class, EntityLifecycleListenerManager.empty());
         when(etMock.getAttributes()).thenReturn(Collections.singleton(setAMock));
         when(etMock.getFieldSpecifications()).thenReturn(Set.of(setAMock, idMock));
         initAttribute(etMock, setAMock, new AttributeInfo(OWLClassJ.getOwlClassAField(),
                 Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.SET)
                                                          .elementType(OWLClassA.class).valueType(etAMock)
-                .constraints(new ParticipationConstraint() {
-                    @Override
-                    public Class<? extends Annotation> annotationType() {
-                        return ParticipationConstraint.class;
-                    }
+                                                         .constraints(new ParticipationConstraint() {
+                                                             @Override
+                                                             public Class<? extends Annotation> annotationType() {
+                                                                 return ParticipationConstraint.class;
+                                                             }
 
-                    @Override
-                    public String owlObjectIRI() {
-                        return "";
-                    }
+                                                             @Override
+                                                             public String owlObjectIRI() {
+                                                                 return "";
+                                                             }
 
-                    @Override
-                    public int min() {
-                        return 1;
-                    }
+                                                             @Override
+                                                             public int min() {
+                                                                 return 1;
+                                                             }
 
-                    @Override
-                    public int max() {
-                        return -1;
-                    }
-                }));
+                                                             @Override
+                                                             public int max() {
+                                                                 return -1;
+                                                             }
+                                                         }));
         initIdentifier(etMock, idMock, OWLClassJ.class.getDeclaredField("uri"), false);
     }
 
@@ -925,8 +926,8 @@ public class MetamodelFactory {
                                       SingularAttributeImpl phoneBrandAttMock,
                                       Identifier idMock) throws NoSuchFieldException, SecurityException {
         initEntityType(etMock, Phone.class, EntityLifecycleListenerManager.empty());
-        when(etMock.getAttributes()).thenReturn(Collections.singleton(phoneNumberAttMock));
-        when(etMock.getFieldSpecifications()).thenReturn(Set.of(phoneNumberAttMock, idMock));
+        when(etMock.getAttributes()).thenReturn(Set.of(phoneNumberAttMock, phoneBrandAttMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(phoneNumberAttMock, phoneBrandAttMock, idMock));
         initAttribute(etMock, phoneNumberAttMock, new AttributeInfo(Phone.class.getDeclaredField("number"), Attribute.PersistentAttributeType.DATA));
         initAttribute(etMock, phoneBrandAttMock, new AttributeInfo(Phone.class.getDeclaredField("brand"), Attribute.PersistentAttributeType.DATA));
         initIdentifier(etMock, idMock, Phone.class.getDeclaredField("uri"), false);
@@ -943,8 +944,8 @@ public class MetamodelFactory {
                                        Identifier idMock) throws NoSuchFieldException, SecurityException {
         initEntityType(etMock, Person.class, EntityLifecycleListenerManager.empty());
         initIdentifier(etMock, idMock, Person.class.getDeclaredField("uri"), false);
-        when(etMock.getAttributes()).thenReturn(Set.of(usernameAttMock, genderAttMock, ageAttMock, phoneAttMock));
-        when(etMock.getFieldSpecifications()).thenReturn(Set.of(usernameAttMock, genderAttMock, ageAttMock, phoneAttMock, idMock));
+        when(etMock.getAttributes()).thenReturn(Set.of(firstNameAttMock, lastNameAttMock, usernameAttMock, genderAttMock, ageAttMock, phoneAttMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(firstNameAttMock, lastNameAttMock, usernameAttMock, genderAttMock, ageAttMock, phoneAttMock, idMock));
 
         initAttribute(etMock, firstNameAttMock, new AttributeInfo(Person.class.getDeclaredField("firstName"),
                 Attribute.PersistentAttributeType.DATA).language(null));

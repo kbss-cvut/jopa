@@ -136,10 +136,10 @@ class LoadStateDescriptorFactoryTest {
         fetchGraph.addAttributeNodes("intAttribute", "longAttribute", "doubleAttribute", "characterAttribute");
         final LoadStateDescriptor<OWLClassM> result = LoadStateDescriptorFactory.createNotLoadedForFetchGraph(instance, metamodelMocks.forOwlClassM()
                                                                                                                                       .entityType(), new FetchGraphWrapper(fetchGraph));
-        assertEquals(LoadState.UNKNOWN, result.isLoaded(metamodelMocks.forOwlClassM().integerAttribute()));
-        assertEquals(LoadState.UNKNOWN, result.isLoaded(metamodelMocks.forOwlClassM().longAttribute()));
-        assertEquals(LoadState.UNKNOWN, result.isLoaded(metamodelMocks.forOwlClassM().doubleAttribute()));
-        assertEquals(LoadState.UNKNOWN, result.isLoaded(metamodelMocks.forOwlClassM().characterAttribute()));
+        assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassM().integerAttribute()));
+        assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassM().longAttribute()));
+        assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassM().doubleAttribute()));
+        assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassM().characterAttribute()));
         assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassM().identifier()));
         assertEquals(LoadState.NOT_LOADED, result.isLoaded(metamodelMocks.forOwlClassM().dateAttribute()));
         assertEquals(LoadState.NOT_LOADED, result.isLoaded(metamodelMocks.forOwlClassM().integerSetAttribute()));

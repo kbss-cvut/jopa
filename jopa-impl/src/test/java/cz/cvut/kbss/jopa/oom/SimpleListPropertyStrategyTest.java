@@ -24,11 +24,11 @@ import cz.cvut.kbss.jopa.environment.OneOfEnum;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
@@ -78,7 +78,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         super.setUp();
         this.simpleList = mocks.forOwlClassC().simpleListAtt();
         this.strategy =
-                new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(), simpleList, descriptor, mapperMock);
+                new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(), simpleList, new ObjectGraphInfo(descriptor), mapperMock);
         strategy.setReferenceSavingResolver(new ReferenceSavingResolver(mapperMock));
     }
 
@@ -111,7 +111,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
                     Assertion.createObjectPropertyAssertion(la.getHasNextPropertyIRI().toURI(), false),
                     new Value<>(NamedResource.create(item.getUri())));
             axioms.add(a);
-            when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(item.getUri()), any(Descriptor.class)))
+            when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(item.getUri()), any(ObjectGraphInfo.class)))
                     .thenReturn(item);
             previous = item.getUri();
         }
@@ -122,7 +122,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     void buildsInstanceFieldOfPlainIdentifiersFromAxioms() {
         final ListAttributeImpl<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
         final SimpleListPropertyStrategy<OWLClassP> strategy =
-                new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
+                new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, new ObjectGraphInfo(descriptor), mapperMock);
         final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(IDENTIFIER),
                 Assertion.createObjectPropertyAssertion(simpleList.getIRI()
                                                                   .toURI(), false), new Value<>(Generators.createIndividualIdentifier()));
@@ -234,7 +234,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         p.setSimpleList(generateListOfIdentifiers());
         final ListAttributeImpl<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
         final SimpleListPropertyStrategy<OWLClassP> strategy =
-                new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
+                new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, new ObjectGraphInfo(descriptor), mapperMock);
 
         strategy.buildAxiomValuesFromInstance(p, builder);
         final SimpleListValueDescriptor valueDescriptor = listValueDescriptor();
@@ -250,7 +250,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         final List<URI> nonNulls = p.getSimpleList().stream().filter(Objects::nonNull).collect(Collectors.toList());
         final ListAttributeImpl<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
         final SimpleListPropertyStrategy<OWLClassP> strategy =
-                new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
+                new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, new ObjectGraphInfo(descriptor), mapperMock);
 
         strategy.buildAxiomValuesFromInstance(p, builder);
         final SimpleListValueDescriptor valueDescriptor = listValueDescriptor();
@@ -277,7 +277,7 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
         when(et.getIdentifier()).thenReturn(id);
         final ListAttributeImpl<WithEnumList, OneOfEnum> att = initEnumListAttribute();
         final SimpleListPropertyStrategy<WithEnumList> sut =
-                new SimpleListPropertyStrategy<>(et, att, descriptor, mapperMock);
+                new SimpleListPropertyStrategy<>(et, att, new ObjectGraphInfo(descriptor), mapperMock);
         final WithEnumList instance = new WithEnumList();
         instance.uri = IDENTIFIER;
         instance.enumList = Arrays.asList(OneOfEnum.DATATYPE_PROPERTY, OneOfEnum.OBJECT_PROPERTY);

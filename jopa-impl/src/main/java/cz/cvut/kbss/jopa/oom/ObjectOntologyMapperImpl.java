@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
 import cz.cvut.kbss.jopa.oom.exception.EntityDeconstructionException;
 import cz.cvut.kbss.jopa.oom.exception.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
@@ -171,7 +172,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         final LoadingParameters<T> params = new LoadingParameters<>(loadingParameters.cls(),
                 loadingParameters.config().subject(),
                 loadingParameters.config().descriptor(), new FetchGraphWrapper(loadingParameters.config()
-                                                                                                  .fetchGraph()), false, loadingParameters.bypassCache());
+                                                                                                .fetchGraph()), false, loadingParameters.bypassCache());
         return loadEntityFromAxioms(params);
     }
 
@@ -287,12 +288,12 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> T getEntityFromCacheOrOntology(Class<T> cls, URI identifier, Descriptor descriptor) {
-        final T orig = uow.getManagedOriginal(cls, identifier, descriptor);
+    public <T> T getEntityFromCacheOrOntology(Class<T> cls, URI identifier, ObjectGraphInfo objectGraphInfo) {
+        final T orig = uow.getManagedOriginal(cls, identifier, objectGraphInfo.descriptor());
         if (orig != null) {
             return orig;
         }
-        return defaultInstanceLoader.loadCached(getEntityType(cls), identifier, descriptor).orElseGet(() -> {
+        return defaultInstanceLoader.loadCached(getEntityType(cls), identifier, objectGraphInfo.descriptor()).orElseGet(() -> {
             if (instanceRegistry.containsKey(identifier)) {
                 final Object existing = instanceRegistry.get(identifier);
                 if (!cls.isAssignableFrom(existing.getClass())) {
@@ -302,14 +303,14 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
                 return cls.cast(existing);
             } else {
                 // setup loading params
-                LoadingParameters<T> params = initEntityLoadingParameters(cls, identifier, descriptor);
+                LoadingParameters<T> params = initEntityLoadingParameters(cls, identifier, objectGraphInfo);
                 return axiomsPerEntity.containsKey(identifier) ? loadEntityFromAxioms(params) : loadEntityInternal(params);
             }
         });
     }
 
-    private <T> LoadingParameters<T> initEntityLoadingParameters(Class<T> cls, URI identifier, Descriptor descriptor) {
-        return new LoadingParameters<>(cls, identifier, descriptor, false, uow.isReadOnly());
+    private <T> LoadingParameters<T> initEntityLoadingParameters(Class<T> cls, URI identifier, ObjectGraphInfo objectGraphInfo) {
+        return new LoadingParameters<>(cls, identifier, objectGraphInfo.descriptor(), objectGraphInfo.fetchGraph(), false, uow.isReadOnly());
     }
 
     @Override
@@ -413,7 +414,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public <T> Set<Axiom<?>> getAttributeAxioms(T entity, FieldSpecification<? super T, ?> fieldSpec,
                                                 Descriptor entityDescriptor) {
         final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
-        return FieldStrategy.createFieldStrategy(et, fieldSpec, entityDescriptor, this).buildAxiomsFromInstance(entity);
+        return FieldStrategy.createFieldStrategy(et, fieldSpec, new ObjectGraphInfo(entityDescriptor), this)
+                            .buildAxiomsFromInstance(entity);
     }
 
     @Override
@@ -430,7 +432,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public <T> boolean isInferred(T entity, FieldSpecification<? super T, ?> fieldSpec, Object value,
                                   Descriptor entityDescriptor) {
         final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
-        final FieldStrategy<?, ?> fs = FieldStrategy.createFieldStrategy(et, fieldSpec, entityDescriptor, this);
+        final FieldStrategy<?, ?> fs = FieldStrategy.createFieldStrategy(et, fieldSpec, new ObjectGraphInfo(entityDescriptor), this);
         final Collection<Value<?>> values = fs.toAxiomValue(value);
         final Set<URI> contexts = entityDescriptor.getAttributeContexts(fieldSpec);
         final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(entity, et));

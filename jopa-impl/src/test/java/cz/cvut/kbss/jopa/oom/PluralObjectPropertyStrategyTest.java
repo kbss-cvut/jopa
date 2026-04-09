@@ -25,7 +25,10 @@ import cz.cvut.kbss.jopa.environment.OneOfEnum;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.Subgraph;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -34,9 +37,12 @@ import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingSetProxy;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -99,11 +105,11 @@ class PluralObjectPropertyStrategyTest {
         final OWLClassJ instance = new OWLClassJ(ID);
         final URI aReference = Generators.createIndividualIdentifier();
         final OWLClassA aInstance = new OWLClassA(aReference);
-        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class)))
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(ObjectGraphInfo.class)))
                 .thenReturn(aInstance);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID),
-                                                           Assertion.createObjectPropertyAssertion(
-                                                                   URI.create(Vocabulary.P_HAS_A), false), new Value<>(
+                Assertion.createObjectPropertyAssertion(
+                        URI.create(Vocabulary.P_HAS_A), false), new Value<>(
                 NamedResource.create(aReference)));
 
         sut.addAxiomValue(axiom);
@@ -111,12 +117,12 @@ class PluralObjectPropertyStrategyTest {
         assertNotNull(instance.getOwlClassA());
         assertEquals(1, instance.getOwlClassA().size());
         assertTrue(instance.getOwlClassA().contains(aInstance));
-        verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class));
+        verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(ObjectGraphInfo.class));
     }
 
     private PluralObjectPropertyStrategy<?, OWLClassJ> strategy() {
         return new SimpleSetPropertyStrategy<>(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ().setAttribute(),
-                                               descriptor, mapperMock);
+                new ObjectGraphInfo(descriptor), mapperMock);
     }
 
     @Test
@@ -124,18 +130,18 @@ class PluralObjectPropertyStrategyTest {
         final PluralObjectPropertyStrategy<?, OWLClassJ> sut = strategy();
         final OWLClassJ instance = new OWLClassJ(ID);
         final URI aReference = Generators.createIndividualIdentifier();
-        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class)))
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(ObjectGraphInfo.class)))
                 .thenReturn(null);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID),
-                                                           Assertion.createObjectPropertyAssertion(
-                                                                   URI.create(Vocabulary.P_HAS_A), false), new Value<>(
+                Assertion.createObjectPropertyAssertion(
+                        URI.create(Vocabulary.P_HAS_A), false), new Value<>(
                 NamedResource.create(aReference)));
 
         sut.addAxiomValue(axiom);
         sut.buildInstanceFieldValue(instance);
         assertNotNull(instance.getOwlClassA());
         assertTrue(instance.getOwlClassA().isEmpty());
-        verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class));
+        verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(ObjectGraphInfo.class));
     }
 
     @Test
@@ -144,21 +150,21 @@ class PluralObjectPropertyStrategyTest {
         descriptor.addAttributeDescriptor(mocks.forOwlClassJ().setAttribute(), aDescriptor);
         final PluralObjectPropertyStrategy<?, OWLClassJ> sut = strategy();
         final URI aReference = Generators.createIndividualIdentifier();
-        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class)))
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(ObjectGraphInfo.class)))
                 .thenReturn(null);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID),
-                                                           Assertion.createObjectPropertyAssertion(
-                                                                   URI.create(Vocabulary.P_HAS_A), false), new Value<>(
+                Assertion.createObjectPropertyAssertion(
+                        URI.create(Vocabulary.P_HAS_A), false), new Value<>(
                 NamedResource.create(aReference)));
 
         sut.addAxiomValue(axiom);
-        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, aReference, aDescriptor);
+        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, aReference, new ObjectGraphInfo(aDescriptor));
     }
 
     @Test
     void buildAxiomValuesFromInstanceChecksForReferenceExistenceUsingTargetReferenceContext() {
         final Descriptor aDescriptor = new ObjectPropertyCollectionDescriptor(Generators.createIndividualIdentifier(),
-                                                                              mocks.forOwlClassJ().setAttribute());
+                mocks.forOwlClassJ().setAttribute());
         descriptor.addAttributeDescriptor(mocks.forOwlClassJ().setAttribute(), aDescriptor);
         final PluralObjectPropertyStrategy<?, OWLClassJ> sut = strategy();
         final ReferenceSavingResolver resolverMock = mock(ReferenceSavingResolver.class);
@@ -173,11 +179,11 @@ class PluralObjectPropertyStrategyTest {
     @Test
     void buildAxiomValuesFromInstanceChecksForListItemReferenceExistenceUsingTargetReferenceContext() {
         final Descriptor aDescriptor = new ObjectPropertyCollectionDescriptor(Generators.createIndividualIdentifier(),
-                                                                              mocks.forOwlClassC().simpleListAtt());
+                mocks.forOwlClassC().simpleListAtt());
         descriptor.addAttributeDescriptor(mocks.forOwlClassC().simpleListAtt(), aDescriptor);
         final SimpleListPropertyStrategy<OWLClassC> sut =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(),
-                                                 mocks.forOwlClassC().simpleListAtt(), descriptor, mapperMock);
+                        mocks.forOwlClassC().simpleListAtt(), new ObjectGraphInfo(descriptor), mapperMock);
         final ReferenceSavingResolver resolverMock = mock(ReferenceSavingResolver.class);
         sut.setReferenceSavingResolver(resolverMock);
         final OWLClassC instance = new OWLClassC(ID);
@@ -193,7 +199,7 @@ class PluralObjectPropertyStrategyTest {
         instance.setSimpleList(Generators.generateInstances(5));
         final SimpleListPropertyStrategy<OWLClassC> sut =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(),
-                                                 mocks.forOwlClassC().simpleListAtt(), descriptor, mapperMock);
+                        mocks.forOwlClassC().simpleListAtt(), new ObjectGraphInfo(descriptor), mapperMock);
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(mocks.forOwlClassA().entityType());
 
         final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(instance);
@@ -204,14 +210,14 @@ class PluralObjectPropertyStrategyTest {
                                                              .toURI(), false);
         instance.getSimpleList().forEach(
                 a -> assertThat(result, hasItem(new AxiomImpl<>(subject, assertion,
-                                                                new Value<>(NamedResource.create(a.getUri()))))));
+                        new Value<>(NamedResource.create(a.getUri()))))));
     }
 
     @Test
     void buildAxiomsFromInstanceReturnsAxiomsWithIdentifiersWhenAttributeValueIsCollectionOfIdentifiers() {
         final SimpleSetPropertyStrategy<OWLClassP> sut =
                 new SimpleSetPropertyStrategy<>(mocks.forOwlClassP().entityType(),
-                                                mocks.forOwlClassP().pUrlsAttribute(), descriptor, mapperMock);
+                        mocks.forOwlClassP().pUrlsAttribute(), new ObjectGraphInfo(descriptor), mapperMock);
         final OWLClassP p = new OWLClassP();
         p.setUri(Generators.createIndividualIdentifier());
         p.setIndividualUrls(IntStream.range(0, 5).mapToObj(i -> {
@@ -237,7 +243,7 @@ class PluralObjectPropertyStrategyTest {
         instance.setSimpleList(null);
         final SimpleListPropertyStrategy<OWLClassC> sut =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(),
-                                                 mocks.forOwlClassC().simpleListAtt(), descriptor, mapperMock);
+                        mocks.forOwlClassC().simpleListAtt(), new ObjectGraphInfo(descriptor), mapperMock);
 
         final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(instance);
         assertNotNull(result);
@@ -268,7 +274,7 @@ class PluralObjectPropertyStrategyTest {
         final Identifier id = mock(Identifier.class);
         when(id.getJavaField()).thenReturn(EntityWithPluralObjectPropertyEnum.class.getDeclaredField("uri"));
         when(et.getIdentifier()).thenReturn(id);
-        return new SimpleSetPropertyStrategy<>(et, att, descriptor, mapperMock);
+        return new SimpleSetPropertyStrategy<>(et, att, new ObjectGraphInfo(descriptor), mapperMock);
     }
 
     static class EntityWithPluralObjectPropertyEnum {
@@ -292,19 +298,21 @@ class PluralObjectPropertyStrategyTest {
                 Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_m_objectOneOfEnumAttribute), false);
         assertThat(result, hasItems(
                 new AxiomImpl<>(NamedResource.create(ID), assertion,
-                                new Value<>(NamedResource.create(OWL.ANNOTATION_PROPERTY))),
+                        new Value<>(NamedResource.create(OWL.ANNOTATION_PROPERTY))),
                 new AxiomImpl<>(NamedResource.create(ID), assertion,
-                                new Value<>(NamedResource.create(OWL.OBJECT_PROPERTY)))
+                        new Value<>(NamedResource.create(OWL.OBJECT_PROPERTY)))
         ));
     }
 
     @Test
     void buildInstanceFieldValueSetsInstanceFieldValueToEmptyCollectionWhenNoAxiomsWereAdded() {
         // This ensures lazy loading proxy is replaced with empty collection when lazy loaded field loading is triggered
-        final SimpleSetPropertyStrategy<OWLClassJ> sut = new SimpleSetPropertyStrategy<>(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ()
-                                                                                                                                 .setAttribute(), descriptor, mapperMock);
+        final SimpleSetPropertyStrategy<OWLClassJ> sut = new SimpleSetPropertyStrategy<>(mocks.forOwlClassJ()
+                                                                                              .entityType(), mocks.forOwlClassJ()
+                                                                                                                  .setAttribute(), new ObjectGraphInfo(descriptor), mapperMock);
         final OWLClassJ instance = new OWLClassJ(ID);
-        instance.setOwlClassA(new LazyLoadingSetProxy<>(instance, mocks.forOwlClassJ().setAttribute(), mock(UnitOfWork.class)));
+        instance.setOwlClassA(new LazyLoadingSetProxy<>(instance, mocks.forOwlClassJ()
+                                                                       .setAttribute(), mock(UnitOfWork.class)));
         sut.buildInstanceFieldValue(instance);
         assertNotNull(instance.getOwlClassA());
         assertTrue(instance.getOwlClassA().isEmpty());
@@ -312,8 +320,9 @@ class PluralObjectPropertyStrategyTest {
 
     @Test
     void lazilyAddAxiomValueSetsHasValueButDoesNotLoadReference() {
-        final SimpleSetPropertyStrategy<OWLClassJ> sut = new SimpleSetPropertyStrategy<>(mocks.forOwlClassJ().entityType(), mocks.forOwlClassJ()
-                                                                                                                                 .setAttribute(), descriptor, mapperMock);
+        final SimpleSetPropertyStrategy<OWLClassJ> sut = new SimpleSetPropertyStrategy<>(mocks.forOwlClassJ()
+                                                                                              .entityType(), mocks.forOwlClassJ()
+                                                                                                                  .setAttribute(), new ObjectGraphInfo(descriptor), mapperMock);
         final URI aReference = Generators.createIndividualIdentifier();
         final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID),
                 Assertion.createObjectPropertyAssertion(
@@ -326,19 +335,39 @@ class PluralObjectPropertyStrategyTest {
     }
 
     @Test
-    void addValueFromAxiomUsesEntityDescriptorToGetInstanceFromCacheOrOntology() {
+    void addAxiomValueUsesEntityDescriptorToGetInstanceFromCacheOrOntology() {
         final PluralObjectPropertyStrategy<?, OWLClassJ> sut = strategy();
         final URI aReference = Generators.createIndividualIdentifier();
         final OWLClassA aInstance = new OWLClassA(aReference);
-        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(Descriptor.class)))
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), any(ObjectGraphInfo.class)))
                 .thenReturn(aInstance);
         final Axiom<NamedResource> axiom = new AxiomImpl<>(NamedResource.create(ID),
                 Assertion.createObjectPropertyAssertion(
                         URI.create(Vocabulary.P_HAS_A), false), new Value<>(NamedResource.create(aReference)));
 
         sut.addAxiomValue(axiom);
-        final ArgumentCaptor<Descriptor> captor = ArgumentCaptor.forClass(Descriptor.class);
+        final ArgumentCaptor<ObjectGraphInfo> captor = ArgumentCaptor.forClass(ObjectGraphInfo.class);
         verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aReference), captor.capture());
-        assertInstanceOf(EntityDescriptor.class, captor.getValue());
+        assertInstanceOf(EntityDescriptor.class, captor.getValue().descriptor());
+    }
+
+    @Test
+    void addAxiomValuePropagatesFetchGraphToReferencedEntityLoading() {
+        final Metamodel metamodel = mock(Metamodel.class);
+        mocks.setMocks(metamodel);
+        final EntityGraph<OWLClassJ> fetchGraph = new EntityGraphImpl<>(mocks.forOwlClassJ().entityType(), metamodel);
+        final Subgraph<OWLClassA> subgraph = fetchGraph.addSubgraph("owlClassA");
+        subgraph.addAttributeNodes("stringAttribute");
+        final PluralObjectPropertyStrategy<?, OWLClassJ> sut = new SimpleSetPropertyStrategy<>(mocks.forOwlClassJ()
+                                                                                                    .entityType(), mocks.forOwlClassJ()
+                                                                                                                        .setAttribute(),
+                new ObjectGraphInfo(descriptor, new FetchGraphWrapper(fetchGraph)), mapperMock);
+
+        sut.addAxiomValue(new AxiomImpl<>(NamedResource.create(ID),
+                Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false),
+                new Value<>(Generators.createIndividualIdentifier())));
+        final ArgumentCaptor<ObjectGraphInfo> captor = ArgumentCaptor.forClass(ObjectGraphInfo.class);
+        verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), any(), captor.capture());
+        assertEquals(subgraph.getAttributeNodes(), captor.getValue().fetchGraph().getAttributeNodes());
     }
 }

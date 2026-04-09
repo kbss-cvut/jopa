@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
@@ -32,9 +33,9 @@ import java.util.List;
 class ReferencedListPropertyStrategy<X> extends
         ListPropertyStrategy<ReferencedListDescriptor, ReferencedListValueDescriptor<NamedResource>, X> {
 
-    ReferencedListPropertyStrategy(EntityType<X> et, ListAttributeImpl<? super X, ?> att, Descriptor descriptor,
+    ReferencedListPropertyStrategy(EntityType<X> et, ListAttributeImpl<? super X, ?> att, ObjectGraphInfo objectGraphInfo,
                                    EntityMappingHelper mapper) {
-        super(et, att, descriptor, mapper);
+        super(et, att, objectGraphInfo, mapper);
     }
 
     @Override

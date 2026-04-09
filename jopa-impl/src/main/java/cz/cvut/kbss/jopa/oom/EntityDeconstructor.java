@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
 import cz.cvut.kbss.jopa.oom.exception.EntityDeconstructionException;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
@@ -66,7 +67,7 @@ class EntityDeconstructor {
                                    FieldSpecification<? super T, ?> fieldSpec, Descriptor entityDescriptor,
                                    final AxiomValueGatherer valueBuilder) {
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
-                .createFieldStrategy(et, fieldSpec, entityDescriptor, mapper);
+                .createFieldStrategy(et, fieldSpec, new ObjectGraphInfo(entityDescriptor), mapper);
         fs.setReferenceSavingResolver(referenceSavingResolver);
         fs.buildAxiomValuesFromInstance(entity, valueBuilder);
     }

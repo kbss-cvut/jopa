@@ -33,6 +33,7 @@ import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -113,7 +114,7 @@ class SimpleSetPropertyStrategyTest {
     }
 
     private <T, E> SimpleSetPropertyStrategy<T> strategy(EntityType<T> et, AbstractPluralAttribute<T, Set<E>, E> att) {
-        return new SimpleSetPropertyStrategy<>(et, att, descriptor, mapperMock);
+        return new SimpleSetPropertyStrategy<>(et, att, new ObjectGraphInfo(descriptor), mapperMock);
     }
 
     private void verifyExtractedValues(Set<URI> expected) throws Exception {

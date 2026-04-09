@@ -34,6 +34,7 @@ import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
 import cz.cvut.kbss.jopa.oom.query.PluralQueryAttributeStrategy;
 import cz.cvut.kbss.jopa.oom.query.QueryFieldStrategy;
 import cz.cvut.kbss.jopa.oom.query.SingularQueryAttributeStrategy;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
@@ -129,7 +130,7 @@ class EntityConstructor {
                 continue;
             }
             final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = getFieldLoader(
-                    ax, attributes, fieldLoaders, et, constructionParams.descriptor());
+                    ax, attributes, fieldLoaders, constructionParams);
             if (fs == null) {
                 if (!MappingUtils.isClassAssertion(ax)) {
                     LOG.trace("No attribute found for property {}. Axiom {} will be skipped.", ax.getAssertion(), ax);
@@ -168,24 +169,25 @@ class EntityConstructor {
             Axiom<?> ax,
             Map<URI, FieldSpecification<? super T, ?>> attributes,
             Map<FieldSpecification<? super T, ?>, FieldStrategy<? extends FieldSpecification<? super T, ?>, T>> loaders,
-            EntityType<T> et, Descriptor desc) {
+            EntityConstructor.EntityConstructionParameters<T> constructionParams) {
         final URI attId = ax.getAssertion().getIdentifier();
         FieldSpecification<? super T, ?> att = attributes.get(attId);
         if (att == null) {
-            if (et.getProperties() != null) {
-                att = et.getProperties();
+            if (constructionParams.entityType().getProperties() != null) {
+                att = constructionParams.entityType().getProperties();
             } else {
                 return null;
             }
         }
         if (!loaders.containsKey(att)) {
-            loaders.put(att, FieldStrategy.createFieldStrategy(et, att, desc, mapper));
+            loaders.put(att, FieldStrategy.createFieldStrategy(constructionParams.entityType(), att, new ObjectGraphInfo(constructionParams.descriptor(), constructionParams.fetchGraph()), mapper));
         }
         return loaders.get(att);
     }
 
     private boolean isLazilyLoaded(FieldSpecification<?, ?> att, EntityConstructionParameters<?> constructionParams) {
-        return att.getFetchType() == FetchType.LAZY && !constructionParams.fetchGraph().hasAttribute(att) && !constructionParams.forceEager();
+        return att.getFetchType() == FetchType.LAZY && !constructionParams.fetchGraph()
+                                                                          .hasAttribute(att) && !constructionParams.forceEager();
     }
 
     /**
@@ -322,7 +324,7 @@ class EntityConstructor {
     <T> void setFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Collection<Axiom<?>> axioms,
                            EntityType<T> et, Descriptor entityDescriptor) {
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
-                .createFieldStrategy(et, fieldSpec, entityDescriptor, mapper);
+                .createFieldStrategy(et, fieldSpec, new ObjectGraphInfo(entityDescriptor), mapper);
         axioms.forEach(fs::addAxiomValue);
         fs.buildInstanceFieldValue(entity);
         validateIntegrityConstraints(entity, fieldSpec, et);
