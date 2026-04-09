@@ -90,7 +90,7 @@ class EntityConstructor {
         final T instance = createEntityInstance(constructionParams.id(), et);
         mapper.registerInstance(constructionParams.id(), instance);
         final LoadStateDescriptor<T> loadStateDescriptor = constructionParams.fetchGraph().isPresent()
-                ? LoadStateDescriptorFactory.createNotLoadedForFetchGraph(instance, et, constructionParams.fetchGraph())
+                ? LoadStateDescriptorFactory.createForFetchGraph(instance, et, constructionParams.fetchGraph())
                 : LoadStateDescriptorFactory.createAllUnknown(instance, et);
         loadStateRegistry.put(instance, loadStateDescriptor);
         populateAttributes(instance, constructionParams, axioms, loadStateDescriptor);
