@@ -45,6 +45,7 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
@@ -257,12 +258,12 @@ class EntityConstructorTest {
         final OWLClassA entityA = new OWLClassA();
         entityA.setUri(ID_TWO);
         entityA.setStringAttribute(STRING_ATT);
-        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, fieldDesc)).thenReturn(entityA);
+        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, new ObjectGraphInfo(fieldDesc))).thenReturn(entityA);
         final OWLClassD res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassD()
                                                                                         .entityType(), descriptor), axiomsD);
         assertNotNull(res);
         assertEquals(ID, res.getUri());
-        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, fieldDesc);
+        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, new ObjectGraphInfo(fieldDesc));
         assertNotNull(res.getOwlClassA());
         assertEquals(ID_TWO, res.getOwlClassA().getUri());
         assertEquals(STRING_ATT, res.getOwlClassA().getStringAttribute());
@@ -334,7 +335,7 @@ class EntityConstructorTest {
         final Descriptor fieldDescriptor = new EntityDescriptor();
         descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDescriptor);
         // The property value hasn't the corresponding type, so it cannot be returned by mapper
-        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, fieldDescriptor)).thenReturn(null);
+        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, new ObjectGraphInfo(fieldDescriptor))).thenReturn(null);
         final OWLClassD res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassD()
                                                                                         .entityType(), descriptor), axioms);
         assertNotNull(res);
@@ -353,8 +354,8 @@ class EntityConstructorTest {
         entityThree.setUri(pkThree);
         final Descriptor fieldDescriptor = new EntityDescriptor();
         descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDescriptor);
-        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, fieldDescriptor)).thenReturn(entityA);
-        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, pkThree, fieldDescriptor))
+        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, new ObjectGraphInfo(fieldDescriptor))).thenReturn(entityA);
+        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, pkThree, new ObjectGraphInfo(fieldDescriptor)))
                 .thenReturn(entityThree);
         assertThrows(CardinalityConstraintViolatedException.class,
                 () -> constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassD()
@@ -378,8 +379,8 @@ class EntityConstructorTest {
     @Test
     void testSetFieldValue_ObjectProperty() {
         final Set<Axiom<?>> axioms = new HashSet<>();
-        final EntityDescriptor fieldDesc = mock(EntityDescriptor.class);
-        descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDesc);
+        final EntityDescriptor fieldDescriptor = mock(EntityDescriptor.class);
+        descriptor.addAttributeDescriptor(mocks.forOwlClassD().owlClassAAtt(), fieldDescriptor);
         axioms.add(createObjectPropertyAxiomForD());
         final OWLClassD entityD = new OWLClassD();
         entityD.setUri(ID);
@@ -387,14 +388,14 @@ class EntityConstructorTest {
         final OWLClassA entityA = new OWLClassA();
         entityA.setUri(ID_TWO);
         entityA.setStringAttribute(STRING_ATT);
-        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, fieldDesc))
+        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, new ObjectGraphInfo(fieldDescriptor)))
                 .thenReturn(entityA);
         constructor.setFieldValue(entityD, mocks.forOwlClassD().owlClassAAtt(), axioms,
                 mocks.forOwlClassD().entityType(),
                 descriptor);
         assertNotNull(entityD.getOwlClassA());
         assertEquals(ID_TWO, entityD.getOwlClassA().getUri());
-        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, fieldDesc);
+        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, ID_TWO, new ObjectGraphInfo(fieldDescriptor));
     }
 
     @Test
@@ -461,7 +462,7 @@ class EntityConstructorTest {
             a.setUri(URI.create("http://krizik.felk.cvut.cz/entityA" + i));
             a.setStringAttribute(STRING_ATT);
             entities.add(a);
-            when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, a.getUri(), desc))
+            when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, a.getUri(), new ObjectGraphInfo(desc)))
                     .thenReturn(a);
         }
         return entities;
@@ -631,7 +632,7 @@ class EntityConstructorTest {
         for (int i = 0; i < max + 1; i++) {
             final URI uri = URI.create("http://value" + i);
             listAxioms.add(new AxiomImpl<>(ID_RESOURCE, nodeContent, new Value<>(NamedResource.create(uri))));
-            when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, uri, attDescriptor))
+            when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, uri, new ObjectGraphInfo(attDescriptor)))
                     .thenReturn(new OWLClassA(uri));
         }
         final Assertion assertion = Assertion.createObjectPropertyAssertion(
@@ -685,7 +686,7 @@ class EntityConstructorTest {
                 new Value<>(NamedResource.create(ID_TWO))));
         final OWLClassA a = new OWLClassA();
         a.setUri(ID_TWO);
-        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(ID_TWO), any(Descriptor.class)))
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(ID_TWO), any(ObjectGraphInfo.class)))
                 .thenReturn(a);
 
         final OWLClassQ res = constructor.reconstructEntity(constructionConfig(ID, mocks.forOwlClassQ()
@@ -816,7 +817,7 @@ class EntityConstructorTest {
                 getClassAssertionAxiomForType(ID, OWLClassD.getClassIri()),
                 new AxiomImpl<>(NamedResource.create(ID), getClassDObjectPropertyAssertion(), new Value<>(NamedResource.create(aInstance.getUri())))
         );
-        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aInstance.getUri()), any(Descriptor.class))).thenReturn(aInstance);
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aInstance.getUri()), any(ObjectGraphInfo.class))).thenReturn(aInstance);
         final OWLClassD result = constructor.reconstructEntity(
                 new EntityConstructor.EntityConstructionParameters<>(ID, mocks.forOwlClassD()
                                                                               .entityType(), descriptor, new FetchGraphWrapper(), true), axioms);

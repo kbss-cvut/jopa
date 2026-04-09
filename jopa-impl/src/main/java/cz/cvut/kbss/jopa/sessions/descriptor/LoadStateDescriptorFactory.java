@@ -75,7 +75,7 @@ public class LoadStateDescriptorFactory {
 
     /**
      * Creates an instance descriptor which marks all attributes except the identifier as not loaded and sets the load
-     * state of attributes specified in the fetch graph as unknown.
+     * state of attributes specified in the fetch graph as loaded.
      *
      * @param instance   Instance to create descriptor for
      * @param et         Entity type of the instance
@@ -88,7 +88,7 @@ public class LoadStateDescriptorFactory {
         final LoadStateDescriptor<T> descriptor = createNotLoaded(instance, et);
         fetchGraph.getAttributeNodes().forEach(an -> {
             final Attribute<? super T, ?> fs = (an instanceof AttributeNodeImpl attNode) ? attNode.getAttribute() : et.getAttributeIncludingSubTypes(an.getAttributeName());
-            descriptor.setLoaded(fs, LoadState.UNKNOWN);
+            descriptor.setLoaded(fs, LoadState.LOADED);
         });
         return descriptor;
     }

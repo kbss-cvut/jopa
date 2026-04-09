@@ -17,9 +17,9 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -33,9 +33,9 @@ import java.util.Set;
 
 class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<AbstractPluralAttribute<? super X, ?, ?>, X> {
 
-    SimpleSetPropertyStrategy(EntityType<X> et, AbstractPluralAttribute<? super X, ?, ?> att, Descriptor descriptor,
-                              EntityMappingHelper mapper) {
-        super(et, att, descriptor, mapper);
+    SimpleSetPropertyStrategy(EntityType<X> et, AbstractPluralAttribute<? super X, ?, ?> att,
+                              ObjectGraphInfo objectGraphInfo, EntityMappingHelper mapper) {
+        super(et, att, objectGraphInfo, mapper);
     }
 
     @Override

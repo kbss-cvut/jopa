@@ -38,6 +38,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxy;
 import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxyGenerator;
 import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
@@ -240,7 +241,7 @@ class ObjectOntologyMapperTest {
         final LoadStateDescriptor<OWLClassA> loadStateDescriptor = new LoadStateDescriptor<>(entityA, mocks.forOwlClassA()
                                                                                                            .entityType(), LoadState.UNKNOWN);
         doReturn(loadStateDescriptor).when(cacheMock).getLoadStateDescriptor(entityA);
-        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, aDescriptor);
+        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, new ObjectGraphInfo(aDescriptor));
         assertNotNull(res);
         assertSame(entityA, res);
         verify(cacheMock).get(OWLClassA.class, IDENTIFIER, aDescriptor);
@@ -250,8 +251,7 @@ class ObjectOntologyMapperTest {
     void testGetEntityFromCacheOrOntologyFromRegisteredInstances() {
         when(cacheMock.contains(OWLClassA.class, IDENTIFIER, null)).thenReturn(Boolean.FALSE);
         mapper.registerInstance(IDENTIFIER, entityA);
-        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER,
-                aDescriptor);
+        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, new ObjectGraphInfo(aDescriptor));
         assertNotNull(res);
         assertSame(entityA, res);
     }
@@ -268,7 +268,7 @@ class ObjectOntologyMapperTest {
         final LoadStateDescriptor<OWLClassA> loadStateDescriptor = new LoadStateDescriptor<>(entityA, mocks.forOwlClassA()
                                                                                                            .entityType(), LoadState.UNKNOWN);
         loadStateRegistry.put(entityA, loadStateDescriptor);
-        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, aDescriptor);
+        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, new ObjectGraphInfo(aDescriptor));
         assertSame(entityA, res);
         verify(loader).loadEntity(loadingParameters);
     }
@@ -648,7 +648,7 @@ class ObjectOntologyMapperTest {
     void getEntityFromCacheOrOntologyThrowsEntityExistsWhenObjectIsAlreadyRegisteredUnderDifferentType() {
         mapper.registerInstance(IDENTIFIER, entityA);
         assertThrows(OWLEntityExistsException.class,
-                () -> mapper.getEntityFromCacheOrOntology(OWLClassB.class, IDENTIFIER, aDescriptor));
+                () -> mapper.getEntityFromCacheOrOntology(OWLClassB.class, IDENTIFIER, new ObjectGraphInfo(aDescriptor)));
     }
 
     @Test

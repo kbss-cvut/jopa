@@ -21,18 +21,25 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
+import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.EntityGraphImpl;
+import cz.cvut.kbss.jopa.model.Subgraph;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.vocabulary.OWL;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -88,7 +95,7 @@ class SingularObjectPropertyStrategyTest {
 
     private <T> FieldStrategy<? extends FieldSpecification<? super T, ?>, T> strategy(EntityType<T> et,
                                                                                       AbstractAttribute<? super T, ?> att) {
-        return new SingularObjectPropertyStrategy<>(et, att, descriptor, mapperMock);
+        return new SingularObjectPropertyStrategy<>(et, att, new ObjectGraphInfo(descriptor), mapperMock);
     }
 
     private Assertion propertyP() throws Exception {
@@ -246,7 +253,7 @@ class SingularObjectPropertyStrategyTest {
         final Assertion assertion = Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false);
         sut.addAxiomValue(
                 new AxiomImpl<>(NamedResource.create(IDENTIFIER), assertion, new Value<>(NamedResource.create(VALUE))));
-        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, VALUE, aDescriptor);
+        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, VALUE, new ObjectGraphInfo(aDescriptor));
     }
 
     @Test
@@ -361,5 +368,24 @@ class SingularObjectPropertyStrategyTest {
         final OWLClassP p = new OWLClassP();
         strategy.buildInstanceFieldValue(p);
         assertEquals(VALUE, p.getIndividualUri());
+    }
+
+    @Test
+    void addAxiomValuePropagatesFetchGraphToReferencedEntityLoading() {
+        final Metamodel metamodel = mock(Metamodel.class);
+        metamodelMocks.setMocks(metamodel);
+        final EntityGraph<OWLClassD> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassD()
+                                                                                      .entityType(), metamodel);
+        final Subgraph<OWLClassA> sg = fetchGraph.addSubgraph("owlClassA");
+        sg.addAttributeNodes("stringAttribute");
+        final FieldStrategy<? extends FieldSpecification<? super OWLClassD, ?>, OWLClassD> sut = new SingularObjectPropertyStrategy<>(metamodelMocks.forOwlClassD()
+                                                                                                                                                    .entityType(),
+                metamodelMocks.forOwlClassD()
+                              .owlClassAAtt(), new ObjectGraphInfo(descriptor, new FetchGraphWrapper(fetchGraph)), mapperMock);
+        sut.setReferenceSavingResolver(referenceResolverMock);
+        sut.addAxiomValue(new AxiomImpl<>(NamedResource.create(IDENTIFIER), Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false), new Value<>(VALUE)));
+        final ArgumentCaptor<ObjectGraphInfo> captor = ArgumentCaptor.forClass(ObjectGraphInfo.class);
+        verify(mapperMock).getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(VALUE), captor.capture());
+        assertEquals(sg.getAttributeNodes(), captor.getValue().fetchGraph().getAttributeNodes());
     }
 }

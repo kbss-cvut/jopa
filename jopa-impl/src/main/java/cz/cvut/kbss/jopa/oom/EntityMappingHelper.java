@@ -17,8 +17,8 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.sessions.ConfigurationHolder;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
@@ -31,7 +31,7 @@ import java.util.Collection;
 
 interface EntityMappingHelper extends ConfigurationHolder {
 
-    <T> T getEntityFromCacheOrOntology(Class<T> cls, URI identifier, Descriptor descriptor);
+    <T> T getEntityFromCacheOrOntology(Class<T> cls, URI identifier, ObjectGraphInfo objectGraphInfo);
 
     <T> EntityType<T> getEntityType(Class<T> cls);
 

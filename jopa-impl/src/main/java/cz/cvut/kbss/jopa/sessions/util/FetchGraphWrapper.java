@@ -19,6 +19,10 @@ public class FetchGraphWrapper {
         this.attributeNodes = null;
     }
 
+    private FetchGraphWrapper(List<AttributeNode<?>> attributeNodes) {
+        this.attributeNodes = attributeNodes;
+    }
+
     public FetchGraphWrapper(EntityGraph<?> entityGraph) {
         this.attributeNodes = entityGraph != null ? entityGraph.getAttributeNodes() : null;
     }
@@ -38,6 +42,26 @@ public class FetchGraphWrapper {
 
     public boolean hasAttribute(FieldSpecification<?, ?> att) {
         return isPresent() && attributeNodes.stream().anyMatch(an -> att.getName().equals(an.getAttributeName()));
+    }
+
+    /**
+     * Gets a subgraph for the specified attribute (if present).
+     * <p>
+     * Empty {@link FetchGraphWrapper} is returned if the attribute is not present or this wrapper is empty.
+     *
+     * @param att Attribute to get subgraph for
+     * @return Fetch graph wrapper
+     */
+    public FetchGraphWrapper getAttributeSubgraph(FieldSpecification<?, ?> att) {
+        if (!isPresent()) {
+            return new FetchGraphWrapper();
+        }
+        return attributeNodes.stream()
+                             .filter(an -> att.getName().equals(an.getAttributeName()))
+                             .findFirst().map(an -> new FetchGraphWrapper(an.getSubgraphs().values().stream()
+                                                                            .flatMap(sg -> sg.getAttributeNodes()
+                                                                                             .stream()).toList()))
+                             .orElse(new FetchGraphWrapper());
     }
 
     @Override

@@ -50,6 +50,13 @@ public class Person implements HasUri {
     @Types
     private Set<String> types;
 
+    public Person() {
+    }
+
+    public Person(URI uri) {
+        this.uri = uri;
+    }
+
     public URI getUri() {
         return uri;
     }

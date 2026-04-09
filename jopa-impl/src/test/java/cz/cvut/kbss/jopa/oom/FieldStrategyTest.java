@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,7 +64,7 @@ class FieldStrategyTest {
         final URI context = Generators.createIndividualIdentifier();
         descriptor.addAttributeContext(metamodelMocks.forOwlClassA().stringAttribute(), context);
         final FieldStrategy<?, ?> sut = FieldStrategy.createFieldStrategy(metamodelMocks.forOwlClassA().entityType(),
-                metamodelMocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
+                metamodelMocks.forOwlClassA().stringAttribute(), new ObjectGraphInfo(descriptor), mapperMock);
         assertEquals(context, sut.getAttributeWriteContext());
         verify(descriptor).getSingleAttributeContext(metamodelMocks.forOwlClassA().stringAttribute());
     }
@@ -78,7 +79,7 @@ class FieldStrategyTest {
         when(att.getBindableJavaType()).thenReturn(String.class);
         when(att.getElementType()).thenReturn(BasicTypeImpl.get(String.class));
         when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
-        final FieldStrategy<?, ?> result = FieldStrategy.createFieldStrategy(et, att, descriptor, mapperMock);
+        final FieldStrategy<?, ?> result = FieldStrategy.createFieldStrategy(et, att, new ObjectGraphInfo(descriptor), mapperMock);
         assertThat(result, instanceOf(PluralDataPropertyStrategy.class));
     }
 
@@ -92,14 +93,14 @@ class FieldStrategyTest {
         when(att.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(att.getElementType()).thenReturn(metamodelMocks.forOwlClassA().entityType());
         when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        final FieldStrategy<?, ?> result = FieldStrategy.createFieldStrategy(et, att, descriptor, mapperMock);
+        final FieldStrategy<?, ?> result = FieldStrategy.createFieldStrategy(et, att, new ObjectGraphInfo(descriptor), mapperMock);
         assertThat(result, instanceOf(SimpleSetPropertyStrategy.class));
     }
 
     @Test
     void createFieldStrategyCreatesSingularMultilingualStringFieldStrategyForSingularMultilingualStringAttributeMappingDataProperty() {
         final FieldStrategy<?, ?> result = FieldStrategy.createFieldStrategy(metamodelMocks.forOwlClassU().entityType(),
-                metamodelMocks.forOwlClassU().uSingularStringAtt(), descriptor, mapperMock);
+                metamodelMocks.forOwlClassU().uSingularStringAtt(), new ObjectGraphInfo(descriptor), mapperMock);
         assertThat(result, instanceOf(SingularMultilingualStringFieldStrategy.class));
     }
 
@@ -108,7 +109,7 @@ class FieldStrategyTest {
         final AbstractAttribute<?, ?> att = metamodelMocks.forOwlClassU().uSingularStringAtt();
         when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
         final FieldStrategy<?, ?> result = FieldStrategy.createFieldStrategy(metamodelMocks.forOwlClassU().entityType(),
-                metamodelMocks.forOwlClassU().uSingularStringAtt(), descriptor, mapperMock);
+                metamodelMocks.forOwlClassU().uSingularStringAtt(), new ObjectGraphInfo(descriptor), mapperMock);
         assertThat(result, instanceOf(SingularMultilingualStringFieldStrategy.class));
     }
 
@@ -122,7 +123,7 @@ class FieldStrategyTest {
         when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(att.getElementType()).thenReturn(BasicTypeImpl.get(LocalDate.class));
 
-        final FieldStrategy<?, ?> result = FieldStrategy.createFieldStrategy(et, att, descriptor, mapperMock);
+        final FieldStrategy<?, ?> result = FieldStrategy.createFieldStrategy(et, att, new ObjectGraphInfo(descriptor), mapperMock);
         assertThat(result, instanceOf(ReferencedListDataPropertyStrategy.class));
     }
 }

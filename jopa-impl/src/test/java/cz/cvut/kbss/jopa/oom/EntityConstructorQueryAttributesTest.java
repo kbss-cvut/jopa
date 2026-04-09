@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
@@ -141,7 +142,7 @@ public class EntityConstructorQueryAttributesTest {
         entityA.setUri(identifierTwo);
         entityA.setStringAttribute(stringValue);
 
-        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, identifierTwo, fieldDesc))
+        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, identifierTwo, new ObjectGraphInfo(fieldDesc)))
                 .thenReturn(entityA);
 
         doReturn(typedQueryMock)
@@ -155,7 +156,7 @@ public class EntityConstructorQueryAttributesTest {
                                                                                                             .entityType(), descriptor), axioms);
         assertNotNull(res);
         assertEquals(IDENTIFIER, res.getUri());
-        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, identifierTwo, fieldDesc);
+        verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, identifierTwo, new ObjectGraphInfo(fieldDesc));
         assertNotNull(res.getEntityAttribute());
         assertEquals(identifierTwo, res.getEntityAttribute().getUri());
         assertEquals(stringValue, res.getEntityAttribute().getStringAttribute());

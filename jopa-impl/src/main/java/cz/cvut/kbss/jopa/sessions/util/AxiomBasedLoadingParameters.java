@@ -30,7 +30,7 @@ import java.util.Collection;
  * @param <T>    Entity type
  */
 public record AxiomBasedLoadingParameters<T>(Class<T> cls, Collection<Axiom<?>> axioms,
-                                             AxiomBasedLoadingConfigGroup config) {
+                                             AxiomBasedLoadingConfigGroup<T> config) {
 
     /**
      * Returns {@code true} to indicate that the cache should always be bypassed when loading entity directly from

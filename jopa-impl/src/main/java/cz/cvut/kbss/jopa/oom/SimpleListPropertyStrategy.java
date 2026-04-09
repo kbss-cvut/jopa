@@ -17,9 +17,9 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -31,9 +31,9 @@ import java.util.List;
 class SimpleListPropertyStrategy<X> extends
         ListPropertyStrategy<SimpleListDescriptor, SimpleListValueDescriptor, X> {
 
-    SimpleListPropertyStrategy(EntityType<X> et, ListAttributeImpl<? super X, ?> att, Descriptor descriptor,
+    SimpleListPropertyStrategy(EntityType<X> et, ListAttributeImpl<? super X, ?> att, ObjectGraphInfo objectGraphInfo,
                                EntityMappingHelper mapper) {
-        super(et, att, descriptor, mapper);
+        super(et, att, objectGraphInfo, mapper);
     }
 
     @Override

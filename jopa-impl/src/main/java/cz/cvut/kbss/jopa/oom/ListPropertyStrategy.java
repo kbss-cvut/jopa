@@ -17,9 +17,9 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
@@ -34,9 +34,9 @@ import java.util.stream.Collectors;
 abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValueDescriptor, X>
         extends PluralObjectPropertyStrategy<ListAttributeImpl<? super X, ?>, X> {
 
-    ListPropertyStrategy(EntityType<X> et, ListAttributeImpl<? super X, ?> att, Descriptor descriptor,
+    ListPropertyStrategy(EntityType<X> et, ListAttributeImpl<? super X, ?> att, ObjectGraphInfo objectGraphInfo,
                          EntityMappingHelper mapper) {
-        super(et, att, descriptor, mapper);
+        super(et, att, objectGraphInfo, mapper);
     }
 
     @Override
