@@ -138,8 +138,8 @@ public class ObjectOntologicalMappingTest {
         assertEquals(LoadState.LOADED, personLoadState.isLoaded(et.getAttribute("lastName")));
         assertEquals(LoadState.LOADED, personLoadState.isLoaded(et.getAttribute("age")));
         assertEquals(LoadState.LOADED, personLoadState.isLoaded(et.getAttribute("phone")));
-        assertEquals(LoadState.NOT_LOADED, personLoadState.isLoaded(et.getAttribute("username")));
-        assertEquals(LoadState.NOT_LOADED, personLoadState.isLoaded(et.getAttribute("gender")));
+        assertEquals(LoadState.UNKNOWN, personLoadState.isLoaded(et.getAttribute("username")));
+        assertEquals(LoadState.UNKNOWN, personLoadState.isLoaded(et.getAttribute("gender")));
         final LoadStateDescriptor<Phone> phoneLoadState = uow.getLoadStateRegistry().get(result.getPhone());
         assertNotNull(phoneLoadState);
         assertEquals(LoadState.LOADED, phoneLoadState.isLoaded(metamodel.entity(Phone.class).getAttribute("number")));
