@@ -33,6 +33,7 @@ import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -169,7 +170,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
                                                                 .add(ax));
         final LoadingParameters<T> params = new LoadingParameters<>(loadingParameters.cls(),
                 loadingParameters.config().subject(),
-                loadingParameters.config().descriptor(), false, loadingParameters.bypassCache());
+                loadingParameters.config().descriptor(), new FetchGraphWrapper(loadingParameters.config()
+                                                                                                  .fetchGraph()), false, loadingParameters.bypassCache());
         return loadEntityFromAxioms(params);
     }
 
@@ -181,8 +183,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         } else {
             result = defaultInstanceLoader.loadEntityFromAxioms(params, axiomsPerEntity.get(params.identifier()));
         }
-        // TODO Fetch graph, do not cache if fetch graph provided
-        if (result != null) {
+        if (result != null && !params.fetchGraph().isPresent()) {
             cacheLoadedEntity(params, result);
         }
         return result;

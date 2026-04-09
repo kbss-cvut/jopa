@@ -22,8 +22,12 @@ import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.LoadState;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingListProxy;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -120,5 +124,24 @@ class LoadStateDescriptorFactoryTest {
         assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassC().identifier()));
         assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassC().referencedListAtt()));
         assertEquals(LoadState.NOT_LOADED, result.isLoaded(metamodelMocks.forOwlClassC().simpleListAtt()));
+    }
+
+    @Test
+    void createNotLoadedForFetchGraphCreatesLoadDescriptorWithAllAttributesNotLoadedAndAttributesInFetchGraphUnknown() {
+        final OWLClassM instance = new OWLClassM();
+        instance.setKey(Generators.createIndividualIdentifier().toString());
+        final Metamodel metamodel = mock(Metamodel.class);
+        final EntityGraph<OWLClassM> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassM()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("intAttribute", "longAttribute", "doubleAttribute", "characterAttribute");
+        final LoadStateDescriptor<OWLClassM> result = LoadStateDescriptorFactory.createNotLoadedForFetchGraph(instance, metamodelMocks.forOwlClassM()
+                                                                                                                                      .entityType(), new FetchGraphWrapper(fetchGraph));
+        assertEquals(LoadState.UNKNOWN, result.isLoaded(metamodelMocks.forOwlClassM().integerAttribute()));
+        assertEquals(LoadState.UNKNOWN, result.isLoaded(metamodelMocks.forOwlClassM().longAttribute()));
+        assertEquals(LoadState.UNKNOWN, result.isLoaded(metamodelMocks.forOwlClassM().doubleAttribute()));
+        assertEquals(LoadState.UNKNOWN, result.isLoaded(metamodelMocks.forOwlClassM().characterAttribute()));
+        assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassM().identifier()));
+        assertEquals(LoadState.NOT_LOADED, result.isLoaded(metamodelMocks.forOwlClassM().dateAttribute()));
+        assertEquals(LoadState.NOT_LOADED, result.isLoaded(metamodelMocks.forOwlClassM().integerSetAttribute()));
     }
 }

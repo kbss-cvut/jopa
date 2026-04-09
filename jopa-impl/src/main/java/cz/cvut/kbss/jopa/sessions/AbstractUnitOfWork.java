@@ -359,7 +359,8 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     @Override
-    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, AxiomBasedLoadingConfigGroup config) {
+    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms,
+                                      AxiomBasedLoadingConfigGroup<T> config) {
         Objects.requireNonNull(cls);
         Objects.requireNonNull(axioms);
         Objects.requireNonNull(config);

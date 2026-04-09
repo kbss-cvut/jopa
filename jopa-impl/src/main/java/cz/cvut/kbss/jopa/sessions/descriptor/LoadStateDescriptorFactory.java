@@ -17,11 +17,15 @@
  */
 package cz.cvut.kbss.jopa.sessions.descriptor;
 
+import cz.cvut.kbss.jopa.model.AttributeNodeImpl;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 /**
@@ -67,6 +71,26 @@ public class LoadStateDescriptorFactory {
      */
     public static <T> LoadStateDescriptor<T> createAllUnknown(T instance, EntityType<T> et) {
         return new LoadStateDescriptor<>(instance, et, LoadState.UNKNOWN);
+    }
+
+    /**
+     * Creates an instance descriptor which marks all attributes except the identifier as not loaded and sets the load
+     * state of attributes specified in the fetch graph as unknown.
+     *
+     * @param instance   Instance to create descriptor for
+     * @param et         Entity type of the instance
+     * @param fetchGraph Entity fetch graph
+     * @param <T>        Instance type
+     * @return Fresh instance descriptor
+     */
+    public static <T> LoadStateDescriptor<T> createNotLoadedForFetchGraph(T instance, IdentifiableEntityType<T> et,
+                                                                          FetchGraphWrapper fetchGraph) {
+        final LoadStateDescriptor<T> descriptor = createNotLoaded(instance, et);
+        fetchGraph.getAttributeNodes().forEach(an -> {
+            final Attribute<? super T, ?> fs = (an instanceof AttributeNodeImpl attNode) ? attNode.getAttribute() : et.getAttributeIncludingSubTypes(an.getAttributeName());
+            descriptor.setLoaded(fs, LoadState.UNKNOWN);
+        });
+        return descriptor;
     }
 
     /**

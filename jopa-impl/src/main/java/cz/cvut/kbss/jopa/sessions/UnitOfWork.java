@@ -185,7 +185,7 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * @param <T>    Return type
      * @return The retrieved object or {@code null} if no object of the expected target class can be reconstructed
      */
-    <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, AxiomBasedLoadingConfigGroup config);
+    <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, AxiomBasedLoadingConfigGroup<T> config);
 
     /**
      * Retrieves a reference to an object with the specified identifier.

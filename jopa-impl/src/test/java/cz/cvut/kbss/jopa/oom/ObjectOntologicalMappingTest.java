@@ -75,7 +75,7 @@ public class ObjectOntologicalMappingTest {
         expected.setOwlClassA(aInstance);
         final List<Axiom<?>> axioms = instanceAxioms(expected);
 
-        final OWLClassD result = sut.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassD.class, axioms, new AxiomBasedLoadingConfigGroup(expected.getUri(), new EntityDescriptor())));
+        final OWLClassD result = sut.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassD.class, axioms, new AxiomBasedLoadingConfigGroup<>(expected.getUri(), new EntityDescriptor())));
         assertEquals(expected.getUri(), result.getUri());
         assertNotNull(result.getOwlClassA());
         assertThat(result.getOwlClassA(), allOf(

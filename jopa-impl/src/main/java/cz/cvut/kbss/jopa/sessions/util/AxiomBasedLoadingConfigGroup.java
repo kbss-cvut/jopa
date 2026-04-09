@@ -12,7 +12,7 @@ import java.net.URI;
  * @param descriptor Entity data descriptor
  * @param fetchGraph Fetch graph, possibly {@code null}
  */
-public record AxiomBasedLoadingConfigGroup(URI subject, Descriptor descriptor, EntityGraph<?> fetchGraph) {
+public record AxiomBasedLoadingConfigGroup<T>(URI subject, Descriptor descriptor, EntityGraph<T> fetchGraph) {
 
     public AxiomBasedLoadingConfigGroup(URI subject, Descriptor descriptor) {
         this(subject, descriptor, null);

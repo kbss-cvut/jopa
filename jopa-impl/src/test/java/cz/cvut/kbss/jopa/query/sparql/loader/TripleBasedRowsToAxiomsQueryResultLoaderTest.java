@@ -91,7 +91,7 @@ class TripleBasedRowsToAxiomsQueryResultLoaderTest {
                                                .map(Optional::get).findFirst();
         assertTrue(result.isPresent());
         assertEquals(instance, result.get());
-        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup(instance.getUri(), descriptor)));
+        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup<>(instance.getUri(), descriptor)));
     }
 
     private static List<ResultRow> mockResultRows(OWLClassA instance) throws OntoDriverException {
@@ -145,7 +145,7 @@ class TripleBasedRowsToAxiomsQueryResultLoaderTest {
         final Optional<OWLClassA> result = sut.loadLastPending();
         assertTrue(result.isPresent());
         assertEquals(instance, result.get());
-        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup(instance.getUri(), descriptor)));
+        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup<>(instance.getUri(), descriptor)));
     }
 
     @Test
@@ -166,7 +166,7 @@ class TripleBasedRowsToAxiomsQueryResultLoaderTest {
         final Optional<OWLClassA> result = rows.stream().map(sut::loadResult).filter(Optional::isPresent)
                                                .map(Optional::get).findFirst();
         assertTrue(result.isPresent());
-        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup(instance.getUri(), descriptor)));
+        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup<>(instance.getUri(), descriptor)));
         verify(uow).readObject(OWLClassA.class, instance.getUri(), descriptor);
     }
 }

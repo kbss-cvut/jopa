@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
@@ -111,7 +112,8 @@ public class EntityConstructorPluralAttributesTest {
 
         final OWLClassC res = constructor
                 .reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(ID, metamodelMocks.forOwlClassC()
-                                                                                                          .entityType(), descriptor, true),
+                                                                                                          .entityType(), descriptor, new FetchGraphWrapper(),
+                                true),
                         axioms);
 
         assertNotNull(res);

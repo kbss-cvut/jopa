@@ -31,8 +31,11 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
+import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.LoadState;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
@@ -45,6 +48,7 @@ import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.DC;
@@ -117,6 +121,9 @@ class EntityConstructorTest {
         when(mapperMock.getUow()).thenReturn(uowMock);
         when(uowMock.sparqlQueryFactory()).thenReturn(queryFactoryMock);
         this.mocks = new MetamodelMocks();
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
+        mocks.setMocks(metamodel);
+        when(uowMock.getMetamodel()).thenReturn(metamodel);
         this.descriptor = new EntityDescriptor();
         this.constructor = new EntityConstructor(mapperMock, loadStateRegistry);
     }
@@ -168,7 +175,7 @@ class EntityConstructorTest {
     static <T> EntityConstructor.EntityConstructionParameters<T> constructionConfig(URI id,
                                                                                     IdentifiableEntityType<T> et,
                                                                                     Descriptor descriptor) {
-        return new EntityConstructor.EntityConstructionParameters<>(id, et, descriptor, false);
+        return new EntityConstructor.EntityConstructionParameters<>(id, et, descriptor, new FetchGraphWrapper(), false);
     }
 
     @Test
@@ -513,7 +520,8 @@ class EntityConstructorTest {
         assertEquals(character, res.getCharacterAttribute());
     }
 
-    private Collection<Axiom<?>> createAxiomsForValues(Boolean b, Integer i, Long lng, Double d, Date date, Character character,
+    private Collection<Axiom<?>> createAxiomsForValues(Boolean b, Integer i, Long lng, Double d, Date date,
+                                                       Character character,
                                                        OWLClassM.Severity severity) throws
             Exception {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
@@ -546,7 +554,8 @@ class EntityConstructorTest {
                             new Value<>(date)));
         }
         if (character != null) {
-            final String characterAttIri = OWLClassM.getCharacterAttributeField().getAnnotation(OWLDataProperty.class).iri();
+            final String characterAttIri = OWLClassM.getCharacterAttributeField().getAnnotation(OWLDataProperty.class)
+                                                    .iri();
             axioms.add(
                     new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(characterAttIri), false),
                             new Value<>(character.toString())));
@@ -810,10 +819,29 @@ class EntityConstructorTest {
         when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aInstance.getUri()), any(Descriptor.class))).thenReturn(aInstance);
         final OWLClassD result = constructor.reconstructEntity(
                 new EntityConstructor.EntityConstructionParameters<>(ID, mocks.forOwlClassD()
-                                                                              .entityType(), descriptor, true), axioms);
+                                                                              .entityType(), descriptor, new FetchGraphWrapper(), true), axioms);
         assertNotNull(result);
         assertNotNull(result.getOwlClassA());
         assertEquals(aInstance, result.getOwlClassA());
+        final LoadStateDescriptor<OWLClassD> loadStates = loadStateRegistry.get(result);
+        assertNotNull(loadStates);
+        assertEquals(LoadState.LOADED, loadStates.isLoaded(mocks.forOwlClassD().owlClassAAtt()));
+    }
+
+    @Test
+    void reconstructEntityMarksLazilyLoadedAttributeAsLoadedWhenNoAxiomIsAvailableForItAndItIsSpecifiedInFetchGraph() {
+        when(mocks.forOwlClassD().owlClassAAtt().getFetchType()).thenReturn(FetchType.LAZY);
+        final List<Axiom<?>> axioms = List.of(
+                getClassAssertionAxiomForType(ID, OWLClassD.getClassIri()),
+                new AxiomImpl<>(NamedResource.create(ID), Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false), new Value<>(NamedResource.create(Generators.createIndividualIdentifier())))
+        );
+        final EntityGraph<OWLClassD> fetchGraph = new EntityGraphImpl<>(mocks.forOwlClassD()
+                                                                             .entityType(), uowMock.getMetamodel());
+        fetchGraph.addAttributeNodes("owlClassA");
+        final EntityConstructor.EntityConstructionParameters<OWLClassD> constructionParams = new EntityConstructor.EntityConstructionParameters<>(ID, mocks.forOwlClassD()
+                                                                                                                                                           .entityType(), descriptor, new FetchGraphWrapper(fetchGraph), false);
+        final OWLClassD result = constructor.reconstructEntity(constructionParams, axioms);
+        assertNull(result.getOwlClassA());
         final LoadStateDescriptor<OWLClassD> loadStates = loadStateRegistry.get(result);
         assertNotNull(loadStates);
         assertEquals(LoadState.LOADED, loadStates.isLoaded(mocks.forOwlClassD().owlClassAAtt()));
