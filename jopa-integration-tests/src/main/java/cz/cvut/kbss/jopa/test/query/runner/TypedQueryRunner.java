@@ -19,6 +19,8 @@ package cz.cvut.kbss.jopa.test.query.runner;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
+import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.Subgraph;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHints;
@@ -27,6 +29,8 @@ import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassM;
+import cz.cvut.kbss.jopa.test.OWLClassV;
+import cz.cvut.kbss.jopa.test.Thing;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
@@ -43,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -53,6 +58,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -449,5 +455,31 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
             assertEquals(entities.get(i).getStringAttribute(), result.get(i).getStringAttribute());
             assertThat(result.get(i).getTypes(), hasItems(entities.get(i).getTypes().toArray(new String[]{})));
         }
+    }
+
+    @Test
+    public void querySupportsFetchGraphs() {
+        final EntityGraph<OWLClassV> fetchGraph = getEntityManager().createEntityGraph(OWLClassV.class);
+        fetchGraph.addAttributeNodes("name", "description");
+        final Subgraph<Thing> subgraph = fetchGraph.addSubgraph("things");
+        subgraph.addAttributeNodes("name");
+        final List<OWLClassV> entities = QueryTestEnvironment.getData(OWLClassV.class);
+        final List<OWLClassV> result = getEntityManager().createNativeQuery("SELECT ?x WHERE { ?x a ?type . }", OWLClassV.class)
+                                                         .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_V))
+                                                         .setHint(QueryHints.FETCH_GRAPH, fetchGraph)
+                                                         .getResultList();
+        assertEquals(entities.size(), result.size());
+        result.forEach(c -> {
+            final Optional<OWLClassV> expected = entities.stream().filter(v -> v.getUri().equals(c.getUri())).findFirst();
+            assertTrue(expected.isPresent());
+            assertEquals(expected.get().getName(), c.getName());
+            assertEquals(expected.get().getDescription(), c.getDescription());
+            assertNotNull(c.getThings());
+            assertEquals(expected.get().getThings().size(), c.getThings().size());
+            c.getThings().forEach(t -> {
+                assertNotNull(t.getName());
+                assertNull(t.getDescription());
+            });
+        });
     }
 }
