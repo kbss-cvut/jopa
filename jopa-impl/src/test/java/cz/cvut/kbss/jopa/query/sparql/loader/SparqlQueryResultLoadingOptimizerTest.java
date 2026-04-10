@@ -19,8 +19,11 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -164,5 +167,36 @@ class SparqlQueryResultLoadingOptimizerTest {
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
         final QueryResultLoader<OWLClassA> result = sut.getQueryResultLoader(OWLClassA.class, new EntityDescriptor(), null);
         assertInstanceOf(AttributeBasedRowsToAxiomsQueryResultLoader.class, result);
+    }
+
+    @Test
+    void optimizeQueryAssemblyUsesAttributeEnumeratingSparqlAssemblyModifierForEntityWithSubTypesWhenFetchGraphIsProvided() {
+        when(connectionWrapper.getRepositoryMetadata()).thenReturn(() -> "");
+        final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type }"));
+        final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
+        sut.enableOptimization();
+        when(uow.isEntityType(OWLClassS.class)).thenReturn(true);
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
+        when(uow.getMetamodel()).thenReturn(metamodel);
+        final IdentifiableEntityType<OWLClassS> et = mock(IdentifiableEntityType.class);
+        when(metamodel.entity(OWLClassS.class)).thenReturn(et);
+        final EntityGraph<OWLClassS> fetchGraph = new EntityGraphImpl<>(et, metamodel);
+        sut.optimizeQueryAssembly(OWLClassS.class, new EntityDescriptor(), fetchGraph);
+        verify(qh).setAssemblyModifier(any(AttributeEnumeratingSparqlAssemblyModifier.class));
+    }
+
+    @Test
+    void optimizeQueryAssemblyUsesAttributeEnumeratingSparqlAssemblyModifierForEntityWithPropertiesWhenFetchGraphIsProvided() {
+        when(connectionWrapper.getRepositoryMetadata()).thenReturn(() -> "");
+        final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type }"));
+        final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
+        sut.enableOptimization();
+        when(uow.isEntityType(OWLClassB.class)).thenReturn(true);
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
+        when(uow.getMetamodel()).thenReturn(metamodel);
+        final IdentifiableEntityType<OWLClassB> et = mock(IdentifiableEntityType.class);
+        when(metamodel.entity(OWLClassB.class)).thenReturn(et);
+        sut.optimizeQueryAssembly(OWLClassB.class, new EntityDescriptor(), null);
+        verify(qh).setAssemblyModifier(any(AttributeEnumeratingSparqlAssemblyModifier.class));
     }
 }

@@ -86,9 +86,12 @@ public class SparqlQueryResultLoadingOptimizer {
         if (!canOptimize(resultClass, descriptor, fetchGraph)) {
             return OptimizerType.NONE;
         }
+        if (fetchGraph != null) {
+            return OptimizerType.FETCH_GRAPH_BASED;
+        }
         final IdentifiableEntityType<?> et = uow.getMetamodel().entity(resultClass);
         if (et.getProperties() == null && !et.hasSubtypes()) {
-            return fetchGraph != null ? OptimizerType.FETCH_GRAPH_BASED : OptimizerType.ATTRIBUTE_BASED;
+            return OptimizerType.ATTRIBUTE_BASED;
         }
         if (!queryContainsGraphOrServiceClause()) {
             return OptimizerType.TRIPLE_BASED;
