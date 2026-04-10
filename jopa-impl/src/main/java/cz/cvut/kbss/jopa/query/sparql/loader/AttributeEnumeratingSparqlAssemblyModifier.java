@@ -75,7 +75,7 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         this.descriptor = descriptor;
         this.fetchGraph = fetchGraph != null ? fetchGraph : generateDefaultFetchGraph();
         this.inferredAttsInDefault = resolveInferenceContext(connection);
-        assert resultType.getProperties() == null;
+        assert fetchGraph != null || resultType.getProperties() == null;
     }
 
     private static boolean resolveInferenceContext(ConnectionWrapper connection) {

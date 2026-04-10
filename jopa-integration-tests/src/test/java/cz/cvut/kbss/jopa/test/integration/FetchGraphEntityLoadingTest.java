@@ -1,7 +1,6 @@
 package cz.cvut.kbss.jopa.test.integration;
 
 import cz.cvut.kbss.jopa.model.EntityGraph;
-import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.Subgraph;
 import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.test.OWLClassA;
@@ -48,8 +47,7 @@ public class FetchGraphEntityLoadingTest extends IntegrationTestBase {
         final OWLClassA expectedA = Generators.generateOwlClassA();
         expected.setOwlClassA(expectedA);
         mockQueryResultSet(expected);
-        final EntityGraph<OWLClassD> fetchGraph = new EntityGraphImpl<>(em.getMetamodel()
-                                                                          .entity(OWLClassD.class), em.getMetamodel());
+        final EntityGraph<OWLClassD> fetchGraph = em.createEntityGraph(OWLClassD.class);
         final Subgraph<OWLClassA> subgraph = fetchGraph.addSubgraph("owlClassA");
         subgraph.addAttributeNodes("stringAttribute");
 
@@ -103,8 +101,7 @@ public class FetchGraphEntityLoadingTest extends IntegrationTestBase {
         reference.setDescription("test reference description");
         expected.setOwlClassS(reference);
         mockQueryResultSet(expected);
-        final EntityGraph<OWLClassU> fetchGraph = new EntityGraphImpl<>(em.getMetamodel()
-                                                                          .entity(OWLClassU.class), em.getMetamodel());
+        final EntityGraph<OWLClassU> fetchGraph = em.createEntityGraph(OWLClassU.class);
         fetchGraph.addAttributeNodes("name");
         final Subgraph<OWLClassS> subgraph = fetchGraph.addSubgraph("owlClassS");
         subgraph.addAttributeNodes("name");
