@@ -49,7 +49,7 @@ class EntityMappingQueryModifierTest {
                                                                                       .entityType(), metamodel);
         fetchGraph.addAttributeNodes("owlClassA");
         final EntityMappingQueryModifier.QueryModification result = sut.modify(fetchGraph, "x");
-        assertEquals(List.of("?x_owlClassA", "?x_types"), result.variables());
+        assertEquals(List.of("x_owlClassA", "x_types"), result.variableNames());
         assertThat(result.queryPart(), containsString("OPTIONAL { ?x " + stringifyIri(Vocabulary.P_HAS_A) + " ?x_owlClassA . }"));
         assertThat(result.queryPart(), containsString("?x a ?x_types"));
     }
@@ -64,7 +64,7 @@ class EntityMappingQueryModifierTest {
         final Subgraph<OWLClassA> sg = fetchGraph.addSubgraph("owlClassA");
         sg.addAttributeNodes("stringAttribute");
         final EntityMappingQueryModifier.QueryModification result = sut.modify(fetchGraph, "x");
-        assertThat(result.variables(), hasItems("?x_owlClassA", "?x_types", "?x_owlClassA_stringAttribute", "?x_owlClassA_types"));
+        assertThat(result.variableNames(), hasItems("x_owlClassA", "x_types", "x_owlClassA_stringAttribute", "x_owlClassA_types"));
         assertThat(result.queryPart(), containsString("?x a ?x_types"));
         assertThat(result.queryPart(), containsString("OPTIONAL { ?x " + stringifyIri(Vocabulary.P_HAS_A) + " ?x_owlClassA . " +
                 "?x_owlClassA a ?x_owlClassA_types . " +

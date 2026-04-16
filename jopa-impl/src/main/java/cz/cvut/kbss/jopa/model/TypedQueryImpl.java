@@ -27,7 +27,10 @@ import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.sparql.loader.SparqlQueryResultLoadingOptimizer;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
+import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,10 +69,16 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     private List<X> getResultListImpl() throws OntoDriverException {
         final List<X> res = new ArrayList<>();
         final EntityGraph<X> fetchGraph = getFetchGraph();
-        queryResultLoadingOptimizer.optimizeQueryAssembly(resultType, descriptor, fetchGraph);
+        queryResultLoadingOptimizer.modifyQueryAssembly(resultType, descriptor, fetchGraph);
         final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor, fetchGraph);
 
-        executeQuery(rr -> resultLoader.loadResult(rr).ifPresent(res::add));
+        try (final Statement stmt = initQueryStatement()) {
+            final ResultSet rs = stmt.executeQuery(query.assembleQuery());
+            resultLoader.init(rs);
+            for (ResultRow row : rs) {
+                resultLoader.loadResult(row).ifPresent(res::add);
+            }
+        }
         resultLoader.loadLastPending().ifPresent(res::add);
         return res;
     }
@@ -113,7 +122,7 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     @Override
     public Stream<X> getResultStream() {
         final EntityGraph<X> fetchGraph = getFetchGraph();
-        queryResultLoadingOptimizer.optimizeQueryAssembly(resultType, descriptor, fetchGraph);
+        queryResultLoadingOptimizer.modifyQueryAssembly(resultType, descriptor, fetchGraph);
         final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor, fetchGraph);
         try {
             return executeQueryForStream(resultLoader);

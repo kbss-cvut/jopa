@@ -476,6 +476,10 @@ class TypedQueryImplTest extends QueryTestBase {
     @Test
     void getResultListIsAbleToMapProjectedVariablesToEntityAttributes() throws Exception {
         final OWLClassA entity = Generators.generateOwlClassAInstance();
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
+        when(uowMock.getMetamodel()).thenReturn(metamodel);
+        final MetamodelMocks mocks = new MetamodelMocks();
+        mocks.setMocks(metamodel);
         final TypedQuery<OWLClassA> sut = create("SELECT ?x ?stringAttribute ?types WHERE {" +
                 "?x a " + stringifyIri(Vocabulary.c_OwlClassA) + " ;" +
                 stringifyIri(Vocabulary.p_a_stringAttribute) + " ?stringAttribute ;" +
@@ -494,10 +498,6 @@ class TypedQueryImplTest extends QueryTestBase {
         when(resultRow.getColumnCount()).thenReturn(3);
         when(uowMock.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(),
                 eq(new AxiomBasedLoadingConfigGroup<>(entity.getUri(), new EntityDescriptor())))).thenReturn(entity);
-        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
-        when(uowMock.getMetamodel()).thenReturn(metamodel);
-        final MetamodelMocks mocks = new MetamodelMocks();
-        mocks.setMocks(metamodel);
 
         final List<OWLClassA> result = sut.getResultList();
         assertEquals(List.of(entity), result);

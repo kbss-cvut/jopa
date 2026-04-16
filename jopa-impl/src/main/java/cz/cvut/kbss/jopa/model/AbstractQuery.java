@@ -24,11 +24,9 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.utils.ThrowingConsumer;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,7 +119,7 @@ abstract class AbstractQuery implements Query {
         }
     }
 
-    private Statement initQueryStatement() {
+    Statement initQueryStatement() {
         final Statement stmt = connection.createStatement();
         applyQueryHints(stmt);
         logQuery();
@@ -265,21 +263,6 @@ abstract class AbstractQuery implements Query {
         }
     }
 
-    /**
-     * Executes the query and lets the specified consumer deal with each row in the result set.
-     *
-     * @param consumer Called for every row in the result set
-     * @throws OntoDriverException When something goes wrong during query evaluation or result set processing
-     */
-    void executeQuery(ThrowingConsumer<ResultRow, OntoDriverException> consumer) throws OntoDriverException {
-        try (final Statement stmt = initQueryStatement()) {
-            final ResultSet rs = stmt.executeQuery(query.assembleQuery());
-            for (ResultRow row : rs) {
-                consumer.accept(row);
-            }
-        }
-    }
-
     private void applyQueryHints(Statement statement) {
         hints.forEach((hint, value) -> QueryHintsHandler.apply(hint, value, this, statement));
     }
@@ -287,6 +270,7 @@ abstract class AbstractQuery implements Query {
     <R> Stream<R> executeQueryForStream(QueryResultLoader<R> resultLoader) throws OntoDriverException {
         final Statement stmt = initQueryStatement();
         final ResultSet rs = stmt.executeQuery(query.assembleQuery());
+        resultLoader.init(rs);
         final Runnable closeHandler = () -> {
             try {
                 stmt.close();

@@ -35,4 +35,8 @@ public interface SparqlAssemblyModifier {
      */
     void modify(TokenStreamSparqlQueryHolder queryHolder, TokenStreamRewriter tokenRewriter,
                 QueryAttributes queryAttributes);
+
+    default void accept(SparqlAssemblyModifierVisitor visitor) {
+        // Do nothing by default
+    }
 }
