@@ -28,6 +28,8 @@ import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import org.antlr.v4.runtime.TokenStreamRewriter;
 
+import java.util.List;
+
 /**
  * Optimizes entity loading by modifying the query to fetch all named attributes.
  * <p>
@@ -67,6 +69,8 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
 
     private final boolean inferredAttsInDefault;
 
+    private List<QueryVariableMapping> variableMapping;
+
     public AttributeEnumeratingSparqlAssemblyModifier(MetamodelImpl metamodel, IdentifiableEntityType<?> resultType,
                                                       Descriptor descriptor, EntityGraph<?> fetchGraph,
                                                       ConnectionWrapper connection) {
@@ -96,8 +100,20 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         final String subjectParamName = UnboundPredicateObjectSparqlAssemblyModifier.getBaseParamName(p);
         final EntityMappingQueryModifier queryModifier = new EntityMappingQueryModifier(metamodel, resultType, descriptor, inferredAttsInDefault);
         final EntityMappingQueryModifier.QueryModification mod = queryModifier.modify(fetchGraph, subjectParamName);
+        this.variableMapping = mod.variables();
         tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), mod.queryPart());
         // TODO PERF: Use GROUP_CONCAT to optimize plural attribute projection
-        tokenRewriter.insertAfter(p.getSingleToken(), " " + String.join(" ", mod.variables()));
+        tokenRewriter.insertAfter(p.getSingleToken(), " " + String.join(" ", mod.variables().stream()
+                                                                                .map(av -> "?" + av.attributeVar())
+                                                                                .toList()));
+    }
+
+    @Override
+    public void accept(SparqlAssemblyModifierVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    public List<QueryVariableMapping> getVariableMapping() {
+        return variableMapping;
     }
 }

@@ -7,7 +7,6 @@ import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 
 import java.util.ArrayList;
@@ -39,21 +38,21 @@ class FetchGraphProcessor {
         return atts;
     }
 
-    <T> List<QueryProjectionToAxiomMapping> mapFetchGraphToProjection(EntityGraph<T> fetchGraph,
-                                                                      IdentifiableEntityType<T> et,
-                                                                      String rootVariable) {
+    <T> List<QueryVariableMapping> mapFetchGraphToProjection(EntityGraph<T> fetchGraph,
+                                                             IdentifiableEntityType<T> et,
+                                                             String rootVariable) {
         return mapFetchGraphToProjection(fetchGraph.getAttributeNodes(), et, rootVariable);
     }
 
-    private <T> List<QueryProjectionToAxiomMapping> mapFetchGraphToProjection(List<AttributeNode<?>> attributeNodes,
-                                                                              IdentifiableEntityType<T> et,
-                                                                              String subjectVariable) {
-        final List<QueryProjectionToAxiomMapping> mappings = new ArrayList<>(attributeNodes.size());
-        final List<QueryProjectionToAxiomMapping> mappingsToAppend = new ArrayList<>();
+    private <T> List<QueryVariableMapping> mapFetchGraphToProjection(List<AttributeNode<?>> attributeNodes,
+                                                                     IdentifiableEntityType<T> et,
+                                                                     String subjectVariable) {
+        final List<QueryVariableMapping> mappings = new ArrayList<>(attributeNodes.size());
+        final List<QueryVariableMapping> mappingsToAppend = new ArrayList<>();
         attributeNodes.forEach(attNode -> {
             final Attribute<?, ?> att = attribute(attNode, et);
             final String attVarName = EntityMappingQueryModifier.varName(subjectVariable, attNode.getAttributeName());
-            mappings.add(new QueryProjectionToAxiomMapping(subjectVariable, attVarName, att));
+            mappings.add(new QueryVariableMapping(subjectVariable, attVarName, att));
             if (!attNode.getSubgraphs().isEmpty()) {
                 attNode.getSubgraphs().forEach((cls, graph) -> {
                     final IdentifiableEntityType<?> subType = metamodel.entity(cls);
@@ -61,7 +60,7 @@ class FetchGraphProcessor {
                 });
             }
         });
-        mappings.add(new QueryProjectionToAxiomMapping(subjectVariable,
+        mappings.add(new QueryVariableMapping(subjectVariable,
                 EntityMappingQueryModifier.varName(subjectVariable, AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_NAME), et.getTypes()));
         mappings.addAll(mappingsToAppend);
         return mappings;
@@ -73,7 +72,4 @@ class FetchGraphProcessor {
         }
         return et.getAttributeIncludingSubTypes(node.getAttributeName());
     }
-
-    record QueryProjectionToAxiomMapping(String subjectVariable, String objectVariable,
-                                         FieldSpecification<?, ?> field) {}
 }

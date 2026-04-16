@@ -46,12 +46,11 @@ class FetchGraphProcessorTest {
         final EntityGraph<OWLClassA> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassA()
                                                                                       .entityType(), metamodel);
         fetchGraph.addAttributeNodes(metamodelMocks.forOwlClassA().stringAttribute());
-        final List<FetchGraphProcessor.QueryProjectionToAxiomMapping> result = sut.mapFetchGraphToProjection(fetchGraph, metamodelMocks.forOwlClassA()
-                                                                                                                                       .entityType(), "x");
-        assertThat(result, hasItems(new FetchGraphProcessor.QueryProjectionToAxiomMapping("x", "x_stringAttribute", metamodelMocks.forOwlClassA()
-                                                                                                                                  .stringAttribute()),
-                new FetchGraphProcessor.QueryProjectionToAxiomMapping("x", "x_types", metamodelMocks.forOwlClassA()
-                                                                                                    .typesSpec())));
+        final List<QueryVariableMapping> result = sut.mapFetchGraphToProjection(fetchGraph, metamodelMocks.forOwlClassA()
+                                                                                                          .entityType(), "x");
+        assertThat(result, hasItems(new QueryVariableMapping("x", "x_stringAttribute", metamodelMocks.forOwlClassA()
+                                                                                                     .stringAttribute()),
+                new QueryVariableMapping("x", "x_types", metamodelMocks.forOwlClassA().typesSpec())));
     }
 
     @Test
@@ -61,14 +60,14 @@ class FetchGraphProcessorTest {
                                                                                       .entityType(), metamodel);
         final Subgraph<OWLClassA> sg = fetchGraph.addSubgraph(metamodelMocks.forOwlClassD().owlClassAAtt());
         sg.addAttributeNodes(metamodelMocks.forOwlClassA().stringAttribute());
-        final List<FetchGraphProcessor.QueryProjectionToAxiomMapping> result = sut.mapFetchGraphToProjection(fetchGraph, metamodelMocks.forOwlClassD()
-                                                                                                                                       .entityType(), "x");
+        final List<QueryVariableMapping> result = sut.mapFetchGraphToProjection(fetchGraph, metamodelMocks.forOwlClassD()
+                                                                                                          .entityType(), "x");
         assertThat(result, hasItems(
-                new FetchGraphProcessor.QueryProjectionToAxiomMapping("x", "x_owlClassA", metamodelMocks.forOwlClassD()
-                                                                                                        .owlClassAAtt()),
-                new FetchGraphProcessor.QueryProjectionToAxiomMapping("x_owlClassA", "x_owlClassA_stringAttribute", metamodelMocks.forOwlClassA()
-                                                                                                                                  .stringAttribute()),
-                new FetchGraphProcessor.QueryProjectionToAxiomMapping("x_owlClassA", "x_owlClassA_types", metamodelMocks.forOwlClassA()
-                                                                                                                        .typesSpec())));
+                new QueryVariableMapping("x", "x_owlClassA", metamodelMocks.forOwlClassD()
+                                                                           .owlClassAAtt()),
+                new QueryVariableMapping("x_owlClassA", "x_owlClassA_stringAttribute", metamodelMocks.forOwlClassA()
+                                                                                                     .stringAttribute()),
+                new QueryVariableMapping("x_owlClassA", "x_owlClassA_types", metamodelMocks.forOwlClassA()
+                                                                                           .typesSpec())));
     }
 }

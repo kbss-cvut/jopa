@@ -88,4 +88,9 @@ public class UnboundPredicateObjectSparqlAssemblyModifier implements SparqlAssem
         }
         return true;
     }
+
+    @Override
+    public void accept(SparqlAssemblyModifierVisitor visitor) {
+        visitor.visit(this);
+    }
 }

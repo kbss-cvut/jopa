@@ -309,7 +309,7 @@ abstract class QueryTestBase {
         final QueryHintsHandler.Hint hint = spy(new TestHint(hintName));
         QueryHintsHandler.Hint.registerHint(hint);
         q.setHint(hintName, true);
-        q.executeQuery((r) -> {});
+        q.getResultList();
         verify(hint).apply(true, q, statementMock);
     }
 

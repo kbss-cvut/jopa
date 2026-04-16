@@ -49,8 +49,8 @@ class EntityMappingQueryModifier {
      * That is only attributes specified in the graph are included in the query.
      *
      * @param graph      Graph describing what to fetch
-     * @param subjectVar Name of the variable representing the subject of the graph patterns. Will be used to generate
-     *                   the projected variable names
+     * @param subjectVar Name of the attributeVar representing the subject of the graph patterns. Will be used to generate
+     *                   the projected attributeVar names
      * @return Query modification
      */
     QueryModification modify(EntityGraph<?> graph, String subjectVar) {
@@ -63,26 +63,26 @@ class EntityMappingQueryModifier {
      * That is only attributes specified in the subgraph are included in the query.
      *
      * @param graph      Graph describing what to fetch
-     * @param subjectVar Name of the variable representing the subject of the graph patterns. Will be used to generate
-     *                   the projected variable names
+     * @param subjectVar Name of the attributeVar representing the subject of the graph patterns. Will be used to generate
+     *                   the projected attributeVar names
      * @return Query modification
      */
     QueryModification modify(Subgraph<?> graph, String subjectVar) {
         return modifyImpl(graph.getAttributeNodes(), subjectVar);
     }
 
-    private QueryModification modifyImpl(List<AttributeNode<?>> attributeNodes, String subjectVar) {
+    private QueryModification modifyImpl(List<AttributeNode<?>> attributeNodes, String subjectVarName) {
         final StringBuilder attributePatterns = new StringBuilder();
         final StringBuilder optionalAttributesPatterns = new StringBuilder();
-        final List<String> variables = new ArrayList<>();
-        final List<String> variablesToAppend = new ArrayList<>();
-        final String subjectVariable = "?" + subjectVar;
+        final List<QueryVariableMapping> variables = new ArrayList<>();
+        final List<QueryVariableMapping> variablesToAppend = new ArrayList<>();
+        final String subjectVariable = "?" + subjectVarName;
         attributeNodes.forEach(attNode -> {
             final Attribute<?, ?> att = attribute(attNode);
             final int min = Arrays.stream(att.getConstraints()).map(ParticipationConstraint::min)
                                   .min(Comparator.naturalOrder()).orElse(0);
-            final String variable = "?" + varName(subjectVar, att.getName());
-            variables.add(variable);
+            final String variable = "?" + varName(subjectVarName, att.getName());
+            variables.add(new QueryVariableMapping(subjectVarName, varName(subjectVarName, att.getName()), att));
             final StringBuilder target = min < 1 ? optionalAttributesPatterns : attributePatterns;
             if (min < 1) {
                 target.append("OPTIONAL { ");
@@ -95,7 +95,7 @@ class EntityMappingQueryModifier {
                 attNode.getSubgraphs().forEach((cls, graph) -> {
                     final IdentifiableEntityType<?> subType = metamodel.entity(cls);
                     final EntityMappingQueryModifier subModifier = new EntityMappingQueryModifier(metamodel, subType, descriptor.getAttributeDescriptor(att), inferredAttsInDefault);
-                    final QueryModification mod = subModifier.modify(graph, varName(subjectVar, att.getName()));
+                    final QueryModification mod = subModifier.modify(graph, varName(subjectVarName, att.getName()));
                     target.append(mod.queryPart());
                     variablesToAppend.addAll(mod.variables());
                 });
@@ -105,8 +105,8 @@ class EntityMappingQueryModifier {
             }
             ctx.ifPresent(uri -> target.append("} "));
         });
-        final String typesVariable = "?" + varName(subjectVar, TYPES_VAR_NAME);
-        variables.add(typesVariable);
+        final String typesVariable = "?" + varName(subjectVarName, TYPES_VAR_NAME);
+        variables.add(new QueryVariableMapping(subjectVarName, varName(subjectVarName, TYPES_VAR_NAME), resultType.getTypes()));
         final Optional<String> ctx = typesContext();
         ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
         attributePatterns.append(subjectVariable).append(" a ").append(typesVariable).append(" . ");
@@ -153,5 +153,10 @@ class EntityMappingQueryModifier {
      * @param variables Variables to project
      * @param queryPart Basic graph patterns to add to the query
      */
-    record QueryModification(List<String> variables, String queryPart) {}
+    record QueryModification(List<QueryVariableMapping> variables, String queryPart) {
+
+        public List<String> variableNames() {
+            return variables.stream().map(QueryVariableMapping::attributeVar).toList();
+        }
+    }
 }

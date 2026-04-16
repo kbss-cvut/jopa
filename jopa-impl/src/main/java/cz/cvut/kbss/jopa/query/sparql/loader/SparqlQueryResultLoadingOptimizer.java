@@ -46,6 +46,8 @@ public class SparqlQueryResultLoadingOptimizer {
 
     private boolean optimizationEnabled;
 
+    private SparqlAssemblyModifier assemblyModifier;
+
     public SparqlQueryResultLoadingOptimizer(TokenStreamSparqlQueryHolder queryHolder, UnitOfWork uow,
                                              ConnectionWrapper connection) {
         this.queryHolder = queryHolder;
@@ -64,22 +66,20 @@ public class SparqlQueryResultLoadingOptimizer {
      * @param descriptor  Descriptor specified for query result loading
      * @param fetchGraph  Optional fetch graph specifying which properties should be loaded
      */
-    public void optimizeQueryAssembly(Class<?> resultClass, Descriptor descriptor, EntityGraph<?> fetchGraph) {
-        switch (resolveOptimizerType(resultClass, descriptor, fetchGraph)) {
-            case TRIPLE_BASED:
+    public void modifyQueryAssembly(Class<?> resultClass, Descriptor descriptor, EntityGraph<?> fetchGraph) {
+        this.assemblyModifier = switch (resolveOptimizerType(resultClass, descriptor, fetchGraph)) {
+            case TRIPLE_BASED -> {
                 LOG.trace("Processing query results with triple-based optimized entity loading.");
-                queryHolder.setAssemblyModifier(new UnboundPredicateObjectSparqlAssemblyModifier());
-                break;
-            case ATTRIBUTE_BASED:
-            case FETCH_GRAPH_BASED: // Intentional fall-through
+                yield new UnboundPredicateObjectSparqlAssemblyModifier();
+            }
+            case ATTRIBUTE_BASED, FETCH_GRAPH_BASED -> {
                 LOG.trace("Processing query results with attribute enumeration-based optimized attribute loading.");
-                queryHolder.setAssemblyModifier(new AttributeEnumeratingSparqlAssemblyModifier(uow.getMetamodel(), uow.getMetamodel()
-                                                                                                                      .entity(resultClass), descriptor, fetchGraph, connection));
-                break;
-            default:
-                // Do nothing
-                break;
-        }
+                yield new AttributeEnumeratingSparqlAssemblyModifier(uow.getMetamodel(), uow.getMetamodel()
+                                                                                            .entity(resultClass), descriptor, fetchGraph, connection);
+            }
+            default -> new NoopSparqlAssemblyModifier();
+        };
+        queryHolder.setAssemblyModifier(assemblyModifier);
     }
 
     private OptimizerType resolveOptimizerType(Class<?> resultClass, Descriptor descriptor, EntityGraph<?> fetchGraph) {
@@ -146,7 +146,7 @@ public class SparqlQueryResultLoadingOptimizer {
         return switch (optimizerType) {
             case TRIPLE_BASED -> new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
             case ATTRIBUTE_BASED, FETCH_GRAPH_BASED ->
-                    new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor, fetchGraph, resolveSubjectVariable());
+                    new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor, fetchGraph, assemblyModifier);
             default ->
                     uow.isEntityType(resultClass) ? new BaseEntityQueryResultLoader<>(uow, resultClass, descriptor) : new NonEntityQueryResultLoader<>(resultClass);
         };
@@ -163,11 +163,6 @@ public class SparqlQueryResultLoadingOptimizer {
             return OptimizerType.ATTRIBUTE_BASED;
         }
         return ot;
-    }
-
-    private String resolveSubjectVariable() {
-        assert !queryHolder.getProjectedQueryParameters().isEmpty();
-        return queryHolder.getProjectedQueryParameters().get(0).getName();
     }
 
     private enum OptimizerType {
