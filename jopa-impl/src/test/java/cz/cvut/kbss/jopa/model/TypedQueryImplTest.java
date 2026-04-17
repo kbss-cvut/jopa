@@ -494,7 +494,7 @@ class TypedQueryImplTest extends QueryTestBase {
         when(resultRow.isBound("stringAttribute")).thenReturn(true);
         when(resultRow.getObject("stringAttribute")).thenReturn(entity.getStringAttribute());
         when(resultRow.isBound("types")).thenReturn(true);
-        when(resultRow.getObject("types")).thenReturn(URI.create(Vocabulary.c_OwlClassA));
+        when(resultRow.getString("types")).thenReturn(Vocabulary.c_OwlClassA);
         when(resultRow.getColumnCount()).thenReturn(3);
         when(uowMock.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(),
                 eq(new AxiomBasedLoadingConfigGroup<>(entity.getUri(), new EntityDescriptor())))).thenReturn(entity);

@@ -12,6 +12,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -49,8 +50,8 @@ class EntityMappingQueryModifier {
      * That is only attributes specified in the graph are included in the query.
      *
      * @param graph      Graph describing what to fetch
-     * @param subjectVar Name of the attributeVar representing the subject of the graph patterns. Will be used to generate
-     *                   the projected attributeVar names
+     * @param subjectVar Name of the attributeVar representing the subject of the graph patterns. Will be used to
+     *                   generate the projected attributeVar names
      * @return Query modification
      */
     QueryModification modify(EntityGraph<?> graph, String subjectVar) {
@@ -63,8 +64,8 @@ class EntityMappingQueryModifier {
      * That is only attributes specified in the subgraph are included in the query.
      *
      * @param graph      Graph describing what to fetch
-     * @param subjectVar Name of the attributeVar representing the subject of the graph patterns. Will be used to generate
-     *                   the projected attributeVar names
+     * @param subjectVar Name of the attributeVar representing the subject of the graph patterns. Will be used to
+     *                   generate the projected attributeVar names
      * @return Query modification
      */
     QueryModification modify(Subgraph<?> graph, String subjectVar) {
@@ -105,15 +106,32 @@ class EntityMappingQueryModifier {
             }
             ctx.ifPresent(uri -> target.append("} "));
         });
-        final String typesVariable = "?" + varName(subjectVarName, TYPES_VAR_NAME);
-        variables.add(new QueryVariableMapping(subjectVarName, varName(subjectVarName, TYPES_VAR_NAME), resultType.getTypes()));
-        final Optional<String> ctx = typesContext();
-        ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
-        attributePatterns.append(subjectVariable).append(" a ").append(typesVariable).append(" . ");
-        ctx.ifPresent(uri -> attributePatterns.append("} "));
+        addTypesPattern(subjectVarName, variables, attributePatterns, subjectVariable);
+        if (variablesToAppend.stream().anyMatch(QueryVariableMapping::canGroupConcat)) {
+            variables.forEach(QueryVariableMapping::preventGroupConcat);
+        }
         variables.addAll(variablesToAppend);
         // PERF: Put OPTIONAL patterns to the end
         return new QueryModification(variables, attributePatterns + optionalAttributesPatterns.toString());
+    }
+
+    private void addTypesPattern(String subjectVarName, List<QueryVariableMapping> variables,
+                                 StringBuilder attributePatterns,
+                                 String subjectVariable) {
+        if (resultType.getTypes() != null) {
+            final String typesVariable = "?" + varName(subjectVarName, TYPES_VAR_NAME);
+            variables.add(new QueryVariableMapping(subjectVarName, varName(subjectVarName, TYPES_VAR_NAME), resultType.getTypes()));
+            final Optional<String> ctx = typesContext();
+            ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
+            attributePatterns.append(subjectVariable).append(" a ").append(typesVariable).append(" . ");
+            ctx.ifPresent(uri -> attributePatterns.append("} "));
+        } else {
+            final Optional<String> ctx = typesContext();
+            ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
+            attributePatterns.append(subjectVariable).append(" a ")
+                             .append(IdentifierTransformer.stringifyIri(resultType.getIRI())).append(" . ");
+            ctx.ifPresent(uri -> attributePatterns.append("} "));
+        }
     }
 
     static String varName(String subjectVar, String attName) {

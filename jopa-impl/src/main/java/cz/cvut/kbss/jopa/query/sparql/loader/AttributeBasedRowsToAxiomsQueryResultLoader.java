@@ -48,6 +48,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Loads query results as axioms and then uses {@link cz.cvut.kbss.jopa.sessions.UnitOfWork} to create the actual entity
@@ -89,7 +90,8 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
     }
 
     AttributeBasedRowsToAxiomsQueryResultLoader(UnitOfWork uow, Class<T> resultType, Descriptor descriptor,
-                                                EntityGraph<T> fetchGraph, SparqlAssemblyModifier queryAssemblyModifier) {
+                                                EntityGraph<T> fetchGraph,
+                                                SparqlAssemblyModifier queryAssemblyModifier) {
         this.uow = uow;
         this.resultType = resultType;
         this.descriptor = descriptor;
@@ -166,8 +168,10 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
         for (QueryVariableMapping mapping : mappings) {
             if (row.isBound(mapping.attributeVar())) {
                 assert row.isBound(mapping.subjectVar());
-                final Axiom<?> ax = new AxiomImpl<>(NamedResource.create(row.getObject(mapping.subjectVar(), URI.class)), attributeToAssertion(mapping.attribute()), new Value<>(row.getObject(mapping.attributeVar())));
-                currentEntityAxioms.add(ax);
+                final NamedResource subject = NamedResource.create(row.getObject(mapping.subjectVar(), URI.class));
+                final Assertion assertion = attributeToAssertion(mapping.attribute());
+                extractValue(row, mapping).map(v -> new AxiomImpl<>(subject, assertion, v))
+                                          .forEach(currentEntityAxioms::add);
             }
         }
     }
@@ -189,6 +193,18 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
             } else {
                 return Assertion.createClassAssertion(false);
             }
+        }
+    }
+
+    private Stream<Value<?>> extractValue(ResultRow row,
+                                          QueryVariableMapping variableMapping) throws OntoDriverException {
+        if (variableMapping.canGroupConcat()) {
+            final String values = row.getString(variableMapping.attributeVar());
+            // This does not handle blank nodes
+            return Stream.of(values.split(AttributeEnumeratingSparqlAssemblyModifier.GROUP_CONCAT_SEPARATOR))
+                         .map(URI::create).map(Value::new);
+        } else {
+            return Stream.of(new Value<>(row.getObject(variableMapping.attributeVar())));
         }
     }
 
