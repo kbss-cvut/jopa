@@ -80,6 +80,7 @@ import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.containsStringIgnoringCase;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -756,5 +757,28 @@ class MetamodelBuilderTest {
 
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "lazyAttribute", fetch = FetchType.LAZY)
         private OWLClassA lazyAttribute;
+    }
+
+    @Test
+    void buildMetamodelIncludesSubtypesOfMappedSuperclassWithInferredAttributeInInferredClasses() {
+        when(finderMock.getEntities()).thenReturn(Set.of(MappedSuperclassWithInferredAttribute.class, SubClassWithInferredParent.class));
+        builder.buildMetamodel(finderMock);
+        assertThat(builder.getInferredClasses(), hasItems(MappedSuperclassWithInferredAttribute.class, SubClassWithInferredParent.class));
+    }
+
+    @TestLocal
+    @MappedSuperclass
+    public static class MappedSuperclassWithInferredAttribute {
+        @Id
+        private URI id;
+
+        @Inferred
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "parentInferredAttribute")
+        private URI parentInferredAttribute;
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "SubClassWithInferredParent")
+    public static class SubClassWithInferredParent extends MappedSuperclassWithInferredAttribute {
     }
 }

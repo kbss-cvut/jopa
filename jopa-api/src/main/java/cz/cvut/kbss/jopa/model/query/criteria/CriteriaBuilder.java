@@ -138,7 +138,7 @@ public interface CriteriaBuilder extends PredicateFactory {
      * @param range Language range expression
      * @return Function call expression
      */
-    Expression<Boolean> langMatches(Expression<String> value, Expression<String> range);
+    Predicate langMatches(Expression<String> value, Expression<String> range);
 
     /**
      * Creates an expression for checking if the specified value matches the specified language range.
@@ -147,7 +147,7 @@ public interface CriteriaBuilder extends PredicateFactory {
      * @param range Language range literal
      * @return Function call expression
      */
-    Expression<Boolean> langMatches(Expression<String> value, String range);
+    Predicate langMatches(Expression<String> value, String range);
 
     /**
      * Create an ordering by the ascending value of the expression.

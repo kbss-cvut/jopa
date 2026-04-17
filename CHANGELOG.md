@@ -1,5 +1,12 @@
 # JOPA - Change Log
 
+### 2.9.4 - 2026-04-17
+
+- Change return type of `CriteriaBuilder.langMatches` to `Predicate` to allow including it in predicate lists.
+- Fix an issue with instances of subclasses of parents containing inferred attributes not being evicted from cache after
+  transaction commit.
+- Dependency updates: RDF4J 5.3.0.
+
 ### 2.9.3 - 2026-03-16
 
 - Fix driver-level transaction not being started when JOPA transaction starts with a query (Bug #426).
@@ -53,8 +60,10 @@
 
 - Support entity classes with subclasses by the entity loading optimizer (Enhancement #357).
 - Support entity loading optimization in query result stream (Enhancement #357).
-- Always resolve the most specific entity classes for instantiation (instead of preferring class exactly matching the requested type).
-- Eagerly generate lazy loading entity proxy classes for entity classes that are actually referenced by attributes with fetchType=LAZY in the model (Enhancement #380).
+- Always resolve the most specific entity classes for instantiation (instead of preferring class exactly matching the
+  requested type).
+- Eagerly generate lazy loading entity proxy classes for entity classes that are actually referenced by attributes with
+  fetchType=LAZY in the model (Enhancement #380).
 - Dependency updates: Jena 5.6.0.
 
 ### 2.6.3 - 2025-10-07

@@ -148,6 +148,18 @@ public class CriteriaQueryTranslateQueryTest {
     }
 
     @Test
+    void translateQuerySupportsLangMatchesInListOfRestrictions() {
+        CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        final List<Predicate> restrictions = List.of(cb.langMatches(root.getAttr("stringAttribute"), "en"));
+        query.select(root).where(restrictions);
+
+        final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+        final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa WHERE LANGMATCHES(owlclassa.stringAttribute, :generatedName0)";
+        assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+    }
+
+    @Test
     void translateQuerySupportsSelectionByIdentifierInParameter() {
         CriteriaQueryImpl<OWLClassM> query = cb.createQuery(OWLClassM.class);
         Root<OWLClassM> root = query.from(OWLClassM.class);

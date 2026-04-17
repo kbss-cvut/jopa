@@ -153,12 +153,12 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     }
 
     @Override
-    public Expression<Boolean> langMatches(Expression<String> value, Expression<String> range) {
-        return new LangMatchesFunction(this, (AbstractExpression<String>) value, (AbstractExpression<String>) range);
+    public Predicate langMatches(Expression<String> value, Expression<String> range) {
+        return new SimplePredicateImpl(new LangMatchesFunction(this, (AbstractExpression<String>) value, (AbstractExpression<String>) range), this);
     }
 
     @Override
-    public Expression<Boolean> langMatches(Expression<String> value, String range) {
+    public Predicate langMatches(Expression<String> value, String range) {
         return langMatches(value, new ExpressionLiteralImpl<>(range, this));
     }
 

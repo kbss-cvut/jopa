@@ -155,16 +155,12 @@ public class MetamodelBuilder {
             fieldProcessor.processField(f);
         }
 
-        if (!type.isAbstract()) {
-            try {
-                type.getIdentifier();
-            } catch (IllegalArgumentException e) {
-                throw new MetamodelInitializationException("Missing identifier field in entity " + cls);
-            }
-        }
-
+        verifyIdentifierPresence(type);
         if (type.getPersistenceType() == Type.PersistenceType.ENTITY) {
             resolveInheritanceType((IdentifiableEntityType<X>) type);
+        }
+        if (supertypes.stream().anyMatch(st -> inferredClasses.contains(st.getJavaType()))) {
+            addInferredClass(cls);
         }
 
         queryProcessor.processClass(cls);
@@ -193,6 +189,16 @@ public class MetamodelBuilder {
             }
         }
         return superTypes;
+    }
+
+    private static <X> void verifyIdentifierPresence(AbstractIdentifiableType<X> type) {
+        if (!type.isAbstract()) {
+            try {
+                type.getIdentifier();
+            } catch (IllegalArgumentException e) {
+                throw new MetamodelInitializationException("Missing identifier field in entity " + type.getJavaType());
+            }
+        }
     }
 
     private static <X> boolean canDeclareInheritanceStrategy(IdentifiableType<X> et) {
