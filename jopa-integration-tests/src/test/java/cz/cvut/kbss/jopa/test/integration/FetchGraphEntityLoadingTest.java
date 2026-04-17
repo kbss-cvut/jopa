@@ -51,6 +51,7 @@ public class FetchGraphEntityLoadingTest extends IntegrationTestBase {
         final Subgraph<OWLClassA> subgraph = fetchGraph.addSubgraph("owlClassA");
         subgraph.addAttributeNodes("stringAttribute");
 
+        // TODO Fails because types of d is no longer selected from query - we need to add the axiom automatically or find a different way
         final List<OWLClassD> result = em.createQuery("SELECT d FROM OWLClassD d", OWLClassD.class)
                                          .setHint(QueryHints.FETCH_GRAPH, fetchGraph)
                                          .getResultList();
@@ -76,13 +77,11 @@ public class FetchGraphEntityLoadingTest extends IntegrationTestBase {
         when(resultRowMock.isBound("x")).thenReturn(true);
         when(resultRowMock.getObject("x", URI.class)).thenReturn(expected.getUri());
         when(resultRowMock.getObject(0, URI.class)).thenReturn(expected.getUri());
-        when(resultRowMock.isBound("x_types")).thenReturn(true);
-        when(resultRowMock.getObject("x_types")).thenReturn(URI.create(Vocabulary.C_OWL_CLASS_D));
         when(resultRowMock.isBound("x_owlClassA")).thenReturn(true);
         when(resultRowMock.getObject("x_owlClassA")).thenReturn(expected.getOwlClassA().getUri());
         when(resultRowMock.getObject("x_owlClassA", URI.class)).thenReturn(expected.getOwlClassA().getUri());
         when(resultRowMock.isBound("x_owlClassA_types")).thenReturn(true);
-        when(resultRowMock.getObject("x_owlClassA_types")).thenReturn(URI.create(Vocabulary.C_OWL_CLASS_A));
+        when(resultRowMock.getString("x_owlClassA_types")).thenReturn(Vocabulary.C_OWL_CLASS_A);
         when(resultRowMock.isBound("x_owlClassA_stringAttribute")).thenReturn(true);
         when(resultRowMock.getObject("x_owlClassA_stringAttribute")).thenReturn(expected.getOwlClassA()
                                                                                         .getStringAttribute());
@@ -143,6 +142,6 @@ public class FetchGraphEntityLoadingTest extends IntegrationTestBase {
         when(resultRowMock.isBound("x_owlClassS_name")).thenReturn(true);
         when(resultRowMock.getObject("x_owlClassS_name")).thenReturn(expected.getOwlClassS().getName());
         when(resultRowMock.isBound("x_owlClassS_types")).thenReturn(true);
-        when(resultRowMock.getObject("x_owlClassS_types")).thenReturn(URI.create(Vocabulary.C_OWL_CLASS_S));
+        when(resultRowMock.getString("x_owlClassS_types")).thenReturn(Vocabulary.C_OWL_CLASS_S);
     }
 }

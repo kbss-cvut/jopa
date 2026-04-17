@@ -58,6 +58,7 @@ import java.util.List;
 public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssemblyModifier {
 
     static final String TYPES_VAR_NAME = "types";
+    static final String GROUP_CONCAT_SEPARATOR = "\u001F";
 
     private final MetamodelImpl metamodel;
 
@@ -102,10 +103,31 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         final EntityMappingQueryModifier.QueryModification mod = queryModifier.modify(fetchGraph, subjectParamName);
         this.variableMapping = mod.variables();
         tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), mod.queryPart());
-        // TODO PERF: Use GROUP_CONCAT to optimize plural attribute projection
-        tokenRewriter.insertAfter(p.getSingleToken(), " " + String.join(" ", mod.variables().stream()
-                                                                                .map(av -> "?" + av.attributeVar())
-                                                                                .toList()));
+        modifyProjection(p, tokenRewriter, queryAttributes, mod);
+    }
+
+    private void modifyProjection(TokenQueryParameter<?> firstProjected, TokenStreamRewriter tokenRewriter,
+                                  QueryAttributes queryAttributes,
+                                  EntityMappingQueryModifier.QueryModification queryMod) {
+        final StringBuilder projection = new StringBuilder();
+        final StringBuilder groupBy = new StringBuilder(" GROUP BY " + firstProjected.getIdentifierAsQueryString());
+        boolean hasGroupConcat = false;
+        for (QueryVariableMapping varMapping : queryMod.variables()) {
+            final String variable = "?" + varMapping.attributeVar();
+            // PERF: GROUP_CONCAT prevents combinatorial blowup of the number of rows when properties have multiple values
+            if (varMapping.canGroupConcat()) {
+                projection.append(" (GROUP_CONCAT(DISTINCT ").append(variable).append("; SEPARATOR='")
+                          .append(GROUP_CONCAT_SEPARATOR).append("') AS ").append(variable).append(')');
+                hasGroupConcat = true;
+            } else {
+                projection.append(' ').append(variable);
+                groupBy.append(' ').append(variable);
+            }
+        }
+        tokenRewriter.insertAfter(firstProjected.getSingleToken(), projection.toString());
+        if (hasGroupConcat) {
+            tokenRewriter.insertAfter(queryAttributes.lastClosingCurlyBraceToken(), groupBy.toString());
+        }
     }
 
     @Override

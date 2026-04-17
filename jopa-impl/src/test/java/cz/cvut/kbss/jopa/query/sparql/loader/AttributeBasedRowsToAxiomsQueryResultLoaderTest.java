@@ -55,6 +55,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -69,6 +70,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -123,23 +125,19 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
     private static List<ResultRow> mockResultRows(OWLClassA instance) throws OntoDriverException {
         final List<String> allTypes = Stream.concat(Stream.of(OWLClassA.getClassIri()), instance.getTypes().stream())
                                             .toList();
-        final List<ResultRow> rows = new ArrayList<>(allTypes.size());
-        for (String type : allTypes) {
-            final ResultRow row = mock(ResultRow.class);
-            when(row.getColumnCount()).thenReturn(3);
-            when(row.getColumnNames()).thenReturn(List.of("x", "x_stringAttribute", "x_types"));
-            when(row.getObject(0, URI.class)).thenReturn(instance.getUri());
-            when(row.isBound("x")).thenReturn(true);
-            when(row.getObject("x", URI.class)).thenReturn(instance.getUri());
-            if (instance.getStringAttribute() != null) {
-                when(row.isBound("x_stringAttribute")).thenReturn(true);
-                when(row.getObject("x_stringAttribute")).thenReturn(instance.getStringAttribute());
-            }
-            when(row.isBound("x_types")).thenReturn(true);
-            when(row.getObject("x_types")).thenReturn(URI.create(type));
-            rows.add(row);
+        final ResultRow row = mock(ResultRow.class);
+        when(row.getColumnCount()).thenReturn(3);
+        when(row.getColumnNames()).thenReturn(List.of("x", "x_stringAttribute", "x_types"));
+        when(row.getObject(0, URI.class)).thenReturn(instance.getUri());
+        when(row.isBound("x")).thenReturn(true);
+        when(row.getObject("x", URI.class)).thenReturn(instance.getUri());
+        if (instance.getStringAttribute() != null) {
+            when(row.isBound("x_stringAttribute")).thenReturn(true);
+            when(row.getObject("x_stringAttribute")).thenReturn(instance.getStringAttribute());
         }
-        return rows;
+        when(row.isBound("x_types")).thenReturn(true);
+        when(row.getString("x_types")).thenReturn(String.join(AttributeEnumeratingSparqlAssemblyModifier.GROUP_CONCAT_SEPARATOR, allTypes));
+        return List.of(row);
     }
 
     @Test
@@ -164,10 +162,10 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
 
     private void mockOwlClassAProjectedVariables(QueryResultLoader<OWLClassA> loader) {
         final AttributeEnumeratingSparqlAssemblyModifier modifier = mock(AttributeEnumeratingSparqlAssemblyModifier.class);
-        when(modifier.getVariableMapping()).thenReturn(List.of(
+        doReturn(List.of(
                 new QueryVariableMapping("x", "x_stringAttribute", metamodelMocks.forOwlClassA().stringAttribute()),
                 new QueryVariableMapping("x", "x_types", metamodelMocks.forOwlClassA().typesSpec())
-        ));
+        )).when(modifier).getVariableMapping();
         loader.visit(modifier);
     }
 
@@ -247,13 +245,13 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
 
     private void mockOwlClassDProjectedVariable(QueryResultLoader<OWLClassD> loader) {
         final AttributeEnumeratingSparqlAssemblyModifier modifier = mock(AttributeEnumeratingSparqlAssemblyModifier.class);
-        when(modifier.getVariableMapping()).thenReturn(List.of(
+        doReturn(List.of(
                 new QueryVariableMapping("x", "x_types", null),
                 new QueryVariableMapping("x", "x_owlClassA", metamodelMocks.forOwlClassD().owlClassAAtt()),
                 new QueryVariableMapping("x_owlClassA", "x_owlClassA_stringAttribute", metamodelMocks.forOwlClassA()
                                                                                                      .stringAttribute()),
                 new QueryVariableMapping("x_owlClassA", "x_owlClassA_types", metamodelMocks.forOwlClassA().typesSpec())
-        ));
+        )).when(modifier).getVariableMapping();
         loader.visit(modifier);
     }
 
@@ -269,16 +267,53 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
             when(row.isBound("x")).thenReturn(true);
             when(row.getObject("x", URI.class)).thenReturn(instance.getUri());
             when(row.isBound("x_types")).thenReturn(true);
-            when(row.getObject("x_types")).thenReturn(URI.create(Vocabulary.c_OwlClassD));
+            when(row.getString("x_types")).thenReturn(Vocabulary.c_OwlClassD);
             when(row.isBound("x_owlClassA")).thenReturn(true);
             when(row.getObject("x_owlClassA")).thenReturn(instance.getOwlClassA().getUri());
             when(row.getObject("x_owlClassA", URI.class)).thenReturn(instance.getOwlClassA().getUri());
             when(row.isBound("x_owlClassA_stringAttribute")).thenReturn(true);
             when(row.getObject("x_owlClassA_stringAttribute")).thenReturn(instance.getOwlClassA().getStringAttribute());
             when(row.isBound("x_owlClassA_types")).thenReturn(true);
-            when(row.getObject("x_owlClassA_types")).thenReturn(URI.create(type));
+            when(row.getString("x_owlClassA_types")).thenReturn(type);
             rows.add(row);
         }
         return rows;
     }
+
+    @Test
+    void loadResultSupportsGroupConcatenatedTypes() throws Exception {
+        final EntityGraph<OWLClassA> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassA()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("stringAttribute");
+        final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut = new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, fetchGraph);
+        final OWLClassA instance = Generators.generateOwlClassAInstance();
+        final ResultRow row = mock(ResultRow.class);
+        when(row.getColumnCount()).thenReturn(3);
+        when(row.getColumnNames()).thenReturn(List.of("x", "x_stringAttribute", "x_types"));
+        when(row.getObject(0, URI.class)).thenReturn(instance.getUri());
+        when(row.isBound("x")).thenReturn(true);
+        when(row.getObject("x", URI.class)).thenReturn(instance.getUri());
+        when(row.isBound("x_stringAttribute")).thenReturn(true);
+        when(row.getObject("x_stringAttribute")).thenReturn(instance.getStringAttribute());
+        when(row.isBound("x_types")).thenReturn(true);
+        final Stream<String> aTypes = Stream.concat(Stream.of(Vocabulary.c_OwlClassA), instance.getTypes().stream());
+        when(row.getString("x_types")).thenReturn(aTypes.collect(Collectors.joining(AttributeEnumeratingSparqlAssemblyModifier.GROUP_CONCAT_SEPARATOR)));
+        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
+
+        final Optional<OWLClassA> intermediate = sut.loadResult(row);
+        assertFalse(intermediate.isPresent());
+        final Optional<OWLClassA> result = sut.loadLastPending();
+        assertTrue(result.isPresent());
+        final ArgumentCaptor<Collection<Axiom<?>>> captor = ArgumentCaptor.forClass(Collection.class);
+        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), captor.capture(), any(AxiomBasedLoadingConfigGroup.class));
+        captor.getValue().forEach(ax -> assertEquals(instance.getUri(), ax.getSubject().getIdentifier()));
+        instance.getTypes().forEach(type -> assertTrue(captor.getValue().stream()
+                                                             .anyMatch(ax -> ax.getValue().stringValue()
+                                                                               .equals(type))));
+        assertTrue(captor.getValue().stream()
+                         .anyMatch(ax -> ax.getValue().stringValue().equals(Vocabulary.c_OwlClassA)));
+        assertTrue(captor.getValue().stream()
+                         .anyMatch(ax -> ax.getValue().stringValue().equals(instance.getStringAttribute())));
+    }
+
 }
