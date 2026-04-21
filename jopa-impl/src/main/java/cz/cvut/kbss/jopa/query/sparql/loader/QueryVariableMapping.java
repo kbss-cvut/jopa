@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public final class QueryVariableMapping {
     private final String subjectVar;
-    private final String attributeVar;
+    private String attributeVar;
     private final FieldSpecification<?, ?> attribute;
 
     private boolean canGroupConcat;
@@ -21,7 +21,7 @@ public final class QueryVariableMapping {
     }
 
     private boolean resolveCanGroupConcat() {
-        return isPluralAssociation() || isTypes();
+        return isPluralAssociation() || attribute instanceof TypesSpecification<?, ?>;
     }
 
     public boolean isPluralAssociation() {
@@ -35,6 +35,8 @@ public final class QueryVariableMapping {
     public String subjectVar() {return subjectVar;}
 
     public String attributeVar() {return attributeVar;}
+
+    public void setAttributeVar(String attributeVar) {this.attributeVar = attributeVar;}
 
     public FieldSpecification<?, ?> attribute() {return attribute;}
 

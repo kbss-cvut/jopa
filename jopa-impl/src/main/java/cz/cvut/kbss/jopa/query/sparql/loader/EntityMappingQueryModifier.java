@@ -118,18 +118,19 @@ class EntityMappingQueryModifier {
     private void addTypesPattern(String subjectVarName, List<QueryVariableMapping> variables,
                                  StringBuilder attributePatterns,
                                  String subjectVariable) {
+        final String typesVariable = "?" + varName(subjectVarName, TYPES_VAR_NAME);
+        variables.add(new QueryVariableMapping(subjectVarName, varName(subjectVarName, TYPES_VAR_NAME), resultType.getTypes()));
+        final Optional<String> ctx = typesContext();
         if (resultType.getTypes() != null) {
-            final String typesVariable = "?" + varName(subjectVarName, TYPES_VAR_NAME);
-            variables.add(new QueryVariableMapping(subjectVarName, varName(subjectVarName, TYPES_VAR_NAME), resultType.getTypes()));
-            final Optional<String> ctx = typesContext();
             ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
             attributePatterns.append(subjectVariable).append(" a ").append(typesVariable).append(" . ");
             ctx.ifPresent(uri -> attributePatterns.append("} "));
         } else {
-            final Optional<String> ctx = typesContext();
             ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
+            final String typeIri = IdentifierTransformer.stringifyIri(resultType.getIRI());
             attributePatterns.append(subjectVariable).append(" a ")
-                             .append(IdentifierTransformer.stringifyIri(resultType.getIRI())).append(" . ");
+                             .append(typeIri).append(" . ");
+            attributePatterns.append("BIND (").append(typeIri).append(" AS ").append(typesVariable).append(") ");
             ctx.ifPresent(uri -> attributePatterns.append("} "));
         }
     }
