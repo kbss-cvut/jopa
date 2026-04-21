@@ -117,7 +117,8 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
             // PERF: GROUP_CONCAT prevents combinatorial blowup of the number of rows when properties have multiple values
             if (varMapping.canGroupConcat()) {
                 projection.append(" (GROUP_CONCAT(DISTINCT ").append(variable).append("; SEPARATOR='")
-                          .append(GROUP_CONCAT_SEPARATOR).append("') AS ").append(variable).append(')');
+                          .append(GROUP_CONCAT_SEPARATOR).append("') AS ").append(variable).append("_gc)");
+                varMapping.setAttributeVar(varMapping.attributeVar() + "_gc");
                 hasGroupConcat = true;
             } else {
                 projection.append(' ').append(variable);
@@ -127,6 +128,10 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         tokenRewriter.insertAfter(firstProjected.getSingleToken(), projection.toString());
         if (hasGroupConcat) {
             tokenRewriter.insertAfter(queryAttributes.lastClosingCurlyBraceToken(), groupBy.toString());
+            if (!queryAttributes.hasOrderBy()) {
+                // Add ordering to ensure stable results with rows with the same subject in sequence
+                tokenRewriter.insertAfter(queryAttributes.lastClosingCurlyBraceToken(), " ORDER BY " + firstProjected.getIdentifierAsQueryString());
+            }
         }
     }
 

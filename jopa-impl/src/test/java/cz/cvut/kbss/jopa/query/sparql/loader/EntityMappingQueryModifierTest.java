@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassE;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.EntityGraph;
@@ -18,12 +19,15 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.util.List;
+import java.util.Optional;
 
 import static cz.cvut.kbss.jopa.utils.IdentifierTransformer.stringifyIri;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -49,7 +53,7 @@ class EntityMappingQueryModifierTest {
                                                                                       .entityType(), metamodel);
         fetchGraph.addAttributeNodes("owlClassA");
         final EntityMappingQueryModifier.QueryModification result = sut.modify(fetchGraph, "x");
-        assertEquals(List.of("x_owlClassA"), result.variableNames());
+        assertEquals(List.of("x_owlClassA", "x_types"), result.variableNames());
         assertThat(result.queryPart(), containsString("OPTIONAL { ?x " + stringifyIri(Vocabulary.P_HAS_A) + " ?x_owlClassA . }"));
         assertThat(result.queryPart(), containsString("?x a " + stringifyIri(Vocabulary.c_OwlClassD) + " ."));
     }
@@ -69,5 +73,35 @@ class EntityMappingQueryModifierTest {
         assertThat(result.queryPart(), containsString("OPTIONAL { ?x " + stringifyIri(Vocabulary.P_HAS_A) + " ?x_owlClassA . " +
                 "?x_owlClassA a ?x_owlClassA_types . " +
                 "OPTIONAL { ?x_owlClassA " + stringifyIri(Vocabulary.p_a_stringAttribute) + " ?x_owlClassA_stringAttribute . } }"));
+    }
+
+    @Test
+    void modifyGeneratesExactTypeTriplePatternWhenEntityClassDoesNotHaveTypesField() {
+        final EntityMappingQueryModifier sut = new EntityMappingQueryModifier(metamodel, metamodelMocks.forOwlClassE()
+                                                                                                       .entityType(),
+                new EntityDescriptor(), false);
+        final EntityGraph<OWLClassE> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassE()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("stringAttribute");
+        final EntityMappingQueryModifier.QueryModification result = sut.modify(fetchGraph, "x");
+        assertThat(result.queryPart(), containsString("?x a " + stringifyIri(Vocabulary.c_OwlClassE) + " ."));
+    }
+
+    @Test
+    void modifyBindsEntityTypeAndGeneratesQueryVariableMappingForItWhenEntityClassHasNoTypesField() {
+        final EntityMappingQueryModifier sut = new EntityMappingQueryModifier(metamodel, metamodelMocks.forOwlClassE()
+                                                                                                       .entityType(),
+                new EntityDescriptor(), false);
+        final EntityGraph<OWLClassE> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassE()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("stringAttribute");
+        final EntityMappingQueryModifier.QueryModification result = sut.modify(fetchGraph, "x");
+        assertEquals(List.of("x_stringAttribute", "x_types"), result.variableNames());
+        final Optional<QueryVariableMapping> typesMapping = result.variables().stream()
+                                                                  .filter(QueryVariableMapping::isTypes)
+                                                                  .findFirst();
+        assertTrue(typesMapping.isPresent());
+        assertNull(typesMapping.get().attribute());
+        assertThat(result.queryPart(), containsString("BIND (" + stringifyIri(Vocabulary.c_OwlClassE) + " AS ?x_types)"));
     }
 }

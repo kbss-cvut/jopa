@@ -128,7 +128,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
                 mappings.add(new QueryVariableMapping(subjectVar, projectedVar, atts.get(projectedVar.substring(subjectVar.length() + 1))));
             } else if (projectedVar.endsWith(AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_NAME)) {
                 // ?x_types or ?types
-                mappings.add(new QueryVariableMapping(subjectVar, projectedVar, null));
+                mappings.add(new QueryVariableMapping(subjectVar, projectedVar, entityType.getTypes()));
             } else {
                 LOG.warn("Variable '{}' projected from the query cannot be mapped to any attributes in entity class {}.", projectedVar, entityType);
             }

@@ -223,7 +223,7 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
             holder.setAssemblyModifier(sut);
 
             final String result = holder.assembleQuery();
-            assertThat(result, containsString("GROUP_CONCAT(DISTINCT ?x_owlClassA; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_owlClassA"));
+            assertThat(result, containsString("GROUP_CONCAT(DISTINCT ?x_owlClassA; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_owlClassA_gc"));
             assertThat(result, containsString("GROUP BY ?x"));
         } finally {
             // Reset
@@ -239,7 +239,7 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, containsString("GROUP_CONCAT(DISTINCT ?x_types; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_types"));
+        assertThat(result, containsString("GROUP_CONCAT(DISTINCT ?x_types; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_types_gc"));
         assertThat(result, containsString("GROUP BY ?x ?x_stringAttribute"));
     }
 
@@ -254,8 +254,8 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, not(containsString("GROUP_CONCAT(DISTINCT ?x_owlClassA; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_owlClassA")));
-        assertThat(result, containsString("GROUP_CONCAT(DISTINCT ?x_owlClassA_types; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_owlClassA_types"));
+        assertThat(result, not(containsString("GROUP_CONCAT(DISTINCT ?x_owlClassA; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_owlClassA_gc")));
+        assertThat(result, containsString("GROUP_CONCAT(DISTINCT ?x_owlClassA_types; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_owlClassA_types_gc"));
         assertThat(result, containsString("GROUP BY ?x ?x_owlClassA"));
     }
 

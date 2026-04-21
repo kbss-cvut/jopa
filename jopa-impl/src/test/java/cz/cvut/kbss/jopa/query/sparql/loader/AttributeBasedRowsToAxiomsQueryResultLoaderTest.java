@@ -267,7 +267,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
             when(row.isBound("x")).thenReturn(true);
             when(row.getObject("x", URI.class)).thenReturn(instance.getUri());
             when(row.isBound("x_types")).thenReturn(true);
-            when(row.getString("x_types")).thenReturn(Vocabulary.c_OwlClassD);
+            when(row.getObject("x_types")).thenReturn(URI.create(Vocabulary.c_OwlClassD));
             when(row.isBound("x_owlClassA")).thenReturn(true);
             when(row.getObject("x_owlClassA")).thenReturn(instance.getOwlClassA().getUri());
             when(row.getObject("x_owlClassA", URI.class)).thenReturn(instance.getOwlClassA().getUri());
