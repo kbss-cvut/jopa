@@ -80,6 +80,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -846,5 +847,24 @@ class EntityConstructorTest {
         final LoadStateDescriptor<OWLClassD> loadStates = loadStateRegistry.get(result);
         assertNotNull(loadStates);
         assertEquals(LoadState.LOADED, loadStates.isLoaded(mocks.forOwlClassD().owlClassAAtt()));
+    }
+
+    @Test
+    void reconstructEntityValidatesIntegrityConstraintsOnlyOnLoadedAttributes() {
+        final OWLClassA aInstance = Generators.generateOwlClassAInstance();
+        final List<Axiom<?>> axioms = List.of(
+                getClassAssertionAxiomForType(ID, OWLClassL.getClassIri()),
+                new AxiomImpl<>(NamedResource.create(ID),
+                        Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false),
+                        new Value<>(NamedResource.create(aInstance.getUri())))
+        );
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(aInstance.getUri()), any())).thenReturn(aInstance);
+        final EntityGraph<OWLClassL> fetchGraph = new EntityGraphImpl<>(mocks.forOwlClassL()
+                                                                             .entityType(), uowMock.getMetamodel());
+        fetchGraph.addAttributeNodes("set");
+        final EntityConstructor.EntityConstructionParameters<OWLClassL> constructionParams = new EntityConstructor.EntityConstructionParameters<>(ID, mocks.forOwlClassL()
+                                                                                                                                                           .entityType(), descriptor, new FetchGraphWrapper(fetchGraph), false);
+        assertDoesNotThrow(() -> constructor.reconstructEntity(constructionParams, axioms));
+
     }
 }
