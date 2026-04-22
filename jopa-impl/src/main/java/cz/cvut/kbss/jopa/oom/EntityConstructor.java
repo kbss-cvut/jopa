@@ -56,7 +56,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static cz.cvut.kbss.jopa.model.metamodel.AbstractQueryAttribute.THIS_PARAMETER;
-import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.isNotLazy;
 
 class EntityConstructor {
 
@@ -96,7 +95,7 @@ class EntityConstructor {
         populateAttributes(instance, constructionParams, axioms, loadStateDescriptor);
         populateQueryAttributes(instance, et, loadStateDescriptor);
         processEmptyAttributes(instance, et, loadStateDescriptor);
-        validateIntegrityConstraints(instance, et);
+        validateIntegrityConstraints(instance, et, loadStateDescriptor);
 
         return instance;
     }
@@ -300,11 +299,13 @@ class EntityConstructor {
           });
     }
 
-    private <T> void validateIntegrityConstraints(T entity, EntityType<T> et) {
+    private <T> void validateIntegrityConstraints(T entity, EntityType<T> et,
+                                                  LoadStateDescriptor<T> loadStateDescriptor) {
         if (shouldSkipICValidationOnLoad()) {
             return;
         }
-        IntegrityConstraintsValidator.getValidator().validate(entity, et, isNotLazy());
+        IntegrityConstraintsValidator.getValidator()
+                                     .validate(entity, et, fs -> loadStateDescriptor.isLoaded(fs) == LoadState.LOADED);
     }
 
     private boolean shouldSkipICValidationOnLoad() {
