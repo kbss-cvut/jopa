@@ -327,11 +327,21 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * Gets the load status of the specified attribute on the specified entity.
      *
      * @param entity        Entity instance
-     * @param attributeName Attribute whose load status is to be determined
+     * @param attributeName Name of the attribute whose load status is to be determined
      * @return Attribute load status
      * @see cz.cvut.kbss.jopa.model.ProviderUtil#isLoadedWithoutReference(Object, String)
      */
     LoadState isLoaded(Object entity, String attributeName);
+
+    /**
+     * Gets the load status of the specified attribute on the specified entity.
+     *
+     * @param entity    Entity instance
+     * @param fieldSpec Attribute whose load status is to be determined
+     * @return Attribute load status
+     * @see cz.cvut.kbss.jopa.model.ProviderUtil#isLoadedWithoutReference(Object, String)
+     */
+    LoadState isLoaded(Object entity, FieldSpecification<?, ?> fieldSpec);
 
     /**
      * Gets the load status of the specified entity.
