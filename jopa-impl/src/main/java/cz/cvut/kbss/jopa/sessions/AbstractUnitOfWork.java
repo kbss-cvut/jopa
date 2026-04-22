@@ -955,7 +955,15 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     public LoadState isLoaded(Object entity, String attributeName) {
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
-        return loadStateRegistry.contains(entity) ? loadStateRegistry.get(entity).isLoaded(fs) : LoadState.UNKNOWN;
+        return isLoaded(entity, fs);
+    }
+
+    @Override
+    public LoadState isLoaded(Object entity, FieldSpecification<?, ?> fieldSpec) {
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(fieldSpec);
+        return loadStateRegistry.contains(entity) ? loadStateRegistry.get(entity)
+                                                                     .isLoaded(fieldSpec) : LoadState.UNKNOWN;
     }
 
     @Override

@@ -73,7 +73,7 @@ public class SparqlQueryResultLoadingOptimizer {
                 yield new UnboundPredicateObjectSparqlAssemblyModifier();
             }
             case ATTRIBUTE_BASED, FETCH_GRAPH_BASED -> {
-                LOG.trace("Processing query results with attribute enumeration-based optimized attribute loading.");
+                LOG.trace("Processing query results with attribute enumerating optimized entity loading.");
                 yield new AttributeEnumeratingSparqlAssemblyModifier(uow.getMetamodel(), uow.getMetamodel()
                                                                                             .entity(resultClass), descriptor, fetchGraph, connection);
             }
