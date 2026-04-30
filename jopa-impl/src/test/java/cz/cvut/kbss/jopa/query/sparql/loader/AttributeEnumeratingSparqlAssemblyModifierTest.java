@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
+import cz.cvut.kbss.jopa.environment.OWLClassP;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
@@ -28,7 +29,6 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
 import cz.cvut.kbss.jopa.query.sparql.Sparql11QueryParser;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
@@ -210,26 +210,18 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
     }
 
     @Test
-    void modifyUsesGroupConcatForPluralAssociationAttributesToReduceRowCountBlowup() {
-        // Just for this test
-        when(metamodelMocks.forOwlClassA().entityType().getTypes()).thenReturn(null);
-        try {
-            final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
-            final EntityGraph<OWLClassJ> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassJ()
-                                                                                          .entityType(), metamodel);
-            fetchGraph.addAttributeNodes("owlClassA");
-            final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassJ()
-                                                                                           .entityType(), new EntityDescriptor(), fetchGraph);
-            holder.setAssemblyModifier(sut);
+    void modifyUsesGroupConcatForPluralAssociationAttributesWithPlainIdentifierValueToReduceRowCountBlowup() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+        final EntityGraph<OWLClassP> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassP()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("individualUrls");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassP()
+                                                                                       .entityType(), new EntityDescriptor(), fetchGraph);
+        holder.setAssemblyModifier(sut);
 
-            final String result = holder.assembleQuery();
-            assertThat(result, containsString("GROUP_CONCAT(DISTINCT ?x_owlClassA; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_owlClassA_gc"));
-            assertThat(result, containsString("GROUP BY ?x"));
-        } finally {
-            // Reset
-            when(metamodelMocks.forOwlClassA().entityType()
-                               .getTypes()).thenReturn((TypesSpecification) metamodelMocks.forOwlClassA().typesSpec());
-        }
+        final String result = holder.assembleQuery();
+        assertThat(result, containsString("GROUP_CONCAT(DISTINCT ?x_individualUrls; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_individualUrls_gc"));
+        assertThat(result, containsString("GROUP BY ?x"));
     }
 
     @Test

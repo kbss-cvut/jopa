@@ -1,8 +1,9 @@
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
 import java.util.Objects;
 
@@ -21,11 +22,15 @@ public final class QueryVariableMapping {
     }
 
     private boolean resolveCanGroupConcat() {
-        return isPluralAssociation() || attribute instanceof TypesSpecification<?, ?>;
+        return isPluralPlainIdentifierAttribute() || attribute instanceof TypesSpecification<?, ?>;
     }
 
-    public boolean isPluralAssociation() {
-        return attribute != null && attribute.isMappedAttribute() && attribute.isCollection() && ((Attribute<?, ?>) attribute).isAssociation();
+    public boolean isPluralPlainIdentifierAttribute() {
+        if (attribute == null || !attribute.isMappedAttribute() || !attribute.isCollection()) {
+            return false;
+        }
+        final PluralAttribute<?, ?, ?> att = (PluralAttribute<?, ?, ?>) attribute;
+        return att.isAssociation() && IdentifierTransformer.isValidIdentifierType(att.getBindableJavaType());
     }
 
     public boolean isTypes() {
