@@ -81,7 +81,7 @@ public class PrefixMap {
             result.putAll(resolveOntologyPrefixes(o, config.getOntologyPrefixProperty(), config.getRemotePrefixResolver()));
         });
         result.putAll(resolvePrefixesFromPrefixMappingFile(config.getPrefixMappingFile()));
-        LOG.debug("Resolved prefix map: {}", result);
+        LOG.info("Resolved prefix map: {}", result);
         return result;
     }
 
@@ -119,7 +119,7 @@ public class PrefixMap {
         }
         final File file = new File(mappingFilePath);
         try {
-            LOG.debug("Loading prefix mapping from file '{}'.", file);
+            LOG.info("Loading prefix mapping from file '{}'.", file);
             final List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
             final Map<String, String> prefixMap = new HashMap<>(lines.size());
             lines.stream().filter(line -> !line.isBlank()).forEach(line -> {
