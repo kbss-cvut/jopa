@@ -25,7 +25,6 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.Subgraph;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -70,7 +69,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -99,14 +97,12 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
     @Test
     void loadEntityInstanceReadsRowIntoAxiomsAndLoadsEntityFromThem() throws OntoDriverException {
         final EntityGraph<OWLClassA> fetchGraph = createFetchGraph();
-        final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut =
-                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, fetchGraph);
+        final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut = createOwlClassASut(fetchGraph);
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setTypes(Set.of());
         final List<ResultRow> resultRows = Stream.concat(mockResultRows(instance).stream(), mockResultRows(
                                                          Generators.generateOwlClassAInstance()).stream())
                                                  .toList();
-        mockOwlClassAProjectedVariables(sut);
         when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
         final Optional<OWLClassA> result = resultRows.stream().map(sut::loadResult).filter(Optional::isPresent)
                                                      .map(Optional::get).findFirst();
@@ -143,12 +139,10 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
     @Test
     void loadLastPendingLoadsLastPendingEntity() throws Exception {
         final EntityGraph<OWLClassA> fetchGraph = createFetchGraph();
-        final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut =
-                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, fetchGraph);
+        final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut = createOwlClassASut(fetchGraph);
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setTypes(Set.of());
         final List<ResultRow> resultRows = mockResultRows(instance);
-        mockOwlClassAProjectedVariables(sut);
         when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
         resultRows.forEach(row -> {
             final Optional<OWLClassA> opt = sut.loadResult(row);
@@ -160,24 +154,21 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup<>(instance.getUri(), descriptor, fetchGraph)));
     }
 
-    private void mockOwlClassAProjectedVariables(QueryResultLoader<OWLClassA> loader) {
-        final AttributeEnumeratingSparqlAssemblyModifier modifier = mock(AttributeEnumeratingSparqlAssemblyModifier.class);
-        doReturn(List.of(
+    private AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> createOwlClassASut(EntityGraph<OWLClassA> fetchGraph) {
+        final List<QueryVariableMapping> mappings = List.of(
                 new QueryVariableMapping("x", "x_stringAttribute", metamodelMocks.forOwlClassA().stringAttribute()),
                 new QueryVariableMapping("x", "x_types", metamodelMocks.forOwlClassA().typesSpec())
-        )).when(modifier).getVariableMapping();
-        loader.visit(modifier);
+        );
+        return new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, fetchGraph, () -> mappings);
     }
 
     @Test
     void loadResultDoesNotDuplicateAlreadyPresentAttributes() throws Exception {
         final EntityGraph<OWLClassA> fetchGraph = createFetchGraph();
-        final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut =
-                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, fetchGraph);
+        final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut = createOwlClassASut(fetchGraph);
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setTypes(Set.of());
         final List<ResultRow> resultRows = mockResultRows(instance);
-        mockOwlClassAProjectedVariables(sut);
         when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
         resultRows.forEach(row -> {
             final Optional<OWLClassA> opt = sut.loadResult(row);
@@ -193,13 +184,11 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
 
     @Test
     void loadResultHandlesUnboundAttributeVariables() throws Exception {
-        final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut =
-                new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor, createFetchGraph());
+        final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> sut = createOwlClassASut(createFetchGraph());
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         instance.setTypes(Set.of());
         instance.setStringAttribute(null);
         final List<ResultRow> resultRows = mockResultRows(instance);
-        mockOwlClassAProjectedVariables(sut);
         when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
         resultRows.forEach(row -> {
             final Optional<OWLClassA> opt = sut.loadResult(row);
@@ -216,11 +205,18 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         final EntityGraph<OWLClassD> fetchGraph = new EntityGraphImpl<>(metamodel.entity(OWLClassD.class), metamodel);
         final Subgraph<OWLClassA> sg = fetchGraph.addSubgraph("owlClassA");
         sg.addAttributeNodes("stringAttribute");
-        final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassD> sut = new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassD.class, descriptor, fetchGraph);
+        final List<QueryVariableMapping> owlClassDMappings = List.of(
+                new QueryVariableMapping("x", "x_types", null),
+                new QueryVariableMapping("x", "x_owlClassA", metamodelMocks.forOwlClassD().owlClassAAtt()),
+                new QueryVariableMapping("x_owlClassA", "x_owlClassA_stringAttribute", metamodelMocks.forOwlClassA()
+                                                                                                     .stringAttribute()),
+                new QueryVariableMapping("x_owlClassA", "x_owlClassA_types", metamodelMocks.forOwlClassA().typesSpec())
+        );
+        final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassD> sut = new AttributeBasedRowsToAxiomsQueryResultLoader<>(
+                uow, OWLClassD.class, descriptor, fetchGraph, () -> owlClassDMappings);
         final OWLClassD instance = new OWLClassD(Generators.createIndividualIdentifier());
         instance.setOwlClassA(Generators.generateOwlClassAInstance());
         final List<ResultRow> resultRows = mockResultRows(instance);
-        mockOwlClassDProjectedVariable(sut);
         resultRows.forEach(row -> {
             final Optional<OWLClassD> opt = sut.loadResult(row);
             assertFalse(opt.isPresent());
@@ -241,18 +237,6 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         instance.getOwlClassA().getTypes()
                 .forEach(t -> assertThat(captor.getValue(), hasItem(new AxiomImpl<>(NamedResource.create(instance.getOwlClassA()
                                                                                                                  .getUri()), Assertion.createClassAssertion(false), new Value<>(URI.create(t))))));
-    }
-
-    private void mockOwlClassDProjectedVariable(QueryResultLoader<OWLClassD> loader) {
-        final AttributeEnumeratingSparqlAssemblyModifier modifier = mock(AttributeEnumeratingSparqlAssemblyModifier.class);
-        doReturn(List.of(
-                new QueryVariableMapping("x", "x_types", null),
-                new QueryVariableMapping("x", "x_owlClassA", metamodelMocks.forOwlClassD().owlClassAAtt()),
-                new QueryVariableMapping("x_owlClassA", "x_owlClassA_stringAttribute", metamodelMocks.forOwlClassA()
-                                                                                                     .stringAttribute()),
-                new QueryVariableMapping("x_owlClassA", "x_owlClassA_types", metamodelMocks.forOwlClassA().typesSpec())
-        )).when(modifier).getVariableMapping();
-        loader.visit(modifier);
     }
 
     private static List<ResultRow> mockResultRows(OWLClassD instance) throws Exception {

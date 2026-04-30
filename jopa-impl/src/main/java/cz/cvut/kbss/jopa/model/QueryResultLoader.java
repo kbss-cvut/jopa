@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.query.sparql.loader.SparqlAssemblyModifierVisitor;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
@@ -28,7 +27,7 @@ import java.util.Optional;
  *
  * @param <T> Type of the result
  */
-public interface QueryResultLoader<T> extends SparqlAssemblyModifierVisitor {
+public interface QueryResultLoader<T> {
 
     default void init(ResultSet resultSet) {
         // Do nothing by default

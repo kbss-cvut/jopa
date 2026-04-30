@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.query.QueryHolder;
+import cz.cvut.kbss.jopa.query.sparql.loader.QueryResultLoadingStrategy;
 import cz.cvut.kbss.jopa.query.sparql.loader.SparqlQueryResultLoadingOptimizer;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.ontodriver.ResultSet;
@@ -69,8 +70,8 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     private List<X> getResultListImpl() throws OntoDriverException {
         final List<X> res = new ArrayList<>();
         final EntityGraph<X> fetchGraph = getFetchGraph();
-        queryResultLoadingOptimizer.modifyQueryAssembly(resultType, descriptor, fetchGraph);
-        final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor, fetchGraph);
+        final QueryResultLoadingStrategy<X> strategy = queryResultLoadingOptimizer.chooseStrategy(resultType, descriptor, fetchGraph);
+        final QueryResultLoader<X> resultLoader = strategy.createLoader();
 
         try (final Statement stmt = initQueryStatement()) {
             final ResultSet rs = stmt.executeQuery(query.assembleQuery());
@@ -122,8 +123,8 @@ public class TypedQueryImpl<X> extends AbstractQuery implements TypedQuery<X> {
     @Override
     public Stream<X> getResultStream() {
         final EntityGraph<X> fetchGraph = getFetchGraph();
-        queryResultLoadingOptimizer.modifyQueryAssembly(resultType, descriptor, fetchGraph);
-        final QueryResultLoader<X> resultLoader = queryResultLoadingOptimizer.getQueryResultLoader(resultType, descriptor, fetchGraph);
+        final QueryResultLoadingStrategy<X> strategy = queryResultLoadingOptimizer.chooseStrategy(resultType, descriptor, fetchGraph);
+        final QueryResultLoader<X> resultLoader = strategy.createLoader();
         try {
             return executeQueryForStream(resultLoader);
         } catch (OntoDriverException e) {

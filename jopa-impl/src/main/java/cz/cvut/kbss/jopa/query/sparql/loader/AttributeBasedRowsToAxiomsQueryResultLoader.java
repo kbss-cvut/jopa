@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,7 +78,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
     private final Descriptor descriptor;
     private final IdentifiableEntityType<T> entityType;
     private final EntityGraph<T> fetchGraph;
-    private final SparqlAssemblyModifier queryAssemblyModifier;
+    private final Supplier<List<QueryVariableMapping>> mappingSupplier;
 
     private List<QueryVariableMapping> mappings;
 
@@ -86,30 +87,29 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
 
     AttributeBasedRowsToAxiomsQueryResultLoader(UnitOfWork uow, Class<T> resultType, Descriptor descriptor,
                                                 EntityGraph<T> fetchGraph) {
-        this(uow, resultType, descriptor, fetchGraph, new NoopSparqlAssemblyModifier());
+        this(uow, resultType, descriptor, fetchGraph, () -> null);
     }
 
     AttributeBasedRowsToAxiomsQueryResultLoader(UnitOfWork uow, Class<T> resultType, Descriptor descriptor,
                                                 EntityGraph<T> fetchGraph,
-                                                SparqlAssemblyModifier queryAssemblyModifier) {
+                                                Supplier<List<QueryVariableMapping>> mappingSupplier) {
         this.uow = uow;
         this.resultType = resultType;
         this.descriptor = descriptor;
-        this.queryAssemblyModifier = queryAssemblyModifier;
+        this.mappingSupplier = mappingSupplier != null ? mappingSupplier : () -> null;
         this.entityType = uow.getMetamodel().entity(resultType);
         this.fetchGraph = fetchGraph;
     }
 
     @Override
     public void init(ResultSet resultSet) {
-        if (queryAssemblyModifier != null) {
-            queryAssemblyModifier.accept(this);
-        } else {
-            createProjectionMappings(resultSet.getColumnNames());
-        }
+        this.mappings = mappingSupplier.get();
     }
 
     private void createProjectionMappings(List<String> projectedVars) {
+        if (mappings == null) {
+            this.mappings = mappingSupplier.get();
+        }
         if (mappings != null) {
             return;
         }
@@ -228,10 +228,5 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
             return Optional.ofNullable(loadEntity());
         }
         return Optional.empty();
-    }
-
-    @Override
-    public void visit(AttributeEnumeratingSparqlAssemblyModifier modifier) {
-        this.mappings = modifier.getVariableMapping();
     }
 }

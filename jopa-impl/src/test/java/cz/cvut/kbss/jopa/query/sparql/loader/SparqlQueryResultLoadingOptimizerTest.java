@@ -25,7 +25,6 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
@@ -46,10 +45,8 @@ import java.util.Set;
 
 import static cz.cvut.kbss.jopa.utils.IdentifierTransformer.stringifyIri;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -69,8 +66,8 @@ class SparqlQueryResultLoadingOptimizerTest {
     }
 
     @Test
-    void modifyQueryAssemblySetsUnboundPredicateObjectAssemblyModifierWhenQueryIsSelectAndResultClassIsEntityTypeWithProperties() {
-        final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type }"));
+    void chooseStrategyUsesUnboundPredicateObjectAssemblyModifierWhenQueryIsSelectAndResultClassIsEntityTypeWithProperties() {
+        final TokenStreamSparqlQueryHolder qh = parser.parseQuery("SELECT ?s WHERE { ?s a ?type }");
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.enableOptimization();
         when(uow.isEntityType(OWLClassB.class)).thenReturn(true);
@@ -79,13 +76,13 @@ class SparqlQueryResultLoadingOptimizerTest {
         final IdentifiableEntityType<OWLClassB> et = mock(IdentifiableEntityType.class);
         when(et.getProperties()).thenReturn(mock(PropertiesSpecification.class));
         when(metamodel.entity(OWLClassB.class)).thenReturn(et);
-        sut.modifyQueryAssembly(OWLClassB.class, new EntityDescriptor(), null);
-        verify(qh).setAssemblyModifier(any(UnboundPredicateObjectSparqlAssemblyModifier.class));
+        final QueryResultLoadingStrategy<OWLClassB> strategy = sut.chooseStrategy(OWLClassB.class, new EntityDescriptor(), null);
+        assertInstanceOf(UnboundPredicateObjectSparqlAssemblyModifier.class, strategy.assemblyModifier());
     }
 
     @Test
-    void modifyQueryAssemblySetsAttributeEnumeratingAssemblyModifierWhenQueryIsSelectAndResultClassIsEntityTypeWithoutProperties() {
-        final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type }"));
+    void chooseStrategyUsesAttributeEnumeratingAssemblyModifierWhenQueryIsSelectAndResultClassIsEntityTypeWithoutProperties() {
+        final TokenStreamSparqlQueryHolder qh = parser.parseQuery("SELECT ?s WHERE { ?s a ?type }");
         when(connectionWrapper.getRepositoryMetadata()).thenReturn(mock(RepositoryMetadata.class));
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.enableOptimization();
@@ -95,42 +92,42 @@ class SparqlQueryResultLoadingOptimizerTest {
         final IdentifiableEntityType<OWLClassA> et = mock(IdentifiableEntityType.class);
         when(et.getProperties()).thenReturn(null);
         when(metamodel.entity(OWLClassA.class)).thenReturn(et);
-        sut.modifyQueryAssembly(OWLClassA.class, new EntityDescriptor(), null);
-        verify(qh).setAssemblyModifier(any(AttributeEnumeratingSparqlAssemblyModifier.class));
+        final QueryResultLoadingStrategy<OWLClassA> strategy = sut.chooseStrategy(OWLClassA.class, new EntityDescriptor(), null);
+        assertInstanceOf(AttributeEnumeratingSparqlAssemblyModifier.class, strategy.assemblyModifier());
     }
 
     @Test
-    void optimizeQueryAssemblyDoesNotModifyQueryWhenResultClassIsNotEntity() {
-        final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type }"));
+    void chooseStrategyDoesNotModifyQueryWhenResultClassIsNotEntity() {
+        final TokenStreamSparqlQueryHolder qh = parser.parseQuery("SELECT ?s WHERE { ?s a ?type }");
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.enableOptimization();
-        sut.modifyQueryAssembly(URI.class, new EntityDescriptor(), null);
-        verify(qh).setAssemblyModifier(any(NoopSparqlAssemblyModifier.class));
+        final QueryResultLoadingStrategy<URI> strategy = sut.chooseStrategy(URI.class, new EntityDescriptor(), null);
+        assertNull(strategy.assemblyModifier());
     }
 
     @Test
-    void optimizeQueryAssemblyDoesNotModifyQueryWhenLimitIsSet() {
-        final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type } LIMIT 1"));
-        final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
-        sut.enableOptimization();
-        when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
-        sut.modifyQueryAssembly(OWLClassA.class, new EntityDescriptor(), null);
-        verify(qh).setAssemblyModifier(any(NoopSparqlAssemblyModifier.class));
-    }
-
-    @Test
-    void optimizeQueryAssemblyDoesNotModifyQueryWhenOffsetIsSet() {
-        final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type } OFFSET 1"));
+    void chooseStrategyDoesNotModifyQueryWhenLimitIsSet() {
+        final TokenStreamSparqlQueryHolder qh = parser.parseQuery("SELECT ?s WHERE { ?s a ?type } LIMIT 1");
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.enableOptimization();
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
-        sut.modifyQueryAssembly(OWLClassA.class, new EntityDescriptor(), null);
-        verify(qh).setAssemblyModifier(any(NoopSparqlAssemblyModifier.class));
+        final QueryResultLoadingStrategy<OWLClassA> strategy = sut.chooseStrategy(OWLClassA.class, new EntityDescriptor(), null);
+        assertNull(strategy.assemblyModifier());
     }
 
     @Test
-    void modifyQueryAssemblyOptimizesQueryWhenItContainsGraphClauseAndAttributeBasedOptimizerCanBeUser() {
-        final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { GRAPH ?g { ?s a ?type } }"));
+    void chooseStrategyDoesNotModifyQueryWhenOffsetIsSet() {
+        final TokenStreamSparqlQueryHolder qh = parser.parseQuery("SELECT ?s WHERE { ?s a ?type } OFFSET 1");
+        final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
+        sut.enableOptimization();
+        when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
+        final QueryResultLoadingStrategy<OWLClassA> strategy = sut.chooseStrategy(OWLClassA.class, new EntityDescriptor(), null);
+        assertNull(strategy.assemblyModifier());
+    }
+
+    @Test
+    void chooseStrategyOptimizesQueryWhenItContainsGraphClauseAndAttributeBasedOptimizerCanBeUsed() {
+        final TokenStreamSparqlQueryHolder qh = parser.parseQuery("SELECT ?s WHERE { GRAPH ?g { ?s a ?type } }");
         when(connectionWrapper.getRepositoryMetadata()).thenReturn(mock(RepositoryMetadata.class));
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.enableOptimization();
@@ -139,22 +136,22 @@ class SparqlQueryResultLoadingOptimizerTest {
         when(uow.getMetamodel()).thenReturn(metamodel);
         final IdentifiableEntityType<OWLClassA> et = mock(IdentifiableEntityType.class);
         when(metamodel.entity(OWLClassA.class)).thenReturn(et);
-        sut.modifyQueryAssembly(OWLClassA.class, new EntityDescriptor(), null);
-        verify(qh).setAssemblyModifier(any(AttributeEnumeratingSparqlAssemblyModifier.class));
+        final QueryResultLoadingStrategy<OWLClassA> strategy = sut.chooseStrategy(OWLClassA.class, new EntityDescriptor(), null);
+        assertInstanceOf(AttributeEnumeratingSparqlAssemblyModifier.class, strategy.assemblyModifier());
     }
 
     @Test
-    void optimizeQueryAssemblyDoesNotModifyQueryWhenProvidedDescriptorSpecifiesMoreThanOneContext() {
-        final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type }"));
+    void chooseStrategyDoesNotModifyQueryWhenProvidedDescriptorSpecifiesMoreThanOneContext() {
+        final TokenStreamSparqlQueryHolder qh = parser.parseQuery("SELECT ?s WHERE { ?s a ?type }");
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.enableOptimization();
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
-        sut.modifyQueryAssembly(OWLClassA.class, new EntityDescriptor(Set.of(Generators.createIndividualIdentifier(), Generators.createIndividualIdentifier())), null);
-        verify(qh).setAssemblyModifier(any(NoopSparqlAssemblyModifier.class));
+        final QueryResultLoadingStrategy<OWLClassA> strategy = sut.chooseStrategy(OWLClassA.class, new EntityDescriptor(Set.of(Generators.createIndividualIdentifier(), Generators.createIndividualIdentifier())), null);
+        assertNull(strategy.assemblyModifier());
     }
 
     @Test
-    void getQueryResultLoaderReturnsAttributeBasedRowsToAxiomsResultLoaderWhenQueryProjectsMultipleVariablesAndResultTypeIsEntity() {
+    void chooseStrategyReturnsAttributeBasedRowsToAxiomsResultLoaderWhenQueryProjectsMultipleVariablesAndResultTypeIsEntity() {
         final TokenStreamSparqlQueryHolder qh = parser.parseQuery("SELECT ?x ?stringAttribute ?types WHERE {" +
                 "?x a " + stringifyIri(Vocabulary.c_OwlClassA) + " ;" +
                 stringifyIri(Vocabulary.p_a_stringAttribute) + " ?stringAttribute ;" +
@@ -163,16 +160,16 @@ class SparqlQueryResultLoadingOptimizerTest {
         when(uow.getMetamodel()).thenReturn(metamodel);
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.disableOptimization();
-        sut.modifyQueryAssembly(OWLClassA.class, new EntityDescriptor(), null);
         when(uow.isEntityType(OWLClassA.class)).thenReturn(true);
-        final QueryResultLoader<OWLClassA> result = sut.getQueryResultLoader(OWLClassA.class, new EntityDescriptor(), null);
-        assertInstanceOf(AttributeBasedRowsToAxiomsQueryResultLoader.class, result);
+        final QueryResultLoadingStrategy<OWLClassA> strategy = sut.chooseStrategy(OWLClassA.class, new EntityDescriptor(), null);
+        assertNull(strategy.assemblyModifier());
+        assertInstanceOf(AttributeBasedRowsToAxiomsQueryResultLoader.class, strategy.createLoader());
     }
 
     @Test
-    void modifyQueryAssemblyUsesAttributeEnumeratingSparqlAssemblyModifierForEntityWithSubTypesWhenFetchGraphIsProvided() {
+    void chooseStrategyUsesAttributeEnumeratingSparqlAssemblyModifierForEntityWithSubTypesWhenFetchGraphIsProvided() {
         when(connectionWrapper.getRepositoryMetadata()).thenReturn(() -> "");
-        final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type }"));
+        final TokenStreamSparqlQueryHolder qh = parser.parseQuery("SELECT ?s WHERE { ?s a ?type }");
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.enableOptimization();
         when(uow.isEntityType(OWLClassS.class)).thenReturn(true);
@@ -181,14 +178,14 @@ class SparqlQueryResultLoadingOptimizerTest {
         final IdentifiableEntityType<OWLClassS> et = mock(IdentifiableEntityType.class);
         when(metamodel.entity(OWLClassS.class)).thenReturn(et);
         final EntityGraph<OWLClassS> fetchGraph = new EntityGraphImpl<>(et, metamodel);
-        sut.modifyQueryAssembly(OWLClassS.class, new EntityDescriptor(), fetchGraph);
-        verify(qh).setAssemblyModifier(any(AttributeEnumeratingSparqlAssemblyModifier.class));
+        final QueryResultLoadingStrategy<OWLClassS> strategy = sut.chooseStrategy(OWLClassS.class, new EntityDescriptor(), fetchGraph);
+        assertInstanceOf(AttributeEnumeratingSparqlAssemblyModifier.class, strategy.assemblyModifier());
     }
 
     @Test
-    void modifyQueryAssemblyUsesAttributeEnumeratingSparqlAssemblyModifierForEntityWithPropertiesWhenFetchGraphIsProvided() {
+    void chooseStrategyUsesAttributeEnumeratingSparqlAssemblyModifierForEntityWithPropertiesWhenFetchGraphIsProvided() {
         when(connectionWrapper.getRepositoryMetadata()).thenReturn(() -> "");
-        final TokenStreamSparqlQueryHolder qh = spy(parser.parseQuery("SELECT ?s WHERE { ?s a ?type }"));
+        final TokenStreamSparqlQueryHolder qh = parser.parseQuery("SELECT ?s WHERE { ?s a ?type }");
         final SparqlQueryResultLoadingOptimizer sut = new SparqlQueryResultLoadingOptimizer(qh, uow, connectionWrapper);
         sut.enableOptimization();
         when(uow.isEntityType(OWLClassB.class)).thenReturn(true);
@@ -196,7 +193,7 @@ class SparqlQueryResultLoadingOptimizerTest {
         when(uow.getMetamodel()).thenReturn(metamodel);
         final IdentifiableEntityType<OWLClassB> et = mock(IdentifiableEntityType.class);
         when(metamodel.entity(OWLClassB.class)).thenReturn(et);
-        sut.modifyQueryAssembly(OWLClassB.class, new EntityDescriptor(), null);
-        verify(qh).setAssemblyModifier(any(AttributeEnumeratingSparqlAssemblyModifier.class));
+        final QueryResultLoadingStrategy<OWLClassB> strategy = sut.chooseStrategy(OWLClassB.class, new EntityDescriptor(), null);
+        assertInstanceOf(AttributeEnumeratingSparqlAssemblyModifier.class, strategy.assemblyModifier());
     }
 }

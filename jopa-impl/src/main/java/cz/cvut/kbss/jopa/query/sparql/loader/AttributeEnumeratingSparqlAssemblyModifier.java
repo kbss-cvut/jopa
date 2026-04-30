@@ -135,11 +135,6 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         }
     }
 
-    @Override
-    public void accept(SparqlAssemblyModifierVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public List<QueryVariableMapping> getVariableMapping() {
         return variableMapping;
     }
