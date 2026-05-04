@@ -470,7 +470,8 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                                                          .getResultList();
         assertEquals(entities.size(), result.size());
         result.forEach(c -> {
-            final Optional<OWLClassV> expected = entities.stream().filter(v -> v.getUri().equals(c.getUri())).findFirst();
+            final Optional<OWLClassV> expected = entities.stream().filter(v -> v.getUri().equals(c.getUri()))
+                                                         .findFirst();
             assertTrue(expected.isPresent());
             assertEquals(expected.get().getName(), c.getName());
             assertEquals(expected.get().getDescription(), c.getDescription());
@@ -481,5 +482,25 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                 assertNull(t.getDescription());
             });
         });
+    }
+
+    @Test
+    public void querySupportsMappingResultsDirectlyToEntityWithoutProjectingTypes() {
+        final List<OWLClassE> entities = QueryTestEnvironment.getData(OWLClassE.class);
+        final List<OWLClassE> result = getEntityManager().createNativeQuery("""
+                                                                 SELECT ?x ?stringAttribute WHERE {
+                                                                 ?x a ?type ;
+                                                                 ?hasString ?stringAttribute .
+                                                                 }""", OWLClassE.class)
+                                                         .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_E))
+                                                         .setParameter("hasString", URI.create(Vocabulary.P_E_STRING_ATTRIBUTE))
+                                                         .getResultList();
+        entities.sort(Comparator.comparing(OWLClassE::getUri));
+        result.sort(Comparator.comparing(OWLClassE::getUri));   // Sort here instead of in the query due to OWL2Query lacking proper sorting support
+        assertEquals(entities.size(), result.size());
+        for (int i = 0; i < entities.size(); i++) {
+            assertEquals(entities.get(i).getUri(), result.get(i).getUri());
+            assertEquals(entities.get(i).getStringAttribute(), result.get(i).getStringAttribute());
+        }
     }
 }
