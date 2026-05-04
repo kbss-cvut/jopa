@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.Phone;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
@@ -32,6 +33,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -154,7 +156,8 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup<>(instance.getUri(), descriptor, fetchGraph)));
     }
 
-    private AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> createOwlClassASut(EntityGraph<OWLClassA> fetchGraph) {
+    private AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassA> createOwlClassASut(
+            EntityGraph<OWLClassA> fetchGraph) {
         final List<QueryVariableMapping> mappings = List.of(
                 new QueryVariableMapping("x", "x_stringAttribute", metamodelMocks.forOwlClassA().stringAttribute()),
                 new QueryVariableMapping("x", "x_types", metamodelMocks.forOwlClassA().typesSpec())
@@ -300,4 +303,32 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
                          .anyMatch(ax -> ax.getValue().stringValue().equals(instance.getStringAttribute())));
     }
 
+    @Test
+    void loadResultAutomaticallyAddsClassAssertionForDirectEntityMappingWithoutProjectedTypes() throws Exception {
+        final AttributeBasedRowsToAxiomsQueryResultLoader<Phone> sut = new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, Phone.class, descriptor, null);
+        final Phone phone = new Phone(Generators.createIndividualIdentifier(), "123456789", "Nokia");
+        final List<String> columnNames = List.of("x", "x_number", "x_brand");
+        final ResultSet resultSet = mock(ResultSet.class);
+        when(resultSet.getColumnNames()).thenReturn(columnNames);
+        final ResultRow row = mock(ResultRow.class);
+        when(row.getColumnCount()).thenReturn(3);
+        when(row.getColumnNames()).thenReturn(columnNames);
+        when(row.isBound("x")).thenReturn(true);
+        when(row.getObject(0, URI.class)).thenReturn(phone.getUri());
+        when(row.getObject("x", URI.class)).thenReturn(phone.getUri());
+        when(row.isBound("x_number")).thenReturn(true);
+        when(row.getObject("x_number")).thenReturn(phone.getNumber());
+        when(row.isBound("x_brand")).thenReturn(true);
+        when(row.getObject("x_brand")).thenReturn(phone.getBrand());
+        when(uow.readObjectFromAxioms(eq(Phone.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(phone);
+
+        sut.init(resultSet);
+        final Optional<Phone> intermediate = sut.loadResult(row);
+        assertFalse(intermediate.isPresent());
+        final Optional<Phone> result = sut.loadLastPending();
+        assertTrue(result.isPresent());
+        final ArgumentCaptor<Collection<Axiom<?>>> captor = ArgumentCaptor.forClass(Collection.class);
+        verify(uow).readObjectFromAxioms(eq(Phone.class), captor.capture(), any(AxiomBasedLoadingConfigGroup.class));
+        assertThat(captor.getValue(), hasItem(new AxiomImpl<>(NamedResource.create(phone.getUri()), Assertion.createClassAssertion(false), new Value<>(URI.create(Vocabulary.c_Phone)))));
+    }
 }

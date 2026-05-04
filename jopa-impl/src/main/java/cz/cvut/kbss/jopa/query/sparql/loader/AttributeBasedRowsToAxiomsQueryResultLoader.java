@@ -85,6 +85,8 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
     private Set<Axiom<?>> currentEntityAxioms = Set.of();
     private NamedResource currentSubject;
 
+    private boolean typesProjected = true;
+
     AttributeBasedRowsToAxiomsQueryResultLoader(UnitOfWork uow, Class<T> resultType, Descriptor descriptor,
                                                 EntityGraph<T> fetchGraph) {
         this(uow, resultType, descriptor, fetchGraph, () -> null);
@@ -96,7 +98,8 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
         this.uow = uow;
         this.resultType = resultType;
         this.descriptor = descriptor;
-        this.mappingSupplier = mappingSupplier != null ? mappingSupplier : () -> null;
+        assert mappingSupplier != null;
+        this.mappingSupplier = mappingSupplier;
         this.entityType = uow.getMetamodel().entity(resultType);
         this.fetchGraph = fetchGraph;
     }
@@ -113,6 +116,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
         if (mappings != null) {
             return;
         }
+        this.typesProjected = false;
         assert !projectedVars.isEmpty();
         final String subjectVar = projectedVars.get(0);
         this.mappings = new ArrayList<>(projectedVars.size() - 1);
@@ -126,9 +130,11 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
             } else if (atts.containsKey(projectedVar.substring(subjectVar.length() + 1))) {
                 // ?x_stringAttribute
                 mappings.add(new QueryVariableMapping(subjectVar, projectedVar, atts.get(projectedVar.substring(subjectVar.length() + 1))));
-            } else if (projectedVar.endsWith(AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_NAME)) {
+            } else if (projectedVar.endsWith(AttributeEnumeratingSparqlAssemblyModifier.TYPES_VAR_NAME) || (entityType.getTypes() != null && projectedVar.endsWith(entityType.getTypes()
+                                                                                                                                                                             .getName()))) {
                 // ?x_types or ?types
                 mappings.add(new QueryVariableMapping(subjectVar, projectedVar, entityType.getTypes()));
+                this.typesProjected = true;
             } else {
                 LOG.warn("Variable '{}' projected from the query cannot be mapped to any attributes in entity class {}.", projectedVar, entityType);
             }
@@ -209,6 +215,10 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
     }
 
     private T loadEntity() {
+        if (!typesProjected) {
+            currentEntityAxioms.add(new AxiomImpl<>(currentSubject,
+                    Assertion.createClassAssertion(false), new Value<>(entityType.getIRI().toURI())));
+        }
         try {
             return uow.readObjectFromAxioms(resultType, currentEntityAxioms, new AxiomBasedLoadingConfigGroup<>(currentSubject.getIdentifier(), descriptor, fetchGraph));
         } catch (CardinalityConstraintViolatedException e) {
