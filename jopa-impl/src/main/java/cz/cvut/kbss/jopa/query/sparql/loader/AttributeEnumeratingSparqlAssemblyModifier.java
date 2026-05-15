@@ -113,14 +113,12 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         final StringBuilder groupBy = new StringBuilder(" GROUP BY " + firstProjected.getIdentifierAsQueryString());
         boolean hasGroupConcat = false;
         for (QueryVariableMapping varMapping : queryMod.variables()) {
-            final String variable = "?" + varMapping.attributeVar();
-            // PERF: GROUP_CONCAT prevents combinatorial blowup of the number of rows when properties have multiple values
+            // PERF: GROUP_CONCAT may prevent combinatorial blowup of the number of rows
             if (varMapping.canGroupConcat()) {
-                projection.append(" (GROUP_CONCAT(DISTINCT ").append(variable).append("; SEPARATOR='")
-                          .append(GROUP_CONCAT_SEPARATOR).append("') AS ").append(variable).append("_gc)");
-                varMapping.setAttributeVar(varMapping.attributeVar() + "_gc");
+                projection.append(' ').append(varMapping.generateGroupConcat());
                 hasGroupConcat = true;
             } else {
+                final String variable = "?" + varMapping.attributeVar();
                 projection.append(' ').append(variable);
                 groupBy.append(' ').append(variable);
             }
