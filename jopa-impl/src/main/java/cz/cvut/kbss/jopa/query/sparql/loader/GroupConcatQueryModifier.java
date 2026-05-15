@@ -18,8 +18,6 @@ abstract class GroupConcatQueryModifier {
 
     final QueryVariableMapping variableMapping;
 
-    boolean triggered;
-
     GroupConcatQueryModifier(QueryVariableMapping variableMapping) {
         this.variableMapping = variableMapping;
     }

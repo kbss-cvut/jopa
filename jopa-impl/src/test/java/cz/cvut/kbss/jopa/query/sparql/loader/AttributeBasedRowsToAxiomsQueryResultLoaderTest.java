@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.Phone;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
@@ -39,6 +40,7 @@ import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
@@ -330,5 +332,37 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         final ArgumentCaptor<Collection<Axiom<?>>> captor = ArgumentCaptor.forClass(Collection.class);
         verify(uow).readObjectFromAxioms(eq(Phone.class), captor.capture(), any(AxiomBasedLoadingConfigGroup.class));
         assertThat(captor.getValue(), hasItem(new AxiomImpl<>(NamedResource.create(phone.getUri()), Assertion.createClassAssertion(false), new Value<>(URI.create(Vocabulary.c_Phone)))));
+    }
+
+    @Test
+    void loadResultSupportsGroupConcatenatedMultilingualStrings() throws Exception {
+        final EntityGraph<OWLClassU> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassU()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("singularStringAtt");
+        final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassU> sut = new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassU.class, descriptor, fetchGraph);
+        final OWLClassU instance = new OWLClassU(Generators.createIndividualIdentifier());
+        final ResultRow row = mock(ResultRow.class);
+        when(row.getColumnCount()).thenReturn(2);
+        when(row.getColumnNames()).thenReturn(List.of("x", "x_singularStringAtt"));
+        when(row.getObject(0, URI.class)).thenReturn(instance.getId());
+        when(row.isBound("x")).thenReturn(true);
+        when(row.getObject("x", URI.class)).thenReturn(instance.getId());
+        when(row.isBound("x_singularStringAtt")).thenReturn(true);
+        final String concatenated = "value-en@en"
+                + AttributeEnumeratingSparqlAssemblyModifier.GROUP_CONCAT_SEPARATOR + "hodnota-cs@cs";
+        when(row.getString("x_singularStringAtt")).thenReturn(concatenated);
+        when(uow.readObjectFromAxioms(eq(OWLClassU.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
+
+        final Optional<OWLClassU> intermediate = sut.loadResult(row);
+        assertFalse(intermediate.isPresent());
+        final Optional<OWLClassU> result = sut.loadLastPending();
+        assertTrue(result.isPresent());
+        final ArgumentCaptor<Collection<Axiom<?>>> captor = ArgumentCaptor.forClass(Collection.class);
+        verify(uow).readObjectFromAxioms(eq(OWLClassU.class), captor.capture(), any(AxiomBasedLoadingConfigGroup.class));
+        captor.getValue().forEach(ax -> assertEquals(instance.getId(), ax.getSubject().getIdentifier()));
+        assertTrue(captor.getValue().stream()
+                         .anyMatch(ax -> ax.getValue().getValue().equals(new LangString("value-en", "en"))));
+        assertTrue(captor.getValue().stream()
+                         .anyMatch(ax -> ax.getValue().getValue().equals(new LangString("hodnota-cs", "cs"))));
     }
 }

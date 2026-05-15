@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
 import cz.cvut.kbss.jopa.environment.OWLClassP;
+import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
@@ -249,6 +250,36 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         assertThat(result, not(containsString("GROUP_CONCAT(DISTINCT ?x_owlClassA; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_owlClassA_gc")));
         assertThat(result, containsString("GROUP_CONCAT(DISTINCT ?x_owlClassA_types; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_owlClassA_types_gc"));
         assertThat(result, containsString("GROUP BY ?x ?x_owlClassA"));
+    }
+
+    @Test
+    void modifyGroupConcatenatesSingularMultilingualStringAttributeValues() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+        final EntityGraph<OWLClassU> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassU()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("singularStringAtt", "modified");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassU()
+                                                                                       .entityType(), new EntityDescriptor(), fetchGraph);
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, containsString("(GROUP_CONCAT(DISTINCT CONCAT(STR(?x_singularStringAtt), \"@\", LANG(?x_singularStringAtt)); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_singularStringAtt_gc)"));
+        assertThat(result, containsString("GROUP BY ?x ?x_modified"));
+    }
+
+    @Test
+    void modifyGroupConcatenatesPluralMultilingualStringAttributeValues() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+        final EntityGraph<OWLClassU> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassU()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("pluralStringAtt", "modified");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassU()
+                                                                                       .entityType(), new EntityDescriptor(), fetchGraph);
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, containsString("(GROUP_CONCAT(DISTINCT CONCAT(STR(?x_pluralStringAtt), \"@\", LANG(?x_pluralStringAtt)); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_pluralStringAtt_gc)"));
+        assertThat(result, containsString("GROUP BY ?x ?x_modified"));
     }
 
     /**
