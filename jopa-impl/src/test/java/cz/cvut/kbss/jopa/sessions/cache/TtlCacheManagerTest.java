@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,6 +40,11 @@ public class TtlCacheManagerTest extends AbstractCacheManagerTest<TtlCacheManage
     public void setUp() throws Exception {
         super.setUp();
         this.manager = new TtlCacheManager(Collections.emptyMap());
+    }
+
+    @AfterEach
+    public void tearDown() {
+        manager.close();
     }
 
     @Test
