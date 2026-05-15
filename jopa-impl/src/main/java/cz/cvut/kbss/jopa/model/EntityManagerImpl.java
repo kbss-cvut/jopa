@@ -469,9 +469,13 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     public QueryImpl createQuery(String qlString) {
         ensureOpen();
         final QueryImpl q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(qlString);
+        initQueryCallbacks(q);
+        return q;
+    }
+
+    private void initQueryCallbacks(AbstractQuery q) {
         q.setRollbackOnlyMarker(this::markTransactionForRollback);
         q.setEnsureOpenProcedure(this::ensureOpen);
-        return q;
     }
 
     @Override
@@ -483,19 +487,25 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         LOG.debug("CriteriaQuery translate to SOQL query: {}", soqlQuery);
         final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory()
                                                                   .createQuery(soqlQuery, query.getResultType());
-        q.setRollbackOnlyMarker(this::markTransactionForRollback);
-        q.setEnsureOpenProcedure(this::ensureOpen);
+        initQueryCallbacks(q);
+        initTypedQueryDescriptor(query.getResultType(), q);
         parameterFiller.setValuesToRegisteredParameters(q);
 
         return q;
+    }
+
+    private <T> void initTypedQueryDescriptor(Class<T> resultClass, TypedQuery<T> q) {
+        if (getCurrentPersistenceContext().isEntityType(resultClass)) {
+            q.setDescriptor(descriptorFactory.createDescriptor(resultClass));
+        }
     }
 
     @Override
     public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
         ensureOpen();
         final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory().createQuery(query, resultClass);
-        q.setRollbackOnlyMarker(this::markTransactionForRollback);
-        q.setEnsureOpenProcedure(this::ensureOpen);
+        initQueryCallbacks(q);
+        initTypedQueryDescriptor(resultClass, q);
         return q;
     }
 
@@ -503,8 +513,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     public QueryImpl createNativeQuery(String sparqlString) {
         ensureOpen();
         final QueryImpl q = getCurrentPersistenceContext().sparqlQueryFactory().createNativeQuery(sparqlString);
-        q.setRollbackOnlyMarker(this::markTransactionForRollback);
-        q.setEnsureOpenProcedure(this::ensureOpen);
+        initQueryCallbacks(q);
         return q;
     }
 
@@ -513,8 +522,8 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         ensureOpen();
         final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory()
                                                                   .createNativeQuery(sparqlString, resultClass);
-        q.setRollbackOnlyMarker(this::markTransactionForRollback);
-        q.setEnsureOpenProcedure(this::ensureOpen);
+        initQueryCallbacks(q);
+        initTypedQueryDescriptor(resultClass, q);
         return q;
     }
 
@@ -523,8 +532,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         ensureOpen();
         final QueryImpl q = getCurrentPersistenceContext().sparqlQueryFactory()
                                                           .createNativeQuery(sparqlString, resultSetMapping);
-        q.setRollbackOnlyMarker(this::markTransactionForRollback);
-        q.setEnsureOpenProcedure(this::ensureOpen);
+        initQueryCallbacks(q);
         return q;
     }
 
@@ -532,8 +540,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     public QueryImpl createNamedQuery(String name) {
         ensureOpen();
         final QueryImpl q = getCurrentPersistenceContext().sparqlQueryFactory().createNamedQuery(name);
-        q.setRollbackOnlyMarker(this::markTransactionForRollback);
-        q.setEnsureOpenProcedure(this::ensureOpen);
+        initQueryCallbacks(q);
         return q;
     }
 
@@ -542,8 +549,8 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
         ensureOpen();
         final TypedQueryImpl<T> q = getCurrentPersistenceContext().sparqlQueryFactory()
                                                                   .createNamedQuery(name, resultClass);
-        q.setRollbackOnlyMarker(this::markTransactionForRollback);
-        q.setEnsureOpenProcedure(this::ensureOpen);
+        initQueryCallbacks(q);
+        initTypedQueryDescriptor(resultClass, q);
         return q;
     }
 

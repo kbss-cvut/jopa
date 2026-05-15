@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -378,7 +379,8 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         transactional(() -> em.persist(entity));
 
         transactional(() -> {
-            final List<ClassInContext> loaded = em.createQuery("SELECT c FROM ClassInContext c", ClassInContext.class)
+            final List<ClassInContext> loaded = em.createNativeQuery("SELECT ?x WHERE { GRAPH ?g {?x a ?type } }", ClassInContext.class)
+                                                  .setParameter("type", URI.create(Vocabulary.CLASS_IRI_BASE + "classInContext"))
                                                   .getResultList();
             assertEquals(1, loaded.size());
             final ClassInContext loadedEntity = loaded.get(0);
@@ -387,9 +389,10 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
         final ClassInContext updatedEntity = em.find(ClassInContext.class, entity.getId());
         assertEquals("Updated label", updatedEntity.getLabel());
-        assertTrue(em.createNativeQuery("ASK WHERE { GRAPH ?g { ?entity rdfs:label ?label . }", Boolean.class)
+        assertTrue(em.createNativeQuery("ASK WHERE { GRAPH ?g { ?entity ?hasLabel ?label . } }", Boolean.class)
                      .setParameter("entity", entity)
                      .setParameter("g", URI.create("https://example.com/context"))
+                     .setParameter("hasLabel", URI.create(RDFS.LABEL))
                      .getSingleResult());
     }
 }
