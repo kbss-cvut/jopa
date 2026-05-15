@@ -119,7 +119,7 @@ class EntityManagerImplTest {
         when(emfMock.getMetamodel()).thenReturn(metamodelMock);
         when(emfMock.getServerSession()).thenReturn(serverSessionMock);
         final NamespaceResolver nsResolver = new NamespaceResolver();
-        this.descriptorFactory = new DefaultEntityDescriptorFactory(metamodelMock, nsResolver);
+        this.descriptorFactory = spy(new DefaultEntityDescriptorFactory(metamodelMock, nsResolver));
         when(metamodelMock.getNamespaceResolver()).thenReturn(nsResolver);
         this.mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
@@ -738,5 +738,29 @@ class EntityManagerImplTest {
         em.remove(toRemove);
         verify(connectorMock).remove(eq(toRemove.getUri()), eq(OWLClassJ.class), any(Descriptor.class));
         verify(connectorMock).remove(eq(a.getUri()), eq(OWLClassA.class), any(Descriptor.class));
+    }
+
+    @Test
+    void createTypedNativeQuerySetsDescriptorWhenResultTypeIsEntity() {
+        final EntityDescriptor d = new EntityDescriptor(Generators.createIndividualIdentifier());
+        when(descriptorFactory.createDescriptor(OWLClassA.class)).thenReturn(d);
+        final TypedQueryImpl<OWLClassA> query = em.createNativeQuery("SELECT * WHERE { ?x a ?type . }", OWLClassA.class);
+        verify(descriptorFactory).createDescriptor(OWLClassA.class);
+        assertEquals(d, query.getDescriptor());
+    }
+
+    @Test
+    void createTypedQuerySetsDescriptorWhenResultTypeIsEntity() {
+        final EntityDescriptor d = new EntityDescriptor(Generators.createIndividualIdentifier());
+        when(descriptorFactory.createDescriptor(OWLClassA.class)).thenReturn(d);
+        final TypedQueryImpl<OWLClassA> query = em.createQuery("SELECT a FROM OWLClassA a", OWLClassA.class);
+        verify(descriptorFactory).createDescriptor(OWLClassA.class);
+        assertEquals(d, query.getDescriptor());
+    }
+
+    @Test
+    void createTypedNativeQueryDoesNotSetDescriptorWhenResultTypeIsNotEntity() {
+        em.createNativeQuery("ASK WHERE { ?x a ?type } ", Boolean.class);
+        verify(descriptorFactory, never()).createDescriptor(Integer.class);
     }
 }
