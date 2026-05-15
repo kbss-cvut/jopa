@@ -98,7 +98,7 @@ class EntityMappingQueryModifierTest {
         final EntityMappingQueryModifier.QueryModification result = sut.modify(fetchGraph, "x");
         assertEquals(List.of("x_stringAttribute", "x_types"), result.variableNames());
         final Optional<QueryVariableMapping> typesMapping = result.variables().stream()
-                                                                  .filter(QueryVariableMapping::isTypes)
+                                                                  .filter(qvm -> "x_types".equals(qvm.attributeVar()))
                                                                   .findFirst();
         assertTrue(typesMapping.isPresent());
         assertNull(typesMapping.get().attribute());

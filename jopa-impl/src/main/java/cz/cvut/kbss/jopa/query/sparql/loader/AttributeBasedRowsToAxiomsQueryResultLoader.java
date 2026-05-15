@@ -205,10 +205,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
     private Stream<Value<?>> extractValue(ResultRow row,
                                           QueryVariableMapping variableMapping) throws OntoDriverException {
         if (variableMapping.canGroupConcat()) {
-            final String values = row.getString(variableMapping.attributeVar());
-            // This does not handle blank nodes
-            return Stream.of(values.split(AttributeEnumeratingSparqlAssemblyModifier.GROUP_CONCAT_SEPARATOR))
-                         .map(URI::create).map(Value::new);
+            return variableMapping.readGroupConcatValue(row);
         } else {
             return Stream.of(new Value<>(row.getObject(variableMapping.attributeVar())));
         }
