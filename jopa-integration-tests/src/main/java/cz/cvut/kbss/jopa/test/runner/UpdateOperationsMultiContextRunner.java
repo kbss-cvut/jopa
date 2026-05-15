@@ -238,8 +238,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         em.getTransaction().commit();
 
         final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri(), cDescriptor);
-        assertEquals(entityC.getReferencedList().size() - removed.size(), resC.getReferencedList()
-                .size());
+        assertEquals(entityC.getReferencedList().size() - removed.size(), resC.getReferencedList().size());
         for (OWLClassA a : removed) {
             final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), lstDescriptor);
             assertNotNull(resA);
@@ -315,8 +314,8 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         });
 
         assertTrue(em.createNativeQuery("ASK { GRAPH ?g { ?s ?p ?o. }}", Boolean.class).setParameter("g", CONTEXT_TWO)
-                .setParameter("s", entityD.getUri()).setParameter("p", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
-                .setParameter("o", newA.getUri()).getSingleResult());
+                     .setParameter("s", entityD.getUri()).setParameter("p", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
+                     .setParameter("o", newA.getUri()).getSingleResult());
         final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
         assertNotNull(result.getOwlClassA());
         assertEquals(newA.getUri(), result.getOwlClassA().getUri());
@@ -336,7 +335,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         entityF.setSimpleSet(new HashSet<>(Arrays.asList(entityA, entityA2)));
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
-                .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
         transactional(() -> em.merge(entityF, descriptor));
 
         final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
@@ -354,7 +353,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
-                .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
         transactional(() -> {
             final OWLClassF toUpdate = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
             toUpdate.setSimpleSet(new HashSet<>(Arrays.asList(entityA, entityA2)));
@@ -366,5 +365,31 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         assertEquals(2, result.getSimpleSet().size());
         assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA.getUri())));
         assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA2.getUri())));
+    }
+
+    /**
+     * Bug #437
+     */
+    @Test
+    void updateOnEntityInAnnotationBasedContextLoadedWithQuerySavesValueInCorrectContext() {
+        this.em = getEntityManager("updateOnEntityInAnnotationBasedContextLoadedWithQuerySavesValueInCorrectContext", false);
+        final ClassInContext entity = new ClassInContext();
+        entity.setLabel("Initial label");
+        transactional(() -> em.persist(entity));
+
+        transactional(() -> {
+            final List<ClassInContext> loaded = em.createQuery("SELECT c FROM ClassInContext c", ClassInContext.class)
+                                                  .getResultList();
+            assertEquals(1, loaded.size());
+            final ClassInContext loadedEntity = loaded.get(0);
+            loadedEntity.setLabel("Updated label");
+        });
+
+        final ClassInContext updatedEntity = em.find(ClassInContext.class, entity.getId());
+        assertEquals("Updated label", updatedEntity.getLabel());
+        assertTrue(em.createNativeQuery("ASK WHERE { GRAPH ?g { ?entity rdfs:label ?label . }", Boolean.class)
+                     .setParameter("entity", entity)
+                     .setParameter("g", URI.create("https://example.com/context"))
+                     .getSingleResult());
     }
 }
