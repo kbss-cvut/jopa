@@ -19,7 +19,6 @@ class IriGroupConcatQueryModifier extends GroupConcatQueryModifier {
 
     @Override
     String generateGroupConcat() {
-        this.triggered = true;
         return "(GROUP_CONCAT(DISTINCT ?" + variableMapping.attributeVar() + "; SEPARATOR='" +
                 GROUP_CONCAT_SEPARATOR + "') AS ?" + variableMapping.attributeVar() + GROUP_CONCAT_SUFFIX + ")";
     }

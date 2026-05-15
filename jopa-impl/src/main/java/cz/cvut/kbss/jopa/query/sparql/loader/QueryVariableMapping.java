@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
@@ -26,18 +27,30 @@ public final class QueryVariableMapping {
     }
 
     private GroupConcatQueryModifier resolveCanGroupConcat() {
+        if (attribute == null) {
+            return null;
+        }
         if (isPluralPlainIdentifierAttribute() || attribute instanceof TypesSpecification<?, ?>) {
             return new IriGroupConcatQueryModifier(this);
+        }
+        if (isMultilingualStringAttribute()) {
+            return new MultilingualStringGroupConcatQueryModifier(this);
         }
         return null;
     }
 
     private boolean isPluralPlainIdentifierAttribute() {
-        if (attribute == null || !attribute.isMappedAttribute() || !attribute.isCollection()) {
+        if (!attribute.isMappedAttribute() || !attribute.isCollection()) {
             return false;
         }
         final PluralAttribute<?, ?, ?> att = (PluralAttribute<?, ?, ?>) attribute;
         return att.isAssociation() && IdentifierTransformer.isValidIdentifierType(att.getBindableJavaType());
+    }
+
+    private boolean isMultilingualStringAttribute() {
+        return attribute.getJavaType().equals(MultilingualString.class)
+                || attribute.isCollection() && ((PluralAttribute<?, ?, ?>) attribute).getBindableJavaType()
+                                                                                     .equals(MultilingualString.class);
     }
 
     public String subjectVar() {return subjectVar;}
