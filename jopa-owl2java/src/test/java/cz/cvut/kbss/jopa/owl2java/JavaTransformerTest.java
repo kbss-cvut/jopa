@@ -74,7 +74,7 @@ class JavaTransformerTest {
         this.ontology = ontologyManager.createOntology(IRI.create(ONTOLOGY_IRI));
         this.dataFactory = new OWLDataFactoryImpl();
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
-                                                                  .alwaysUseOntologyPrefix(false).build());
+                                                                  .alwaysUseOntologyPrefixForVocabulary(false).build());
     }
 
     @Test
@@ -194,7 +194,7 @@ class JavaTransformerTest {
     @Test
     void generateModelGeneratesFieldOfTypeStringForLangStringRangeWhenConfiguredNotToPreferMultilingualStrings() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().preferMultilingualStrings(false)
-                                                                  .alwaysUseOntologyPrefix(false)
+                                                                  .alwaysUseOntologyPrefixForVocabulary(false)
                                                                   .packageName("").build());
         final String className = "TestClass";
         final String fieldName = "multilingualString";
@@ -246,7 +246,7 @@ class JavaTransformerTest {
     @Test
     void generateModelDoesNotGenerateLabelAndDescriptionFieldsWhenDisabled() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
-                                                                  .alwaysUseOntologyPrefix(false)
+                                                                  .alwaysUseOntologyPrefixForVocabulary(false)
                                                                   .generateAnnotationFields(false).build());
         final String className = "TestClass";
         final IRI iri = IRI.create(NAMESPACE + className);
@@ -278,7 +278,7 @@ class JavaTransformerTest {
     @Test
     void generateModelDisambiguateClassesWithIdenticalJavaName() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("").generateThing(false)
-                                                                  .alwaysUseOntologyPrefix(false).build());
+                                                                  .alwaysUseOntologyPrefixForVocabulary(false).build());
         final String className = "Concept";
         final IRI iriOne = IRI.create(NAMESPACE + className);
         final IRI iriTwo = IRI.create(SKOS.CONCEPT);
@@ -374,7 +374,7 @@ class JavaTransformerTest {
     @Test
     void generateVocabularyAlwaysOutputsPrefixedNamesWhenConfiguredTo() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
-                                                                  .alwaysUseOntologyPrefix(true).build());
+                                                                  .alwaysUseOntologyPrefixForVocabulary(true).build());
         final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
         ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, IRI.create(ONTOLOGY_IRI), dataFactory.getOWLLiteral("test")));
         final IRI personIri = IRI.create(NAMESPACE + "Person");
@@ -392,7 +392,8 @@ class JavaTransformerTest {
     @Test
     void generateModelAlwaysOutputsPrefixedEntityClassNamesWhenConfiguredTo() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
-                                                                  .alwaysUseOntologyPrefix(true)
+                                                                  .alwaysUseOntologyPrefixForVocabulary(true)
+                                                                  .alwaysUseOntologyPrefixForModel(true)
                                                                   .build());
         final String className = "Concept";
         final IRI iriOne = IRI.create(NAMESPACE + className);
