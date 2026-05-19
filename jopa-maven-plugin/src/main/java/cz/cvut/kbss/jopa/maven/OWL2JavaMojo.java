@@ -44,7 +44,9 @@ public class OWL2JavaMojo extends AbstractMojo {
     private static final String GENERATE_ANNOTATION_FIELDS = "generate-annotation-fields";
     private static final String GENERATE_THING = "generate-thing";
     private static final String ONTOLOGY_PREFIX_PROPERTY = "ontology-prefix-property";
-    private static final String ALWAYS_USE_PREFIXES = "always-use-prefixes";
+    private static final String ONTOLOGY_NAMESPACE_PROPERTY = "ontology-namespace-property";
+    private static final String VOCABULARY_ALWAYS_USE_PREFIXES = "vocabulary-always-use-prefixes";
+    private static final String MODEL_ALWAYS_USE_PREFIXES = "model-always-use-prefixes";
     private static final String PREFIX_MAPPING_FILE = "prefix-mapping-file";
 
     @Parameter(name = MAPPING_FILE_PARAM)
@@ -95,8 +97,14 @@ public class OWL2JavaMojo extends AbstractMojo {
     @Parameter(name = ONTOLOGY_PREFIX_PROPERTY)
     private String ontologyPrefixProperty;
 
-    @Parameter(name = ALWAYS_USE_PREFIXES, defaultValue = "true")
-    private boolean alwaysUsePrefixes;
+    @Parameter(name = ONTOLOGY_NAMESPACE_PROPERTY)
+    private String ontologyNamespaceProperty;
+
+    @Parameter(name = VOCABULARY_ALWAYS_USE_PREFIXES, defaultValue = "true")
+    private boolean alwaysUsePrefixesForVocabulary;
+
+    @Parameter(name = MODEL_ALWAYS_USE_PREFIXES, defaultValue = "false")
+    private boolean alwaysUsePrefixesForModel;
 
     @Parameter(name = PREFIX_MAPPING_FILE)
     private String prefixMappingFile;
@@ -135,7 +143,10 @@ public class OWL2JavaMojo extends AbstractMojo {
                        .addOwlapiIris(withOwlapi).addJavaUris(withJavaUris)
                        .generateJavadoc(javadocFromRdfsComment).preferMultilingualStrings(preferMultilingualStrings)
                        .generateAnnotationFields(generateAnnotationFields).generateThing(generateThing)
-                       .ontologyPrefixProperty(ontologyPrefixProperty).alwaysUseOntologyPrefixForVocabulary(alwaysUsePrefixes)
+                       .ontologyPrefixProperty(ontologyPrefixProperty)
+                       .ontologyNamespaceProperty(ontologyNamespaceProperty)
+                       .alwaysUseOntologyPrefixForVocabulary(alwaysUsePrefixesForVocabulary)
+                       .alwaysUseOntologyPrefixForModel(alwaysUsePrefixesForModel)
                        .prefixMappingFile(prefixMappingFile).build();
 
         if (vocabularyOnly) {
@@ -164,7 +175,9 @@ public class OWL2JavaMojo extends AbstractMojo {
         Utils.logParameterValue(GENERATE_ANNOTATION_FIELDS, generateAnnotationFields, getLog());
         Utils.logParameterValue(GENERATE_THING, generateThing, getLog());
         Utils.logParameterValue(ONTOLOGY_PREFIX_PROPERTY, ontologyPrefixProperty, getLog());
-        Utils.logParameterValue(ALWAYS_USE_PREFIXES, alwaysUsePrefixes, getLog());
+        Utils.logParameterValue(ONTOLOGY_NAMESPACE_PROPERTY, ontologyNamespaceProperty, getLog());
+        Utils.logParameterValue(VOCABULARY_ALWAYS_USE_PREFIXES, alwaysUsePrefixesForVocabulary, getLog());
+        Utils.logParameterValue(MODEL_ALWAYS_USE_PREFIXES, alwaysUsePrefixesForModel, getLog());
         Utils.logParameterValue(PREFIX_MAPPING_FILE, prefixMappingFile, getLog());
     }
 
