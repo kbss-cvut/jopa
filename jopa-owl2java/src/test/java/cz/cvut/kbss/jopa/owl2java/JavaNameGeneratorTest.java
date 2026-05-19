@@ -84,7 +84,7 @@ class JavaNameGeneratorTest {
     @Test
     void generatePrefixedJavaNameForIriUsesPrefixRegisteredForOntologyIri() {
         final IRI ontologyIri = IRI.create(RDFS.NAMESPACE);
-        when(prefixMap.getPrefix(ontologyIri)).thenReturn(Optional.of(RDFS.PREFIX));
+        when(prefixMap.getNamespacePrefix(ontologyIri)).thenReturn(Optional.of(RDFS.PREFIX));
         assertEquals("rdfs_label", sut.generatePrefixedJavaNameForIri(IRI.create(RDFS.LABEL), new OWLOntologyID(ontologyIri)));
     }
 
@@ -92,7 +92,7 @@ class JavaNameGeneratorTest {
     void generatePrefixedJavaNameForIriResolvesPrefixFromOntologyIriWhenNoPrefixIsRegisteredInPrefixMap() {
         final IRI ontologyIri = IRI.create("http://www.w3.org/ns/activitystreams#");
         final IRI iri = IRI.create("https://www.w3.org/ns/activitystreams#Event");
-        when(prefixMap.getPrefix(any())).thenReturn(Optional.empty());
+        when(prefixMap.getNamespacePrefix(any())).thenReturn(Optional.empty());
         assertEquals("activitystreams_Event", sut.generatePrefixedJavaNameForIri(iri, new OWLOntologyID(ontologyIri)));
     }
 
@@ -100,14 +100,14 @@ class JavaNameGeneratorTest {
     void generatePrefixedJavaNameForIriReturnsNameWithoutPrefixWhenOntologyIdIsAnonymous() {
         final IRI iri = IRI.create("https://www.w3.org/ns/activitystreams#Event");
         assertEquals("Event", sut.generatePrefixedJavaNameForIri(iri, new OWLOntologyID()));
-        verify(prefixMap, never()).getPrefix(any());
+        verify(prefixMap, never()).getNamespacePrefix(any());
     }
 
     @Test
     void generatedPrefixedJavaNameForIriReturnsValidJavaNameWhenPrefixContainsDashes() {
         final IRI ontologyIri = IRI.create("http://onto.fel.cvut.cz/ontologies/slovn\\u00edk/agendov\\u00fd/popis-dat");
         final IRI iri = IRI.create("http://onto.fel.cvut.cz/ontologies/slovn\\u00edk/agendov\\u00fd/popis-dat/pojem/atribut");
-        when(prefixMap.getPrefix(ontologyIri)).thenReturn(Optional.of("popis-dat"));
+        when(prefixMap.getNamespacePrefix(ontologyIri)).thenReturn(Optional.of("popis-dat"));
         assertEquals("popis_dat_atribut", sut.generatePrefixedJavaNameForIri(iri, new OWLOntologyID(ontologyIri)));
     }
 }

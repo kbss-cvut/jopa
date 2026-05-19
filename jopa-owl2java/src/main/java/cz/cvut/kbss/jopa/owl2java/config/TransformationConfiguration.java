@@ -47,6 +47,8 @@ public class TransformationConfiguration {
 
     private final String ontologyPrefixProperty;
 
+    private final String ontologyNamespaceProperty;
+
     private final boolean alwaysUseOntologyPrefix;
 
     private final String prefixMappingFile;
@@ -67,6 +69,7 @@ public class TransformationConfiguration {
         this.generateAnnotationFields = builder.generateAnnotationFields;
         this.generateThing = builder.generateThing;
         this.ontologyPrefixProperty = builder.ontologyPrefixProperty;
+        this.ontologyNamespaceProperty = builder.ontologyNamespaceProperty;
         this.alwaysUseOntologyPrefix = builder.alwaysUseOntologyPrefix;
         this.prefixMappingFile = builder.prefixMappingFile;
         this.remotePrefixResolver = builder.remotePrefixResolver;
@@ -88,6 +91,8 @@ public class TransformationConfiguration {
         this.generateThing = cliParams.is(Option.GENERATE_THING.arg, Defaults.GENERATE_THING);
         this.ontologyPrefixProperty = cliParams.has(Option.ONTOLOGY_PREFIX_PROPERTY.arg) ? cliParams.valueOf(Option.ONTOLOGY_PREFIX_PROPERTY.arg)
                                                                                                     .toString() : Defaults.ONTOLOGY_PREFIX_PROPERTY;
+        this.ontologyNamespaceProperty = cliParams.has(Option.ONTOLOGY_NAMESPACE_PROPERTY.arg) ? cliParams.valueOf(Option.ONTOLOGY_NAMESPACE_PROPERTY.arg)
+                                                                                                    .toString() : Defaults.ONTOLOGY_NAMESPACE_PROPERTY;
         this.alwaysUseOntologyPrefix = cliParams.is(Option.ALWAYS_USE_ONTOLOGY_PREFIX.arg, Defaults.ALWAYS_USE_ONTOLOGY_PREFIX);
         this.prefixMappingFile = cliParams.has(Option.PREFIX_MAPPING_FILE.arg) ? cliParams.valueOf(Option.PREFIX_MAPPING_FILE.arg)
                                                                                           .toString() : null;
@@ -142,6 +147,10 @@ public class TransformationConfiguration {
         return ontologyPrefixProperty;
     }
 
+    public String getOntologyNamespaceProperty() {
+        return ontologyNamespaceProperty;
+    }
+
     public boolean shouldAlwaysUseOntologyPrefix() {
         return alwaysUseOntologyPrefix;
     }
@@ -178,6 +187,7 @@ public class TransformationConfiguration {
         private boolean generateAnnotationFields = Defaults.GENERATE_ANNOTATION_FIELDS;
         private boolean generateThing = Defaults.GENERATE_THING;
         private String ontologyPrefixProperty = Defaults.ONTOLOGY_PREFIX_PROPERTY;
+        private String ontologyNamespaceProperty = Defaults.ONTOLOGY_NAMESPACE_PROPERTY;
         private boolean alwaysUseOntologyPrefix = Defaults.ALWAYS_USE_ONTOLOGY_PREFIX;
         private String prefixMappingFile = null;
         private RemotePrefixResolver remotePrefixResolver = new PrefixCcRemotePrefixResolver();
@@ -235,6 +245,13 @@ public class TransformationConfiguration {
         public TransformationConfigurationBuilder ontologyPrefixProperty(String ontologyPrefixProperty) {
             if (ontologyPrefixProperty != null && !ontologyPrefixProperty.isBlank()) {
                 this.ontologyPrefixProperty = ontologyPrefixProperty;
+            }
+            return this;
+        }
+
+        public TransformationConfigurationBuilder ontologyNamespaceProperty(String ontologyNamespaceProperty) {
+            if (ontologyNamespaceProperty != null && !ontologyNamespaceProperty.isBlank()) {
+                this.ontologyNamespaceProperty = ontologyNamespaceProperty;
             }
             return this;
         }
