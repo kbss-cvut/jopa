@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -168,7 +169,8 @@ public class PrefixMap {
     /**
      * Gets prefix for a resource with the specified IRI.
      * <p>
-     * This means extracting the namespace from the IRI and looking up the prefix for it.
+     * Primarily, this means extracting the namespace from the IRI and looking up the prefix for it. If no exact match
+     * is found, prefix with the longest matching namespace is returned.
      *
      * @param iri Resource IRI
      * @return Resolved prefix, if available
@@ -176,7 +178,13 @@ public class PrefixMap {
     public Optional<String> getPrefix(IRI iri) {
         Objects.requireNonNull(iri);
         final String namespace = iri.getNamespace();
-        return getNamespacePrefix(IRI.create(namespace));
+        final Optional<String> prefix = getNamespacePrefix(IRI.create(namespace));
+        if (prefix.isPresent()) {
+            return prefix;
+        }
+        final String strIri = iri.getIRIString();
+        return prefixes.keySet().stream().filter(strIri::startsWith).max(Comparator.comparingInt(String::length))
+                       .map(prefixes::get);
     }
 
     /**
@@ -188,6 +196,19 @@ public class PrefixMap {
     public boolean hasOntologyPrefix(IRI ontologyIri) {
         Objects.requireNonNull(ontologyIri);
         return prefixes.containsKey(ontologyIri.getIRIString());
+    }
+
+    /**
+     * Checks whether a prefix is available for the specified IRI.
+     * <p>
+     * The prefix may be exact match for the namespace or the longest matching namespace for the IRI.
+     *
+     * @param iri IRI to check
+     * @return {@code true} if a prefix is registered for the IRI, {@code false} otherwise
+     */
+    public boolean hasPrefix(IRI iri) {
+        final String strIri = iri.getIRIString();
+        return prefixes.containsKey(iri.getNamespace()) || prefixes.keySet().stream().anyMatch(strIri::startsWith);
     }
 
     private static Map<String, String> builtInPrefixes() {
