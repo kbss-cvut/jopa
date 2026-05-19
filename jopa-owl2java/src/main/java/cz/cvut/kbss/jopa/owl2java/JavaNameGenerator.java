@@ -19,7 +19,6 @@ package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.owl2java.prefix.PrefixMap;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLOntologyID;
 
 import javax.lang.model.SourceVersion;
 import java.text.Normalizer;
@@ -63,27 +62,21 @@ public class JavaNameGenerator {
     }
 
     /**
-     * Returns a valid Java identifier extracted from the specified IRI, prefixed with prefix registered for the
-     * specified ontology IRI (if available).
+     * Returns a valid Java identifier extracted from the specified IRI, prefixed with prefix registered for the IRIs
+     * namespace (if available).
      * <p>
      * If the IRI contains a non-empty fragment, it is used. Otherwise, the part after the last slash is used as the
      * name.
      * <p>
-     * If the ontology is anonymous, no prefix is added to the extracted name. If no prefix is registered for the
-     * ontology, a prefix represented by extracting a java name from the ontology IRI is used.
+     * If no prefix is registered for the namespace, a Java name extracted from the IRI without prefix is used.
      *
-     * @param iri        IRI to extract name from
-     * @param ontologyId Ontology identifier
+     * @param iri IRI to extract name from
      * @return Java name based on the specified IRI
      */
-    public String generatePrefixedJavaNameForIri(IRI iri, OWLOntologyID ontologyId) {
-        if (ontologyId.isAnonymous()) {
-            return generateJavaNameForIri(iri);
-        }
-        assert ontologyId.getOntologyIRI().isPresent();
-        final IRI ontologyIri = ontologyId.getOntologyIRI().get();
-        return makeNameValidJava(prefixMap.getNamespacePrefix(ontologyIri)
-                                          .orElse(generateJavaNameForIri(ontologyIri))) + SEPARATOR + generateJavaNameForIri(iri);
+    public String generatePrefixedJavaNameForIri(IRI iri) {
+        return prefixMap.getPrefix(iri)
+                        .map(prefix -> makeNameValidJava(prefix + SEPARATOR + generateJavaNameForIri(iri)))
+                        .orElseGet(() -> generateJavaNameForIri(iri));
     }
 
     /**
@@ -98,13 +91,13 @@ public class JavaNameGenerator {
     }
 
     /**
-     * Checks whether a prefix exists for the specified ontology identifier.
+     * Checks whether a prefix exists for the specified identifier.
      *
-     * @param ontologyIri Ontology IRI
-     * @return {@code true} if a prefix has been resolved for ontology IRI, {@code false} otherwise
+     * @param iri IRI
+     * @return {@code true} if a prefix has been resolved for IRI namespace, {@code false} otherwise
      */
-    public boolean hasPrefix(IRI ontologyIri) {
-        return prefixMap.hasOntologyPrefix(ontologyIri);
+    public boolean hasPrefix(IRI iri) {
+        return prefixMap.hasPrefix(iri);
     }
 
     /**
@@ -128,11 +121,10 @@ public class JavaNameGenerator {
     }
 
     /**
-     * Filters the specified name so that it contains only characters allowed for Java identifiers.
-     * If the first character (before filtering) must not be at the start,
-     * an underscore ("_") is prepended.
-     * If the resulting field name (after filtering) matches any Java keyword,
-     * an underscore ("_") is appended.
+     * Filters the specified name so that it contains only characters allowed for Java identifiers. If the first
+     * character (before filtering) must not be at the start, an underscore ("_") is prepended. If the resulting field
+     * name (after filtering) matches any Java keyword, an underscore ("_") is appended.
+     *
      * @param name the name to filter
      * @return a valid Java identifier
      * @see <a href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-3.html#jls-3.8">Java 17 Spec</a>

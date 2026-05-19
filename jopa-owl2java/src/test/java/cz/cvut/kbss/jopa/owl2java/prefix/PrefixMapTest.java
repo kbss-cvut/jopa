@@ -213,4 +213,16 @@ class PrefixMapTest {
         assertTrue(result.isPresent());
         assertEquals("rdfs", result.get());
     }
+
+    @Test
+    void getPrefixAttemptsToMatchLongestRegisteredNamespaceAsResourceIriSubstringForPrefixResolution() {
+        final TransformationConfiguration config = configBuilder().build();
+        final String prefix = "owl2java";
+        final IRI ontologyIri = IRI.create("http://onto.fel.cvut.cz/ontologies/jopa/owl2java");
+        assertOntologyPrefixAnnotation(prefix, ontologyIri);
+        final PrefixMap sut = new PrefixMap(ontologyManager, config);
+        final Optional<String> result = sut.getPrefix(IRI.create("http://onto.fel.cvut.cz/ontologies/jopa/owl2java/term/vocabulary"));
+        assertTrue(result.isPresent());
+        assertEquals(prefix, result.get());
+    }
 }

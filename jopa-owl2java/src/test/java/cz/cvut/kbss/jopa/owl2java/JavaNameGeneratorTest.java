@@ -25,14 +25,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLOntologyID;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,32 +79,23 @@ class JavaNameGeneratorTest {
     }
 
     @Test
-    void generatePrefixedJavaNameForIriUsesPrefixRegisteredForOntologyIri() {
-        final IRI ontologyIri = IRI.create(RDFS.NAMESPACE);
-        when(prefixMap.getNamespacePrefix(ontologyIri)).thenReturn(Optional.of(RDFS.PREFIX));
-        assertEquals("rdfs_label", sut.generatePrefixedJavaNameForIri(IRI.create(RDFS.LABEL), new OWLOntologyID(ontologyIri)));
+    void generatePrefixedJavaNameForIriUsesPrefixRegisteredForNamespace() {
+        final IRI iri = IRI.create(RDFS.LABEL);
+        when(prefixMap.getPrefix(iri)).thenReturn(Optional.of(RDFS.PREFIX));
+        assertEquals("rdfs_label", sut.generatePrefixedJavaNameForIri(iri));
     }
 
     @Test
-    void generatePrefixedJavaNameForIriResolvesPrefixFromOntologyIriWhenNoPrefixIsRegisteredInPrefixMap() {
-        final IRI ontologyIri = IRI.create("http://www.w3.org/ns/activitystreams#");
+    void generatePrefixedJavaNameForIriReturnsNameWithoutPrefixWhenNoPrefixIsRegistered() {
         final IRI iri = IRI.create("https://www.w3.org/ns/activitystreams#Event");
-        when(prefixMap.getNamespacePrefix(any())).thenReturn(Optional.empty());
-        assertEquals("activitystreams_Event", sut.generatePrefixedJavaNameForIri(iri, new OWLOntologyID(ontologyIri)));
-    }
-
-    @Test
-    void generatePrefixedJavaNameForIriReturnsNameWithoutPrefixWhenOntologyIdIsAnonymous() {
-        final IRI iri = IRI.create("https://www.w3.org/ns/activitystreams#Event");
-        assertEquals("Event", sut.generatePrefixedJavaNameForIri(iri, new OWLOntologyID()));
-        verify(prefixMap, never()).getNamespacePrefix(any());
+        when(prefixMap.getPrefix(any())).thenReturn(Optional.empty());
+        assertEquals("Event", sut.generatePrefixedJavaNameForIri(iri));
     }
 
     @Test
     void generatedPrefixedJavaNameForIriReturnsValidJavaNameWhenPrefixContainsDashes() {
-        final IRI ontologyIri = IRI.create("http://onto.fel.cvut.cz/ontologies/slovn\\u00edk/agendov\\u00fd/popis-dat");
         final IRI iri = IRI.create("http://onto.fel.cvut.cz/ontologies/slovn\\u00edk/agendov\\u00fd/popis-dat/pojem/atribut");
-        when(prefixMap.getNamespacePrefix(ontologyIri)).thenReturn(Optional.of("popis-dat"));
-        assertEquals("popis_dat_atribut", sut.generatePrefixedJavaNameForIri(iri, new OWLOntologyID(ontologyIri)));
+        when(prefixMap.getPrefix(iri)).thenReturn(Optional.of("popis-dat"));
+        assertEquals("popis_dat_atribut", sut.generatePrefixedJavaNameForIri(iri));
     }
 }
