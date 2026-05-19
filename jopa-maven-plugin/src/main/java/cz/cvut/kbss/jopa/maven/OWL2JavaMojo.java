@@ -101,10 +101,10 @@ public class OWL2JavaMojo extends AbstractMojo {
     private String ontologyNamespaceProperty;
 
     @Parameter(name = VOCABULARY_ALWAYS_USE_PREFIXES, defaultValue = "true")
-    private boolean alwaysUsePrefixesForVocabulary;
+    private boolean vocabularyAlwaysUsePrefixes;
 
     @Parameter(name = MODEL_ALWAYS_USE_PREFIXES, defaultValue = "false")
-    private boolean alwaysUsePrefixesForModel;
+    private boolean modelAlwaysUsePrefixes;
 
     @Parameter(name = PREFIX_MAPPING_FILE)
     private String prefixMappingFile;
@@ -145,8 +145,8 @@ public class OWL2JavaMojo extends AbstractMojo {
                        .generateAnnotationFields(generateAnnotationFields).generateThing(generateThing)
                        .ontologyPrefixProperty(ontologyPrefixProperty)
                        .ontologyNamespaceProperty(ontologyNamespaceProperty)
-                       .alwaysUseOntologyPrefixForVocabulary(alwaysUsePrefixesForVocabulary)
-                       .alwaysUseOntologyPrefixForModel(alwaysUsePrefixesForModel)
+                       .alwaysUseOntologyPrefixForVocabulary(vocabularyAlwaysUsePrefixes)
+                       .alwaysUseOntologyPrefixForModel(modelAlwaysUsePrefixes)
                        .prefixMappingFile(prefixMappingFile).build();
 
         if (vocabularyOnly) {
@@ -176,8 +176,8 @@ public class OWL2JavaMojo extends AbstractMojo {
         Utils.logParameterValue(GENERATE_THING, generateThing, getLog());
         Utils.logParameterValue(ONTOLOGY_PREFIX_PROPERTY, ontologyPrefixProperty, getLog());
         Utils.logParameterValue(ONTOLOGY_NAMESPACE_PROPERTY, ontologyNamespaceProperty, getLog());
-        Utils.logParameterValue(VOCABULARY_ALWAYS_USE_PREFIXES, alwaysUsePrefixesForVocabulary, getLog());
-        Utils.logParameterValue(MODEL_ALWAYS_USE_PREFIXES, alwaysUsePrefixesForModel, getLog());
+        Utils.logParameterValue(VOCABULARY_ALWAYS_USE_PREFIXES, vocabularyAlwaysUsePrefixes, getLog());
+        Utils.logParameterValue(MODEL_ALWAYS_USE_PREFIXES, modelAlwaysUsePrefixes, getLog());
         Utils.logParameterValue(PREFIX_MAPPING_FILE, prefixMappingFile, getLog());
     }
 

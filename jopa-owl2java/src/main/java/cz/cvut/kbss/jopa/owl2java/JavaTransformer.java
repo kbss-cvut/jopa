@@ -224,8 +224,7 @@ public class JavaTransformer {
                                                       .sorted(Comparator.comparing(IRI::getIRIString))
                                                       .toList();
         ontologyIris.forEach(iri -> {
-            final String fieldName = ensureVocabularyItemUniqueIdentifier("ONTOLOGY_IRI_" + JavaNameGenerator.makeNameValidJava(nameGenerator.getOntologyPrefix(iri)
-                                                                                                                                             .orElseGet(() -> nameGenerator.generateJavaNameForIri(iri)))
+            final String fieldName = ensureVocabularyItemUniqueIdentifier("ONTOLOGY_IRI_" + JavaNameGenerator.makeNameValidJava(nameGenerator.generateJavaNameForIri(iri))
                                                                                                              .toUpperCase());
             voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, String.class, fieldName, JExpr.lit(iri.toString()));
         });
@@ -240,7 +239,7 @@ public class JavaTransformer {
         final Optional<OWLOntology> containingOntology = resolveContainingOntology(c, ontologyManager);
         String fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generateJavaNameForIri(c.getIRI());
         if (voc.fields().containsKey(fieldName) || (
-                containingOntology.isPresent() && configuration.shouldAlwaysUseOntologyPrefixForVocabulary() &&nameGenerator.hasPrefix(c.getIRI()))) {
+                containingOntology.isPresent() && configuration.shouldAlwaysUseOntologyPrefixForVocabulary() && nameGenerator.hasPrefix(c.getIRI()))) {
             fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generatePrefixedJavaNameForIri(c.getIRI());
         }
         return Optional.of(ensureVocabularyItemUniqueIdentifier(fieldName));
