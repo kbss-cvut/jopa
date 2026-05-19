@@ -240,7 +240,7 @@ public class JavaTransformer {
         final Optional<OWLOntology> containingOntology = resolveContainingOntology(c, ontologyManager);
         String fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generateJavaNameForIri(c.getIRI());
         if (voc.fields().containsKey(fieldName) || (
-                containingOntology.isPresent() && isPrefixedVersionRequired(c.getIRI()))) {
+                containingOntology.isPresent() && configuration.shouldAlwaysUseOntologyPrefixForVocabulary() &&nameGenerator.hasPrefix(c.getIRI()))) {
             fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generatePrefixedJavaNameForIri(c.getIRI());
         }
         return Optional.of(ensureVocabularyItemUniqueIdentifier(fieldName));
@@ -514,7 +514,7 @@ public class JavaTransformer {
         String className = resolveExplicitClassName(rootOntology, owlClass)
                 .orElseGet(() -> JavaNameGenerator.toCamelCaseNotation(nameGenerator.generateJavaNameForIri(owlClass.getIRI())));
 
-        if (isClassNameUnique(pkg, className, codeModel) && !isPrefixedVersionRequired(owlClass.getIRI())) {
+        if (isClassNameUnique(pkg, className, codeModel) && (!configuration.shouldAlwaysUseOntologyPrefixForModel() || !nameGenerator.hasPrefix(owlClass.getIRI()))) {
             return fqn(pkg, className);
         }
         className = JavaNameGenerator.toCamelCaseNotation(nameGenerator.generatePrefixedJavaNameForIri(owlClass.getIRI()));
@@ -544,10 +544,6 @@ public class JavaTransformer {
 
     private static String fqn(String pkg, String simpleName) {
         return pkg + PACKAGE_SEPARATOR + simpleName;
-    }
-
-    private boolean isPrefixedVersionRequired(IRI iri) {
-        return configuration.shouldAlwaysUseOntologyPrefix() && nameGenerator.hasPrefix(iri);
     }
 
     private void generateClassJavadoc(OWLOntology ontology, OWLEntity owlEntity, JDocCommentable javaElem) {

@@ -135,7 +135,7 @@ public class OWL2JavaMojo extends AbstractMojo {
                        .addOwlapiIris(withOwlapi).addJavaUris(withJavaUris)
                        .generateJavadoc(javadocFromRdfsComment).preferMultilingualStrings(preferMultilingualStrings)
                        .generateAnnotationFields(generateAnnotationFields).generateThing(generateThing)
-                       .ontologyPrefixProperty(ontologyPrefixProperty).alwaysUseOntologyPrefix(alwaysUsePrefixes)
+                       .ontologyPrefixProperty(ontologyPrefixProperty).alwaysUseOntologyPrefixForVocabulary(alwaysUsePrefixes)
                        .prefixMappingFile(prefixMappingFile).build();
 
         if (vocabularyOnly) {
