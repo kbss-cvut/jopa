@@ -82,7 +82,7 @@ public class JavaNameGenerator {
         }
         assert ontologyId.getOntologyIRI().isPresent();
         final IRI ontologyIri = ontologyId.getOntologyIRI().get();
-        return makeNameValidJava(prefixMap.getPrefix(ontologyIri)
+        return makeNameValidJava(prefixMap.getNamespacePrefix(ontologyIri)
                                           .orElse(generateJavaNameForIri(ontologyIri))) + SEPARATOR + generateJavaNameForIri(iri);
     }
 
@@ -94,7 +94,7 @@ public class JavaNameGenerator {
      */
     public Optional<String> getOntologyPrefix(IRI ontologyIri) {
         Objects.requireNonNull(ontologyIri);
-        return prefixMap.getPrefix(ontologyIri);
+        return prefixMap.getNamespacePrefix(ontologyIri);
     }
 
     /**
@@ -104,7 +104,7 @@ public class JavaNameGenerator {
      * @return {@code true} if a prefix has been resolved for ontology IRI, {@code false} otherwise
      */
     public boolean hasPrefix(IRI ontologyIri) {
-        return prefixMap.hasPrefix(ontologyIri);
+        return prefixMap.hasOntologyPrefix(ontologyIri);
     }
 
     /**

@@ -32,6 +32,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.formats.TurtleDocumentFormat;
+import org.semanticweb.owlapi.io.StreamDocumentSource;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -61,13 +63,13 @@ class PrefixMapTest {
     private final RemotePrefixResolver remotePrefixResolver = mock(RemotePrefixResolver.class);
 
     @Test
-    void getPrefixReturnsPrefixResolvedFromSingleStringAnnotationPropertyValue() {
+    void getNamespacePrefixReturnsOntologyPrefixResolvedFromSingleStringAnnotationPropertyValue() {
         final TransformationConfiguration config = configBuilder().build();
         final String prefix = "owl2java";
         final IRI ontologyIri = IRI.create(Generator.generateUri());
         assertOntologyPrefixAnnotation(prefix, ontologyIri);
         final PrefixMap sut = new PrefixMap(ontologyManager, config);
-        final Optional<String> result = sut.getPrefix(ontologyIri);
+        final Optional<String> result = sut.getNamespacePrefix(ontologyIri);
         assertTrue(result.isPresent());
         assertEquals(prefix, result.get());
     }
@@ -77,7 +79,7 @@ class PrefixMapTest {
     }
 
     @Test
-    void getPrefixReturnsPrefixResolvedFromSingleStringDataPropertyValue() throws Exception {
+    void getNamespacePrefixReturnsOntologyPrefixResolvedFromSingleStringDataPropertyValue() throws Exception {
         final TransformationConfiguration config = configBuilder().build();
         final String prefix = "owl2java";
         final IRI ontologyIri = IRI.create(Generator.generateUri());
@@ -85,13 +87,13 @@ class PrefixMapTest {
         final OWLDataProperty prefixProperty = dataFactory.getOWLDataProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
         ontology.add(dataFactory.getOWLDataPropertyAssertionAxiom(prefixProperty, dataFactory.getOWLNamedIndividual(ontologyIri), dataFactory.getOWLLiteral(prefix)));
         final PrefixMap sut = new PrefixMap(ontologyManager, config);
-        final Optional<String> result = sut.getPrefix(ontologyIri);
+        final Optional<String> result = sut.getNamespacePrefix(ontologyIri);
         assertTrue(result.isPresent());
         assertEquals(prefix, result.get());
     }
 
     @Test
-    void getPrefixReturnsPrefixesOfMultipleOntologies() {
+    void getNamespacePrefixReturnsPrefixesOfMultipleOntologies() {
         final TransformationConfiguration config = configBuilder().build();
         final Map<String, IRI> prefixes = Map.of(
                 "owl2java", IRI.create(Generator.generateUri()),
@@ -101,37 +103,17 @@ class PrefixMapTest {
         final PrefixMap sut = new PrefixMap(ontologyManager, config);
 
         prefixes.forEach((prefix, iri) -> {
-            final Optional<String> result = sut.getPrefix(iri);
+            final Optional<String> result = sut.getNamespacePrefix(iri);
             assertTrue(result.isPresent());
             assertEquals(prefix, result.get());
         });
     }
 
-    @Test
-    void getPrefixReturnsPrefixWhenMultiplePrefixAssertionsAreInMergedOntology() {
-        final TransformationConfiguration config = configBuilder().build();
-        final Map<String, IRI> prefixes = Map.of(
-                "owl2java", IRI.create(Generator.generateUri()),
-                "jopa", IRI.create(Generator.generateUri())
-        );
-        final OWLOntology ontology = assertOntologyPrefixAnnotation("owl2java", prefixes.get("owl2java"));
-        final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
-        ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, prefixes.get("jopa"), dataFactory.getOWLLiteral("jopa")));
-
-        final PrefixMap sut = new PrefixMap(ontologyManager, config);
-        prefixes.forEach((prefix, iri) -> {
-            final Optional<String> result = sut.getPrefix(iri);
-            assertTrue(result.isPresent());
-            assertEquals(prefix, result.get());
-        });
-    }
-
-    private OWLOntology assertOntologyPrefixAnnotation(String prefix, IRI ontologyIri) {
+    private void assertOntologyPrefixAnnotation(String prefix, IRI ontologyIri) {
         try {
             final OWLOntology ontology = ontologyManager.createOntology(ontologyIri);
             final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
             ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, ontologyIri, dataFactory.getOWLLiteral(prefix)));
-            return ontology;
         } catch (OWLOntologyCreationException e) {
             throw new RuntimeException(e);
         }
@@ -139,13 +121,13 @@ class PrefixMapTest {
 
     @ParameterizedTest
     @MethodSource("predefinedPrefixes")
-    void getPrefixReturnsPredefinedPrefixesForSelectedVocabularies(String expectedPrefix, IRI iri) {
+    void getNamespacePrefixReturnsPredefinedPrefixesForSelectedVocabularies(String expectedPrefix, IRI iri) {
         final TransformationConfiguration config = configBuilder().build();
         final String prefix = "owl2java";
         final IRI ontologyIri = IRI.create(Generator.generateUri());
         assertOntologyPrefixAnnotation(prefix, ontologyIri);
         final PrefixMap sut = new PrefixMap(ontologyManager, config);
-        final Optional<String> result = sut.getPrefix(iri);
+        final Optional<String> result = sut.getNamespacePrefix(iri);
         assertTrue(result.isPresent());
         assertEquals(expectedPrefix, result.get());
     }
@@ -161,14 +143,14 @@ class PrefixMapTest {
     }
 
     @Test
-    void getPrefixReturnsPrefixResolvedFromPrefixMappingFileSpecifiedInConfiguration() {
+    void getPrefixReturnsPrefixResolvedFromOntologyPrefixMappingFileSpecifiedInConfiguration() {
         final String prefixMappingFilePath = TestUtils.resolveTestResourcesFilePath("prefixMappingFile");
         final TransformationConfiguration config = configBuilder().prefixMappingFile(prefixMappingFilePath).build();
         final PrefixMap sut = new PrefixMap(ontologyManager, config);
-        final Optional<String> siocPrefix = sut.getPrefix(IRI.create("http://rdfs.org/sioc/ns#"));
+        final Optional<String> siocPrefix = sut.getNamespacePrefix(IRI.create("http://rdfs.org/sioc/ns#"));
         assertTrue(siocPrefix.isPresent());
         assertEquals("sioc", siocPrefix.get());
-        final Optional<String> ddoPrefix = sut.getPrefix(IRI.create("http://onto.fel.cvut.cz/ontologies/dataset-descriptor/"));
+        final Optional<String> ddoPrefix = sut.getNamespacePrefix(IRI.create("http://onto.fel.cvut.cz/ontologies/dataset-descriptor/"));
         assertTrue(ddoPrefix.isPresent());
         assertEquals("ddo", ddoPrefix.get());
     }
@@ -187,9 +169,48 @@ class PrefixMapTest {
         ontologyManager.createOntology(ontologyIri);
         when(remotePrefixResolver.resolvePrefix(ontologyIri)).thenReturn(Optional.of(prefix));
         final PrefixMap sut = new PrefixMap(ontologyManager, config);
-        final Optional<String> result = sut.getPrefix(ontologyIri);
+        final Optional<String> result = sut.getNamespacePrefix(ontologyIri);
         assertTrue(result.isPresent());
         assertEquals(prefix, result.get());
         verify(remotePrefixResolver).resolvePrefix(ontologyIri);
+    }
+
+    @Test
+    void prefixResolvingUsesPrefixAndNamespaceDeclaredInOntology() throws Exception {
+        final TransformationConfiguration config = configBuilder().build();
+        ontologyManager.loadOntologyFromOntologyDocument(new StreamDocumentSource(PrefixMapTest.class.getClassLoader()
+                                                                                                     .getResourceAsStream("with-prefix.ttl"),
+                IRI.create("http://onto.fel.cvut.cz/ontologies/application/termit"), new TurtleDocumentFormat(), "text/turtle"));
+        final PrefixMap sut = new PrefixMap(ontologyManager, config);
+
+        final Optional<String> result = sut.getNamespacePrefix(IRI.create("http://onto.fel.cvut.cz/ontologies/application/termit"));
+        assertTrue(result.isPresent());
+        assertEquals("termit", result.get());
+    }
+
+    @Test
+    void getPrefixReturnsPrefixResolvedForNamespaceOfResourceWithSlashDelimiter() throws Exception {
+        final TransformationConfiguration config = configBuilder().build();
+        ontologyManager.loadOntologyFromOntologyDocument(new StreamDocumentSource(PrefixMapTest.class.getClassLoader()
+                                                                                                     .getResourceAsStream("with-prefix.ttl"),
+                IRI.create("http://onto.fel.cvut.cz/ontologies/application/termit"), new TurtleDocumentFormat(), "text/turtle"));
+        final PrefixMap sut = new PrefixMap(ontologyManager, config);
+
+        final Optional<String> result = sut.getPrefix(IRI.create("http://onto.fel.cvut.cz/ontologies/application/termit/term/vocabulary"));
+        assertTrue(result.isPresent());
+        assertEquals("termit", result.get());
+    }
+
+    @Test
+    void getPrefixReturnsPrefixResolvedForNamespaceOfResourceWithHashtagDelimiter() {
+        final TransformationConfiguration config = configBuilder().build();
+        final String prefix = "owl2java";
+        final IRI ontologyIri = IRI.create(Generator.generateUri());
+        assertOntologyPrefixAnnotation(prefix, ontologyIri);
+        final PrefixMap sut = new PrefixMap(ontologyManager, config);
+
+        final Optional<String> result = sut.getPrefix(IRI.create(RDFS.CLASS));
+        assertTrue(result.isPresent());
+        assertEquals("rdfs", result.get());
     }
 }

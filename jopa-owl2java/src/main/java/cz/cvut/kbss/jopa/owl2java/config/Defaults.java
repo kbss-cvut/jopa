@@ -92,6 +92,11 @@ public class Defaults {
     public static final String ONTOLOGY_PREFIX_PROPERTY = "http://purl.org/vocab/vann/preferredNamespacePrefix";
 
     /**
+     * @see Option#ONTOLOGY_NAMESPACE_PROPERTY
+     */
+    public static final String ONTOLOGY_NAMESPACE_PROPERTY = "http://purl.org/vocab/vann/preferredNamespaceUri";
+
+    /**
      * @see Option#ALWAYS_USE_ONTOLOGY_PREFIX
      */
     public static final boolean ALWAYS_USE_ONTOLOGY_PREFIX = true;
