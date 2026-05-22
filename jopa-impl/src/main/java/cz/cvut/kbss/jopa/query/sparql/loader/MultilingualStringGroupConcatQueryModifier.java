@@ -33,19 +33,18 @@ class MultilingualStringGroupConcatQueryModifier extends GroupConcatQueryModifie
             return Stream.empty();
         }
         return Stream.of(values.split(GROUP_CONCAT_SEPARATOR))
-                     .map(MultilingualStringGroupConcatQueryModifier::toLangString)
-                     .map(Value::new);
+                     .map(MultilingualStringGroupConcatQueryModifier::toValue);
     }
 
-    private static LangString toLangString(String token) {
+    private static Value<?> toValue(String token) {
         // The token is produced by CONCAT(STR(?var), "@", LANG(?var)).
         // The lexical value may itself contain '@', so split on the last occurrence.
         final int sep = token.lastIndexOf('@');
         if (sep < 0) {
-            return new LangString(token);
+            return new Value<>(token);
         }
         final String value = token.substring(0, sep);
         final String language = token.substring(sep + 1);
-        return language.isEmpty() ? new LangString(value) : new LangString(value, language);
+        return new Value<>(language.isEmpty() ? value : new LangString(value, language));
     }
 }

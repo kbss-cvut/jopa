@@ -32,14 +32,14 @@ public class OWLClassN {
     @Id(generated = true)
     private String id;
 
-    @OWLAnnotationProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationProperty")
+    @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "annotationProperty")
     private String annotationProperty;
 
-    @OWLAnnotationProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationUri")
+    @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "annotationUri")
     private URI annotationUri;
 
     @ParticipationConstraints(nonEmpty = true)
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
+    @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "A-stringAttribute")
     private String stringAttribute;
 
     @OWLAnnotationProperty(iri = DC.Terms.SOURCE)
@@ -48,6 +48,13 @@ public class OWLClassN {
     @Inferred
     @Properties(fetchType = FetchType.LAZY)
     private Map<String, Set<String>> properties;
+
+    public OWLClassN() {
+    }
+
+    public OWLClassN(String id) {
+        this.id = id;
+    }
 
     public String getId() {
         return id;

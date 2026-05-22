@@ -33,7 +33,7 @@ public final class QueryVariableMapping {
         if (isPluralPlainIdentifierAttribute() || attribute instanceof TypesSpecification<?, ?>) {
             return new IriGroupConcatQueryModifier(this);
         }
-        if (isMultilingualStringAttribute()) {
+        if (isMultilingualStringAttribute() || isPluralStringAttribute()) {
             return new MultilingualStringGroupConcatQueryModifier(this);
         }
         return null;
@@ -48,9 +48,14 @@ public final class QueryVariableMapping {
     }
 
     private boolean isMultilingualStringAttribute() {
-        return attribute.getJavaType().equals(MultilingualString.class)
+        return attribute.isMappedAttribute() && attribute.getJavaType().equals(MultilingualString.class)
                 || attribute.isCollection() && ((PluralAttribute<?, ?, ?>) attribute).getBindableJavaType()
                                                                                      .equals(MultilingualString.class);
+    }
+
+    private boolean isPluralStringAttribute() {
+        return attribute.isMappedAttribute() && attribute.isCollection()
+                && ((PluralAttribute<?, ?, ?>) attribute).getBindableJavaType().equals(String.class);
     }
 
     public String subjectVar() {return subjectVar;}
