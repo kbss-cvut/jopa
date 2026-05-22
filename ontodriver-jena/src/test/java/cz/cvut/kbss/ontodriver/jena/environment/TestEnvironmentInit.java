@@ -11,6 +11,10 @@ public class TestEnvironmentInit implements LauncherSessionListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestEnvironmentInit.class);
 
+    /**
+     * Initializes Jena environment once before running all tests to prevent class initialization deadlock of concurrent
+     * tests.
+     */
     @Override
     public void launcherSessionOpened(LauncherSession session) {
         LOG.info("Initializing Jena environment");
