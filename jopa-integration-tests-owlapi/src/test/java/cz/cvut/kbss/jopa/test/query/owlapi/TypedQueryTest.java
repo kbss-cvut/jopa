@@ -130,4 +130,9 @@ public class TypedQueryTest extends TypedQueryRunner {
     public void querySupportsFetchGraphs() {
         // OWL2Query does not support OPTIONAL
     }
+
+    @Override
+    public void querySupportsGroupConcatMultilingualStringsBasedOnFetchGraph() {
+        // OWL2Query does not support OPTIONAL and GROUP_CONCAT
+    }
 }
