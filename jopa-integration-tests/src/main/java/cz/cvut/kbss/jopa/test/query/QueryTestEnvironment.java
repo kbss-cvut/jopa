@@ -71,8 +71,7 @@ public final class QueryTestEnvironment {
     }
 
     /**
-     * Generates and persists test data into the default context of the
-     * specified entity manager.
+     * Generates and persists test data into the default context of the specified entity manager.
      *
      * @param em EntityManager
      */
@@ -87,8 +86,7 @@ public final class QueryTestEnvironment {
     /**
      * Generates and persists test data into the specified contexts.
      * <p>
-     * This method distributes the data approximately uniformly into all the
-     * specified contexts.
+     * This method distributes the data approximately uniformly into all the specified contexts.
      *
      * @param em       EntityManager
      * @param contexts A collection of target contexts
@@ -346,7 +344,7 @@ public final class QueryTestEnvironment {
 
     private static List<OWLClassV> generateOwlClassVInstances(List<Thing> things) {
         final List<OWLClassV> lst = new ArrayList<>();
-        for (int i = 0; i< ITEM_COUNT; i++) {
+        for (int i = 0; i < ITEM_COUNT; i++) {
             final OWLClassV v = new OWLClassV();
             v.setName("TestV-" + i);
             v.setDescription(v.getName() + " description");
@@ -377,6 +375,14 @@ public final class QueryTestEnvironment {
                     y.getSingularString().set("fr", "nombre de valeurs de test " + i);
                     break;
             }
+            y.setPluralString(Set.of(
+                    new MultilingualString(Map.of("en", "Alt label one - " + i,
+                            "cs", "Synonymum jedna - " + i,
+                            "de", "Synonymum eins - " + i)),
+                    new MultilingualString(Map.of("en", "Alt label two - " + i,
+                            "cs", "Synonymum dva i " + i,
+                            "de", "Synonymum zwei - " + i))
+            ));
             lst.add(y);
         }
         return lst;

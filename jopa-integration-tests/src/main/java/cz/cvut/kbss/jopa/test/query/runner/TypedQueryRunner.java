@@ -30,6 +30,7 @@ import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassM;
 import cz.cvut.kbss.jopa.test.OWLClassV;
+import cz.cvut.kbss.jopa.test.OWLClassY;
 import cz.cvut.kbss.jopa.test.Thing;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
@@ -501,6 +502,31 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         for (int i = 0; i < entities.size(); i++) {
             assertEquals(entities.get(i).getUri(), result.get(i).getUri());
             assertEquals(entities.get(i).getStringAttribute(), result.get(i).getStringAttribute());
+        }
+    }
+
+    @Test
+    public void querySupportsGroupConcatMultilingualStringsBasedOnFetchGraph() {
+        final List<OWLClassY> instances = QueryTestEnvironment.getData(OWLClassY.class);
+        instances.sort(Comparator.comparing(OWLClassY::getUri));
+        final EntityGraph<OWLClassY> fetchGraph = getEntityManager().createEntityGraph(OWLClassY.class);
+        fetchGraph.addAttributeNodes("singularString", "pluralString");
+
+        final List<OWLClassY> result = getEntityManager().createQuery("SELECT y FROM OWLClassY y", OWLClassY.class)
+                                                         .setHint(QueryHints.FETCH_GRAPH, fetchGraph)
+                                                         .getResultList();
+        result.sort(Comparator.comparing(OWLClassY::getUri));
+        assertEquals(instances.size(), result.size());
+        for (int i = 0; i < instances.size(); i++) {
+            assertEquals(instances.get(i).getUri(), result.get(i).getUri());
+            assertEquals(instances.get(i).getSingularString(), result.get(i).getSingularString());
+            assertEquals(instances.get(i).getPluralString().size(), result.get(i).getPluralString().size());
+            final int index = i;
+            instances.get(i).getPluralString().forEach((mls) -> mls.getValue()
+                                                                   .forEach((lang, value) -> assertTrue(result.get(index)
+                                                                                                              .getPluralString()
+                                                                                                              .stream()
+                                                                                                              .anyMatch(resMls -> value.equals(resMls.get(lang))))));
         }
     }
 }
