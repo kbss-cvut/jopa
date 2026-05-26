@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.model.annotations;
 import cz.cvut.kbss.jopa.model.EntityManager;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -17,6 +18,7 @@ import java.lang.annotation.Target;
  * A reference to a named entity graph may be obtained by calling {@link EntityManager#getEntityGraph(String)}, and may
  * be passed as hint to {@link cz.cvut.kbss.jopa.model.query.TypedQuery}.
  */
+@Repeatable(NamedEntityGraphs.class)
 @Target(value = ElementType.TYPE)
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface NamedEntityGraph {

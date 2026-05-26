@@ -2,7 +2,7 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.metamodel.MetamodelClassMapper;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 
 import java.util.ArrayList;
@@ -15,17 +15,17 @@ public class EntityGraphImpl<T> implements EntityGraph<T>, Subgraph<T> {
     private final String name;
 
     private final ManagedType<T> entityType;
-    private final Metamodel metamodel;
+    private final MetamodelClassMapper metamodel;
 
     private final Map<String, AttributeNodeImpl<?>> attributeNodes = new HashMap<>();
 
-    public EntityGraphImpl(ManagedType<T> entityType, Metamodel metamodel) {
+    public EntityGraphImpl(ManagedType<T> entityType, MetamodelClassMapper metamodel) {
         this.entityType = entityType;
         this.metamodel = metamodel;
         this.name = null;
     }
 
-    public EntityGraphImpl(String name, ManagedType<T> entityType, Metamodel metamodel) {
+    public EntityGraphImpl(String name, ManagedType<T> entityType, MetamodelClassMapper metamodel) {
         this.name = name;
         this.entityType = entityType;
         this.metamodel = metamodel;
