@@ -99,7 +99,7 @@ public class Defaults {
     /**
      * @see Option#ALWAYS_USE_ONTOLOGY_PREFIX_FOR_VOCABULARY
      */
-    public static final boolean ALWAYS_USE_ONTOLOGY_PREFIX_FOR_VOCABULARY = true;
+    public static final boolean ALWAYS_USE_ONTOLOGY_PREFIX_FOR_VOCABULARY = false;
 
     /**
      * @see Option#ALWAYS_USE_ONTOLOGY_PREFIX_FOR_MODEL

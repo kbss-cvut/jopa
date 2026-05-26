@@ -224,8 +224,11 @@ public class JavaTransformer {
                                                       .sorted(Comparator.comparing(IRI::getIRIString))
                                                       .toList();
         ontologyIris.forEach(iri -> {
-            final String fieldName = ensureVocabularyItemUniqueIdentifier("ONTOLOGY_IRI_" + JavaNameGenerator.makeNameValidJava(nameGenerator.generateJavaNameForIri(iri))
-                                                                                                             .toUpperCase());
+            String fieldName = "ONTOLOGY_IRI_" + nameGenerator.generateOntologyName(iri);
+            if (voc.fields().containsKey(fieldName.toUpperCase()) && nameGenerator.hasPrefix(iri)) {
+                fieldName = "ONTOLOGY_IRI_" + nameGenerator.getOntologyPrefix(iri).orElse("");
+            }
+            fieldName = ensureVocabularyItemUniqueIdentifier(JavaNameGenerator.makeNameValidJava(fieldName.toUpperCase()));
             voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, String.class, fieldName, JExpr.lit(iri.toString()));
         });
     }
@@ -237,7 +240,7 @@ public class JavaTransformer {
             return prefix;
         }
         final Optional<OWLOntology> containingOntology = resolveContainingOntology(c, ontologyManager);
-        String fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generateJavaNameForIri(c.getIRI());
+        String fieldName = PREFIX_STRING + prefix.get() + JavaNameGenerator.generateJavaNameForIri(c.getIRI());
         if (voc.fields().containsKey(fieldName) || (
                 containingOntology.isPresent() && configuration.shouldAlwaysUseOntologyPrefixForVocabulary() && nameGenerator.hasPrefix(c.getIRI()))) {
             fieldName = PREFIX_STRING + prefix.get() + nameGenerator.generatePrefixedJavaNameForIri(c.getIRI());
@@ -363,7 +366,7 @@ public class JavaTransformer {
 
         if (Card.NO != comp.getCard()) {
             JClass filler = ensureEntityClassExists(pkg, cm, comp.getFiller(), ontology);
-            final String fieldName = nameGenerator.generateJavaNameForIri(prop.getIRI());
+            final String fieldName = JavaNameGenerator.generateJavaNameForIri(prop.getIRI());
 
             switch (comp.getCard()) {
                 case MULTIPLE:
@@ -445,7 +448,7 @@ public class JavaTransformer {
 
             final JType obj = cm._ref(resolveFieldType(comp.getFiller()));
 
-            final String fieldName = nameGenerator.generateJavaNameForIri(prop.getIRI());
+            final String fieldName = JavaNameGenerator.generateJavaNameForIri(prop.getIRI());
 
             JFieldVar fv = switch (comp.getCard()) {
                 case MULTIPLE -> addField(fieldName, subj, cm.ref(Set.class).narrow(obj));
@@ -511,7 +514,7 @@ public class JavaTransformer {
     private String javaClassId(OWLOntology rootOntology, OWLClass owlClass, String pkg,
                                JCodeModel codeModel) {
         String className = resolveExplicitClassName(rootOntology, owlClass)
-                .orElseGet(() -> JavaNameGenerator.toCamelCaseNotation(nameGenerator.generateJavaNameForIri(owlClass.getIRI())));
+                .orElseGet(() -> JavaNameGenerator.toCamelCaseNotation(JavaNameGenerator.generateJavaNameForIri(owlClass.getIRI())));
 
         if (isClassNameUnique(pkg, className, codeModel) && (!configuration.shouldAlwaysUseOntologyPrefixForModel() || !nameGenerator.hasPrefix(owlClass.getIRI()))) {
             return fqn(pkg, className);
