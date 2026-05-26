@@ -188,17 +188,6 @@ public class PrefixMap {
     }
 
     /**
-     * Checks whether a prefix has been resolved for an ontology with the specified IRI.
-     *
-     * @param ontologyIri Ontology IRI
-     * @return {@code true} if a prefix is registered for the ontology IRI, {@code false} otherwise
-     */
-    public boolean hasOntologyPrefix(IRI ontologyIri) {
-        Objects.requireNonNull(ontologyIri);
-        return prefixes.containsKey(ontologyIri.getIRIString());
-    }
-
-    /**
      * Checks whether a prefix is available for the specified IRI.
      * <p>
      * The prefix may be exact match for the namespace or the longest matching namespace for the IRI.
