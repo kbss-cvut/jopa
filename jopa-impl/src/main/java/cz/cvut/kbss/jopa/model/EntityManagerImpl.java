@@ -584,6 +584,13 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     }
 
     @Override
+    public EntityGraph<?> getEntityGraph(String graphName) {
+        ensureOpen();
+        // TODO
+        return null;
+    }
+
+    @Override
     public <T> T unwrap(Class<T> cls) {
         ensureOpen();
         if (cls.isAssignableFrom(this.getClass())) {
