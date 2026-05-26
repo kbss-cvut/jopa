@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.MetamodelBuilder;
+import cz.cvut.kbss.jopa.model.metamodel.MetamodelClassMapper;
 import cz.cvut.kbss.jopa.model.metamodel.StaticMetamodelInitializer;
 import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxyGenerator;
 import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxyGenerator;
@@ -47,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class MetamodelImpl implements Metamodel, MetamodelProvider {
+public class MetamodelImpl implements Metamodel, MetamodelProvider, MetamodelClassMapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(MetamodelImpl.class);
 

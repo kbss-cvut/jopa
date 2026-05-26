@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.loaders;
 
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.annotations.NamedEntityGraph;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -39,6 +40,7 @@ public class PersistenceUnitClassFinder {
     private final EntityLoader entityLoader = new EntityLoader();
     private final ResultSetMappingLoader resultSetMappingLoader = new ResultSetMappingLoader();
     private final ConverterLoader converterLoader = new ConverterLoader();
+    private final NamedEntityGraphLoader namedEntityGraphLoader = new NamedEntityGraphLoader();
 
     private boolean scanned = false;
 
@@ -65,6 +67,7 @@ public class PersistenceUnitClassFinder {
         classpathScanner.addListener(entityLoader);
         classpathScanner.addListener(resultSetMappingLoader);
         classpathScanner.addListener(converterLoader);
+        classpathScanner.addListener(namedEntityGraphLoader);
         Stream.of(toScan).map(String::trim).forEach(classpathScanner::processClasses);
         this.scanned = true;
     }
@@ -98,6 +101,16 @@ public class PersistenceUnitClassFinder {
     public Set<SparqlResultSetMapping> getResultSetMappings() {
         assert scanned;
         return resultSetMappingLoader.getMappings();
+    }
+
+    /**
+     * Gets {@link NamedEntityGraph}s found during classpath scanning.
+     *
+     * @return Set of named entity graph annotations discovered on classpath
+     */
+    public Set<NamedEntityGraph> getNamedEntityGraphs() {
+        assert scanned;
+        return namedEntityGraphLoader.getGraphDeclarations();
     }
 
     /**
