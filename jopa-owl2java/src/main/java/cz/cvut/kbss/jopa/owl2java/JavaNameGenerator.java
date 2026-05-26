@@ -18,11 +18,15 @@
 package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.owl2java.prefix.PrefixMap;
+import cz.cvut.kbss.jopa.vocabulary.DC;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.semanticweb.owlapi.model.IRI;
 
 import javax.lang.model.SourceVersion;
 import java.text.Normalizer;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -33,6 +37,15 @@ public class JavaNameGenerator {
 
     private static final String[] JAVA_KEYWORDS = {"abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue", "default", "do", "double", "else", "enum", "extends", "final", "finally", "float", "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long", "native", "new", "package", "private", "protected", "public", "return", "short", "static", "strictfp", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "try", "void", "volatile", "while"};
 
+    private static final Map<String, String> KNOWN_ONTOLOGIES = Map.of(
+            "http://www.w3.org/2002/07/owl", "OWL_2",
+            RDFS.NAMESPACE, "RDFS",
+            RDF.NAMESPACE, "RDF",
+            DC.Terms.NAMESPACE, "DC_TERMS",
+            DC.Elements.NAMESPACE, "DC_ELEMENTS",
+            "http://xmlns.com/foaf/0.1/", "FOAF"
+    );
+
     private static final char SEPARATOR = '_';
 
     private final PrefixMap prefixMap;
@@ -40,25 +53,16 @@ public class JavaNameGenerator {
     public JavaNameGenerator(PrefixMap prefixMap) {this.prefixMap = prefixMap;}
 
     /**
-     * Returns a valid Java identifier extracted from the specified IRI.
-     * <p>
-     * If the IRI contains a non-empty fragment, it is used. Otherwise, the part after the last slash is used as the
-     * name.
+     * Generates ontology local name based on the specified ontology IRI.
      *
-     * @param iri IRI to extract name from
-     * @return Java name based on the specified IRI
+     * @param iri Ontology IRI
+     * @return ontology local name for Java constant
      */
-    public String generateJavaNameForIri(IRI iri) {
-        if (iri.getFragment() != null && !iri.getFragment().isEmpty()) {
-            return makeNameValidJava(iri.getFragment());
-        } else {
-            String strIri = iri.toString();
-            if (strIri.charAt(strIri.length() - 1) == '/') {
-                strIri = strIri.substring(0, strIri.length() - 1);
-            }
-            int x = strIri.lastIndexOf("/");
-            return makeNameValidJava(strIri.substring(x + 1));
+    public String generateOntologyName(IRI iri) {
+        if (KNOWN_ONTOLOGIES.containsKey(iri.getIRIString())) {
+            return KNOWN_ONTOLOGIES.get(iri.getIRIString());
         }
+        return generateJavaNameForIri(iri);
     }
 
     /**
@@ -98,6 +102,28 @@ public class JavaNameGenerator {
      */
     public boolean hasPrefix(IRI iri) {
         return prefixMap.hasPrefix(iri);
+    }
+
+    /**
+     * Returns a valid Java identifier extracted from the specified IRI.
+     * <p>
+     * If the IRI contains a non-empty fragment, it is used. Otherwise, the part after the last slash is used as the
+     * name.
+     *
+     * @param iri IRI to extract name from
+     * @return Java name based on the specified IRI
+     */
+    public static String generateJavaNameForIri(IRI iri) {
+        if (iri.getFragment() != null && !iri.getFragment().isEmpty()) {
+            return makeNameValidJava(iri.getFragment());
+        } else {
+            String strIri = iri.toString();
+            if (strIri.charAt(strIri.length() - 1) == '/') {
+                strIri = strIri.substring(0, strIri.length() - 1);
+            }
+            int x = strIri.lastIndexOf("/");
+            return makeNameValidJava(strIri.substring(x + 1));
+        }
     }
 
     /**

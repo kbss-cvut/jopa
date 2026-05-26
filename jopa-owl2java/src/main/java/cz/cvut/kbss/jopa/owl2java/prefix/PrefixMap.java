@@ -217,7 +217,9 @@ public class PrefixMap {
                 RDFS.NAMESPACE, RDFS.PREFIX,
                 OWL.NAMESPACE, OWL.PREFIX,
                 SKOS.NAMESPACE, SKOS.PREFIX,
-                DC.Terms.NAMESPACE, "dcterms"
+                DC.Terms.NAMESPACE, "dcterms",
+                DC.Elements.NAMESPACE, "dc",
+                "http://xmlns.com/foaf/0.1/", "foaf"
         );
     }
 }

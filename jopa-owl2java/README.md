@@ -26,8 +26,52 @@ Possible configuration parameters are:
 |         -thing         |                              `true`                               | Whether to automatically generate an entity class corresponding to `owl:Thing`.                                                     |
 |    -prefixProperty     |       `http://purl.org/vocab/vann/preferredNamespacePrefix`       | IRI of the annotation property whose value is used as the preferred prefix for an ontology when generating vocabulary and model.    |
 |   -namespaceProperty   |        `http://purl.org/vocab/vann/preferredNamespaceUri`         | IRI of the annotation property whose value is used as the preferred namespace for an ontology when generating vocabulary and model. |
-| -vocabularyUsePrefixes |                              `true`                               | Whether to always use the ontology prefix (when available) to shorten IRIs in the generated vocabulary file.                        |
+| -vocabularyUsePrefixes |                              `false`                              | Whether to always use the ontology prefix (when available) to shorten IRIs in the generated vocabulary file.                        |
 |   -modelUsePrefixes    |                              `false`                              | Whether to always use the ontology prefix (when available) when generating entity class names in the model.                         |
 |      -prefixFile       |                                ""                                 | Path to a file containing additional ontology prefix mappings (one `namespace=prefix` per line).                                    |
 
 OWL2Java CLI prints help for all the supported tasks, including explanation of all options.
+
+## Java Name Generation
+
+Java name generation follows a set of rules that attempt to prevent name collisions and generate human-readable names.
+
+### Vocabulary
+
+This concerns generation of the `Vocabulary` class containing Java constants for all entities in the processed ontologies.
+
+1. Ontology IRI generation:
+   - All ontology IRI constants use the prefix `ONTOLOGY_IRI_`
+   - If it is one of the well-known ontologies (such as SKOS, OWL, etc.), use a predefined name
+   - Otherwise, extract the name from ontology IRI local name (i.e. the part after the last `/` or `#`)
+   - If the field name is not unique and the ontology has a prefix, use the prefix
+   - Otherwise, use the local name and append `_A` to disambiguate (repeatedly if necessary)
+2. Entity constants generation
+   - Classes have prefix `s_c`, properties have prefix `s_p`, individuals have prefix `s_i`
+   - If `vocabularyUsePrefixes` is `true`, use the ontology prefix (when available)
+   - Extract local name from IRI and append it to the prefix
+   - If `vocabularyUsePrefixes` is `false` and the field is not unique, try using the ontology prefix (if available)
+   - If the field is still not unique, append `_A` to disambiguate (repeatedly if necessary)
+
+Examples:
+
+```java
+// Known ontology
+public static final String ONTOLOGY_IRI_DC_TERMS = "http://purl.org/dc/terms/";
+// Name extracted from IRI
+public static final String ONTOLOGY_IRI_TERMIT = "http://onto.fel.cvut.cz/ontologies/application/termit";
+public static final String ONTOLOGY_IRI_MODEL = "http://onto.fel.cvut.cz/ontologies/application/termit/model";
+// Name extracted from IRI, not unique, but prefix is available
+public static final String ONTOLOGY_IRI_DD_MODEL = "http://onto.fel.cvut.cz/ontologies/application/dd/model";
+// Name extracted from IRI, not unique, and prefix is not available
+public static final String ONTOLOGY_IRI_MODEL_A = "http://onto.fel.cvut.cz/ontologies/application/dd/model";
+```
+
+### Model
+
+1. If `modelUsePrefixes` is `true`, use the ontology prefix (when available)
+2. Extract entity local name from IRI and use it
+3. If the name is not unique, try using the prefix (if available)
+4. If the name is still not unique, append `_A` to disambiguate (repeatedly if necessary)
+
+

@@ -324,20 +324,28 @@ class JavaTransformerTest {
     }
 
     @Test
-    void generateVocabularyUsesOntologyPrefixesInFieldNamesWhenGeneratingOntologyIriConstants() throws Exception {
-        final ContextDefinition context = new ContextDefinition();
-        final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
-        ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, IRI.create(ONTOLOGY_IRI), dataFactory.getOWLLiteral("test")));
-        final IRI foafOntIri = IRI.create("http://xmlns.com/foaf/0.1/");
-        final OWLOntology foafOnto = ontology.getOWLOntologyManager().createOntology(foafOntIri);
-        foafOnto.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, foafOntIri, dataFactory.getOWLLiteral("foaf")));
-        final OWLOntology merged = new OWLOntologyMerger(ontologyManager).createMergedOntology(ontologyManager, null);
-
-        final ObjectModel result = sut.generateVocabulary(merged, context);
+    void generateVocabularyUsesOntologyIriLocalNameWhenGeneratingOntologyIriConstants() {
+        final ObjectModel result = sut.generateVocabulary(ontology, new ContextDefinition());
         final JDefinedClass vocabClass = result.codeModel()._getClass(Constants.VOCABULARY_CLASS);
         assertNotNull(vocabClass);
         final Map<String, JFieldVar> fields = vocabClass.fields();
-        assertThat(fields.keySet(), hasItem("ONTOLOGY_IRI_TEST"));
+        assertThat(fields.keySet(), hasItem("ONTOLOGY_IRI_JAVA_TRANSFORMER_TEST"));
+    }
+
+    @Test
+    void generateVocabularyUsesPredefinedLocalNamesForKnownOntologiesWhenGeneratingOntologyIriConstants() throws Exception {
+        final ContextDefinition context = new ContextDefinition();
+        final IRI foafOntIri = IRI.create("http://xmlns.com/foaf/0.1/");
+        final OWLOntology foafOnto = ontology.getOWLOntologyManager().createOntology(foafOntIri);
+        final IRI foafPersonIri = IRI.create(foafOntIri.getIRIString() + "Person");
+        foafOnto.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(foafPersonIri)));
+        context.add(dataFactory.getOWLClass(foafPersonIri));
+        final OWLOntology merged = new OWLOntologyMerger(ontologyManager).createMergedOntology(ontologyManager, null);
+
+        final ObjectModel result = sut.generateVocabulary(merged, new ContextDefinition());
+        final JDefinedClass vocabClass = result.codeModel()._getClass(Constants.VOCABULARY_CLASS);
+        assertNotNull(vocabClass);
+        final Map<String, JFieldVar> fields = vocabClass.fields();
         assertThat(fields.keySet(), hasItem("ONTOLOGY_IRI_FOAF"));
     }
 
