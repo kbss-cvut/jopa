@@ -43,7 +43,8 @@ public class JavaNameGenerator {
             RDF.NAMESPACE, "RDF",
             DC.Terms.NAMESPACE, "DC_TERMS",
             DC.Elements.NAMESPACE, "DC_ELEMENTS",
-            "http://xmlns.com/foaf/0.1/", "FOAF"
+            "http://xmlns.com/foaf/0.1/", "FOAF",
+            "http://www.w3.org/2004/02/skos/core", "SKOS"
     );
 
     private static final char SEPARATOR = '_';
