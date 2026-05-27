@@ -586,8 +586,7 @@ public class EntityManagerImpl implements AbstractEntityManager, Wrapper {
     @Override
     public EntityGraph<?> getEntityGraph(String graphName) {
         ensureOpen();
-        // TODO
-        return null;
+        return getCurrentPersistenceContext().getEntityGraph(graphName);
     }
 
     @Override

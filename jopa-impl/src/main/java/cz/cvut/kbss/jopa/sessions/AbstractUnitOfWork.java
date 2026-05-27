@@ -987,6 +987,11 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         return new EntityGraphImpl<>(getMetamodel().entity(rootType), getMetamodel());
     }
 
+    @Override
+    public EntityGraph<?> getEntityGraph(String name) {
+        return getMetamodel().getNamedEntityGraphManager().getEntityGraph(name);
+    }
+
     void registerEntityWithOntologyContext(Object entity, Descriptor descriptor) {
         assert descriptor != null;
         assert entity != null;

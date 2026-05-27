@@ -442,4 +442,13 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * @return Entity graph
      */
     <T> EntityGraph<T> createEntityGraph(Class<T> rootType);
+
+    /**
+     * Gets an {@link EntityGraph} with the specified name.
+     *
+     * @param name Entity graph name, as specified by {@link cz.cvut.kbss.jopa.model.annotations.NamedEntityGraph}
+     * @return Entity graph with the specified name
+     * @throws IllegalArgumentException If no entity graph with the specified name is registered
+     */
+    EntityGraph<?> getEntityGraph(String name);
 }
