@@ -26,7 +26,7 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.LoadState;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingListProxy;
 import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -131,7 +131,7 @@ class LoadStateDescriptorFactoryTest {
     void createForFetchGraphCreatesLoadStateDescriptorWithAttributesInFetchGraphLoadedAndOtherDataAttributesAsUnknown() {
         final OWLClassM instance = new OWLClassM();
         instance.setKey(Generators.createIndividualIdentifier().toString());
-        final Metamodel metamodel = mock(Metamodel.class);
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
         metamodelMocks.setMocks(metamodel);
         final EntityGraph<OWLClassM> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassM()
                                                                                       .entityType(), metamodel);
@@ -152,7 +152,7 @@ class LoadStateDescriptorFactoryTest {
     @Test
     void createForFetchGraphCreatesLoadStateDescriptorWithObjectPropertyAttributesNotInFetchGraphAsNotLoaded() {
         final OWLClassL instance = new OWLClassL(Generators.createIndividualIdentifier());
-        final Metamodel metamodel = mock(Metamodel.class);
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
         metamodelMocks.setMocks(metamodel);
         final EntityGraph<OWLClassL> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassL()
                                                                                       .entityType(), metamodel);

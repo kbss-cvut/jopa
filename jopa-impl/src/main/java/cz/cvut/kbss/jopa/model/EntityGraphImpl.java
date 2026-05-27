@@ -83,6 +83,10 @@ public class EntityGraphImpl<T> implements EntityGraph<T>, Subgraph<T> {
         return new ArrayList<>(attributeNodes.values());
     }
 
+    AttributeNodeImpl<?> getAttributeNode(String name) {
+        return attributeNodes.get(name);
+    }
+
     @Override
     public String getName() {
         return name;
