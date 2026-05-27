@@ -105,10 +105,13 @@ public class PersistenceUnitClassFinder {
 
     /**
      * Gets {@link NamedEntityGraph}s found during classpath scanning.
+     * <p>
+     * The annotations are mapped by the class on which they were declared, so that the root entity type can be later
+     * resolved when the entity graph is being built.
      *
-     * @return Set of named entity graph annotations discovered on classpath
+     * @return Map of classes to named entity graph annotations declared on them
      */
-    public Set<NamedEntityGraph> getNamedEntityGraphs() {
+    public Map<Class<?>, Set<NamedEntityGraph>> getNamedEntityGraphs() {
         assert scanned;
         return namedEntityGraphLoader.getGraphDeclarations();
     }

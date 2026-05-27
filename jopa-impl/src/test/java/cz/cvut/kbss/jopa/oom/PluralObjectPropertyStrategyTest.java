@@ -28,6 +28,7 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.Subgraph;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -37,7 +38,6 @@ import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingSetProxy;
@@ -353,7 +353,7 @@ class PluralObjectPropertyStrategyTest {
 
     @Test
     void addAxiomValuePropagatesFetchGraphToReferencedEntityLoading() {
-        final Metamodel metamodel = mock(Metamodel.class);
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
         mocks.setMocks(metamodel);
         final EntityGraph<OWLClassJ> fetchGraph = new EntityGraphImpl<>(mocks.forOwlClassJ().entityType(), metamodel);
         final Subgraph<OWLClassA> subgraph = fetchGraph.addSubgraph("owlClassA");

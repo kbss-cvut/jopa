@@ -93,7 +93,8 @@ public class MetamodelBuilder implements MetamodelClassMapper {
         processDeferredFields();
         typeMap.values().forEach(AbstractIdentifiableType::finish);
         classFinder.getResultSetMappings().forEach(mappingProcessor::buildMapper);
-        classFinder.getNamedEntityGraphs().forEach(entityGraphProcessor::buildEntityGraph);
+        classFinder.getNamedEntityGraphs().forEach((cls, graphs) ->
+                graphs.forEach(g -> entityGraphProcessor.buildEntityGraph(cls, g)));
     }
 
     /**

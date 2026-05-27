@@ -29,7 +29,7 @@ public @interface NamedEntityGraph {
      * If no name is explicitly specified, the name defaults to the entity name of the annotated root entity. Entity
      * graph names must be unique within the persistence unit.
      */
-    String name();
+    String name() default "";
 
     /**
      * (Optional) A list of attributes of the entity that are included in this graph.
