@@ -63,6 +63,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider, MetamodelCla
 
     private NamedQueryManager namedQueryManager;
     private ResultSetMappingManager resultSetMappingManager;
+    private NamedEntityGraphManager namedEntityGraphManager;
 
     private NamespaceResolver namespaceResolver;
 
@@ -96,6 +97,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider, MetamodelCla
         initFromMetamodelBuilder(metamodelBuilder);
         this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
         this.resultSetMappingManager = metamodelBuilder.getResultSetMappingManager();
+        this.namedEntityGraphManager = metamodelBuilder.getNamedEntityGraphManager();
         new StaticMetamodelInitializer(this).initializeStaticMetamodel();
     }
 
@@ -168,6 +170,10 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider, MetamodelCla
     @Override
     public ResultSetMappingManager getResultSetMappingManager() {
         return resultSetMappingManager;
+    }
+
+    public NamedEntityGraphManager getNamedEntityGraphManager() {
+        return namedEntityGraphManager;
     }
 
     @Override
