@@ -23,7 +23,6 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.NamedEntityGraphManager;
 import cz.cvut.kbss.jopa.model.NamedEntityGraphProcessor;
 import cz.cvut.kbss.jopa.model.TypeReferenceMap;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Inheritance;
 import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
@@ -323,7 +322,8 @@ public class MetamodelBuilder implements MetamodelClassMapper {
     }
 
     <X> void createLazyLoadingProxy(Attribute<X, ?> attribute) {
-        if (attribute.getFetchType() == FetchType.LAZY && !attribute.isCollection()) {
+        if (!attribute.isCollection() && hasManagedType(attribute.getJavaType())) {
+            // Even if the field is not lazy, it may be lazily initialized due to EntityGraph usage
             final Class<?> cls = attribute.getJavaType();
             lazyLoadingProxyClasses.computeIfAbsent(cls, lazyLoadingEntityProxyGenerator::generate);
         }

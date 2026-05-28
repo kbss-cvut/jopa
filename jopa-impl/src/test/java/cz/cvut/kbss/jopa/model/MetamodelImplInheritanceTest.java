@@ -204,14 +204,16 @@ class MetamodelImplInheritanceTest {
         assertNotNull(et.getIdentifier());
     }
 
+    @TestLocal
     @MappedSuperclass
-    private static class ParentWithId {
+    public static class ParentWithId {
         @Id
         private URI id;
     }
 
+    @TestLocal
     @MappedSuperclass
-    private static class ParentWithCircular extends ParentWithId {
+    public static class ParentWithCircular extends ParentWithId {
 
         @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasChild")
         private Set<ChildWithCircular> children;
