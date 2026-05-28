@@ -114,7 +114,7 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         boolean hasGroupConcat = false;
         for (QueryVariableMapping varMapping : queryMod.variables()) {
             // PERF: GROUP_CONCAT may prevent combinatorial blowup of the number of rows
-            if (varMapping.canGroupConcat()) {
+            if (!queryAttributes.hasOrderBy() && varMapping.canGroupConcat()) {
                 projection.append(' ').append(varMapping.generateGroupConcat());
                 hasGroupConcat = true;
             } else {
@@ -126,10 +126,8 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         tokenRewriter.insertAfter(firstProjected.getSingleToken(), projection.toString());
         if (hasGroupConcat) {
             tokenRewriter.insertAfter(queryAttributes.lastClosingCurlyBraceToken(), groupBy.toString());
-            if (!queryAttributes.hasOrderBy()) {
-                // Add ordering to ensure stable results with rows with the same subject in sequence
-                tokenRewriter.insertAfter(queryAttributes.lastClosingCurlyBraceToken(), " ORDER BY " + firstProjected.getIdentifierAsQueryString());
-            }
+            // Add ordering to ensure stable results with rows with the same subject in sequence
+            tokenRewriter.insertAfter(queryAttributes.lastClosingCurlyBraceToken(), " ORDER BY " + firstProjected.getIdentifierAsQueryString());
         }
     }
 
