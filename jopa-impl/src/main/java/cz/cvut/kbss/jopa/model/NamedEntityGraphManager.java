@@ -48,7 +48,7 @@ public class NamedEntityGraphManager {
      * Checks whether this manager contains a graph with the specified name
      *
      * @param graphName Name to search for
-     * @return {@code true if such graph is registered here, {@code false} otherwise
+     * @return {@code true} if such graph is registered here, {@code false} otherwise
      */
     public boolean hasEntityGraph(String graphName) {
         return namedEntityGraphs.containsKey(graphName);
