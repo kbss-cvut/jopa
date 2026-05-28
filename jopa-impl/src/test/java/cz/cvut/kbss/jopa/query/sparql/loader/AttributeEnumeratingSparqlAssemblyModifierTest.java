@@ -298,6 +298,20 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         assertThat(result, containsString("GROUP BY ?x"));
     }
 
+    @Test
+    void modifyDoesNotAddGroupConcatWhenQueryHasOrderBy() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type ; ?hasString ?stringAttribute } ORDER BY ?stringAttribute");
+        final EntityGraph<OWLClassN> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassN()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("pluralAnnotation");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassN()
+                                                                                       .entityType(), new EntityDescriptor(), fetchGraph);
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, not(containsString("GROUP_CONCAT")));
+    }
+
     /**
      * Simplified Hamcrest matcher that checks if a SPARQL query projects a specific variable. The matcher extracts the
      * projection part of the query (everything before the WHERE clause) and checks if it contains the specified
