@@ -17,8 +17,37 @@
  */
 package cz.cvut.kbss.jopa.test;
 
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.EntityResult;
+import cz.cvut.kbss.jopa.model.annotations.FieldResult;
+import cz.cvut.kbss.jopa.model.annotations.NamedAttributeNode;
+import cz.cvut.kbss.jopa.model.annotations.NamedEntityGraph;
+import cz.cvut.kbss.jopa.model.annotations.NamedEntityGraphs;
+import cz.cvut.kbss.jopa.model.annotations.NamedSubgraph;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "OWLClassT.basic",
+                          attributeNodes = {
+                                  @NamedAttributeNode("name"),
+                                  @NamedAttributeNode("description"),
+                                  @NamedAttributeNode("modified")
+                          }),
+        @NamedEntityGraph(name = "OWLClassT.withA",
+                          attributeNodes = {
+                                  @NamedAttributeNode("name"),
+                                  @NamedAttributeNode("description"),
+                                  @NamedAttributeNode("modified"),
+                                  @NamedAttributeNode(value = "owlClassA", subgraph = "OWLClassA.basic")
+                          },
+                          subgraphs = {
+                                  @NamedSubgraph(name = "OWLClassA.basic", attributeNodes = {
+                                          @NamedAttributeNode("stringAttribute")
+                                  }, type = OWLClassA.class)
+                          })
+})
 @SparqlResultSetMapping(name = OWLClassT.MAPPING_NAME, entities = {
         @EntityResult(entityClass = OWLClassT.class, fields = {
                 @FieldResult(name = "uri", variable = "x"),

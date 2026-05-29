@@ -57,8 +57,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class JavaTransformerTest {
 
-    private static final String PREFIX = "http://onto.fel.cvut.cz/ontologies/jopa/";
-    private static final String ONTOLOGY_IRI = "http://onto.fel.cvut.cz/ontologies/owl2java/java-transformer-test/";
+    private static final String ONTOLOGY_IRI = "http://onto.fel.cvut.cz/ontologies/owl2java/java-transformer-test";
+    private static final String NAMESPACE = ONTOLOGY_IRI + "/";
 
     private OWLOntologyManager ontologyManager;
 
@@ -74,7 +74,7 @@ class JavaTransformerTest {
         this.ontology = ontologyManager.createOntology(IRI.create(ONTOLOGY_IRI));
         this.dataFactory = new OWLDataFactoryImpl();
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
-                                                                  .alwaysUseOntologyPrefix(false).build());
+                                                                  .alwaysUseOntologyPrefixForVocabulary(false).build());
     }
 
     @Test
@@ -93,7 +93,7 @@ class JavaTransformerTest {
     @Test
     void generateModelCreatesToStringMethodForGeneratedModelClasses() {
         final String className = "TestClass";
-        final IRI iri = IRI.create(PREFIX + className);
+        final IRI iri = IRI.create(NAMESPACE + className);
         ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iri)));
         final ContextDefinition context = new ContextDefinition();
         context.add(dataFactory.getOWLClass(iri));
@@ -108,7 +108,7 @@ class JavaTransformerTest {
     @Test
     void shouldGenerateIdAndTypesFields() {
         final String className = "TestClass";
-        final IRI iri = IRI.create(PREFIX + className);
+        final IRI iri = IRI.create(NAMESPACE + className);
         ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iri)));
         final ContextDefinition context = new ContextDefinition();
         context.add(dataFactory.getOWLClass(iri));
@@ -129,9 +129,9 @@ class JavaTransformerTest {
     @Test
     void shouldNotGenerateIdAndTypesFieldsInSubclasses() {
         final String className1 = "TestClass1";
-        final IRI iri1 = IRI.create(PREFIX + className1);
+        final IRI iri1 = IRI.create(NAMESPACE + className1);
         final String className2 = "TestClass2";
-        final IRI iri2 = IRI.create(PREFIX + className2);
+        final IRI iri2 = IRI.create(NAMESPACE + className2);
 
         ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iri1)));
         ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iri2)));
@@ -174,9 +174,9 @@ class JavaTransformerTest {
     }
 
     private ContextDefinition generateAxiomsForLangStrings(String className, String fieldName) {
-        final IRI classIri = IRI.create(PREFIX + className);
+        final IRI classIri = IRI.create(NAMESPACE + className);
         ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(classIri)));
-        final IRI propertyIri = IRI.create(PREFIX + fieldName);
+        final IRI propertyIri = IRI.create(NAMESPACE + fieldName);
         ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLDataProperty(propertyIri)));
         ontology.add(dataFactory.getOWLDataPropertyRangeAxiom(dataFactory.getOWLDataProperty(propertyIri),
                 OWL2Datatype.RDF_LANG_STRING));
@@ -194,7 +194,7 @@ class JavaTransformerTest {
     @Test
     void generateModelGeneratesFieldOfTypeStringForLangStringRangeWhenConfiguredNotToPreferMultilingualStrings() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().preferMultilingualStrings(false)
-                                                                  .alwaysUseOntologyPrefix(false)
+                                                                  .alwaysUseOntologyPrefixForVocabulary(false)
                                                                   .packageName("").build());
         final String className = "TestClass";
         final String fieldName = "multilingualString";
@@ -211,7 +211,7 @@ class JavaTransformerTest {
     @Test
     void generateModelGeneratesJavadocWithCommentInDefaultLanguage() {
         final String className = "TestClass";
-        final IRI iri = IRI.create(PREFIX + className);
+        final IRI iri = IRI.create(NAMESPACE + className);
         final OWLClass owlClass = dataFactory.getOWLClass(iri);
         ontology.add(dataFactory.getOWLDeclarationAxiom(owlClass));
         final String expectedComment = "Comment in default language";
@@ -229,7 +229,7 @@ class JavaTransformerTest {
     @Test
     void generateModelGeneratesJavadocWithCommentUsingLanguageLessAnnotationValue() {
         final String className = "TestClass";
-        final IRI iri = IRI.create(PREFIX + className);
+        final IRI iri = IRI.create(NAMESPACE + className);
         final OWLClass owlClass = dataFactory.getOWLClass(iri);
         ontology.add(dataFactory.getOWLDeclarationAxiom(owlClass));
         final String expectedComment = "Comment in default language";
@@ -246,10 +246,10 @@ class JavaTransformerTest {
     @Test
     void generateModelDoesNotGenerateLabelAndDescriptionFieldsWhenDisabled() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
-                                                                  .alwaysUseOntologyPrefix(false)
+                                                                  .alwaysUseOntologyPrefixForVocabulary(false)
                                                                   .generateAnnotationFields(false).build());
         final String className = "TestClass";
-        final IRI iri = IRI.create(PREFIX + className);
+        final IRI iri = IRI.create(NAMESPACE + className);
         final OWLClass owlClass = dataFactory.getOWLClass(iri);
         ontology.add(dataFactory.getOWLDeclarationAxiom(owlClass));
         final ContextDefinition context = new ContextDefinition();
@@ -278,9 +278,9 @@ class JavaTransformerTest {
     @Test
     void generateModelDisambiguateClassesWithIdenticalJavaName() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("").generateThing(false)
-                                                                  .alwaysUseOntologyPrefix(false).build());
+                                                                  .alwaysUseOntologyPrefixForVocabulary(false).build());
         final String className = "Concept";
-        final IRI iriOne = IRI.create(PREFIX + className);
+        final IRI iriOne = IRI.create(NAMESPACE + className);
         final IRI iriTwo = IRI.create(SKOS.CONCEPT);
         ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iriOne)));
         ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iriTwo)));
@@ -303,7 +303,7 @@ class JavaTransformerTest {
     void generateVocabularyDisambiguateResourcesWithSameNameUsingPrefix() throws Exception {
         final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
         ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, IRI.create(ONTOLOGY_IRI), dataFactory.getOWLLiteral("test")));
-        final IRI personIri = IRI.create(PREFIX + "Person");
+        final IRI personIri = IRI.create(NAMESPACE + "Person");
         ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(personIri)));
         final ContextDefinition context = new ContextDefinition();
         context.add(dataFactory.getOWLClass(personIri));
@@ -324,20 +324,28 @@ class JavaTransformerTest {
     }
 
     @Test
-    void generateVocabularyUsesOntologyPrefixesInFieldNamesWhenGeneratingOntologyIriConstants() throws Exception {
-        final ContextDefinition context = new ContextDefinition();
-        final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
-        ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, IRI.create(ONTOLOGY_IRI), dataFactory.getOWLLiteral("test")));
-        final IRI foafOntIri = IRI.create("http://xmlns.com/foaf/0.1/");
-        final OWLOntology foafOnto = ontology.getOWLOntologyManager().createOntology(foafOntIri);
-        foafOnto.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, foafOntIri, dataFactory.getOWLLiteral("foaf")));
-        final OWLOntology merged = new OWLOntologyMerger(ontologyManager).createMergedOntology(ontologyManager, null);
-
-        final ObjectModel result = sut.generateVocabulary(merged, context);
+    void generateVocabularyUsesOntologyIriLocalNameWhenGeneratingOntologyIriConstants() {
+        final ObjectModel result = sut.generateVocabulary(ontology, new ContextDefinition());
         final JDefinedClass vocabClass = result.codeModel()._getClass(Constants.VOCABULARY_CLASS);
         assertNotNull(vocabClass);
         final Map<String, JFieldVar> fields = vocabClass.fields();
-        assertThat(fields.keySet(), hasItem("ONTOLOGY_IRI_TEST"));
+        assertThat(fields.keySet(), hasItem("ONTOLOGY_IRI_JAVA_TRANSFORMER_TEST"));
+    }
+
+    @Test
+    void generateVocabularyUsesPredefinedLocalNamesForKnownOntologiesWhenGeneratingOntologyIriConstants() throws Exception {
+        final ContextDefinition context = new ContextDefinition();
+        final IRI foafOntIri = IRI.create("http://xmlns.com/foaf/0.1/");
+        final OWLOntology foafOnto = ontology.getOWLOntologyManager().createOntology(foafOntIri);
+        final IRI foafPersonIri = IRI.create(foafOntIri.getIRIString() + "Person");
+        foafOnto.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(foafPersonIri)));
+        context.add(dataFactory.getOWLClass(foafPersonIri));
+        final OWLOntology merged = new OWLOntologyMerger(ontologyManager).createMergedOntology(ontologyManager, null);
+
+        final ObjectModel result = sut.generateVocabulary(merged, new ContextDefinition());
+        final JDefinedClass vocabClass = result.codeModel()._getClass(Constants.VOCABULARY_CLASS);
+        assertNotNull(vocabClass);
+        final Map<String, JFieldVar> fields = vocabClass.fields();
         assertThat(fields.keySet(), hasItem("ONTOLOGY_IRI_FOAF"));
     }
 
@@ -346,7 +354,7 @@ class JavaTransformerTest {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("").generateThing(false)
                                                                   .build());
         final String className = "Concept";
-        final IRI iriOne = IRI.create(PREFIX + className);
+        final IRI iriOne = IRI.create(NAMESPACE + className);
         final IRI iriTwo = IRI.create(SKOS.CONCEPT);
         ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iriOne)));
         final IRI skosOntIri = IRI.create(SKOS.NAMESPACE);
@@ -374,10 +382,10 @@ class JavaTransformerTest {
     @Test
     void generateVocabularyAlwaysOutputsPrefixedNamesWhenConfiguredTo() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
-                                                                  .alwaysUseOntologyPrefix(true).build());
+                                                                  .alwaysUseOntologyPrefixForVocabulary(true).build());
         final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
         ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, IRI.create(ONTOLOGY_IRI), dataFactory.getOWLLiteral("test")));
-        final IRI personIri = IRI.create(PREFIX + "Person");
+        final IRI personIri = IRI.create(NAMESPACE + "Person");
         ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(personIri)));
         final ContextDefinition context = new ContextDefinition();
         context.add(dataFactory.getOWLClass(personIri));
@@ -392,10 +400,11 @@ class JavaTransformerTest {
     @Test
     void generateModelAlwaysOutputsPrefixedEntityClassNamesWhenConfiguredTo() {
         this.sut = new JavaTransformer(TransformationConfiguration.builder().packageName("")
-                                                                  .alwaysUseOntologyPrefix(true)
+                                                                  .alwaysUseOntologyPrefixForVocabulary(true)
+                                                                  .alwaysUseOntologyPrefixForModel(true)
                                                                   .build());
         final String className = "Concept";
-        final IRI iriOne = IRI.create(PREFIX + className);
+        final IRI iriOne = IRI.create(NAMESPACE + className);
         final OWLAnnotationProperty prefixProperty = dataFactory.getOWLAnnotationProperty(Defaults.ONTOLOGY_PREFIX_PROPERTY);
         ontology.add(dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(iriOne)));
         ontology.add(dataFactory.getOWLAnnotationAssertionAxiom(prefixProperty, IRI.create(ONTOLOGY_IRI), dataFactory.getOWLLiteral("test")));

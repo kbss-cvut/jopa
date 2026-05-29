@@ -88,4 +88,5 @@ public class UnboundPredicateObjectSparqlAssemblyModifier implements SparqlAssem
         }
         return true;
     }
+
 }

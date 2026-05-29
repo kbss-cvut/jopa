@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.MetamodelBuilder;
+import cz.cvut.kbss.jopa.model.metamodel.MetamodelClassMapper;
 import cz.cvut.kbss.jopa.model.metamodel.StaticMetamodelInitializer;
 import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxyGenerator;
 import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxyGenerator;
@@ -47,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class MetamodelImpl implements Metamodel, MetamodelProvider {
+public class MetamodelImpl implements Metamodel, MetamodelProvider, MetamodelClassMapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(MetamodelImpl.class);
 
@@ -62,6 +63,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
 
     private NamedQueryManager namedQueryManager;
     private ResultSetMappingManager resultSetMappingManager;
+    private NamedEntityGraphManager namedEntityGraphManager;
 
     private NamespaceResolver namespaceResolver;
 
@@ -95,6 +97,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
         initFromMetamodelBuilder(metamodelBuilder);
         this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
         this.resultSetMappingManager = metamodelBuilder.getResultSetMappingManager();
+        this.namedEntityGraphManager = metamodelBuilder.getNamedEntityGraphManager();
         new StaticMetamodelInitializer(this).initializeStaticMetamodel();
     }
 
@@ -167,6 +170,10 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider {
     @Override
     public ResultSetMappingManager getResultSetMappingManager() {
         return resultSetMappingManager;
+    }
+
+    public NamedEntityGraphManager getNamedEntityGraphManager() {
+        return namedEntityGraphManager;
     }
 
     @Override

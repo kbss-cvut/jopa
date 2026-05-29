@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
@@ -45,6 +46,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -83,13 +85,13 @@ class TripleBasedRowsToAxiomsQueryResultLoaderTest {
         when(lastRow.getObject(1, URI.class)).thenReturn(URI.create(RDF.TYPE));
         when(lastRow.getObject(2)).thenReturn(URI.create(Vocabulary.c_OwlClassA));
         final List<ResultRow> rows = Stream.concat(firstResultRows.stream(), Stream.of(lastRow)).toList();
-        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor))).thenReturn(instance);
+        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
 
         final Optional<OWLClassA> result = rows.stream().map(sut::loadResult).filter(Optional::isPresent)
                                                .map(Optional::get).findFirst();
         assertTrue(result.isPresent());
         assertEquals(instance, result.get());
-        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor));
+        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup<>(instance.getUri(), descriptor)));
     }
 
     private static List<ResultRow> mockResultRows(OWLClassA instance) throws OntoDriverException {
@@ -122,13 +124,13 @@ class TripleBasedRowsToAxiomsQueryResultLoaderTest {
         final List<ResultRow> rows = Stream.concat(firstResultRows.stream(), secondResultRows.stream())
                                            .collect(Collectors.toList());
         rows.add(lastRow);
-        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor))).thenReturn(instanceOne)
-                                                                                            .thenReturn(instanceTwo);
+        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instanceOne)
+                                                                                                                     .thenReturn(instanceTwo);
 
         final List<OWLClassA> result = rows.stream().map(sut::loadResult).filter(Optional::isPresent)
                                            .map(Optional::get).toList();
         assertEquals(List.of(instanceOne, instanceTwo), result);
-        verify(uow, times(2)).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor));
+        verify(uow, times(2)).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class));
     }
 
     @Test
@@ -137,13 +139,13 @@ class TripleBasedRowsToAxiomsQueryResultLoaderTest {
                 sut = new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassA.class, descriptor);
         final OWLClassA instance = Generators.generateOwlClassAInstance();
         final List<ResultRow> firstResultRows = mockResultRows(instance);
-        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor))).thenReturn(instance);
+        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
 
         assertTrue(firstResultRows.stream().map(sut::loadResult).noneMatch(Optional::isPresent));
         final Optional<OWLClassA> result = sut.loadLastPending();
         assertTrue(result.isPresent());
         assertEquals(instance, result.get());
-        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor));
+        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup<>(instance.getUri(), descriptor)));
     }
 
     @Test
@@ -158,13 +160,13 @@ class TripleBasedRowsToAxiomsQueryResultLoaderTest {
         when(lastRow.getObject(1, URI.class)).thenReturn(URI.create(RDF.TYPE));
         when(lastRow.getObject(2)).thenReturn(URI.create(Vocabulary.c_OwlClassA));
         final List<ResultRow> rows = Stream.concat(firstResultRows.stream(), Stream.of(lastRow)).toList();
-        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor))).thenThrow(CardinalityConstraintViolatedException.class);
+        when(uow.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenThrow(CardinalityConstraintViolatedException.class);
         when(uow.readObject(OWLClassA.class, instance.getUri(), descriptor)).thenReturn(instance);
 
         final Optional<OWLClassA> result = rows.stream().map(sut::loadResult).filter(Optional::isPresent)
                                                .map(Optional::get).findFirst();
         assertTrue(result.isPresent());
-        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(descriptor));
+        verify(uow).readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), eq(new AxiomBasedLoadingConfigGroup<>(instance.getUri(), descriptor)));
         verify(uow).readObject(OWLClassA.class, instance.getUri(), descriptor);
     }
 }

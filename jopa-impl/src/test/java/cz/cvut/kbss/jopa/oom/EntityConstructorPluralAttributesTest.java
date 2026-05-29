@@ -24,8 +24,10 @@ import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
@@ -111,7 +113,8 @@ public class EntityConstructorPluralAttributesTest {
 
         final OWLClassC res = constructor
                 .reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(ID, metamodelMocks.forOwlClassC()
-                                                                                                          .entityType(), descriptor, true),
+                                                                                                          .entityType(), descriptor, new FetchGraphWrapper(),
+                                true),
                         axioms);
 
         assertNotNull(res);
@@ -123,7 +126,7 @@ public class EntityConstructorPluralAttributesTest {
 
     private void prepareMapperMockForSimpleListLoad() {
         for (Entry<URI, OWLClassA> e : LIST_CONTENT.entrySet()) {
-            when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(e.getKey()), any(Descriptor.class))).thenReturn(e.getValue());
+            when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(e.getKey()), any(ObjectGraphInfo.class))).thenReturn(e.getValue());
         }
         final Collection<Axiom<NamedResource>> listAxioms = initSimpleListAxioms();
         when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class))).thenReturn(listAxioms);

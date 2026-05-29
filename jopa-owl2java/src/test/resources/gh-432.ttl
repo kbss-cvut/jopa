@@ -1,0 +1,9 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix test: <http://onto.fel.cvut.cz/ontologies/jopa/with-name-collision/> .
+
+<http://onto.fel.cvut.cz/ontologies/jopa/with-name-collision> rdf:type owl:Ontology ;
+                                                    owl:imports <http://www.w3.org/ns/dcat3> .
+
+test:ontologyIdentifier rdf:type owl:ObjectProperty ;
+                           rdfs:comment "Identifier of the ontology published in the series"@en ;
+                           rdfs:label "Ontology identifier"@en .

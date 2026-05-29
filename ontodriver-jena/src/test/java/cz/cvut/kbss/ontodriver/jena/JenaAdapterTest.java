@@ -68,7 +68,7 @@ import static org.mockito.Mockito.when;
 class JenaAdapterTest {
 
     private static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
-    private static final Resource SUBJECT_RESOURCE = ResourceFactory.createResource(SUBJECT.getIdentifier().toString());
+    private static final Resource SUBJECT_RESOURCE = Generator.generateResource(SUBJECT.getIdentifier().toString());
 
     @Mock
     private StorageConnector connectorMock;

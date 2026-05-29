@@ -34,9 +34,11 @@ import cz.cvut.kbss.jopa.model.metamodel.QueryAttribute;
 import cz.cvut.kbss.jopa.oom.query.PluralQueryAttributeStrategy;
 import cz.cvut.kbss.jopa.oom.query.QueryFieldStrategy;
 import cz.cvut.kbss.jopa.oom.query.SingularQueryAttributeStrategy;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
@@ -54,7 +56,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static cz.cvut.kbss.jopa.model.metamodel.AbstractQueryAttribute.THIS_PARAMETER;
-import static cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator.isNotLazy;
 
 class EntityConstructor {
 
@@ -87,12 +88,14 @@ class EntityConstructor {
         }
         final T instance = createEntityInstance(constructionParams.id(), et);
         mapper.registerInstance(constructionParams.id(), instance);
-        final LoadStateDescriptor<T> loadStateDescriptor = LoadStateDescriptorFactory.createAllUnknown(instance, et);
+        final LoadStateDescriptor<T> loadStateDescriptor = constructionParams.fetchGraph().isPresent()
+                ? LoadStateDescriptorFactory.createForFetchGraph(instance, et, constructionParams.fetchGraph())
+                : LoadStateDescriptorFactory.createAllUnknown(instance, et);
         loadStateRegistry.put(instance, loadStateDescriptor);
         populateAttributes(instance, constructionParams, axioms, loadStateDescriptor);
         populateQueryAttributes(instance, et, loadStateDescriptor);
         processEmptyAttributes(instance, et, loadStateDescriptor);
-        validateIntegrityConstraints(instance, et);
+        validateIntegrityConstraints(instance, et, loadStateDescriptor);
 
         return instance;
     }
@@ -126,14 +129,14 @@ class EntityConstructor {
                 continue;
             }
             final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = getFieldLoader(
-                    ax, attributes, fieldLoaders, et, constructionParams.descriptor());
+                    ax, attributes, fieldLoaders, constructionParams);
             if (fs == null) {
                 if (!MappingUtils.isClassAssertion(ax)) {
                     LOG.trace("No attribute found for property {}. Axiom {} will be skipped.", ax.getAssertion(), ax);
                 }
                 continue;
             }
-            if (fs.attribute.getFetchType() == FetchType.LAZY && !constructionParams.forceEager()) {
+            if (isLazilyLoaded(fs.attribute, constructionParams)) {
                 fs.lazilyAddAxiomValue(ax);
             } else {
                 fs.addAxiomValue(ax);
@@ -142,7 +145,7 @@ class EntityConstructor {
         // We need to build the field values separately because some may be plural, and we have to wait until all values are prepared
         for (FieldStrategy<? extends FieldSpecification<?, ?>, ?> fs : fieldLoaders.values()) {
             fs.buildInstanceFieldValue(instance);
-            if (fs.attribute.getFetchType() == FetchType.LAZY && !constructionParams.forceEager() && fs.hasValue()) {
+            if (isLazilyLoaded(fs.attribute, constructionParams) && fs.hasValue()) {
                 loadStateDescriptor.setLoaded((FieldSpecification<? super T, ?>) fs.attribute, LoadState.NOT_LOADED);
             } else {
                 loadStateDescriptor.setLoaded((FieldSpecification<? super T, ?>) fs.attribute, LoadState.LOADED);
@@ -165,20 +168,25 @@ class EntityConstructor {
             Axiom<?> ax,
             Map<URI, FieldSpecification<? super T, ?>> attributes,
             Map<FieldSpecification<? super T, ?>, FieldStrategy<? extends FieldSpecification<? super T, ?>, T>> loaders,
-            EntityType<T> et, Descriptor desc) {
+            EntityConstructor.EntityConstructionParameters<T> constructionParams) {
         final URI attId = ax.getAssertion().getIdentifier();
         FieldSpecification<? super T, ?> att = attributes.get(attId);
         if (att == null) {
-            if (et.getProperties() != null) {
-                att = et.getProperties();
+            if (constructionParams.entityType().getProperties() != null) {
+                att = constructionParams.entityType().getProperties();
             } else {
                 return null;
             }
         }
         if (!loaders.containsKey(att)) {
-            loaders.put(att, FieldStrategy.createFieldStrategy(et, att, desc, mapper));
+            loaders.put(att, FieldStrategy.createFieldStrategy(constructionParams.entityType(), att, new ObjectGraphInfo(constructionParams.descriptor(), constructionParams.fetchGraph()), mapper));
         }
         return loaders.get(att);
+    }
+
+    private boolean isLazilyLoaded(FieldSpecification<?, ?> att, EntityConstructionParameters<?> constructionParams) {
+        return att.getFetchType() == FetchType.LAZY && !constructionParams.fetchGraph()
+                                                                          .hasAttribute(att) && !constructionParams.forceEager();
     }
 
     /**
@@ -274,7 +282,7 @@ class EntityConstructor {
     private <T> void processEmptyAttributes(T entity, EntityType<T> et, LoadStateDescriptor<T> loadStateDescriptor) {
         et.getFieldSpecifications().stream()
           .filter(fs -> {
-              final Object value= EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
+              final Object value = EntityPropertiesUtils.getFieldValue(fs.getJavaField(), entity);
               return value == null || (value instanceof Collection<?> && ((Collection<?>) value).isEmpty());
           })
           .forEach(fs -> {
@@ -291,11 +299,13 @@ class EntityConstructor {
           });
     }
 
-    private <T> void validateIntegrityConstraints(T entity, EntityType<T> et) {
+    private <T> void validateIntegrityConstraints(T entity, EntityType<T> et,
+                                                  LoadStateDescriptor<T> loadStateDescriptor) {
         if (shouldSkipICValidationOnLoad()) {
             return;
         }
-        IntegrityConstraintsValidator.getValidator().validate(entity, et, isNotLazy());
+        IntegrityConstraintsValidator.getValidator()
+                                     .validate(entity, et, fs -> loadStateDescriptor.isLoaded(fs) == LoadState.LOADED);
     }
 
     private boolean shouldSkipICValidationOnLoad() {
@@ -315,7 +325,7 @@ class EntityConstructor {
     <T> void setFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Collection<Axiom<?>> axioms,
                            EntityType<T> et, Descriptor entityDescriptor) {
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
-                .createFieldStrategy(et, fieldSpec, entityDescriptor, mapper);
+                .createFieldStrategy(et, fieldSpec, new ObjectGraphInfo(entityDescriptor), mapper);
         axioms.forEach(fs::addAxiomValue);
         fs.buildInstanceFieldValue(entity);
         validateIntegrityConstraints(entity, fieldSpec, et);
@@ -332,9 +342,10 @@ class EntityConstructor {
      * @param id         Entity identifier
      * @param entityType Entity type
      * @param descriptor Entity descriptor, specifies e.g., repository contexts
+     * @param fetchGraph Entity fetch graph
      * @param forceEager Whether all attributes have to be loaded eagerly
      * @param <T>        Entity type
      */
     record EntityConstructionParameters<T>(URI id, IdentifiableEntityType<T> entityType, Descriptor descriptor,
-                                           boolean forceEager) {}
+                                           FetchGraphWrapper fetchGraph, boolean forceEager) {}
 }

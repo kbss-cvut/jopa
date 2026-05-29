@@ -23,6 +23,8 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
+import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 
@@ -57,7 +59,12 @@ public class QueryImpl extends AbstractQuery implements Query {
 
     private List<?> getResultListImpl() throws OntoDriverException {
         final List<Object> res = new ArrayList<>();
-        executeQuery(rs -> res.add(extractRow(rs)));
+        try (final Statement stmt = initQueryStatement()) {
+            final ResultSet rs = stmt.executeQuery(query.assembleQuery());
+            for (ResultRow row : rs) {
+                res.add(extractRow(row));
+            }
+        }
         return res;
     }
 

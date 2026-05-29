@@ -303,13 +303,13 @@ abstract class QueryTestBase {
     }
 
     @Test
-    void executeQueryAppliesQueryHints() throws Exception {
+    void executeQueryAppliesQueryHints() {
         final AbstractQuery q = createQuery(SELECT_QUERY, OWLClassA.class);
         final String hintName = "jopa.query.testHint";
         final QueryHintsHandler.Hint hint = spy(new TestHint(hintName));
         QueryHintsHandler.Hint.registerHint(hint);
         q.setHint(hintName, true);
-        q.executeQuery((r) -> {});
+        q.getResultList();
         verify(hint).apply(true, q, statementMock);
     }
 

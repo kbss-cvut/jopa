@@ -396,12 +396,12 @@ class MetamodelBuilderTest {
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "AParentI")
-    private interface AParentI {
+    public interface AParentI {
     }
 
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "BParentI")
-    private interface BParentI {
+    public interface BParentI {
     }
 
     @TestLocal
@@ -742,7 +742,7 @@ class MetamodelBuilderTest {
     }
 
     @Test
-    void buildMetamodelEagerlyGeneratesLazyLoadingEntityProxiesForEntityClassesReferencedByLazilyFetchAttributes() {
+    void buildMetamodelEagerlyGeneratesLazyLoadingEntityProxiesForEntityClassesUsedAsAttributeValues() {
         when(finderMock.getEntities()).thenReturn(Set.of(OWLClassA.class, ClassWithLazySingularAttribute.class));
         builder.buildMetamodel(finderMock);
         assertTrue(builder.getLazyLoadingEntityProxyClasses().containsKey(OWLClassA.class));

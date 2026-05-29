@@ -19,14 +19,21 @@ package cz.cvut.kbss.jopa.test.query.runner;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
+import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.Subgraph;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.proxy.lazy.gen.LazyLoadingEntityProxy;
 import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassM;
+import cz.cvut.kbss.jopa.test.OWLClassT;
+import cz.cvut.kbss.jopa.test.OWLClassV;
+import cz.cvut.kbss.jopa.test.OWLClassY;
+import cz.cvut.kbss.jopa.test.Thing;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
@@ -43,16 +50,21 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -449,5 +461,114 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
             assertEquals(entities.get(i).getStringAttribute(), result.get(i).getStringAttribute());
             assertThat(result.get(i).getTypes(), hasItems(entities.get(i).getTypes().toArray(new String[]{})));
         }
+    }
+
+    @Test
+    public void querySupportsFetchGraphs() {
+        final EntityGraph<OWLClassV> fetchGraph = getEntityManager().createEntityGraph(OWLClassV.class);
+        fetchGraph.addAttributeNodes("name", "description");
+        final Subgraph<Thing> subgraph = fetchGraph.addSubgraph("things");
+        subgraph.addAttributeNodes("name");
+        final List<OWLClassV> entities = QueryTestEnvironment.getData(OWLClassV.class);
+        final List<OWLClassV> result = getEntityManager().createNativeQuery("SELECT ?x WHERE { ?x a ?type . }", OWLClassV.class)
+                                                         .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_V))
+                                                         .setHint(QueryHints.FETCH_GRAPH, fetchGraph)
+                                                         .getResultList();
+        assertEquals(entities.size(), result.size());
+        result.forEach(c -> {
+            final Optional<OWLClassV> expected = entities.stream().filter(v -> v.getUri().equals(c.getUri()))
+                                                         .findFirst();
+            assertTrue(expected.isPresent());
+            assertEquals(expected.get().getName(), c.getName());
+            assertEquals(expected.get().getDescription(), c.getDescription());
+            assertNotNull(c.getThings());
+            assertEquals(expected.get().getThings().size(), c.getThings().size());
+            c.getThings().forEach(t -> {
+                assertNotNull(t.getName());
+                assertNull(t.getDescription());
+            });
+        });
+    }
+
+    @Test
+    public void querySupportsMappingResultsDirectlyToEntityWithoutProjectingTypes() {
+        final List<OWLClassE> entities = QueryTestEnvironment.getData(OWLClassE.class);
+        final List<OWLClassE> result = getEntityManager().createNativeQuery("""
+                                                                 SELECT ?x ?stringAttribute WHERE {
+                                                                 ?x a ?type ;
+                                                                 ?hasString ?stringAttribute .
+                                                                 }""", OWLClassE.class)
+                                                         .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_E))
+                                                         .setParameter("hasString", URI.create(Vocabulary.P_E_STRING_ATTRIBUTE))
+                                                         .getResultList();
+        entities.sort(Comparator.comparing(OWLClassE::getUri));
+        result.sort(Comparator.comparing(OWLClassE::getUri));   // Sort here instead of in the query due to OWL2Query lacking proper sorting support
+        assertEquals(entities.size(), result.size());
+        for (int i = 0; i < entities.size(); i++) {
+            assertEquals(entities.get(i).getUri(), result.get(i).getUri());
+            assertEquals(entities.get(i).getStringAttribute(), result.get(i).getStringAttribute());
+        }
+    }
+
+    @Test
+    public void querySupportsGroupConcatMultilingualStringsBasedOnFetchGraph() {
+        final List<OWLClassY> instances = QueryTestEnvironment.getData(OWLClassY.class);
+        instances.sort(Comparator.comparing(OWLClassY::getUri));
+        final EntityGraph<OWLClassY> fetchGraph = getEntityManager().createEntityGraph(OWLClassY.class);
+        fetchGraph.addAttributeNodes("singularString", "pluralString");
+
+        final List<OWLClassY> result = getEntityManager().createQuery("SELECT y FROM OWLClassY y", OWLClassY.class)
+                                                         .setHint(QueryHints.FETCH_GRAPH, fetchGraph)
+                                                         .getResultList();
+        result.sort(Comparator.comparing(OWLClassY::getUri));
+        assertEquals(instances.size(), result.size());
+        for (int i = 0; i < instances.size(); i++) {
+            assertEquals(instances.get(i).getUri(), result.get(i).getUri());
+            assertEquals(instances.get(i).getSingularString(), result.get(i).getSingularString());
+            assertEquals(instances.get(i).getPluralString().size(), result.get(i).getPluralString().size());
+            final int index = i;
+            instances.get(i).getPluralString().forEach((mls) -> mls.getValue()
+                                                                   .forEach((lang, value) -> assertTrue(result.get(index)
+                                                                                                              .getPluralString()
+                                                                                                              .stream()
+                                                                                                              .anyMatch(resMls -> value.equals(resMls.get(lang))))));
+        }
+    }
+
+    @Test
+    public void querySupportsNamedFetchGraphs() {
+        final List<OWLClassT> instances = QueryTestEnvironment.getData(OWLClassT.class);
+        final EntityGraph<?> fetchGraph = getEntityManager().getEntityGraph("OWLClassT.basic");
+        final List<OWLClassT> result = getEntityManager().createQuery("SELECT t FROM OWLClassT t", OWLClassT.class)
+                                                         .setHint(QueryHints.FETCH_GRAPH, fetchGraph)
+                                                         .getResultList();
+
+        assertEquals(instances.size(), result.size());
+        result.forEach(r -> {
+            assertNotNull(r.getName());
+            assertNotNull(r.getDescription());
+            assertNotNull(r.getModified());
+            assertNull(r.getIntAttribute());
+            assertThat(r.getOwlClassA(), anyOf(nullValue(), instanceOf(LazyLoadingEntityProxy.class)));
+        });
+    }
+
+    @Test
+    public void querySupportsNestedNamedFetchGraphs() {
+        final List<OWLClassT> instances = QueryTestEnvironment.getData(OWLClassT.class);
+        final EntityGraph<?> fetchGraph = getEntityManager().getEntityGraph("OWLClassT.withA");
+        final List<OWLClassT> result = getEntityManager().createQuery("SELECT t FROM OWLClassT t", OWLClassT.class)
+                                                         .setHint(QueryHints.FETCH_GRAPH, fetchGraph)
+                                                         .getResultList();
+
+        assertEquals(instances.size(), result.size());
+        result.forEach(r -> {
+            assertNotNull(r.getName());
+            assertNotNull(r.getDescription());
+            assertNotNull(r.getModified());
+            assertNotNull(r.getOwlClassA());
+            assertNotNull(r.getOwlClassA().getStringAttribute());
+            assertNull(r.getIntAttribute());
+        });
     }
 }

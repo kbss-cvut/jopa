@@ -20,8 +20,8 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.proxy.IndirectWrapper;
-import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
+import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.EntityGraphImpl;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.LoadState;
@@ -33,8 +33,10 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.proxy.IndirectWrapper;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.change.Change;
 import cz.cvut.kbss.jopa.sessions.change.ChangeCalculator;
@@ -44,6 +46,7 @@ import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
@@ -356,16 +359,17 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     @Override
-    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor) {
+    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms,
+                                      AxiomBasedLoadingConfigGroup<T> config) {
         Objects.requireNonNull(cls);
         Objects.requireNonNull(axioms);
-        Objects.requireNonNull(descriptor);
+        Objects.requireNonNull(config);
 
-        final T result = storage.loadFromAxioms(new AxiomBasedLoadingParameters<>(cls, descriptor, false, axioms));
+        final T result = storage.loadFromAxioms(new AxiomBasedLoadingParameters<>(cls, axioms, config));
         if (result == null) {
             return null;
         }
-        final Object clone = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor).postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel()))));
+        final Object clone = registerExistingObject(result, new CloneRegistrationDescriptor(config.descriptor()).postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel()))));
         return cls.cast(clone);
     }
 
@@ -486,8 +490,8 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     /**
-     * This method calculates the changes to the registered entities and adds these changes into the given
-     * change set for future commit to the ontology.
+     * This method calculates the changes to the registered entities and adds these changes into the given change set
+     * for future commit to the ontology.
      */
     void calculateChanges() {
         if (hasNew) {
@@ -951,7 +955,15 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     public LoadState isLoaded(Object entity, String attributeName) {
         Objects.requireNonNull(entity);
         final FieldSpecification<?, ?> fs = entityType(entity.getClass()).getFieldSpecification(attributeName);
-        return loadStateRegistry.contains(entity) ? loadStateRegistry.get(entity).isLoaded(fs) : LoadState.UNKNOWN;
+        return isLoaded(entity, fs);
+    }
+
+    @Override
+    public LoadState isLoaded(Object entity, FieldSpecification<?, ?> fieldSpec) {
+        Objects.requireNonNull(entity);
+        Objects.requireNonNull(fieldSpec);
+        return loadStateRegistry.contains(entity) ? loadStateRegistry.get(entity)
+                                                                     .isLoaded(fieldSpec) : LoadState.UNKNOWN;
     }
 
     @Override
@@ -960,12 +972,24 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         return loadStateRegistry.contains(entity) ? loadStateRegistry.get(entity).isLoaded() : LoadState.UNKNOWN;
     }
 
+    @Override
     public SparqlQueryFactory sparqlQueryFactory() {
         return queryFactory;
     }
 
+    @Override
     public CriteriaBuilder getCriteriaBuilder() {
         return parent.getCriteriaBuilder();
+    }
+
+    @Override
+    public <T> EntityGraph<T> createEntityGraph(Class<T> rootType) {
+        return new EntityGraphImpl<>(getMetamodel().entity(rootType), getMetamodel());
+    }
+
+    @Override
+    public EntityGraph<?> getEntityGraph(String name) {
+        return getMetamodel().getNamedEntityGraphManager().getEntityGraph(name);
     }
 
     void registerEntityWithOntologyContext(Object entity, Descriptor descriptor) {

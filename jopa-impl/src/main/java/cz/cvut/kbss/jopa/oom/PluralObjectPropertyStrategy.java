@@ -20,6 +20,8 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
@@ -44,12 +46,15 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
 
     private static final Logger LOG = LoggerFactory.getLogger(PluralObjectPropertyStrategy.class);
 
+    private final FetchGraphWrapper fetchGraph;
+
     private final Collection<Object> values;
 
     private boolean hasLazyValues = false;
 
-    PluralObjectPropertyStrategy(EntityType<X> et, Y att, Descriptor descriptor, EntityMappingHelper mapper) {
-        super(et, att, descriptor, mapper);
+    PluralObjectPropertyStrategy(EntityType<X> et, Y att, ObjectGraphInfo objectGraphInfo, EntityMappingHelper mapper) {
+        super(et, att, objectGraphInfo.descriptor(), mapper);
+        this.fetchGraph = objectGraphInfo.fetchGraph();
         this.values = CollectionFactory.createDefaultCollection(att.getCollectionType());
     }
 
@@ -66,7 +71,7 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
             // with the 'else' branch behavior?
             values.add(attribute.getConverter().convertToAttribute(valueIdentifier));
         } else {
-            final Object value = mapper.getEntityFromCacheOrOntology(elementType, valueIdentifier.getIdentifier(), getDescriptorForRetrieval());
+            final Object value = mapper.getEntityFromCacheOrOntology(elementType, valueIdentifier.getIdentifier(), propagateObjectGraphInfo());
             if (value != null) {
                 values.add(value);
             } else {
@@ -78,6 +83,10 @@ abstract class PluralObjectPropertyStrategy<Y extends AbstractPluralAttribute<? 
     private Descriptor getDescriptorForRetrieval() {
         // Unwrap the descriptor to get the descriptor for the elements
         return entityDescriptor.getAttributeDescriptor(attribute).unwrap();
+    }
+
+    private ObjectGraphInfo propagateObjectGraphInfo() {
+        return new ObjectGraphInfo(getDescriptorForRetrieval(), fetchGraph.getAttributeSubgraph(attribute));
     }
 
     @Override

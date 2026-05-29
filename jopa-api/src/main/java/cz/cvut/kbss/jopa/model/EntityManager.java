@@ -354,6 +354,26 @@ public interface EntityManager extends AutoCloseable {
     Query createNativeQuery(String sparqlString, String resultSetMapping);
 
     /**
+     * Returns a mutable {@link EntityGraph} that can be used to dynamically create an entity graph.
+     *
+     * @param rootType Entity class
+     * @param <T>      Root entity class type
+     * @return Entity graph
+     */
+    <T> EntityGraph<T> createEntityGraph(Class<T> rootType);
+
+    /**
+     * Obtain a named {@link EntityGraph}.
+     * <p>
+     * The returned instance of EntityGraph should be considered immutable.
+     *
+     * @param graphName Name of an existing entity graph
+     * @return Named entity graph
+     * @throws IllegalArgumentException If there is no entity graph with the specified name
+     */
+    EntityGraph<?> getEntityGraph(String graphName);
+
+    /**
      * Return an object of the specified type to allow access to the provider-specific API. If the provider's
      * EntityManager implementation does not support the specified class, the {@link OWLPersistenceException} is
      * thrown.

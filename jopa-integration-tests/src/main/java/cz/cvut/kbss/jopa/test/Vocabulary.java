@@ -62,6 +62,7 @@ public class Vocabulary {
     public static final String C_OWL_CLASS_Z = CLASS_IRI_BASE + "OWLClassZ";
     public static final String C_OWL_CLASS_PART_CONSTR_IN_PARENT = CLASS_IRI_BASE + "OWLClassWithPartConstraintsInInterfaceParent";
     public static final String C_OWL_CLASS_BB = CLASS_IRI_BASE + "OWLClassBB";
+    public static final String C_OWL_CLASS_EE = CLASS_IRI_BASE + "OWLClassEE";
     public static final String C_OWL_CLASS_Z_CHILD = CLASS_IRI_BASE + "OWLClassZChild";
     public static final String C_OwlClassWithQueryAttr = CLASS_IRI_BASE + "OWLClassWithQueryAttr";
     public static final String C_OwlClassWithQueryAttr2 = CLASS_IRI_BASE + "OWLClassWithQueryAttr2";
@@ -163,6 +164,7 @@ public class Vocabulary {
     public static final String P_BB_DOUBLE_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "bbDoubleAttribute";
     public static final String P_BB_CHAR_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "bbCharAttribute";
 
+    public static final String P_EE_HAS_E = ATTRIBUTE_IRI_BASE + "eeHasE";
 
     public static final String P_HAS_H = ATTRIBUTE_IRI_BASE + "hasH";
 

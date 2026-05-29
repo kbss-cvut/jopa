@@ -24,7 +24,6 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +41,7 @@ import static org.mockito.Mockito.verify;
 public class EpistemicAxiomRemoverTest {
 
     private static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
-    private static final Resource SUBJECT_RESOURCE = ResourceFactory.createResource(SUBJECT.getIdentifier().toString());
+    private static final Resource SUBJECT_RESOURCE = Generator.generateResource(SUBJECT.getIdentifier().toString());
 
     @Mock
     private StorageConnector connectorMock;

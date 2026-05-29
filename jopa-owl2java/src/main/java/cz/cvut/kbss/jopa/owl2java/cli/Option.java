@@ -121,9 +121,19 @@ public enum Option {
     ONTOLOGY_PREFIX_PROPERTY("prefixProperty", "identifier of the property whose value represents the ontology IRI prefix"),
 
     /**
-     * Specifies whether to always use ontology prefix (if available) when generating vocabulary and model.
+     * Property whose value represents the ontology IRI namespace.
      */
-    ALWAYS_USE_ONTOLOGY_PREFIX("usePrefixes", "whether to always use ontology prefix for generating vocabulary and model"),
+    ONTOLOGY_NAMESPACE_PROPERTY("namespaceProperty", "identifier of the property whose value represents the ontology IRI namespace"),
+
+    /**
+     * Specifies whether to always use ontology prefix (if available) when generating vocabulary.
+     */
+    ALWAYS_USE_ONTOLOGY_PREFIX_FOR_VOCABULARY("vocabularyUsePrefixes", "whether to always use ontology prefix for generating vocabulary"),
+
+    /**
+     * Specifies whether to always use ontology prefix (if available) when generating model.
+     */
+    ALWAYS_USE_ONTOLOGY_PREFIX_FOR_MODEL("modelUsePrefixes", "whether to always use ontology prefix for generating model"),
 
     /**
      * Specifies file containing ontology prefix mapping.

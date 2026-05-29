@@ -34,6 +34,7 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.jupiter.api.BeforeEach;
@@ -458,7 +459,8 @@ class TypedQueryImplTest extends QueryTestBase {
         when(resultRow.getObject(1, URI.class)).thenReturn(URI.create(RDF.TYPE));
         when(resultRow.getObject(2)).thenReturn(URI.create(Vocabulary.c_OwlClassB));
         when(resultRow.getColumnCount()).thenReturn(3);
-        when(uowMock.readObjectFromAxioms(eq(OWLClassB.class), anyCollection(), any())).thenReturn(entity);
+        when(uowMock.readObjectFromAxioms(eq(OWLClassB.class), anyCollection(),
+                eq(new AxiomBasedLoadingConfigGroup<>(entity.getUri(), new EntityDescriptor())))).thenReturn(entity);
         final MetamodelImpl metamodel = mock(MetamodelImpl.class);
         when(uowMock.getMetamodel()).thenReturn(metamodel);
         when(uowMock.isEntityType(OWLClassB.class)).thenReturn(true);
@@ -474,6 +476,10 @@ class TypedQueryImplTest extends QueryTestBase {
     @Test
     void getResultListIsAbleToMapProjectedVariablesToEntityAttributes() throws Exception {
         final OWLClassA entity = Generators.generateOwlClassAInstance();
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
+        when(uowMock.getMetamodel()).thenReturn(metamodel);
+        final MetamodelMocks mocks = new MetamodelMocks();
+        mocks.setMocks(metamodel);
         final TypedQuery<OWLClassA> sut = create("SELECT ?x ?stringAttribute ?types WHERE {" +
                 "?x a " + stringifyIri(Vocabulary.c_OwlClassA) + " ;" +
                 stringifyIri(Vocabulary.p_a_stringAttribute) + " ?stringAttribute ;" +
@@ -483,16 +489,15 @@ class TypedQueryImplTest extends QueryTestBase {
         when(resultSetIterator.next()).thenReturn(resultRow);
         when(resultRow.getColumnNames()).thenReturn(List.of("x", "stringAttribute", "types"));
         when(resultRow.getObject(0, URI.class)).thenReturn(entity.getUri());
+        when(resultRow.isBound("x")).thenReturn(true);
+        when(resultRow.getObject("x", URI.class)).thenReturn(entity.getUri());
         when(resultRow.isBound("stringAttribute")).thenReturn(true);
         when(resultRow.getObject("stringAttribute")).thenReturn(entity.getStringAttribute());
         when(resultRow.isBound("types")).thenReturn(true);
-        when(resultRow.getObject("types")).thenReturn(URI.create(Vocabulary.c_OwlClassA));
+        when(resultRow.getString("types")).thenReturn(Vocabulary.c_OwlClassA);
         when(resultRow.getColumnCount()).thenReturn(3);
-        when(uowMock.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(), any())).thenReturn(entity);
-        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
-        when(uowMock.getMetamodel()).thenReturn(metamodel);
-        final MetamodelMocks mocks = new MetamodelMocks();
-        mocks.setMocks(metamodel);
+        when(uowMock.readObjectFromAxioms(eq(OWLClassA.class), anyCollection(),
+                eq(new AxiomBasedLoadingConfigGroup<>(entity.getUri(), new EntityDescriptor())))).thenReturn(entity);
 
         final List<OWLClassA> result = sut.getResultList();
         assertEquals(List.of(entity), result);

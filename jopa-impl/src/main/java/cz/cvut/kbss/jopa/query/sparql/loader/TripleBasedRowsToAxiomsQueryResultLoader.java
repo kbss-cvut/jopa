@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
@@ -43,7 +44,7 @@ import java.util.Optional;
 
 /**
  * Loads entity by aggregating rows with the same subject into axioms and then using
- * {@link UnitOfWork#readObjectFromAxioms(Class, Collection, Descriptor)} to read the entity.
+ * {@link UnitOfWork#readObjectFromAxioms(Class, Collection, AxiomBasedLoadingConfigGroup)} to read the entity.
  * <p>
  * It expects the query result rows to have three columns corresponding to the triple subject, property and object.
  * <p>
@@ -112,7 +113,7 @@ class TripleBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoader<T
 
     private T loadEntity() {
         try {
-            return uow.readObjectFromAxioms(resultType, currentEntityAxioms, descriptor);
+            return uow.readObjectFromAxioms(resultType, currentEntityAxioms, new AxiomBasedLoadingConfigGroup<>(currentSubject.getIdentifier(), descriptor));
         } catch (CardinalityConstraintViolatedException e) {
             // Axioms may contain more statements than expected due to query evaluation containing inferred results.
             // If the entity class declares ICs on non-inferred attributes, this may lead to IC violation exception.

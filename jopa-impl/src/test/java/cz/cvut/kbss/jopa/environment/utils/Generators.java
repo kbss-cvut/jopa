@@ -163,9 +163,9 @@ public abstract class Generators {
 
     public static Set<String> generateTypes(int count) {
         final Set<String> types = new HashSet<>(count);
-        final int randomBase = RAND.nextInt(10000);
+        final int base = RAND.nextInt(10000);
         for (int i = 0; i < count; i++) {
-            types.add(Vocabulary.CLASS_BASE + (randomBase + i * 2));
+            types.add(Vocabulary.CLASS_BASE + base + i);
         }
         return types;
     }

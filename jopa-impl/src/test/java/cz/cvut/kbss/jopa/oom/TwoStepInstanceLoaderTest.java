@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.ontodriver.Types;
@@ -107,7 +108,8 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
         final Collection<Axiom<?>> axioms = new HashSet<>(types);
         when(connectionMock.find(axiomDescriptor)).thenReturn(axioms);
         when(entityConstructorMock
-                .reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, metamodelMock.entity(OWLClassR.class), descriptor, false),
+                .reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, metamodelMock.entity(OWLClassR.class), descriptor, new FetchGraphWrapper(),
+                                false),
                         axioms))
                 .thenReturn(entityR);
 
@@ -126,7 +128,7 @@ class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
                         new Value<>(new LangString("Test", "en"))));
         final OWLClassR entityR = new OWLClassR();
         when(entityConstructorMock
-                .reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, metamodelMock.entity(OWLClassR.class), descriptor, false),
+                .reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, metamodelMock.entity(OWLClassR.class), descriptor, new FetchGraphWrapper(), false),
                         axioms))
                 .thenReturn(entityR);
 

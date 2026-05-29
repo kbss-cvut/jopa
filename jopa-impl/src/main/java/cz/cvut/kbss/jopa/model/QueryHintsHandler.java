@@ -97,6 +97,7 @@ public class QueryHintsHandler {
             registerHint(new DisableInferenceHint());
             registerHint(new TargetOntologyHint());
             registerHint(new OptimizedQueryResultEntityLoadingHint());
+            registerHint(new FetchGraphHint());
         }
 
         Hint(String name, Object defaultValue) {
@@ -223,6 +224,17 @@ public class QueryHintsHandler {
         @Override
         void applyToQuery(Object hintValue, AbstractQuery query, Statement statement) {
             // Do nothing, the optimizer is enabled as soon as the hint is set
+        }
+    }
+
+    protected static class FetchGraphHint extends Hint {
+        public FetchGraphHint() {
+            super(QueryHints.FETCH_GRAPH, null);
+        }
+
+        @Override
+        void applyToQuery(Object hintValue, AbstractQuery query, Statement statement) {
+            // Do nothing, the query pulls the fetch graph from the hint automatically
         }
     }
 }

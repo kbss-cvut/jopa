@@ -35,6 +35,7 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     private boolean inProjection;
     private boolean hasLimit;
     private boolean hasOffset;
+    private boolean hasOrderBy;
     private boolean hasGraphOrService;
 
     private int depth = 0;
@@ -113,6 +114,11 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     }
 
     @Override
+    public void enterOrderClause(SparqlParser.OrderClauseContext ctx) {
+        this.hasOrderBy = true;
+    }
+
+    @Override
     public void enterGraphGraphPattern(SparqlParser.GraphGraphPatternContext ctx) {
         this.hasGraphOrService = true;
     }
@@ -156,7 +162,7 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     }
 
     QueryAttributes getQueryAttributes() {
-        return new QueryAttributes(queryType, hasOffset, hasLimit, hasGraphOrService, lastClosingCurlyBrace);
+        return new QueryAttributes(queryType, hasOffset, hasLimit, hasOrderBy, hasGraphOrService, lastClosingCurlyBrace);
     }
 
     List<TokenQueryParameter<?>> getParameters() {

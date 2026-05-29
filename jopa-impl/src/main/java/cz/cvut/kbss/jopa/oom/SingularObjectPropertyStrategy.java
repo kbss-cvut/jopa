@@ -18,12 +18,17 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,11 +41,14 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<AbstractAttribute<
 
     private static final Logger LOG = LoggerFactory.getLogger(SingularObjectPropertyStrategy.class);
 
+    private final FetchGraphWrapper fetchGraph;
+
     private Object value;
 
     SingularObjectPropertyStrategy(EntityType<X> et, AbstractAttribute<? super X, ?> att,
-                                   Descriptor descriptor, EntityMappingHelper mapper) {
-        super(et, att, descriptor, mapper);
+                                   ObjectGraphInfo objectGraphInfo, EntityMappingHelper mapper) {
+        super(et, att, objectGraphInfo.descriptor(), mapper);
+        this.fetchGraph = objectGraphInfo.fetchGraph();
     }
 
     @Override
@@ -57,8 +65,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<AbstractAttribute<
             // with the 'else' branch behavior?
             newValue = attribute.getConverter().convertToAttribute(valueIdentifier);
         } else {
-            newValue = mapper.getEntityFromCacheOrOntology(targetType, valueIdentifier.getIdentifier(),
-                    entityDescriptor.getAttributeDescriptor(attribute));
+            newValue = mapper.getEntityFromCacheOrOntology(targetType, valueIdentifier.getIdentifier(), propagateGraphInfo());
             if (newValue == null) {
                 LOG.trace("Value of axiom {} could not be loaded as entity filling attribute {}.", ax, attribute);
                 return;
@@ -66,6 +73,10 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<AbstractAttribute<
         }
         verifyCardinality(ax.getSubject());
         this.value = newValue;
+    }
+
+    private ObjectGraphInfo propagateGraphInfo() {
+        return new ObjectGraphInfo(entityDescriptor.getAttributeDescriptor(attribute), fetchGraph.getAttributeSubgraph(attribute));
     }
 
     private void verifyCardinality(NamedResource subject) {

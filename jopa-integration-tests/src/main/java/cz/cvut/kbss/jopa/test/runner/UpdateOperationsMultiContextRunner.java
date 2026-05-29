@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -238,8 +239,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         em.getTransaction().commit();
 
         final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri(), cDescriptor);
-        assertEquals(entityC.getReferencedList().size() - removed.size(), resC.getReferencedList()
-                .size());
+        assertEquals(entityC.getReferencedList().size() - removed.size(), resC.getReferencedList().size());
         for (OWLClassA a : removed) {
             final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), lstDescriptor);
             assertNotNull(resA);
@@ -315,8 +315,8 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         });
 
         assertTrue(em.createNativeQuery("ASK { GRAPH ?g { ?s ?p ?o. }}", Boolean.class).setParameter("g", CONTEXT_TWO)
-                .setParameter("s", entityD.getUri()).setParameter("p", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
-                .setParameter("o", newA.getUri()).getSingleResult());
+                     .setParameter("s", entityD.getUri()).setParameter("p", URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
+                     .setParameter("o", newA.getUri()).getSingleResult());
         final OWLClassD result = findRequired(OWLClassD.class, entityD.getUri(), dDescriptor);
         assertNotNull(result.getOwlClassA());
         assertEquals(newA.getUri(), result.getOwlClassA().getUri());
@@ -336,7 +336,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         entityF.setSimpleSet(new HashSet<>(Arrays.asList(entityA, entityA2)));
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
-                .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
         transactional(() -> em.merge(entityF, descriptor));
 
         final OWLClassF result = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
@@ -354,7 +354,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_ONE)
-                .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
+                  .addAttributeContext(fieldSpecification(OWLClassF.class, "simpleSet"), CONTEXT_TWO);
         transactional(() -> {
             final OWLClassF toUpdate = findRequired(OWLClassF.class, entityF.getUri(), descriptor);
             toUpdate.setSimpleSet(new HashSet<>(Arrays.asList(entityA, entityA2)));
@@ -366,5 +366,33 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         assertEquals(2, result.getSimpleSet().size());
         assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA.getUri())));
         assertTrue(result.getSimpleSet().stream().anyMatch(a -> a.getUri().equals(entityA2.getUri())));
+    }
+
+    /**
+     * Bug #437
+     */
+    @Test
+    void updateOnEntityInAnnotationBasedContextLoadedWithQuerySavesValueInCorrectContext() {
+        this.em = getEntityManager("updateOnEntityInAnnotationBasedContextLoadedWithQuerySavesValueInCorrectContext", false);
+        final ClassInContext entity = new ClassInContext();
+        entity.setLabel("Initial label");
+        transactional(() -> em.persist(entity));
+
+        transactional(() -> {
+            final List<ClassInContext> loaded = em.createNativeQuery("SELECT ?x WHERE { GRAPH ?g {?x a ?type } }", ClassInContext.class)
+                                                  .setParameter("type", URI.create(Vocabulary.CLASS_IRI_BASE + "classInContext"))
+                                                  .getResultList();
+            assertEquals(1, loaded.size());
+            final ClassInContext loadedEntity = loaded.get(0);
+            loadedEntity.setLabel("Updated label");
+        });
+
+        final ClassInContext updatedEntity = em.find(ClassInContext.class, entity.getId());
+        assertEquals("Updated label", updatedEntity.getLabel());
+        assertTrue(em.createNativeQuery("ASK WHERE { GRAPH ?g { ?entity ?hasLabel ?label . } }", Boolean.class)
+                     .setParameter("entity", entity)
+                     .setParameter("g", URI.create("https://example.com/context"))
+                     .setParameter("hasLabel", URI.create(RDFS.LABEL))
+                     .getSingleResult());
     }
 }

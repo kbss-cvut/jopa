@@ -21,7 +21,11 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.jena.connector.InferredStorageConnector;
 import cz.cvut.kbss.ontodriver.jena.connector.StorageConnector;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
@@ -35,18 +39,25 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 
-import static org.apache.jena.rdf.model.ResourceFactory.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.rdf.model.ResourceFactory.createStatement;
+import static org.apache.jena.rdf.model.ResourceFactory.createTypedLiteral;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class MainAxiomLoaderTest {
 
     private static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
-    private static final Resource SUBJECT_RES = createResource(SUBJECT.getIdentifier().toString());
+    private static final Resource SUBJECT_RES = Generator.generateResource(SUBJECT.getIdentifier().toString());
     private static final Property PROPERTY = createProperty(Generator.generateUri().toString());
     private static final NamedResource OBJECT = NamedResource.create(Generator.generateUri());
-    private static final Resource OBJECT_RES = createResource(OBJECT.getIdentifier().toString());
+    private static final Resource OBJECT_RES = Generator.generateResource(OBJECT.getIdentifier().toString());
 
     @Mock
     private StorageConnector connectorMock;

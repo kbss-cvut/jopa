@@ -7,3 +7,4 @@ http://krizik.felk.cvut.cz/ontologies/onto-with-same-property-in-import.owl  > .
 http://krizik.felk.cvut.cz/ontologies/model > modelOne.owl
 http://onto.fel.cvut.cz/ontologies/model > modelTwo.owl
 http://onto.fel.cvut.cz/ontologies/owl2java/slovník > slovník.owl
+http://onto.fel.cvut.cz/ontologies/jopa/with-name-collision > gh-432.ttl

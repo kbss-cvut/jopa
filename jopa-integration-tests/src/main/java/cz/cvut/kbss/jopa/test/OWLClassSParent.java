@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.test;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.PrePersist;
 import cz.cvut.kbss.jopa.model.annotations.PreUpdate;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 
@@ -52,6 +53,7 @@ public abstract class OWLClassSParent implements HasUri {
         this.modified = modified;
     }
 
+    @PrePersist
     @PreUpdate
     void preUpdate() {
         setModified(Instant.now());

@@ -18,12 +18,14 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.utils.Wrapper;
@@ -173,14 +175,17 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * Reads an object from the specified axioms.
      * <p>
      * It is assumed the axioms correspond to the provided descriptor.
+     * <p>
+     * The axioms may represent an entity graph, i.e. multiple interconnected entities. It is the responsibility of the
+     * loader to ensure the entity graph is reconstructed correctly w.r.t. the provided fetch graph.
      *
-     * @param cls        Expected result class
-     * @param axioms     Axioms representing the object
-     * @param descriptor Entity descriptor
-     * @param <T>        Return type
+     * @param cls    Expected result class
+     * @param axioms Axioms representing the object(s)
+     * @param config Additional loading configuration
+     * @param <T>    Return type
      * @return The retrieved object or {@code null} if no object of the expected target class can be reconstructed
      */
-    <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor);
+    <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, AxiomBasedLoadingConfigGroup<T> config);
 
     /**
      * Retrieves a reference to an object with the specified identifier.
@@ -322,11 +327,21 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * Gets the load status of the specified attribute on the specified entity.
      *
      * @param entity        Entity instance
-     * @param attributeName Attribute whose load status is to be determined
+     * @param attributeName Name of the attribute whose load status is to be determined
      * @return Attribute load status
      * @see cz.cvut.kbss.jopa.model.ProviderUtil#isLoadedWithoutReference(Object, String)
      */
     LoadState isLoaded(Object entity, String attributeName);
+
+    /**
+     * Gets the load status of the specified attribute on the specified entity.
+     *
+     * @param entity    Entity instance
+     * @param fieldSpec Attribute whose load status is to be determined
+     * @return Attribute load status
+     * @see cz.cvut.kbss.jopa.model.ProviderUtil#isLoadedWithoutReference(Object, String)
+     */
+    LoadState isLoaded(Object entity, FieldSpecification<?, ?> fieldSpec);
 
     /**
      * Gets the load status of the specified entity.
@@ -418,4 +433,22 @@ public interface UnitOfWork extends ConfigurationHolder, MetamodelProvider, Wrap
      * @return Criteria query builder
      */
     CriteriaBuilder getCriteriaBuilder();
+
+    /**
+     * Creates an {@link EntityGraph} instance that can be used to specify an entity graph.
+     *
+     * @param rootType Root entity class
+     * @param <T>      Root entity class type
+     * @return Entity graph
+     */
+    <T> EntityGraph<T> createEntityGraph(Class<T> rootType);
+
+    /**
+     * Gets an {@link EntityGraph} with the specified name.
+     *
+     * @param name Entity graph name, as specified by {@link cz.cvut.kbss.jopa.model.annotations.NamedEntityGraph}
+     * @return Entity graph with the specified name
+     * @throws IllegalArgumentException If no entity graph with the specified name is registered
+     */
+    EntityGraph<?> getEntityGraph(String name);
 }

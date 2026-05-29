@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.proxy.lazy.gen;
 
 import cz.cvut.kbss.jopa.exception.LazyLoadingException;
+import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.gen.PersistenceContextAwareClassGenerator;
 import cz.cvut.kbss.jopa.model.metamodel.gen.PersistentPropertySetterMatcher;
@@ -155,7 +156,7 @@ public class LazyLoadingEntityProxyGenerator implements PersistenceContextAwareC
         }
 
         public static <T> boolean isLoaded(@This LazyLoadingEntityProxy<T> proxy, @FieldValue("value") T value) {
-            return value != null;
+            return value != null || proxy.getPersistenceContext().isLoaded(proxy, proxy.getFieldSpec()) == LoadState.LOADED;
         }
 
         public static <T> T getLoadedValue(@This LazyLoadingEntityProxy<T> proxy, @FieldValue("value") T value) {

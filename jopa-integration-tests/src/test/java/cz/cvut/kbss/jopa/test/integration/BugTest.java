@@ -312,7 +312,10 @@ class BugTest extends IntegrationTestBase {
         ownerDesc.addAssertion(Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_l_aSetAttribute), false));
         final List<Axiom<?>> ownerAxioms = List.of(
                 new AxiomImpl<>(subject, classAssertion, new Value<>(URI.create(Vocabulary.C_OWL_CLASS_L))),
-                new AxiomImpl<>(subject, hasAAssertion, new Value<>(NamedResource.create(ref.getUri())))
+                new AxiomImpl<>(subject, hasAAssertion, new Value<>(NamedResource.create(ref.getUri()))),
+                new AxiomImpl<>(subject, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_l_simpleListAttribute), false), new Value<>(NamedResource.create(ref.getUri()))),
+                new AxiomImpl<>(subject, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_l_referencedListAttribute), false), new Value<>(NamedResource.create(ref.getUri()))),
+                new AxiomImpl<>(subject, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.p_l_aSetAttribute), false), new Value<>(NamedResource.create(ref.getUri())))
         );
         when(connectionMock.find(ownerDesc)).thenReturn(ownerAxioms);
         final AxiomDescriptor singleAAttDesc = new AxiomDescriptor(subject);

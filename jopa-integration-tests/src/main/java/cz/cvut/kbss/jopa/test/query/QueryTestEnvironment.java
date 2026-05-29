@@ -20,15 +20,34 @@ package cz.cvut.kbss.jopa.test.query;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassC;
+import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.OWLClassJ;
+import cz.cvut.kbss.jopa.test.OWLClassM;
+import cz.cvut.kbss.jopa.test.OWLClassT;
+import cz.cvut.kbss.jopa.test.OWLClassV;
+import cz.cvut.kbss.jopa.test.OWLClassY;
+import cz.cvut.kbss.jopa.test.Thing;
+import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public final class QueryTestEnvironment {
 
@@ -52,8 +71,7 @@ public final class QueryTestEnvironment {
     }
 
     /**
-     * Generates and persists test data into the default context of the
-     * specified entity manager.
+     * Generates and persists test data into the default context of the specified entity manager.
      *
      * @param em EntityManager
      */
@@ -68,8 +86,7 @@ public final class QueryTestEnvironment {
     /**
      * Generates and persists test data into the specified contexts.
      * <p>
-     * This method distributes the data approximately uniformly into all the
-     * specified contexts.
+     * This method distributes the data approximately uniformly into all the specified contexts.
      *
      * @param em       EntityManager
      * @param contexts A collection of target contexts
@@ -175,6 +192,9 @@ public final class QueryTestEnvironment {
         m.put(OWLClassJ.class, generateOwlClassJInstances(aa));
         m.put(OWLClassM.class, generateOwlClassMInstances());
         m.put(OWLClassT.class, generateOwlClassTInstances(aa));
+        final List<Thing> things = generateThings();
+        m.put(Thing.class, things);
+        m.put(OWLClassV.class, generateOwlClassVInstances(things));
         m.put(OWLClassY.class, generateOwlClassYInstances());
         return m;
     }
@@ -311,6 +331,34 @@ public final class QueryTestEnvironment {
         return lst;
     }
 
+    private static List<Thing> generateThings() {
+        final List<Thing> lst = new ArrayList<>();
+        for (int i = 0; i < ITEM_COUNT; i++) {
+            final Thing t = new Thing();
+            t.setName("Thing-" + i + "-" + i);
+            t.setDescription(t.getName() + " description");
+            lst.add(t);
+        }
+        return lst;
+    }
+
+    private static List<OWLClassV> generateOwlClassVInstances(List<Thing> things) {
+        final List<OWLClassV> lst = new ArrayList<>();
+        for (int i = 0; i < ITEM_COUNT; i++) {
+            final OWLClassV v = new OWLClassV();
+            v.setName("TestV-" + i);
+            v.setDescription(v.getName() + " description");
+            v.setThings(new HashSet<>());
+            for (Thing thing : things) {
+                if (Generators.randomBoolean()) {
+                    v.getThings().add(thing);
+                }
+            }
+            lst.add(v);
+        }
+        return lst;
+    }
+
     private static List<OWLClassY> generateOwlClassYInstances() {
         final List<OWLClassY> lst = new ArrayList<>();
         for (int i = 0; i < ITEM_COUNT; i++) {
@@ -327,6 +375,14 @@ public final class QueryTestEnvironment {
                     y.getSingularString().set("fr", "nombre de valeurs de test " + i);
                     break;
             }
+            y.setPluralString(Set.of(
+                    new MultilingualString(Map.of("en", "Alt label one - " + i,
+                            "cs", "Synonymum jedna - " + i,
+                            "de", "Synonymum eins - " + i)),
+                    new MultilingualString(Map.of("en", "Alt label two - " + i,
+                            "cs", "Synonymum dva i " + i,
+                            "de", "Synonymum zwei - " + i))
+            ));
             lst.add(y);
         }
         return lst;

@@ -34,20 +34,20 @@ public class OWLClassL implements HasUri {
     @Sequence(type = SequenceType.simple)
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence")
     @ParticipationConstraints({
-            @ParticipationConstraint(min = 1, owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
+            @ParticipationConstraint(min = 1, owlObjectIRI = Vocabulary.c_OwlClassA)
     })
     private List<OWLClassA> simpleList;
 
     @Sequence(type = SequenceType.referenced)
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence")
     @ParticipationConstraints({
-            @ParticipationConstraint(max = 2, owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
+            @ParticipationConstraint(max = 2, owlObjectIRI = Vocabulary.c_OwlClassA)
     })
     private List<OWLClassA> referencedList;
 
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA")
+    @OWLObjectProperty(iri = Vocabulary.p_h_hasA)
     @ParticipationConstraints({
-            @ParticipationConstraint(min = 1, max = 5, owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
+            @ParticipationConstraint(min = 1, max = 5, owlObjectIRI = Vocabulary.c_OwlClassA)
     })
     private Set<OWLClassA> set;
 

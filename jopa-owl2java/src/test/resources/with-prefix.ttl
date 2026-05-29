@@ -1,0 +1,17 @@
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://onto.fel.cvut.cz/ontologies/application/termit> a owl:Ontology ;
+        <http://purl.org/dc/terms/created>
+                "2020-05-26" ;
+        <http://purl.org/dc/terms/title>
+                "Slovník systému TermIt - slovník"@cs , "Vocabulary of system TermIt - vocabulary"@en ;
+        <http://purl.org/ontology/bibo/status>
+                "Specifikace"@cs , "Specification"@en ;
+        <http://purl.org/vocab/vann/preferredNamespacePrefix>
+                "termit" ;
+        <http://purl.org/vocab/vann/preferredNamespaceUri>
+                "http://onto.fel.cvut.cz/ontologies/application/termit/term/" ;
+        owl:versionIRI  <http://onto.fel.cvut.cz/ontologies/application/termit/verze/1.1.2> .

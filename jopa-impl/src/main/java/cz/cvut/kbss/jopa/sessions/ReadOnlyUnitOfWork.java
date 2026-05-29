@@ -28,6 +28,7 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
@@ -140,17 +141,18 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     @Override
-    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms, Descriptor descriptor) {
+    public <T> T readObjectFromAxioms(Class<T> cls, Collection<Axiom<?>> axioms,
+                                      AxiomBasedLoadingConfigGroup<T> config) {
         Objects.requireNonNull(cls);
         Objects.requireNonNull(axioms);
-        Objects.requireNonNull(descriptor);
+        Objects.requireNonNull(config);
 
-        final AxiomBasedLoadingParameters<T> loadingParameters = new AxiomBasedLoadingParameters<>(cls, descriptor, true, axioms);
+        final AxiomBasedLoadingParameters<T> loadingParameters = new AxiomBasedLoadingParameters<>(cls, axioms, config);
         final T result = storage.loadFromAxioms(loadingParameters);
         if (result == null) {
             return null;
         }
-        return cls.cast(registerExistingObject(result, descriptor));
+        return cls.cast(registerExistingObject(result, config.descriptor()));
     }
 
     /**

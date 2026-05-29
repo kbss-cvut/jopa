@@ -18,8 +18,8 @@
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.model.BaseEntityQueryResultLoader;
+import cz.cvut.kbss.jopa.model.EntityGraph;
 import cz.cvut.kbss.jopa.model.NonEntityQueryResultLoader;
-import cz.cvut.kbss.jopa.model.QueryResultLoader;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.QueryType;
@@ -30,44 +30,89 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Allows optimizing queries that load entity instances.
+ * Selects a {@link QueryResultLoadingStrategy} that combines an optional SPARQL query rewrite with a matching query
+ * result loader.
  */
-public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimizer<TokenStreamSparqlQueryHolder> {
+public class SparqlQueryResultLoadingOptimizer {
 
     private static final Logger LOG = LoggerFactory.getLogger(SparqlQueryResultLoadingOptimizer.class);
+
+    private final TokenStreamSparqlQueryHolder queryHolder;
 
     private final UnitOfWork uow;
 
     private final ConnectionWrapper connection;
 
+    private boolean optimizationEnabled;
+
     public SparqlQueryResultLoadingOptimizer(TokenStreamSparqlQueryHolder queryHolder, UnitOfWork uow,
                                              ConnectionWrapper connection) {
-        super(queryHolder);
+        this.queryHolder = queryHolder;
         this.uow = uow;
         this.connection = connection;
     }
 
-    @Override
-    public void optimizeQueryAssembly(Class<?> resultClass, Descriptor descriptor) {
-        switch (resolveOptimizerType(resultClass, descriptor)) {
-            case TRIPLE_BASED:
+    public void enableOptimization() {this.optimizationEnabled = true;}
+
+    public void disableOptimization() {this.optimizationEnabled = false;}
+
+    /**
+     * Selects an appropriate {@link QueryResultLoadingStrategy} for the given query result configuration and registers
+     * its assembly modifier (if any) on the underlying query holder.
+     *
+     * @param resultClass Query result class
+     * @param descriptor  Descriptor specified for query result loading
+     * @param fetchGraph  Optional fetch graph specifying which properties should be loaded
+     * @param <T>         Result type
+     * @return Strategy used to load query results
+     */
+    public <T> QueryResultLoadingStrategy<T> chooseStrategy(Class<T> resultClass, Descriptor descriptor,
+                                                            EntityGraph<T> fetchGraph) {
+        final QueryResultLoadingStrategy<T> strategy = buildStrategy(resultClass, descriptor, fetchGraph);
+        queryHolder.setAssemblyModifier(strategy.assemblyModifier());
+        return strategy;
+    }
+
+    private <T> QueryResultLoadingStrategy<T> buildStrategy(Class<T> resultClass, Descriptor descriptor,
+                                                            EntityGraph<T> fetchGraph) {
+        switch (resolveOptimizerType(resultClass, descriptor, fetchGraph)) {
+            case TRIPLE_BASED -> {
                 LOG.trace("Processing query results with triple-based optimized entity loading.");
-                queryHolder.setAssemblyModifier(new UnboundPredicateObjectSparqlAssemblyModifier());
-                break;
-            case ATTRIBUTE_BASED:
-                LOG.trace("Processing query results with attribute enumeration-based optimized attribute loading.");
-                queryHolder.setAssemblyModifier(new AttributeEnumeratingSparqlAssemblyModifier(uow.getMetamodel()
-                                                                                                  .entity(resultClass), descriptor, connection));
-                break;
-            default:
-                // Do nothing
-                break;
+                return new QueryResultLoadingStrategy<>(
+                        new UnboundPredicateObjectSparqlAssemblyModifier(),
+                        () -> new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor));
+            }
+            case ATTRIBUTE_BASED, FETCH_GRAPH_BASED -> {
+                LOG.trace("Processing query results with attribute enumerating optimized entity loading.");
+                final AttributeEnumeratingSparqlAssemblyModifier modifier = new AttributeEnumeratingSparqlAssemblyModifier(
+                        uow.getMetamodel(), uow.getMetamodel().entity(resultClass), descriptor, fetchGraph, connection);
+                return new QueryResultLoadingStrategy<>(
+                        modifier,
+                        () -> new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor, fetchGraph, modifier::getVariableMapping));
+            }
+            default -> {
+                if (uow.isEntityType(resultClass) && queryHolder.getProjectedQueryParameters().size() > 1) {
+                    // Entity attributes are explicitly projected from the query; let the loader derive mappings
+                    // from the result set columns.
+                    return new QueryResultLoadingStrategy<>(
+                            null,
+                            () -> new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor, fetchGraph));
+                }
+                return new QueryResultLoadingStrategy<>(
+                        null,
+                        () -> uow.isEntityType(resultClass)
+                                ? new BaseEntityQueryResultLoader<>(uow, resultClass, descriptor)
+                                : new NonEntityQueryResultLoader<>(resultClass));
+            }
         }
     }
 
-    private OptimizerType resolveOptimizerType(Class<?> resultClass, Descriptor descriptor) {
-        if (!canOptimize(resultClass, descriptor)) {
+    private OptimizerType resolveOptimizerType(Class<?> resultClass, Descriptor descriptor, EntityGraph<?> fetchGraph) {
+        if (!canOptimize(resultClass, descriptor, fetchGraph)) {
             return OptimizerType.NONE;
+        }
+        if (fetchGraph != null) {
+            return OptimizerType.FETCH_GRAPH_BASED;
         }
         final IdentifiableEntityType<?> et = uow.getMetamodel().entity(resultClass);
         if (et.getProperties() == null && !et.hasSubtypes()) {
@@ -79,8 +124,8 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
         return OptimizerType.NONE;
     }
 
-    private boolean canOptimize(Class<?> resultClass, Descriptor descriptor) {
-        return optimizationEnabled && queryHolder.getQueryType() == QueryType.SELECT
+    private boolean canOptimize(Class<?> resultClass, Descriptor descriptor, EntityGraph<?> fetchGraph) {
+        return (optimizationEnabled || fetchGraph != null) && queryHolder.getQueryType() == QueryType.SELECT
                 && projectsEntity(resultClass) && limitOrOffsetNotSet() && descriptorSpecifiesAtMostOneContext(descriptor);
     }
 
@@ -109,42 +154,10 @@ public class SparqlQueryResultLoadingOptimizer extends QueryResultLoadingOptimiz
         return queryHolder.getQueryAttributes().hasGraphOrService();
     }
 
-    /**
-     * Gets loader of query results for the specified query.
-     * <p>
-     * If possible, a version supporting optimized entity loading is returned.
-     *
-     * @param resultClass Result class
-     * @param descriptor  Descriptor specified for results
-     * @param <T>         Result type
-     * @return Query result loader
-     */
-    @Override
-    public <T> QueryResultLoader<T> getQueryResultLoader(Class<T> resultClass, Descriptor descriptor) {
-        final OptimizerType optimizerType = resolveOptimizerTypeForResultLoader(resultClass, descriptor);
-        return switch (optimizerType) {
-            case TRIPLE_BASED -> new TripleBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
-            case ATTRIBUTE_BASED -> new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, resultClass, descriptor);
-            default ->
-                    uow.isEntityType(resultClass) ? new BaseEntityQueryResultLoader<>(uow, resultClass, descriptor) : new NonEntityQueryResultLoader<>(resultClass);
-        };
-    }
-
-    private <T> OptimizerType resolveOptimizerTypeForResultLoader(Class<T> resultClass, Descriptor descriptor) {
-        final OptimizerType ot = resolveOptimizerType(resultClass, descriptor);
-        if (ot != OptimizerType.NONE) {
-            return ot;
-        }
-        if (uow.isEntityType(resultClass) && queryHolder.getProjectedQueryParameters().size() > 1) {
-            // Entity attributes are projected from the query
-            return OptimizerType.ATTRIBUTE_BASED;
-        }
-        return ot;
-    }
-
     private enum OptimizerType {
         TRIPLE_BASED,
         ATTRIBUTE_BASED,
+        FETCH_GRAPH_BASED,
         NONE
     }
 }

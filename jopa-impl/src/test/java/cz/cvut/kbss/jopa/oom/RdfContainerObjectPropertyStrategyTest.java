@@ -30,6 +30,7 @@ import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.RdfContainerAttributeImpl;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Containers;
@@ -82,7 +83,7 @@ class RdfContainerObjectPropertyStrategyTest {
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "levels"));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);
         when(att.getBindableJavaType()).thenReturn(URI.class);
-        final RdfContainerObjectPropertyStrategy<EntityWithContainer> sut = new RdfContainerObjectPropertyStrategy<>(et, att, descriptor, mappingHelper);
+        final RdfContainerObjectPropertyStrategy<EntityWithContainer> sut = new RdfContainerObjectPropertyStrategy<>(et, att, new ObjectGraphInfo(descriptor), mappingHelper);
 
         sut.addAxiomValue(new AxiomImpl<>(NamedResource.create(ID), Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.ATTRIBUTE_BASE + "levels"), false), new Value<>(NamedResource.create(Generators.createIndividualIdentifier()))));
         final EntityWithContainer entity = new EntityWithContainer();
@@ -118,7 +119,7 @@ class RdfContainerObjectPropertyStrategyTest {
         final Identifier idAtt = mock(Identifier.class);
         when(et.getIdentifier()).thenReturn(idAtt);
         when(idAtt.getJavaField()).thenReturn(EntityWithContainer.class.getDeclaredField("uri"));
-        final RdfContainerObjectPropertyStrategy<EntityWithContainer> sut = new RdfContainerObjectPropertyStrategy<>(et, att, descriptor, mappingHelper);
+        final RdfContainerObjectPropertyStrategy<EntityWithContainer> sut = new RdfContainerObjectPropertyStrategy<>(et, att, new ObjectGraphInfo(descriptor), mappingHelper);
         final EntityWithContainer entity = new EntityWithContainer();
         entity.uri = ID;
         entity.levels = List.of(Generators.createIndividualIdentifier(), Generators.createIndividualIdentifier());

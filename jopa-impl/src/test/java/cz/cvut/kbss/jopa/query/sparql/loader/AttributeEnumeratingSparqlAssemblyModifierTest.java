@@ -17,9 +17,17 @@
  */
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
+import cz.cvut.kbss.jopa.environment.OWLClassJ;
+import cz.cvut.kbss.jopa.environment.OWLClassN;
+import cz.cvut.kbss.jopa.environment.OWLClassP;
+import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.EntityGraphImpl;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
@@ -29,28 +37,37 @@ import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.net.URI;
 
+import static cz.cvut.kbss.jopa.query.sparql.loader.AttributeEnumeratingSparqlAssemblyModifier.GROUP_CONCAT_SEPARATOR;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class AttributeEnumeratingSparqlAssemblyModifierTest {
 
     private static MetamodelMocks metamodelMocks;
 
     @Mock
     private ConnectionWrapper connectionWrapper;
+
+    @Mock
+    private MetamodelImpl metamodel;
 
     private final ParameterValueFactory valueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
 
@@ -64,18 +81,22 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
     @BeforeEach
     void setUp() {
         when(connectionWrapper.getRepositoryMetadata()).thenReturn(() -> "test");
+        metamodelMocks.setMocks(metamodel);
     }
 
     @Test
-    void modifyAlwaysAddsTriplePatternForEntityTypes() {
+    void modifyAlwaysAddsTriplePatternForEntityType() {
         final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
         final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassD().entityType());
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xowlClassA ?xtypes WHERE { ?x a ?type . " +
-                "OPTIONAL { ?x " + strUri(Vocabulary.p_h_hasA) + " ?xowlClassA . } " +
-                "?x a ?xtypes . }"));
+        assertThat(result, projectsVariable("x"));
+        assertThat(result, containsString("?x a " + strUri(Vocabulary.c_OwlClassD) + " ."));
+    }
+
+    private static ProjectsVariableMatcher projectsVariable(String variable) {
+        return new ProjectsVariableMatcher(variable);
     }
 
     private static String strUri(String uri) {
@@ -83,12 +104,12 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
     }
 
     private <X> AttributeEnumeratingSparqlAssemblyModifier createSut(IdentifiableEntityType<X> et) {
-        return createSut(et, new EntityDescriptor());
+        return createSut(et, new EntityDescriptor(), null);
     }
 
     private <X> AttributeEnumeratingSparqlAssemblyModifier createSut(IdentifiableEntityType<X> et,
-                                                                     Descriptor descriptor) {
-        return new AttributeEnumeratingSparqlAssemblyModifier(et, descriptor, connectionWrapper);
+                                                                     Descriptor descriptor, EntityGraph<?> fetchGraph) {
+        return new AttributeEnumeratingSparqlAssemblyModifier(metamodel, et, descriptor, fetchGraph, connectionWrapper);
     }
 
     @Test
@@ -98,9 +119,9 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xstringAttribute ?xtypes WHERE { ?x a ?type . " +
-                "OPTIONAL { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?xstringAttribute . } " +
-                "?x a ?xtypes . }"));
+        assertThat(result, projectsVariable("x"));
+        assertThat(result, projectsVariable("x_stringAttribute"));
+        assertThat(result, containsString("OPTIONAL { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?x_stringAttribute . }"));
     }
 
     @Test
@@ -109,13 +130,12 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         final URI ctx = Generators.createIndividualIdentifier();
         final EntityDescriptor descriptor = new EntityDescriptor(ctx);
         final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassA()
-                                                                                       .entityType(), descriptor);
+                                                                                       .entityType(), descriptor, null);
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xstringAttribute ?xtypes WHERE { ?x a ?type . " +
-                "OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?xstringAttribute . } } " +
-                "GRAPH <" + ctx + "> { ?x a ?xtypes . } }"));
+        assertThat(result, containsString("GRAPH <" + ctx + "> { ?x a ?x_types . }"));
+        assertThat(result, containsString("OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?x_stringAttribute . } }"));
     }
 
     @Test
@@ -125,36 +145,56 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         final EntityDescriptor descriptor = new EntityDescriptor();
         descriptor.addAttributeContext(metamodelMocks.forOwlClassA().entityType().getAttribute("stringAttribute"), ctx);
         final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassA()
-                                                                                       .entityType(), descriptor);
+                                                                                       .entityType(), descriptor, null);
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xstringAttribute ?xtypes WHERE { ?x a ?type . " +
-                "OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?xstringAttribute . } } " +
-                "?x a ?xtypes . }"));
+        assertThat(result, containsString("?x a ?x_types ."));
+        assertThat(result, containsString("OPTIONAL { GRAPH <" + ctx + "> { ?x " + strUri(Vocabulary.p_a_stringAttribute) + " ?x_stringAttribute . } }"));
     }
 
     @Test
     void modifyAddsOptionalTriplePatternsForSubtypeAttributes() {
-        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
-        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassS().entityType());
-        holder.setAssemblyModifier(sut);
+        when(metamodelMocks.forOwlClassR().rOwlClassAAtt().getFetchType()).thenReturn(FetchType.EAGER);
+        try {
+            final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+            final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassS()
+                                                                                           .entityType());
+            holder.setAssemblyModifier(sut);
 
-        final String result = holder.assembleQuery();
-        assertThat(result, containsString(Vocabulary.P_R_STRING_ATTRIBUTE));
-        assertThat(result, containsString(Vocabulary.P_HAS_A));
+            final String result = holder.assembleQuery();
+            assertThat(result, containsString(Vocabulary.P_R_STRING_ATTRIBUTE));
+            assertThat(result, containsString(Vocabulary.P_HAS_A));
+        } finally {
+            when(metamodelMocks.forOwlClassR().rOwlClassAAtt().getFetchType()).thenReturn(FetchType.LAZY);
+        }
     }
 
     @Test
     void modifyAddsTriplePatternWithoutOptionalWhenMinimumParticipationConstraintIsPresentAndGreaterThanZero() {
+        when(metamodelMocks.forOwlClassJ().setAttribute().getFetchType()).thenReturn(FetchType.EAGER);
+        try {
+            final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+            final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassJ()
+                                                                                           .entityType());
+            holder.setAssemblyModifier(sut);
+
+            final String result = holder.assembleQuery();
+            assertThat(result, containsString("?x " + strUri(Vocabulary.p_h_hasA) + " ?x_owlClassA . "));
+        } finally {
+            when(metamodelMocks.forOwlClassJ().setAttribute().getFetchType()).thenReturn(FetchType.LAZY);
+        }
+    }
+
+    @Test
+    void modifyExcludesLazilyLoadedAttributesFromFetching() {
         final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
         final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassJ().entityType());
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, equalToCompressingWhiteSpace("SELECT ?x ?xowlClassA ?xtypes WHERE { ?x a ?type . " +
-                "?x " + strUri(Vocabulary.p_h_hasA) + " ?xowlClassA . " +
-                "?x a ?xtypes . }"));
+        assertThat(result, not(projectsVariable("x_owlClassA")));
+        assertThat(result, not(containsString("?x " + strUri(Vocabulary.p_h_hasA) + " ?x_owlClassA . ")));
     }
 
     @Test
@@ -164,10 +204,135 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         final EntityDescriptor descriptor = new EntityDescriptor(ctx);
         when(connectionWrapper.getRepositoryMetadata()).thenReturn(() -> "GraphDB");
         final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassF()
-                                                                                       .entityType(), descriptor);
+                                                                                       .entityType(), descriptor, null);
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, containsString("OPTIONAL { ?x " + strUri(Vocabulary.p_f_stringAttribute) + " ?xsecondStringAttribute . }"));
+        assertThat(result, containsString("OPTIONAL { ?x " + strUri(Vocabulary.p_f_stringAttribute) + " ?x_secondStringAttribute . }"));
+    }
+
+    @Test
+    void modifyUsesGroupConcatForPluralAssociationAttributesWithPlainIdentifierValueToReduceRowCountBlowup() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+        final EntityGraph<OWLClassP> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassP()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("individualUrls");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassP()
+                                                                                       .entityType(), new EntityDescriptor(), fetchGraph);
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, containsString("GROUP_CONCAT(DISTINCT ?x_individualUrls; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_individualUrls_gc"));
+        assertThat(result, containsString("GROUP BY ?x"));
+    }
+
+    @Test
+    void modifyUsesGroupConcatForTypesToReduceRowCountBlowup() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassA().entityType());
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, containsString("GROUP_CONCAT(DISTINCT ?x_types; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_types_gc"));
+        assertThat(result, containsString("GROUP BY ?x ?x_stringAttribute"));
+    }
+
+    @Test
+    void modifyGroupConcatenatesOnlyMostSpecificEligibleAttributeToPreserveGrouping() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+        final EntityGraph<OWLClassJ> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassJ()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addSubgraph("owlClassA");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassJ()
+                                                                                       .entityType(), new EntityDescriptor(), fetchGraph);
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, not(containsString("GROUP_CONCAT(DISTINCT ?x_owlClassA; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_owlClassA_gc")));
+        assertThat(result, containsString("GROUP_CONCAT(DISTINCT ?x_owlClassA_types; SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_owlClassA_types_gc"));
+        assertThat(result, containsString("GROUP BY ?x ?x_owlClassA"));
+    }
+
+    @Test
+    void modifyGroupConcatenatesSingularMultilingualStringAttributeValues() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+        final EntityGraph<OWLClassU> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassU()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("singularStringAtt", "modified");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassU()
+                                                                                       .entityType(), new EntityDescriptor(), fetchGraph);
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, containsString("(GROUP_CONCAT(DISTINCT CONCAT(STR(?x_singularStringAtt), \"@\", LANG(?x_singularStringAtt)); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_singularStringAtt_gc)"));
+        assertThat(result, containsString("GROUP BY ?x ?x_modified"));
+    }
+
+    @Test
+    void modifyGroupConcatenatesPluralMultilingualStringAttributeValues() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+        final EntityGraph<OWLClassU> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassU()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("pluralStringAtt", "modified");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassU()
+                                                                                       .entityType(), new EntityDescriptor(), fetchGraph);
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, containsString("(GROUP_CONCAT(DISTINCT CONCAT(STR(?x_pluralStringAtt), \"@\", LANG(?x_pluralStringAtt)); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_pluralStringAtt_gc)"));
+        assertThat(result, containsString("GROUP BY ?x ?x_modified"));
+    }
+
+    @Test
+    void modifyGroupConcatenatesPluralStringAttributeValues() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type . }");
+        final EntityGraph<OWLClassN> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassN()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("pluralAnnotation");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassN()
+                                                                                       .entityType(), new EntityDescriptor(), fetchGraph);
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, containsString("GROUP_CONCAT(DISTINCT CONCAT(STR(?x_pluralAnnotation), \"@\", LANG(?x_pluralAnnotation)); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_pluralAnnotation_gc"));
+        assertThat(result, containsString("GROUP BY ?x"));
+    }
+
+    @Test
+    void modifyDoesNotAddGroupConcatWhenQueryHasOrderBy() {
+        final TokenStreamSparqlQueryHolder holder = parser.parseQuery("SELECT ?x WHERE { ?x a ?type ; ?hasString ?stringAttribute } ORDER BY ?stringAttribute");
+        final EntityGraph<OWLClassN> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassN()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("pluralAnnotation");
+        final AttributeEnumeratingSparqlAssemblyModifier sut = createSut(metamodelMocks.forOwlClassN()
+                                                                                       .entityType(), new EntityDescriptor(), fetchGraph);
+        holder.setAssemblyModifier(sut);
+
+        final String result = holder.assembleQuery();
+        assertThat(result, not(containsString("GROUP_CONCAT")));
+    }
+
+    /**
+     * Simplified Hamcrest matcher that checks if a SPARQL query projects a specific variable. The matcher extracts the
+     * projection part of the query (everything before the WHERE clause) and checks if it contains the specified
+     * variable prefixed with '?'.
+     */
+    private static class ProjectsVariableMatcher extends TypeSafeMatcher<String> {
+        private final String variable;
+
+        public ProjectsVariableMatcher(String variable) {
+            this.variable = variable;
+        }
+
+        @Override
+        protected boolean matchesSafely(String query) {
+            final String projectionPart = query.substring(0, query.indexOf("WHERE"));
+            return projectionPart.contains("?" + variable);
+        }
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("a SPARQL query that projects variable ?" + variable);
+        }
     }
 }

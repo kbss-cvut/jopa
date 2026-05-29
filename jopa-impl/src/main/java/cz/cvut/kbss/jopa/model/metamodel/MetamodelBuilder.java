@@ -20,8 +20,9 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.NamedEntityGraphManager;
+import cz.cvut.kbss.jopa.model.NamedEntityGraphProcessor;
 import cz.cvut.kbss.jopa.model.TypeReferenceMap;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Inheritance;
 import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
@@ -48,12 +49,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MetamodelBuilder {
+public class MetamodelBuilder implements MetamodelClassMapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(MetamodelBuilder.class);
 
     private final NamedNativeQueryProcessor queryProcessor = new NamedNativeQueryProcessor();
     private final ResultSetMappingProcessor mappingProcessor;
+    private final NamedEntityGraphProcessor entityGraphProcessor;
 
     private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
@@ -74,6 +76,7 @@ public class MetamodelBuilder {
     public MetamodelBuilder(Configuration configuration) {
         this.configuration = configuration;
         this.mappingProcessor = new ResultSetMappingProcessor(this);
+        this.entityGraphProcessor = new NamedEntityGraphProcessor(this);
         this.converterResolver = new ConverterResolver(new Converters(configuration));
     }
 
@@ -89,6 +92,8 @@ public class MetamodelBuilder {
         processDeferredFields();
         typeMap.values().forEach(AbstractIdentifiableType::finish);
         classFinder.getResultSetMappings().forEach(mappingProcessor::buildMapper);
+        classFinder.getNamedEntityGraphs().forEach((cls, graphs) ->
+                graphs.forEach(g -> entityGraphProcessor.buildEntityGraph(cls, g)));
     }
 
     /**
@@ -250,6 +255,7 @@ public class MetamodelBuilder {
         return Collections.unmodifiableMap(typeMap);
     }
 
+    @Override
     public <X> AbstractIdentifiableType<X> entity(Class<X> cls) {
         return (AbstractIdentifiableType<X>) typeMap.get(cls);
     }
@@ -271,6 +277,10 @@ public class MetamodelBuilder {
 
     public ResultSetMappingManager getResultSetMappingManager() {
         return mappingProcessor.getManager();
+    }
+
+    public NamedEntityGraphManager getNamedEntityGraphManager() {
+        return entityGraphProcessor.getManager();
     }
 
     void addInferredClass(Class<?> cls) {
@@ -312,7 +322,8 @@ public class MetamodelBuilder {
     }
 
     <X> void createLazyLoadingProxy(Attribute<X, ?> attribute) {
-        if (attribute.getFetchType() == FetchType.LAZY && !attribute.isCollection()) {
+        if (!attribute.isCollection() && hasManagedType(attribute.getJavaType())) {
+            // Even if the field is not lazy, it may be lazily initialized due to EntityGraph usage
             final Class<?> cls = attribute.getJavaType();
             lazyLoadingProxyClasses.computeIfAbsent(cls, lazyLoadingEntityProxyGenerator::generate);
         }

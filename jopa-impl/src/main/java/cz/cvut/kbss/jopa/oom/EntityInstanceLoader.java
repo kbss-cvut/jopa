@@ -127,7 +127,7 @@ abstract class EntityInstanceLoader {
             }
         }
         return axioms.isEmpty() ? null : entityBuilder.reconstructEntity(
-                new EntityConstructor.EntityConstructionParameters<>(loadingParameters.identifier(), et, loadingParameters.descriptor(), loadingParameters.forceEager()),
+                new EntityConstructor.EntityConstructionParameters<>(loadingParameters.identifier(), et, loadingParameters.descriptor(), loadingParameters.fetchGraph(), loadingParameters.forceEager()),
                 axioms);
     }
 

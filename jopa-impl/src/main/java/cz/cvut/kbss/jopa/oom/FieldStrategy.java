@@ -32,6 +32,7 @@ import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.RdfContainerAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -45,6 +46,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Handles actual mapping of a persistent field to/from axioms.
+ *
  * @param <T> The attribute specification type, e.g. {@link SingularAttribute}, {@link ListAttribute}
  * @param <X> Entity class
  */
@@ -67,16 +70,16 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 
     static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createFieldStrategy(EntityType<X> et,
                                                                                                 FieldSpecification<? super X, ?> att,
-                                                                                                Descriptor entityDescriptor,
+                                                                                                ObjectGraphInfo objectInfo,
                                                                                                 EntityMappingHelper mapper) {
         if (att.equals(et.getIdentifier())) {
-            return new IdentifierFieldStrategy<>(et, (Identifier<? super X, ?>) att, entityDescriptor, mapper);
+            return new IdentifierFieldStrategy<>(et, (Identifier<? super X, ?>) att, objectInfo.descriptor(), mapper);
         }
         if (att instanceof TypesSpecification) {
-            return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, entityDescriptor, mapper);
+            return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, objectInfo.descriptor(), mapper);
         } else if (att instanceof PropertiesSpecification) {
             return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?, ?, ?>) att,
-                    entityDescriptor, mapper);
+                    objectInfo.descriptor(), mapper);
         }
         final AbstractAttribute<? super X, ?> attribute = (AbstractAttribute<? super X, ?>) att;
         if (attribute.isCollection()) {
@@ -84,24 +87,24 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
                 case ANNOTATION:
                     return createPluralAnnotationPropertyStrategy(et,
                             (AbstractPluralAttribute<? super X, ?, ?>) attribute,
-                            entityDescriptor, mapper);
+                            objectInfo.descriptor(), mapper);
                 case DATA:
                     return createPluralDataPropertyStrategy(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
-                            entityDescriptor, mapper);
+                            objectInfo.descriptor(), mapper);
                 case OBJECT:
                     return createPluralObjectPropertyStrategy(et, (AbstractPluralAttribute<? super X, ?, ?>) attribute,
-                            entityDescriptor, mapper);
+                            objectInfo, mapper);
                 default:
                     break;
             }
         } else {
             switch (attribute.getPersistentAttributeType()) {
                 case ANNOTATION:
-                    return createSingularAnnotationPropertyStrategy(et, attribute, entityDescriptor, mapper);
+                    return createSingularAnnotationPropertyStrategy(et, attribute, objectInfo.descriptor(), mapper);
                 case DATA:
-                    return createSingularDataPropertyStrategy(et, attribute, entityDescriptor, mapper);
+                    return createSingularDataPropertyStrategy(et, attribute, objectInfo.descriptor(), mapper);
                 case OBJECT:
-                    return new SingularObjectPropertyStrategy<>(et, attribute, entityDescriptor, mapper);
+                    return new SingularObjectPropertyStrategy<>(et, attribute, objectInfo, mapper);
                 default:
                     break;
             }
@@ -129,7 +132,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             return new RdfContainerDataPropertyStrategy<>(et, (RdfContainerAttributeImpl<? super Y, ?, ?>) attribute, descriptor, mapper);
         }
         if (attribute.getCollectionType() == CollectionType.LIST) {
-            return createListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor, mapper);
+            return createListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, new ObjectGraphInfo(descriptor), mapper);
         }
         if (MultilingualString.class.equals(attribute.getElementType().getJavaType())) {
             return new PluralMultilingualStringFieldStrategy<>(et,
@@ -141,32 +144,32 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     }
 
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralObjectPropertyStrategy(
-            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute, Descriptor descriptor,
+            EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute, ObjectGraphInfo objectGraphInfo,
             EntityMappingHelper mapper) {
         if (attribute.isRdfContainer()) {
-            return new RdfContainerObjectPropertyStrategy<>(et, (RdfContainerAttributeImpl<? super Y, ?, ?>) attribute, descriptor, mapper);
+            return new RdfContainerObjectPropertyStrategy<>(et, (RdfContainerAttributeImpl<? super Y, ?, ?>) attribute, objectGraphInfo, mapper);
         }
         return switch (attribute.getCollectionType()) {
-            case LIST -> createListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor,
+            case LIST -> createListPropertyStrategy(et, (ListAttributeImpl<? super Y, ?>) attribute, objectGraphInfo,
                     mapper);
-            case COLLECTION, SET -> new SimpleSetPropertyStrategy<>(et, attribute, descriptor, mapper);
+            case COLLECTION, SET -> new SimpleSetPropertyStrategy<>(et, attribute, objectGraphInfo, mapper);
             default -> throw new UnsupportedOperationException(
                     "Unsupported plural attribute collection type " + attribute.getCollectionType());
         };
     }
 
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createListPropertyStrategy(
-            EntityType<Y> et, ListAttributeImpl<? super Y, ?> attribute, Descriptor descriptor,
+            EntityType<Y> et, ListAttributeImpl<? super Y, ?> attribute, ObjectGraphInfo objectGraphInfo,
             EntityMappingHelper mapper) {
         switch (attribute.getSequenceType()) {
             case referenced:
                 if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT) {
-                    return new ReferencedListPropertyStrategy<>(et, attribute, descriptor, mapper);
+                    return new ReferencedListPropertyStrategy<>(et, attribute, objectGraphInfo, mapper);
                 } else {
-                    return new ReferencedListDataPropertyStrategy<>(et, attribute, descriptor, mapper);
+                    return new ReferencedListDataPropertyStrategy<>(et, attribute, objectGraphInfo.descriptor(), mapper);
                 }
             case simple:
-                return new SimpleListPropertyStrategy<>(et, attribute, descriptor, mapper);
+                return new SimpleListPropertyStrategy<>(et, attribute, objectGraphInfo, mapper);
             default:
                 throw new UnsupportedOperationException(
                         "Unsupported list attribute sequence type " + attribute.getSequenceType());

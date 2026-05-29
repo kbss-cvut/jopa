@@ -17,13 +17,10 @@
  */
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.jopa.model.EntityGraph;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.sparql.QueryAttributes;
 import cz.cvut.kbss.jopa.query.sparql.TokenQueryParameter;
@@ -31,14 +28,7 @@ import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import org.antlr.v4.runtime.TokenStreamRewriter;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Optimizes entity loading by modifying the query to fetch all named attributes.
@@ -67,24 +57,38 @@ import java.util.Optional;
  */
 public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssemblyModifier {
 
-    static final String TYPES_VAR_SUFFIX = "types";
+    static final String TYPES_VAR_NAME = "types";
+    static final String GROUP_CONCAT_SEPARATOR = "\u001F";
+
+    private final MetamodelImpl metamodel;
 
     private final IdentifiableEntityType<?> resultType;
 
     private final Descriptor descriptor;
 
+    private final EntityGraph<?> fetchGraph;
+
     private final boolean inferredAttsInDefault;
 
-    public AttributeEnumeratingSparqlAssemblyModifier(IdentifiableEntityType<?> resultType, Descriptor descriptor,
+    private List<QueryVariableMapping> variableMapping;
+
+    public AttributeEnumeratingSparqlAssemblyModifier(MetamodelImpl metamodel, IdentifiableEntityType<?> resultType,
+                                                      Descriptor descriptor, EntityGraph<?> fetchGraph,
                                                       ConnectionWrapper connection) {
+        this.metamodel = metamodel;
         this.resultType = resultType;
         this.descriptor = descriptor;
+        this.fetchGraph = fetchGraph != null ? fetchGraph : generateDefaultFetchGraph();
         this.inferredAttsInDefault = resolveInferenceContext(connection);
-        assert resultType.getProperties() == null;
+        assert fetchGraph != null || resultType.getProperties() == null;
     }
 
-    private boolean resolveInferenceContext(ConnectionWrapper connection) {
+    private static boolean resolveInferenceContext(ConnectionWrapper connection) {
         return "GraphDB".equals(connection.getRepositoryMetadata().getProductName());
+    }
+
+    private EntityGraph<?> generateDefaultFetchGraph() {
+        return new FetchGraphProcessor(metamodel).generateDefaultFetchGraph(resultType);
     }
 
     @Override
@@ -94,70 +98,40 @@ public class AttributeEnumeratingSparqlAssemblyModifier implements SparqlAssembl
         assert queryHolder.getProjectedQueryParameters().size() == 1;
 
         final TokenQueryParameter<?> p = queryHolder.getProjectedQueryParameters().get(0);
-        final List<String> variablesToProject = addAttributeSelection(queryHolder, tokenRewriter, queryAttributes);
-        tokenRewriter.insertAfter(p.getSingleToken(), " " + String.join(" ", variablesToProject));
+        final String subjectParamName = UnboundPredicateObjectSparqlAssemblyModifier.getBaseParamName(p);
+        final EntityMappingQueryModifier queryModifier = new EntityMappingQueryModifier(metamodel, resultType, descriptor, inferredAttsInDefault);
+        final EntityMappingQueryModifier.QueryModification mod = queryModifier.modify(fetchGraph, subjectParamName);
+        this.variableMapping = mod.variables();
+        tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), mod.queryPart());
+        modifyProjection(p, tokenRewriter, queryAttributes, mod);
     }
 
-    private List<String> addAttributeSelection(TokenStreamSparqlQueryHolder queryHolder,
-                                               TokenStreamRewriter tokenRewriter,
-                                               QueryAttributes queryAttributes) {
-        final StringBuilder attributePatterns = new StringBuilder();
-        final List<String> variables = new ArrayList<>();
-        final String subjectParamName = UnboundPredicateObjectSparqlAssemblyModifier.getBaseParamName(queryHolder.getProjectedQueryParameters()
-                                                                                                                 .get(0));
-        final String subjectVariable = "?" + subjectParamName;
-        attributes().forEach(att -> {
-            final int min = Arrays.stream(att.getConstraints()).map(ParticipationConstraint::min)
-                                  .min(Comparator.naturalOrder()).orElse(0);
-            final String variable = "?" + subjectParamName + att.getName();
-            variables.add(variable);
-            if (min < 1) {
-                attributePatterns.append("OPTIONAL { ");
+    private void modifyProjection(TokenQueryParameter<?> firstProjected, TokenStreamRewriter tokenRewriter,
+                                  QueryAttributes queryAttributes,
+                                  EntityMappingQueryModifier.QueryModification queryMod) {
+        final StringBuilder projection = new StringBuilder();
+        final StringBuilder groupBy = new StringBuilder(" GROUP BY " + firstProjected.getIdentifierAsQueryString());
+        boolean hasGroupConcat = false;
+        for (QueryVariableMapping varMapping : queryMod.variables()) {
+            // PERF: GROUP_CONCAT may prevent combinatorial blowup of the number of rows
+            if (!queryAttributes.hasOrderBy() && varMapping.canGroupConcat()) {
+                projection.append(' ').append(varMapping.generateGroupConcat());
+                hasGroupConcat = true;
+            } else {
+                final String variable = "?" + varMapping.attributeVar();
+                projection.append(' ').append(variable);
+                groupBy.append(' ').append(variable);
             }
-            final Optional<String> ctx = context(att);
-            ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
-            attributePatterns.append(subjectVariable).append(" <").append(att.getIRI())
-                             .append("> ").append(variable).append(" . ");
-            if (min < 1) {
-                attributePatterns.append("} ");
-            }
-            ctx.ifPresent(uri -> attributePatterns.append("} "));
-        });
-        final String variable = "?" + subjectParamName + TYPES_VAR_SUFFIX;
-        variables.add(variable);
-        final Optional<String> ctx = typesContext();
-        ctx.ifPresent(uri -> attributePatterns.append("GRAPH <").append(uri).append("> { "));
-        attributePatterns.append(subjectVariable).append(" a ").append(variable).append(" . ");
-        ctx.ifPresent(uri -> attributePatterns.append("} "));
-        tokenRewriter.insertBefore(queryAttributes.lastClosingCurlyBraceToken(), attributePatterns.toString());
-        return variables;
-    }
-
-    private Collection<Attribute<?, ?>> attributes() {
-        final List<Attribute<?, ?>> atts = new ArrayList<>(resultType.getAttributes());
-        resultType.getSubtypes().stream()
-                  .flatMap(subtype -> subtype.getAttributes().stream())
-                  .forEach(atts::add);
-        return atts;
-    }
-
-    private Optional<String> context(FieldSpecification<?, ?> att) {
-        assert descriptor.getAttributeContexts(att).size() <= 1;
-        if (att.isInferred() && inferredAttsInDefault) {
-            return Optional.empty();
         }
-        return descriptor.getSingleAttributeContext(att).map(URI::toString);
+        tokenRewriter.insertAfter(firstProjected.getSingleToken(), projection.toString());
+        if (hasGroupConcat) {
+            tokenRewriter.insertAfter(queryAttributes.lastClosingCurlyBraceToken(), groupBy.toString());
+            // Add ordering to ensure stable results with rows with the same subject in sequence
+            tokenRewriter.insertAfter(queryAttributes.lastClosingCurlyBraceToken(), " ORDER BY " + firstProjected.getIdentifierAsQueryString());
+        }
     }
 
-    private Optional<String> typesContext() {
-        final Optional<? extends TypesSpecification<?, ?>> optionalTs = resultType.getTypes() != null ? Optional.of(resultType.getTypes()) : resultType.getSubtypes()
-                                                                                                                                                       .stream()
-                                                                                                                                                       .map(AbstractIdentifiableType::getTypes)
-                                                                                                                                                       .filter(Objects::nonNull)
-                                                                                                                                                       .findFirst();
-        return optionalTs.flatMap(ts -> {
-            assert descriptor.getAttributeContexts(ts).size() <= 1;
-            return descriptor.getSingleAttributeContext(ts);
-        }).map(URI::toString);
+    public List<QueryVariableMapping> getVariableMapping() {
+        return variableMapping;
     }
 }

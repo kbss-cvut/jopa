@@ -38,12 +38,14 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxy;
 import cz.cvut.kbss.jopa.proxy.reference.EntityReferenceProxyGenerator;
 import cz.cvut.kbss.jopa.sessions.AbstractUnitOfWork;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.cache.Descriptors;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
+import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
@@ -239,7 +241,7 @@ class ObjectOntologyMapperTest {
         final LoadStateDescriptor<OWLClassA> loadStateDescriptor = new LoadStateDescriptor<>(entityA, mocks.forOwlClassA()
                                                                                                            .entityType(), LoadState.UNKNOWN);
         doReturn(loadStateDescriptor).when(cacheMock).getLoadStateDescriptor(entityA);
-        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, aDescriptor);
+        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, new ObjectGraphInfo(aDescriptor));
         assertNotNull(res);
         assertSame(entityA, res);
         verify(cacheMock).get(OWLClassA.class, IDENTIFIER, aDescriptor);
@@ -249,8 +251,7 @@ class ObjectOntologyMapperTest {
     void testGetEntityFromCacheOrOntologyFromRegisteredInstances() {
         when(cacheMock.contains(OWLClassA.class, IDENTIFIER, null)).thenReturn(Boolean.FALSE);
         mapper.registerInstance(IDENTIFIER, entityA);
-        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER,
-                aDescriptor);
+        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, new ObjectGraphInfo(aDescriptor));
         assertNotNull(res);
         assertSame(entityA, res);
     }
@@ -267,7 +268,7 @@ class ObjectOntologyMapperTest {
         final LoadStateDescriptor<OWLClassA> loadStateDescriptor = new LoadStateDescriptor<>(entityA, mocks.forOwlClassA()
                                                                                                            .entityType(), LoadState.UNKNOWN);
         loadStateRegistry.put(entityA, loadStateDescriptor);
-        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, aDescriptor);
+        final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, IDENTIFIER, new ObjectGraphInfo(aDescriptor));
         assertSame(entityA, res);
         verify(loader).loadEntity(loadingParameters);
     }
@@ -630,8 +631,8 @@ class ObjectOntologyMapperTest {
                 Assertion.createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasNext), false);
         final Assertion valueProp =
                 Assertion.createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasContents), false);
-        final ReferencedListValueDescriptor listDesc =
-                new ReferencedListValueDescriptor(ID_RESOURCE, listProp, nextProp, valueProp);
+        final ReferencedListValueDescriptor<OWLClassA> listDesc =
+                new ReferencedListValueDescriptor<>(ID_RESOURCE, listProp, nextProp, valueProp);
         mapper.registerPendingListReference(pending, listDesc, owner.getReferencedList());
 
         when(entityDeconstructorMock.mapEntityToAxioms(pending.getUri(), pending, etAMock, aDescriptor))
@@ -647,7 +648,7 @@ class ObjectOntologyMapperTest {
     void getEntityFromCacheOrOntologyThrowsEntityExistsWhenObjectIsAlreadyRegisteredUnderDifferentType() {
         mapper.registerInstance(IDENTIFIER, entityA);
         assertThrows(OWLEntityExistsException.class,
-                () -> mapper.getEntityFromCacheOrOntology(OWLClassB.class, IDENTIFIER, aDescriptor));
+                () -> mapper.getEntityFromCacheOrOntology(OWLClassB.class, IDENTIFIER, new ObjectGraphInfo(aDescriptor)));
     }
 
     @Test
@@ -701,7 +702,7 @@ class ObjectOntologyMapperTest {
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("value"))
         );
 
-        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, axioms));
+        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup<>(IDENTIFIER, aDescriptor, null)));
         assertNotNull(result);
         assertEquals(IDENTIFIER, result.getUri());
         assertEquals("value", result.getStringAttribute());
@@ -710,18 +711,19 @@ class ObjectOntologyMapperTest {
 
     @Test
     void loadEntityFromAxiomsReturnsNullWhenAxiomsAreEmpty() {
-        assertNull(mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, List.of())));
+        assertNull(mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, List.of(), new AxiomBasedLoadingConfigGroup<>(IDENTIFIER, aDescriptor))));
     }
 
     @Test
-    void loadEntityFromAxiomsPutsLoadedEntityToCache() {
+    void loadEntityFromAxiomsDoesNotPutLoadedEntityToCache() {
         final List<Axiom<?>> axioms = List.of(
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createClassAssertion(false), new Value<>(URI.create(OWLClassA.getClassIri()))),
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false), new Value<>("value"))
         );
 
-        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, aDescriptor, false, axioms));
-        verify(cacheMock).add(IDENTIFIER, result, new Descriptors(aDescriptor, loadStateRegistry.get(result)));
+        final OWLClassA result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup<>(IDENTIFIER, aDescriptor)));
+        assertNotNull(result);
+        verify(cacheMock, never()).add(eq(IDENTIFIER), any(), any());
     }
 
     @Test
@@ -732,7 +734,7 @@ class ObjectOntologyMapperTest {
                 new AxiomImpl<>(ID_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(RDFS.LABEL), false), new Value<>("value"))
         );
 
-        final OWLClassS result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassS.class, new EntityDescriptor(), false, axioms));
+        final OWLClassS result = mapper.loadEntity(new AxiomBasedLoadingParameters<>(OWLClassS.class, axioms, new AxiomBasedLoadingConfigGroup<>(IDENTIFIER, new EntityDescriptor(), null)));
         assertInstanceOf(OWLClassR.class, result);
     }
 }

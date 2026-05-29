@@ -18,9 +18,9 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.annotations.RDFContainerType;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.RdfContainerAttributeImpl;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
@@ -39,8 +39,8 @@ class RdfContainerObjectPropertyStrategy<X> extends PluralObjectPropertyStrategy
     private final RDFContainerType containerType;
 
     RdfContainerObjectPropertyStrategy(EntityType<X> et, RdfContainerAttributeImpl<? super X, ?, ?> att,
-                                       Descriptor descriptor, EntityMappingHelper mapper) {
-        super(et, att, descriptor, mapper);
+                                       ObjectGraphInfo objectGraphInfo, EntityMappingHelper mapper) {
+        super(et, att, objectGraphInfo, mapper);
         this.containerType = att.getContainerType();
     }
 

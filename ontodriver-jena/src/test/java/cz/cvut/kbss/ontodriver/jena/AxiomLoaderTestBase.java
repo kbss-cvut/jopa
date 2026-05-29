@@ -27,12 +27,10 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-
 abstract class AxiomLoaderTestBase {
 
     static final NamedResource SUBJECT = NamedResource.create(Generator.generateUri());
-    static final Resource SUBJECT_RES = createResource(SUBJECT.getIdentifier().toString());
+    static final Resource SUBJECT_RES = Generator.generateResource(SUBJECT.getIdentifier().toString());
     static final URI CONTEXT = Generator.generateUri();
 
     Map<String, Assertion> mapAssertions(AxiomDescriptor descriptor) {

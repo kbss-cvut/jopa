@@ -92,9 +92,19 @@ public class Defaults {
     public static final String ONTOLOGY_PREFIX_PROPERTY = "http://purl.org/vocab/vann/preferredNamespacePrefix";
 
     /**
-     * @see Option#ALWAYS_USE_ONTOLOGY_PREFIX
+     * @see Option#ONTOLOGY_NAMESPACE_PROPERTY
      */
-    public static final boolean ALWAYS_USE_ONTOLOGY_PREFIX = true;
+    public static final String ONTOLOGY_NAMESPACE_PROPERTY = "http://purl.org/vocab/vann/preferredNamespaceUri";
+
+    /**
+     * @see Option#ALWAYS_USE_ONTOLOGY_PREFIX_FOR_VOCABULARY
+     */
+    public static final boolean ALWAYS_USE_ONTOLOGY_PREFIX_FOR_VOCABULARY = false;
+
+    /**
+     * @see Option#ALWAYS_USE_ONTOLOGY_PREFIX_FOR_MODEL
+     */
+    public static final boolean ALWAYS_USE_ONTOLOGY_PREFIX_FOR_MODEL = false;
 
     private Defaults() {
         throw new AssertionError();

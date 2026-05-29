@@ -123,4 +123,29 @@ public class TypedQueryTest extends TypedQueryRunner {
     public void optimizedEntityLoadingWorksForEntityClassesWithoutTypesField() {
         // OWL2Query does not support OPTIONAL
     }
+
+    @Disabled
+    @Test
+    @Override
+    public void querySupportsFetchGraphs() {
+        // OWL2Query does not support OPTIONAL
+    }
+
+    @Disabled
+    @Override
+    public void querySupportsGroupConcatMultilingualStringsBasedOnFetchGraph() {
+        // OWL2Query does not support OPTIONAL and GROUP_CONCAT
+    }
+
+    @Disabled
+    @Override
+    public void querySupportsNamedFetchGraphs() {
+        // OWL2Query does not support OPTIONAL
+    }
+
+    @Disabled
+    @Override
+    public void querySupportsNestedNamedFetchGraphs() {
+        // OWL2Query does not support OPTIONAL
+    }
 }

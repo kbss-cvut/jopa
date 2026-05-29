@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.sessions.util.LoadStateDescriptorRegistry;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
@@ -101,7 +102,8 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
     void testLoadEntity() throws Exception {
         final Collection<Axiom<?>> entityAAxioms = Generators.generateAxiomsForOWLClassA(IDENTIFIER);
         when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
-        when(entityConstructorMock.reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, etAMock, descriptor, false), entityAAxioms))
+        when(entityConstructorMock.reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, etAMock, descriptor, new FetchGraphWrapper(),
+                false), entityAAxioms))
                 .thenReturn(entityA);
         final OWLClassA res = instanceLoader.loadEntity(loadingParameters);
 
@@ -132,7 +134,7 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
                 .thenReturn(axiomDescriptor);
         final Collection<Axiom<?>> entityAAxioms = Generators.generateAxiomsForOWLClassA(IDENTIFIER);
         when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
-        when(entityConstructorMock.reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, etAMock, descriptor, false), entityAAxioms))
+        when(entityConstructorMock.reconstructEntity(new EntityConstructor.EntityConstructionParameters<>(IDENTIFIER, etAMock, descriptor, new FetchGraphWrapper(), false), entityAAxioms))
                 .thenReturn(entityA);
         final OWLClassA res = instanceLoader.loadEntity(loadingParameters);
         assertNotNull(res);
@@ -147,7 +149,7 @@ class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
         final OWLClassA res = instanceLoader.loadEntity(loadingParameters);
         assertEquals(entityA, res);
         verify(entityConstructorMock).populateQueryAttributes(entityA, etAMock);
-        verify(entityConstructorMock, never()).reconstructEntity(eq(new EntityConstructor.EntityConstructionParameters<>(loadingParameters.identifier(), etAMock, descriptor, false)), anyCollection());
+        verify(entityConstructorMock, never()).reconstructEntity(eq(new EntityConstructor.EntityConstructionParameters<>(loadingParameters.identifier(), etAMock, descriptor, new FetchGraphWrapper(), false)), anyCollection());
     }
 
     @Test

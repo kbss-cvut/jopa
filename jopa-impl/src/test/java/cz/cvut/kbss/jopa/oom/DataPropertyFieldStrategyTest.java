@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +57,7 @@ class DataPropertyFieldStrategyTest {
     void getLanguagesUsesAttributeConfiguredLanguageWhenDescriptorDoesNotSpecifyAny() {
         final DataPropertyFieldStrategy<?, ?> sut = (DataPropertyFieldStrategy<?, ?>) FieldStrategy
                 .createFieldStrategy(metamodelMocks.forOwlClassA().entityType(),
-                        metamodelMocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
+                        metamodelMocks.forOwlClassA().stringAttribute(), new ObjectGraphInfo(descriptor), mapperMock);
         assertTrue(metamodelMocks.forOwlClassA().stringAttribute().hasLanguage());
         assertEquals(Generators.LANG, sut.getLanguage());
     }
@@ -67,7 +68,7 @@ class DataPropertyFieldStrategyTest {
         descriptor.setAttributeLanguage(metamodelMocks.forOwlClassA().stringAttribute(), lang);
         final DataPropertyFieldStrategy<?, ?> sut = (DataPropertyFieldStrategy<?, ?>) FieldStrategy
                 .createFieldStrategy(metamodelMocks.forOwlClassA().entityType(),
-                        metamodelMocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
+                        metamodelMocks.forOwlClassA().stringAttribute(), new ObjectGraphInfo(descriptor), mapperMock);
         assertEquals(lang, sut.getLanguage());
     }
 
@@ -75,7 +76,7 @@ class DataPropertyFieldStrategyTest {
     void getLanguageReturnsNullForSimpleLiteralAttribute() {
         final DataPropertyFieldStrategy<?, ?> sut = (DataPropertyFieldStrategy<?, ?>) FieldStrategy
                 .createFieldStrategy(metamodelMocks.forOwlClassM().entityType(),
-                        metamodelMocks.forOwlClassM().simpleLiteralAttribute(), descriptor, mapperMock);
+                        metamodelMocks.forOwlClassM().simpleLiteralAttribute(), new ObjectGraphInfo(descriptor), mapperMock);
         assertNull(sut.getLanguage());
     }
 }
