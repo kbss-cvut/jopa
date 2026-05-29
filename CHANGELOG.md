@@ -1,5 +1,12 @@
 # JOPA - Change Log
 
+### 2.10.0 - 2026-05-29
+
+- Support optimizing entity loading from query result by using [fetch graphs](https://github.com/kbss-cvut/jopa/wiki/Performance#fetch-graph-based-entity-loading) (Enhancement #425, #431, #434).
+- Implement more predictable naming strategy in OWL2Java (Enhancement #432) - see the [README](jopa-owl2java/README.md) for details.
+- Ensure annotation-based entity descriptor is honored when loading entities from query result (Enhancement #437).
+- Dependency updates: RDF4J 5.3.1.
+
 ### 2.9.4 - 2026-04-17
 
 - Change return type of `CriteriaBuilder.langMatches` to `Predicate` to allow including it in predicate lists.
