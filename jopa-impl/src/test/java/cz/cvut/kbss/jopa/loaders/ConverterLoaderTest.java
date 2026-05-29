@@ -26,6 +26,8 @@ import cz.cvut.kbss.jopa.model.annotations.Converter;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.CustomConverterWrapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.time.Period;
 import java.time.ZoneOffset;
@@ -35,6 +37,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@Execution(ExecutionMode.CONCURRENT)
 class ConverterLoaderTest {
 
     private final ConverterLoader sut = new ConverterLoader();
