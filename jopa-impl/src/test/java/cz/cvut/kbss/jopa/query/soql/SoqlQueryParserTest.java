@@ -999,4 +999,24 @@ public class SoqlQueryParserTest {
                 " . ?personUri " + strUri(Vocabulary.p_p_username) + " ?username . }";
         parseAndAssertEquality(expectedSparql, soql);
     }
+
+    /**
+     * Bug #439
+     */
+    @Test
+    void parseQuerySupportsOrderingByEntityIdentifier() {
+        final String soql = "SELECT p FROM Person p ORDER BY p.uri";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . } ORDER BY ?x";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    /**
+     * Bug #439 - alternative syntax
+     */
+    @Test
+    void parseQuerySupportsOrderingByEntity() {
+        final String soql = "SELECT p FROM Person p ORDER BY p";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . } ORDER BY ?x";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
 }
