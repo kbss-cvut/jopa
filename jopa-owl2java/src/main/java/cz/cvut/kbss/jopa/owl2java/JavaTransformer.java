@@ -287,7 +287,7 @@ public class JavaTransformer {
      * @param ontology  Ontology from which the model/vocabulary is being generated
      * @param owlEntity Annotated entity
      * @param javaElem  Element to document with Javadoc
-     * @return Whether the javadoc comment has been generated
+     * @return Whether the Javadoc comment has been generated
      */
     private boolean generateJavadoc(OWLOntology ontology, OWLEntity owlEntity, JDocCommentable javaElem) {
         if (!configuration.shouldGenerateJavadoc()) {

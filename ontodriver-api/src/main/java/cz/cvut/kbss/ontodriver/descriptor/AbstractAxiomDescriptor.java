@@ -57,7 +57,7 @@ public abstract class AbstractAxiomDescriptor {
     /**
      * Gets the set of repository context identifiers in which this descriptor's subject may be.
      * <p>
-     * The contract of this method is as follows: it must not return {@code null}, if the the subject is in the default
+     * The contract of this method is as follows: it must not return {@code null}, if the subject is in the default
      * context, an empty set is returned.
      *
      * @return Set of context identifiers

@@ -139,7 +139,7 @@ public class OWL2JavaTransformer {
              LOG.trace("Processing axiom annotation: {}", p);
              p.getValue().accept(v);
              final String icContextName = v.getName();
-             LOG.trace("CONTEXT: {}", icContextName);
+             LOG.trace("Axiom CONTEXT: {}", icContextName);
              if (icContextName == null) {
                  return;
              }
@@ -157,7 +157,7 @@ public class OWL2JavaTransformer {
                           LOG.trace("Processing entity annotation: {}", p);
                           p.getValue().accept(v);
                           final String icContextName = v.getName();
-                          LOG.trace("CONTEXT: {}", icContextName);
+                          LOG.trace("Entity CONTEXT: {}", icContextName);
                           if (icContextName == null) {
                               return;
                           }

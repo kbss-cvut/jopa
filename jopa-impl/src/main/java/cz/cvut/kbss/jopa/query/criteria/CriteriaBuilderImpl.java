@@ -348,7 +348,7 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
 
 
     /**
-     * Method wraps given boolean expression to Predicate and if path expression occur, it wrap it to
+     * Method wraps given boolean expression to Predicate and if path expression occur, it wraps it to
      * ExpressionEqualsImpl before. For example:
      * {@literal Expression<Boolean> expression = factory.get("attributeName");} Looks like boolean expression but in
      * fact it is not boolean expression, so we need to fix this.

@@ -21,14 +21,6 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 
 public class EntityReconstructionException extends OWLPersistenceException {
 
-    public EntityReconstructionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public EntityReconstructionException(String message) {
-        super(message);
-    }
-
     public EntityReconstructionException(Throwable cause) {
         super(cause);
     }

@@ -23,8 +23,7 @@ import java.net.URI;
 import java.util.Set;
 
 /**
- * Provides access to the metamodel of persistent entities in the persistence
- * unit.
+ * Provides access to the metamodel of persistent entities in the persistence unit.
  */
 public interface Metamodel {
     /**
@@ -63,9 +62,8 @@ public interface Metamodel {
     Set<EntityType<?>> getEntities();
 
     /**
-     * Get the set of classes that contain inferred attributes. These classes
-     * are handled specially since inferred attributes can be influenced by
-     * changes to any other attributes in any other entity.
+     * Get the set of classes that contain inferred attributes. These classes are handled specially since inferred
+     * attributes can be influenced by changes to any other attributes in any other entity.
      *
      * @return The set of classes with inferred attributes.
      */
@@ -85,11 +83,9 @@ public interface Metamodel {
     /**
      * Adds the specified URI to the module extraction signature.
      * <p>
-     * Note that a module including the specified URI will be created when a new
-     * resource level transaction is started. When that will be is
-     * implementation dependent. However it must be guaranteed that all
-     * subsequent connections provided by OntoDriver will include the URI in
-     * extracted modules.
+     * Note that a module including the specified URI will be created when a new resource level transaction is started.
+     * When that will be is implementation dependent. However, it must be guaranteed that all subsequent connections
+     * provided by OntoDriver will include the URI in extracted modules.
      *
      * @param uri The URI to add
      * @throws NullPointerException If {@code uri} is {@code null}

@@ -38,7 +38,7 @@ into the shared connector.
 This puts more demand on the system memory, as the storage may be copied multiple times. However, it provides much higher
 level of isolation for concurrent access.
 
-**Note:** This strategy is by default used when inference is configured. This is a must have to allow access to transactional
+**Note:** This strategy is by default used when inference is configured. This is a must-have to allow access to transactional
 changes in the reasoning process. Therefore, whenever a `cz.cvut.jopa.reasonerFactoryClass` parameter value
 is passed in configuration to the driver, it automatically uses snapshot-based transaction isolation strategy, regardless
 of any direct configuration of the transaction isolation strategy.

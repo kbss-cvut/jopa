@@ -210,7 +210,7 @@ public final class JAnnotationUse extends JAnnotationValue {
     /**
      * Adds a member value pair to this annotation
      * <p>
-     * This can be used for e.g to specify
+     * This can be used, for example, to specify
      * <pre>
      *        &#64;XmlCollectionItem(type=Integer.class);
      * </pre>

@@ -29,7 +29,7 @@ public interface ProviderUtil {
      * <p>
      * If the provider determines that the entity has been provided by itself and that either entity attributes with
      * FetchType EAGER have not been loaded or that the state of the specified attribute has not been loaded, this
-     * methods returns LoadState.NOT_LOADED.
+     * method returns LoadState.NOT_LOADED.
      * <p>
      * If the provider cannot determine the load state, this method returns LoadState.UNKNOWN.
      * <p>
@@ -48,7 +48,7 @@ public interface ProviderUtil {
      * <p>
      * If the provider determines that the entity has been provided by itself and that either entity attributes with
      * FetchType EAGER have not been loaded or that the state of the specified attribute has not been loaded, this
-     * methods returns LoadState.NOT_LOADED.
+     * method returns LoadState.NOT_LOADED.
      * <p>
      * If the provider cannot determine the load state, this method returns LoadState.UNKNOWN.
      * <p>

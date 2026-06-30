@@ -194,7 +194,7 @@ class MetamodelImplInheritanceTest {
     }
 
     /**
-     * Ref.: https://github.com/kbss-cvut/jopa/issues/3
+     * Bug #3
      */
     @Test
     void buildingMetamodelSupportsReferenceFromParentEntityToSubEntity() {

@@ -30,7 +30,7 @@ public interface Wrapper {
      * Returns an object that implements the given interface to allow access to non-standard methods, or standard
      * methods not exposed by the proxy. If the receiver implements the interface then the result is the receiver or a
      * proxy for the receiver. If the receiver is a wrapper and the wrapped object implements the interface then the
-     * result is the wrapped object or a proxy for the wrapped object. Otherwise return the the result of calling unwrap
+     * result is the wrapped object or a proxy for the wrapped object. Otherwise, return the result of calling unwrap
      * recursively on the wrapped object or a proxy for that result. If the receiver is not a wrapper and does not
      * implement the interface, then an {@link OntoDriverException} is thrown.
      *

@@ -67,7 +67,7 @@ public class TtlCacheManager implements CacheManager {
 
     private TtlCache cache;
 
-    // Each repository can have its own lock and they could be acquired by this
+    // Each repository can have its own lock, and they could be acquired by this
     // instance itself, no need to pass this burden to callers
     private final Lock readLock;
     private final Lock writeLock;

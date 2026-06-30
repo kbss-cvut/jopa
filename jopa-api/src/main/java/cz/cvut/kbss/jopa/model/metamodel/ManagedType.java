@@ -171,16 +171,16 @@ public interface ManagedType<X> extends Type<X> {
     <K, V> MapAttribute<X, K, V> getDeclaredMap(String name, Class<K> keyType, Class<V> valueType);
 
     /**
-     * Return all multi-valued attributes (Collection-, Set-, List-, and Map-valued attributes) of the managed type.
-     * Returns empty set if the managed type has no multi-valued attributes.
+     * Return all multivalued attributes (Collection-, Set-, List-, and Map-valued attributes) of the managed type.
+     * Returns empty set if the managed type has no multivalued attributes.
      *
      * @return Collection-, Set-, List-, and Map-valued attributes
      */
     Set<PluralAttribute<? super X, ?, ?>> getPluralAttributes();
 
     /**
-     * Return all multi-valued attributes (Collection-, Set-, List-, and Map-valued attributes) declared by the managed
-     * type. Returns empty set if the managed type has no declared multi-valued attributes.
+     * Return all multivalued attributes (Collection-, Set-, List-, and Map-valued attributes) declared by the managed
+     * type. Returns empty set if the managed type has no declared multivalued attributes.
      *
      * @return declared Collection-, Set-, List-, and Map-valued attributes
      */

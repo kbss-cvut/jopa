@@ -52,7 +52,7 @@ public interface PluralAttribute<X, C, E> extends Attribute<X, C>, Bindable<E> {
     default boolean isRdfContainer() {return false;}
 
     /**
-     * Whether this list represents a <a href="https://www.w3.org/TR/rdf12-schema/#ch_collectionvocab">RDF
+     * Whether this list represents an <a href="https://www.w3.org/TR/rdf12-schema/#ch_collectionvocab">RDF
      * collection</a>.
      *
      * @return {@code true} when this list attribute is an RDF collection, {@code false} otherwise

@@ -27,7 +27,7 @@ public interface Closeable {
     /**
      * Closes this resource releasing any sub-resources it holds.
      * <p>
-     * After closing the resource is not usable any more and calling methods on
+     * After closing the resource is not usable anymore and calling methods on
      * it (except {@code close} and {@code isOpen}) will result in
      * {@code IllegalStateException}.
      * <p>

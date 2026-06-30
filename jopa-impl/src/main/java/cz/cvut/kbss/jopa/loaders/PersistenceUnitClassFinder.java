@@ -51,7 +51,7 @@ public class PersistenceUnitClassFinder {
      * These classes include:
      * <ul>
      *     <li>Entities, i.e. classes annotated with {@link cz.cvut.kbss.jopa.model.annotations.OWLClass},</li>
-     *     <li>Result result mapping classes, i.e. classes annotated with {@link cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping}
+     *     <li>Result mapping classes, i.e. classes annotated with {@link cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping}
      * or {@link cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMappings}</li>
      * </ul>
      *

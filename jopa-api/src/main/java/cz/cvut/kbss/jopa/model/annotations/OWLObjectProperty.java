@@ -49,7 +49,7 @@ public @interface OWLObjectProperty {
     /**
      * (Optional) The operations that must be cascaded to the target of the association.
      * <p>
-     * By default no operations are cascaded.
+     * By default, no operations are cascaded.
      *
      * @return Cascading setting for the annotated attribute
      */

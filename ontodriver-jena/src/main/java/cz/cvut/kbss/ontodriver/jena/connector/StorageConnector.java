@@ -107,7 +107,7 @@ public interface StorageConnector extends Closeable, Wrapper, StatementExecutor 
      * <p>
      * Requires an active transaction.
      * <p>
-     * {@code context} is optional, its absence means that the statements will be added into the the default graph.
+     * {@code context} is optional, its absence means that the statements will be added into the default graph.
      *
      * @param statements Statements to add
      * @param context    Target context, optional
@@ -119,7 +119,7 @@ public interface StorageConnector extends Closeable, Wrapper, StatementExecutor 
      * <p>
      * Requires an active transaction.
      * <p>
-     * {@code context} is optional, its absence means that the statements will be removed from the the default graph.
+     * {@code context} is optional, its absence means that the statements will be removed from the default graph.
      *
      * @param statements Statements to remove
      * @param context    Target context, optional
@@ -129,7 +129,7 @@ public interface StorageConnector extends Closeable, Wrapper, StatementExecutor 
     /**
      * Removes statements matching the specified pattern from the specified storage context.
      * <p>
-     * {@code context} is optional, its absence means that the statements will be removed from the the default graph.
+     * {@code context} is optional, its absence means that the statements will be removed from the default graph.
      *
      * @param subject  Statement subject, optional
      * @param property Statement property, optional
