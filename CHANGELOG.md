@@ -1,5 +1,10 @@
 # JOPA - Change Log
 
+### 2.10.1 - 2026-06-30
+
+- Allow ordering by entity identifier in SOQL (Bug #439).
+- Dependency updates: RDF4J 5.3.2.
+
 ### 2.10.0 - 2026-05-29
 
 - Support optimizing entity loading from query result by using [fetch graphs](https://github.com/kbss-cvut/jopa/wiki/Performance#fetch-graph-based-entity-loading) (Enhancement #425, #431, #434).
