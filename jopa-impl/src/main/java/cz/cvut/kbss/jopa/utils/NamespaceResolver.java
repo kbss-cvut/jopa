@@ -67,7 +67,7 @@ public class NamespaceResolver {
     }
 
     /**
-     * Replaces prefix in the specified IRI with a full namespace IRI, if the IRI contains a prefix and it is registered
+     * Replaces prefix in the specified IRI with a full namespace IRI, if the IRI contains a prefix, and it is registered
      * in this resolver.
      *
      * @param iri The IRI to resolve

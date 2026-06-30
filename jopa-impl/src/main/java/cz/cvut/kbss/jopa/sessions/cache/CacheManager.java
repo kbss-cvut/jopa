@@ -43,7 +43,7 @@ public interface CacheManager extends Cache {
     /**
      * Gets entity with the specified identifier from the cache.
      * <p>
-     * The entity is searched for in the context specified by {@code descriptor}. Thus all three conditions - class,
+     * The entity is searched for in the context specified by {@code descriptor}. Thus, all three conditions - class,
      * identifier and descriptor must match to return a result.
      *
      * @param cls        Class of the entity

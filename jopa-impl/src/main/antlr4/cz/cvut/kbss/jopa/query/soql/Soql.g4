@@ -133,7 +133,7 @@ functionsReturningBoolean
 
 orderByClause: ORDER BY orderByItem (',' orderByItem)* ;
 
-orderByItem: singleValuedObjectPathExpression (ASC | DESC)? ;
+orderByItem: (singleValuedObjectPathExpression | simpleSubpath) (ASC | DESC)? ;
 
 groupByClause: GROUP BY groupByItem (',' groupByItem)* ;
 

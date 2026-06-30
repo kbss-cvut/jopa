@@ -80,7 +80,7 @@ public class SimpleListHandler extends ListHandler<SimpleListValueDescriptor> {
     }
 
     /**
-     * We are using this code instead of iterator.remove for performance reasons. The iterator has to reconnect the list
+     * We are using this code instead of {@code iterator.remove} for performance reasons. The iterator has to reconnect the list
      * for each removed node, which takes a lot of time.
      */
     protected void clearList(SimpleListValueDescriptor listValueDescriptor) throws Rdf4jDriverException {
@@ -106,9 +106,9 @@ public class SimpleListHandler extends ListHandler<SimpleListValueDescriptor> {
         final ListIterator<NamedResource> it = iterator(listDescriptor);
         final ListHandler.MergeResult mergeResult = mergeWithOriginalList(listDescriptor, it);
         removeObsoletes(it);
-        assert mergeResult.i > 0;
-        assert mergeResult.previous != null;
-        if (mergeResult.i < listDescriptor.getValues().size()) {
+        assert mergeResult.i() > 0;
+        assert mergeResult.previous() != null;
+        if (mergeResult.i() < listDescriptor.getValues().size()) {
             appendNewNodes(listDescriptor, mergeResult);
         }
     }
@@ -131,9 +131,9 @@ public class SimpleListHandler extends ListHandler<SimpleListValueDescriptor> {
 
     void appendNewNodes(SimpleListValueDescriptor listDescriptor, MergeResult mergeResult) throws
             Rdf4jDriverException {
-        int i = mergeResult.i;
+        int i = mergeResult.i();
         final Collection<Statement> toAdd = new ArrayList<>(listDescriptor.getValues().size() - i);
-        Resource previous = mergeResult.previous;
+        Resource previous = mergeResult.previous();
         final IRI nextNode = toRdf4jIri(listDescriptor.getNextNode().getIdentifier());
         final IRI context = context(listDescriptor);
         while (i < listDescriptor.getValues().size()) {

@@ -47,7 +47,7 @@ public final class OntoDriverProperties {
      * queries.
      * <p>
      * If so, uncommitted changes made during transaction will be included in query evaluation, entity retrieval etc.
-     * Otherwise the driver will use the ontology as it was when the transaction was started and uncommitted changes
+     * Otherwise, the driver will use the ontology as it was when the transaction was started and uncommitted changes
      * will not be visible until commit.
      */
     public static final String USE_TRANSACTIONAL_ONTOLOGY = "cz.cvut.kbss.ontodriver.use-transactional-onto";
@@ -57,14 +57,14 @@ public final class OntoDriverProperties {
      * <p>
      * The module extraction signature is generated from metamodel, but
      * <i>types</i> and <i>properties</i> cannot be determined from the
-     * metamodel. Therefore it is possible to specify them using this property so that the module is complete.
+     * metamodel. Therefore, it is possible to specify them using this property so that the module is complete.
      */
     public static final String MODULE_EXTRACTION_SIGNATURE = "cz.cvut.kbss.ontodriver.module-signature";
 
     /**
      * Property representing module extraction signature delimiter.
      * <p>
-     * I. e. URIs in module extraction signature are delimited by this string.
+     * I.e. URIs in module extraction signature are delimited by this string.
      *
      * @see #MODULE_EXTRACTION_SIGNATURE
      */

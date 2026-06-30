@@ -25,6 +25,8 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -34,6 +36,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Execution(ExecutionMode.CONCURRENT)
 public class RepositoryMapTest {
 
     private static final URI CONTEXT = URI.create("http://repositoryMapTestContext");

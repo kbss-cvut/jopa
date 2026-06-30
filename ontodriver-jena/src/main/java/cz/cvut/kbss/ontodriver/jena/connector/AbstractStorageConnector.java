@@ -34,15 +34,6 @@ abstract class AbstractStorageConnector implements StorageConnector {
 
     Storage storage;
 
-    /**
-     * Constructs this connector without using any configuration.
-     */
-    AbstractStorageConnector() {
-        this.configuration = null;
-        initialize();
-        this.open = true;
-    }
-
     AbstractStorageConnector(DriverConfiguration configuration) {
         this.configuration = configuration;
         initialize();

@@ -419,7 +419,7 @@ public interface ResultSet extends AutoCloseable, Iterable<ResultRow> {
     /**
      * Closes this result set releasing any sub-resources it holds.
      * <p>
-     * After closing the result set is not usable any more and calling methods on it (except {@code close} and
+     * After closing the result set is not usable anymore and calling methods on it (except {@code close} and
      * {@code isOpen}) will result in {@code OntoDriverException}.
      * <p>
      * Calling {@code close} on already closed resource does nothing.

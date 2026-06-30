@@ -94,10 +94,6 @@ public abstract class Generators {
         return createSimpleList().stream().map(OWLClassA::getUri).collect(Collectors.toList());
     }
 
-    public static Set<OWLClassA> createSimpleSet() {
-        return createSimpleSet(randomPositiveInt(DEFAULT_MIN, DEFAULT_SIZE));
-    }
-
     public static Set<OWLClassA> createSimpleSet(int size) {
         assert size > 0;
         final Set<OWLClassA> set = new HashSet<>(size);

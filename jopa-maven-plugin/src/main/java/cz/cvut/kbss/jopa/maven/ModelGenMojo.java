@@ -84,23 +84,7 @@ public class ModelGenMojo extends AbstractMojo {
         getLog().info("");
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
-        List<String> options = new ArrayList<>();
-        options.add("-processor");
-        options.add(ModelGenProcessor.class.getName());
-
-        final File[] classPathFiles = getClassPathFiles();
-
-        final String compileClassPath = join(classPathFiles, File.pathSeparator);
-
-        options.add("-cp");
-        options.add(compileClassPath);
-
-        options.add("-d");
-        File folder = new File("./target/classes");
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }
-        options.add("./target/classes");
+        List<String> options = getAnnotationProcessorOptions();
 
         configureAnnotationProcessor(options);
 
@@ -123,6 +107,27 @@ public class ModelGenMojo extends AbstractMojo {
         logTaskDiagnostics(diagnosticCollector);
         getLog().info("Static metamodel generated.");
         getLog().info("------------------------------------------------------------------------");
+    }
+
+    private List<String> getAnnotationProcessorOptions() {
+        List<String> options = new ArrayList<>();
+        options.add("-processor");
+        options.add(ModelGenProcessor.class.getName());
+
+        final File[] classPathFiles = getClassPathFiles();
+
+        final String compileClassPath = join(classPathFiles, File.pathSeparator);
+
+        options.add("-cp");
+        options.add(compileClassPath);
+
+        options.add("-d");
+        File folder = new File("./target/classes");
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+        options.add("./target/classes");
+        return options;
     }
 
     private File[] getClassPathFiles() {

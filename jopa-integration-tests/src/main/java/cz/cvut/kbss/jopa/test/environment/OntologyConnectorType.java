@@ -19,19 +19,19 @@ package cz.cvut.kbss.jopa.test.environment;
 
 public enum OntologyConnectorType {
     /**
-     * OWL API ontology connector. Name: owlapi
+     * OWL API ontology connector. Name: {@literal owlapi}
      */
     OWLAPI("owlapi", "cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource"),
     /**
-     * Jena ontology connector. Name: jena
+     * Jena ontology connector. Name: {@literal jena}
      */
     JENA("jena", "cz.cvut.kbss.ontodriver.jena.JenaDataSource"),
     /**
-     * RDF4J ontology connector. Name: rdf4j
+     * RDF4J ontology connector. Name: {@literal rdf4j}
      */
     RDF4J("rdf4j", "cz.cvut.kbss.ontodriver.rdf4j.Rdf4jDataSource"),
     /**
-     * Virtuoso ontology connector. Name: virtuoso
+     * Virtuoso ontology connector. Name: {@literal virtuoso}
      */
     VIRTUOSO("virtuoso", "cz.cvut.kbss.ontodriver.virtuoso.VirtuosoDataSource");
 

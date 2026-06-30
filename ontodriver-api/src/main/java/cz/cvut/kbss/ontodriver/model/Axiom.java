@@ -18,7 +18,7 @@
 package cz.cvut.kbss.ontodriver.model;
 
 /**
- * Represents either an OWL axiom or a RDF triple.
+ * Represents either an OWL axiom or an RDF triple.
  */
 public interface Axiom<T> {
 

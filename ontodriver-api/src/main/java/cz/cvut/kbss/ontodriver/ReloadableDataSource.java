@@ -30,7 +30,7 @@ public interface ReloadableDataSource extends DataSource {
     /**
      * Reloads data from the underlying storage, if possible.
      * <p>
-     * Does nothing if the underlying storage does not support reloading or it is not necessary (e.g. when connected
+     * Does nothing if the underlying storage does not support reloading, or it is not necessary (e.g. when connected
      * to a remote triple store).
      *
      * @throws OntoDriverException   If an error occurs when reloading data

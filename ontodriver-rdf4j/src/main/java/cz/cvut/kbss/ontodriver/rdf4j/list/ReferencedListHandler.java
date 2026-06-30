@@ -160,9 +160,9 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
         final ListIterator<Object> it = new ReferencedListIterator<>(listDescriptor, connector, vf);
         final ListHandler.MergeResult mergeResult = mergeWithOriginalList((ReferencedListValueDescriptor<Object>) listDescriptor, it);
         removeObsoletes(it);
-        assert mergeResult.i > 0;
-        assert mergeResult.previous != null;
-        if (mergeResult.i < listDescriptor.getValues().size()) {
+        assert mergeResult.i() > 0;
+        assert mergeResult.previous() != null;
+        if (mergeResult.i() < listDescriptor.getValues().size()) {
             appendNewNodes(listDescriptor, mergeResult);
         }
     }
@@ -185,8 +185,8 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
 
     <V> void appendNewNodes(ReferencedListValueDescriptor<V> listDescriptor, MergeResult mergeResult)
             throws Rdf4jDriverException {
-        int i = mergeResult.i;
-        Resource previous = mergeResult.previous;
+        int i = mergeResult.i();
+        Resource previous = mergeResult.previous();
         final IRI owner = owner(listDescriptor);
         final IRI hasNext = hasNext(listDescriptor);
         final IRI hasContent = hasContent(listDescriptor);

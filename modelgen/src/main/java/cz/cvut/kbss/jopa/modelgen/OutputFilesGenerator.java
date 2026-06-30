@@ -77,7 +77,7 @@ public class OutputFilesGenerator {
         generateClassIriField(cls).ifPresent(content::append);
         generatePropertyIris(cls).ifPresent(content::append);
         content.append(generateAttributes(cls));
-        content.append(generateClassSuffix());
+        content.append('}');
         try {
             Files.writeString(targetFile.toPath(), content.toString(), StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
@@ -274,9 +274,5 @@ public class OutputFilesGenerator {
                     .append(";\n");
         }
         return attributes.toString();
-    }
-
-    private static String generateClassSuffix() {
-        return "}";
     }
 }

@@ -48,7 +48,7 @@ public class DatatypeTransformer {
     /**
      * Mapping between {@link OWL2Datatype}s and Java types.
      * <p>
-     * Note that the map is incomplete (e.g., the {@link OWL2Datatype} enum does not contain constants for {@code xsd:date} and {@code xsd:time}.
+     * Note that the map is incomplete (e.g., the {@link OWL2Datatype} enum does not contain constants for {@code xsd:date} and {@code xsd:time}).
      * <p>
      * Also, OWL API maps {@code xsd:integer} to Java {@link Integer}, which is technically not correct, since {@code xsd:integer} is unbound
      * and may not fit, so {@link BigInteger} would be more appropriate. The same goes for other {@code xsd:integer} derivatives like {@code xsd:negativeInteger} etc.

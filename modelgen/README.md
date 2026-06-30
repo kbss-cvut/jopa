@@ -10,7 +10,7 @@ Generator is integrated as a goal in jopa-maven-plugin. It has 4 configuration p
 
 'additional-sources' defines path to additional sources, such as output files of OWL2Java
 
-'source-package' if user wants tu run generator on specific package, it will be defined here and it is in format 'test.example.classesForModelGen'
+'source-package' if user wants tu run generator on specific package, it will be defined here, and it is in format 'test.example.classesForModelGen'
 
 'debug-option' controls console output of generator, default value is false
 

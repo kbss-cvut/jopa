@@ -83,7 +83,7 @@ public interface RepoConnection extends Closeable, StatementExecutor, Wrapper {
     List<Resource> getContexts() throws Rdf4jDriverException;
 
     /**
-     * Gets Rdf4j value factory.
+     * Gets an RDF4J value factory.
      *
      * @return {@link ValueFactory}
      */

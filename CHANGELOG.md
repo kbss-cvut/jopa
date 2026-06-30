@@ -1,5 +1,10 @@
 # JOPA - Change Log
 
+### 2.10.1 - 2026-06-30
+
+- Allow ordering by entity identifier in SOQL (Bug #439).
+- Dependency updates: RDF4J 5.3.2.
+
 ### 2.10.0 - 2026-05-29
 
 - Support optimizing entity loading from query result by using [fetch graphs](https://github.com/kbss-cvut/jopa/wiki/Performance#fetch-graph-based-entity-loading) (Enhancement #425, #431, #434).
@@ -131,7 +136,7 @@
 
 ### 2.5.1 - 2025-08-21
 
-- Fix an issue with translating SOQL to SPARQL when referencing a RDF container attribute (Bug #366).
+- Fix an issue with translating SOQL to SPARQL when referencing an RDF container attribute (Bug #366).
 
 ### 2.5.0 - 2025-08-18
 
@@ -689,7 +694,7 @@
 
 - Fixed bug SPARQL query parser which prevent the use of property paths together with variables.
 - Added support for setting the in-memory storage in Jena and RDF4J driver (Enhancement #32).
-- Working on Github Wiki.
+- Working on GitHub Wiki.
 
 ## 0.10.1 - 2018-05-20
 
@@ -731,7 +736,7 @@
 
 ## 0.9.12 - 2017-12-04
 
-- Rewrote em.refresh to correspond to JPA behavior (Issue #17).
+- Rewrote `em.refresh` to correspond to JPA behavior (Issue #17).
 - Upgraded to the latest RDF4J (2.2.4).
 - Generate class names compliant with Java naming conventions (OWL2Java).
 - Added support for untyped query parameters to Query API (necessary for `LIMIT` and `OFFSET` support).
@@ -880,7 +885,7 @@
 
 - Implemented support for `EntityManager.unwrap`. Using unwrap, it is possible to get a hold of for example the Sesame
   in-memory repository used by the Sesame driver (which is otherwise, due to the Sesame API architecture, inaccessible
-  through the `RepositoryProvider`.
+  through the `RepositoryProvider`).
 
 ## 0.7.7 - 2016-05-11
 

@@ -41,15 +41,6 @@ public class Generator {
         return RANDOM.nextInt(max);
     }
 
-    public static boolean randomBoolean() {
-        return RANDOM.nextBoolean();
-    }
-
-    // Synchronize resource creation to prevent race conditions in concurrent tests.
-    public static synchronized Resource generateResource() {
-        return ResourceFactory.createResource(generateUri().toString());
-    }
-
     // Synchronize resource creation to prevent race conditions in concurrent tests.
     public static synchronized Resource generateResource(String iri) {
         return ResourceFactory.createResource(iri);

@@ -147,13 +147,6 @@ abstract class ListHandler<VD extends ListValueDescriptor<?>> {
     }
 
 
-    static final class MergeResult {
-        final int i;
-        final Resource previous;
-
-        MergeResult(int i, Resource node) {
-            this.i = i;
-            this.previous = node;
-        }
+    record MergeResult(int i, Resource previous) {
     }
 }

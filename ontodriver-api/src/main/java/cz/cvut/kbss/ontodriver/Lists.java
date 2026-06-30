@@ -79,7 +79,7 @@ public interface Lists {
      * <p>
      * The returned axioms should be iterable in the same order as they were put into the sequence in the ontology.
      *
-     * @param descriptor Describes list's properties, including node content assertion. Also may specify context from
+     * @param descriptor Describes list's properties, including node content assertion. Also, may specify context from
      *                   which the list should be loaded
      * @return Axioms matching the specified list descriptor
      * @throws OntoDriverException   If an ontology access error occurs

@@ -29,6 +29,8 @@ import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.net.URI;
 import java.util.List;
@@ -47,6 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Execution(ExecutionMode.CONCURRENT)
 public class SparqlQueryParsingAndAssemblyTest {
 
     private static final String SIMPLE_QUERY = "SELECT ?x WHERE { ?x a ?type . }";

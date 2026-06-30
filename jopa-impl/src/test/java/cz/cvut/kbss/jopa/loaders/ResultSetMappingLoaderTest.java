@@ -21,10 +21,13 @@ import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMapping;
 import cz.cvut.kbss.jopa.model.annotations.SparqlResultSetMappings;
 import cz.cvut.kbss.jopa.model.annotations.VariableResult;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Execution(ExecutionMode.CONCURRENT)
 public class ResultSetMappingLoaderTest {
 
     private final ResultSetMappingLoader sut = new ResultSetMappingLoader();

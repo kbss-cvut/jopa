@@ -437,7 +437,9 @@ public class SoqlQueryListener extends SoqlBaseListener {
         }
         setIris(firstNode);
         if (currentNode.getIri().isEmpty()) {
-            currentNode.getParent().clearChildren();
+            if (currentNode.getParent() != null) {
+                currentNode.getParent().clearChildren();
+            }
             this.isInObjectIdentifierExpression = true;
         }
         return firstNode;

@@ -222,14 +222,4 @@ public class EntityPropertiesUtils {
         final Transient transientAnnotation = field.getAnnotation(Transient.class);
         return transientAnnotation != null;
     }
-
-    /**
-     * Returns true if the specified field is static.
-     *
-     * @param field The field to check
-     * @return True if field is static, false otherwise
-     */
-    public static boolean isFieldStatic(Field field) {
-        return Modifier.isStatic(field.getModifiers());
-    }
 }

@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import java.util.*;
 
 /**
- * Checks for changes in a collection. By changes it is understood:
+ * Checks for changes in a collection. By changes, it is understood:
  * <pre>
  *     <ul>
  *         <li>Different number of elements,</li>

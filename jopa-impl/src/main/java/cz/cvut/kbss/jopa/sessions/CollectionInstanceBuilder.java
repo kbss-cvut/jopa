@@ -41,7 +41,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Special class for cloning collections. Introduced because some Java collection have no no-argument constructor and
+ * Special class for cloning collections. Introduced because some Java collection have no no-argument constructor, and
  * thus they must be cloned specially. NOTE: This class may be removed in case a better cloning mechanisms (namely
  * database mappings and copy policies) is introduced.
  */
@@ -89,7 +89,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 
     /**
      * Clones the specified collection using its default zero argument constructor. If the specified collection has none
-     * (e. g. like SingletonList), this method returns null.
+     * (e.g. like SingletonList), this method returns null.
      *
      * @param container The collection to clone.
      * @return cloned collection

@@ -248,7 +248,7 @@ public abstract class BaseRunner {
     }
 
     /**
-     * Verifies that no statements with the specified individual as subject exist in the ontology any more.
+     * Verifies that no statements with the specified individual as subject exist in the ontology anymore.
      *
      * @param identifier Individual identifier
      */

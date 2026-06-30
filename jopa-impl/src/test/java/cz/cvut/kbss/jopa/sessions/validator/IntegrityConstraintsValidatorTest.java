@@ -41,6 +41,8 @@ import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -53,6 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Execution(ExecutionMode.CONCURRENT)
 public class IntegrityConstraintsValidatorTest {
 
     private MetamodelImpl metamodel;

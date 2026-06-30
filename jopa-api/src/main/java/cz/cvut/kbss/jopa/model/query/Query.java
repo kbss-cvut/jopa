@@ -54,7 +54,7 @@ public interface Query {
     /**
      * Execute a SELECT query and return the query results as an untyped java.util.stream.Stream.
      * <p>
-     * By default this method delegates to getResultList().stream(), however persistence provider may choose to override
+     * By default, this method delegates to getResultList().stream(), however persistence provider may choose to override
      * this method to provide additional capabilities.
      *
      * @return a stream of the results

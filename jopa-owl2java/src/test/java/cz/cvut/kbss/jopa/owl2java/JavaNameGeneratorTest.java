@@ -51,31 +51,31 @@ class JavaNameGeneratorTest {
     @Test
     void generateJavaNameForIriGeneratesValidJavaIdentifiersForIriWithNonAsciiCharacters() {
         final IRI iri = IRI.create(PREFIX + "navržený-pojem");
-        assertEquals("navrzeny_pojem", sut.generateJavaNameForIri(iri));
+        assertEquals("navrzeny_pojem", JavaNameGenerator.generateJavaNameForIri(iri));
     }
 
     @Test
     void generateJavaNameForIriSanitizesJavaKeywords() {
         final IRI iri = IRI.create(PREFIX + "volatile");
-        assertEquals("_volatile", sut.generateJavaNameForIri(iri));
+        assertEquals("_volatile", JavaNameGenerator.generateJavaNameForIri(iri));
     }
 
     @Test
     void generateJavaNameForIriUsesFragmentWhenIriContainsIt() {
         final IRI iri = IRI.create("http://onto.fel.cvut.cz/ontologies/owl2java-test#Fragment");
-        assertEquals("Fragment", sut.generateJavaNameForIri(iri));
+        assertEquals("Fragment", JavaNameGenerator.generateJavaNameForIri(iri));
     }
 
     @Test
     void generateJavaNameForIriUsesPartBetweenLastHashAndFragmentWhenFragmentIsLastChar() {
         final IRI iri = IRI.create("http://www.w3.org/ns/activitystreams#");
-        assertEquals("activitystreams", sut.generateJavaNameForIri(iri));
+        assertEquals("activitystreams", JavaNameGenerator.generateJavaNameForIri(iri));
     }
 
     @Test
     void generateJavaNameForIriUsesPartBetweenLastAndSecondToLastSlashWhenSlashIsLastChar() {
         final IRI iri = IRI.create("http://purl.org/vocab/vann/");
-        assertEquals("vann", sut.generateJavaNameForIri(iri));
+        assertEquals("vann", JavaNameGenerator.generateJavaNameForIri(iri));
     }
 
     @Test
