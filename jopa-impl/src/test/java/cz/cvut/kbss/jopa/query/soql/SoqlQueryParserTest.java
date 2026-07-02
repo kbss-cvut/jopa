@@ -112,6 +112,16 @@ public class SoqlQueryParserTest {
     public void testParseDistinctCountQuery() {
         final String soqlQuery = "SELECT DISTINCT COUNT(p) FROM Person p";
         final String expectedSparqlQuery =
+                "SELECT DISTINCT (COUNT(?x) AS ?count) WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . }";
+        final QueryHolder holder = sut.parseQuery(soqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(2, holder.getParameters().size());
+    }
+
+    @Test
+    void testParseCountDistinctQuery() {
+        final String soqlQuery = "SELECT COUNT(DISTINCT p) FROM Person p";
+        final String expectedSparqlQuery =
                 "SELECT (COUNT(DISTINCT ?x) AS ?count) WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
@@ -769,8 +779,8 @@ public class SoqlQueryParserTest {
     }
 
     @Test
-    void parseQuerySupportsDistinctCountWithProjectedAttribute() {
-        final String soqlIdFirst = "SELECT DISTINCT COUNT(d.owlClassA) FROM OWLClassD d WHERE d.uri = :uri";
+    void parseQuerySupportsCountDistinctWithProjectedAttribute() {
+        final String soqlIdFirst = "SELECT COUNT(DISTINCT d.owlClassA) FROM OWLClassD d WHERE d.uri = :uri";
         final String expectedSparql = "SELECT (COUNT(DISTINCT ?owlClassA) AS ?count) WHERE { ?uri a " + strUri(Vocabulary.c_OwlClassD) + " . " +
                 "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . }";
         parseAndAssertEquality(expectedSparql, soqlIdFirst);
