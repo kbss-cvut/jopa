@@ -29,6 +29,7 @@ import cz.cvut.kbss.jopa.query.criteria.expressions.AbsFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractPathExpression;
 import cz.cvut.kbss.jopa.query.criteria.expressions.CeilFunction;
+import cz.cvut.kbss.jopa.query.criteria.expressions.CountDistinctFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.CountFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionEqualImpl;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ExpressionGreaterThanImpl;
@@ -82,6 +83,12 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     public Expression<Integer> count(Expression<?> x) {
         validateFunctionArgument(x);
         return new CountFunction((AbstractPathExpression) x, this);
+    }
+
+    @Override
+    public Expression<Integer> countDistinct(Expression<?> x) {
+        validateFunctionArgument(x);
+        return new CountDistinctFunction((AbstractPathExpression) x, this);
     }
 
     @Override

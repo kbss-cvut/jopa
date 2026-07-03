@@ -126,6 +126,17 @@ public class CriteriaQueryTranslateQueryTest {
     }
 
     @Test
+    void testTranslationQueryCountDistinct() {
+        CriteriaQueryImpl<Integer> query = cb.createQuery(Integer.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(cb.countDistinct(root));
+
+        final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+        final String expectedSoqlQuery = "SELECT COUNT(DISTINCT owlclassa) FROM OWLClassA owlclassa";
+        assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+    }
+
+    @Test
     public void testTranslateQuerySelectAllOrderByEntityDesc() {
         CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);

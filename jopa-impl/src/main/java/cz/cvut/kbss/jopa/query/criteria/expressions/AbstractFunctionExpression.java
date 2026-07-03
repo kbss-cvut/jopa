@@ -34,13 +34,17 @@ public abstract class AbstractFunctionExpression<X> extends AbstractExpression<X
     @Override
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         query.append(getFunctionName()).append("(");
+        constructFunctionArguments(query, parameterFiller);
+        query.append(")");
+    }
+
+    protected void constructFunctionArguments(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         for (int i = 0; i < argumentExpression.size(); i++) {
             argumentExpression.get(i).setExpressionToQuery(query, parameterFiller);
             if (i < argumentExpression.size() - 1) {
                 query.append(',');
             }
         }
-        query.append(")");
     }
 
     public abstract String getFunctionName();

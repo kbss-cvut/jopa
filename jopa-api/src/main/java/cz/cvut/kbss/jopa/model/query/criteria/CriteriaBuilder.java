@@ -57,13 +57,22 @@ public interface CriteriaBuilder extends PredicateFactory {
     <N extends Number> Expression<N> floor(Expression<N> x);
 
     /**
-     * Create an aggregate expression applying the count operation. Return type of count function in SPARQL is
-     * xsd:integer which JOPA internally represents as Integer.
+     * Create an aggregate expression applying the count operation.
      *
      * @param x expression representing input value to count operation
      * @return count expression
+     * @implNote Return type of count function in SPARQL is xsd:integer which JOPA internally represents as Integer.
      */
     Expression<Integer> count(Expression<?> x);
+
+    /**
+     * Create an aggregate expression applying the count distinct operation.
+     *
+     * @param x expression representing input value to count operation
+     * @return count distinct expression
+     * @implNote Return type of count function in SPARQL is xsd:integer which JOPA internally represents as Integer.
+     */
+    Expression<Integer> countDistinct(Expression<?> x);
 
     /**
      * Create expression to return length of a string.
