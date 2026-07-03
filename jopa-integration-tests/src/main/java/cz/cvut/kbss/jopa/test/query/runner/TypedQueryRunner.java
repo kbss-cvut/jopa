@@ -449,7 +449,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                                                                  ?x a ?type ;
                                                                  ?hasString ?stringAttribute;
                                                                  a ?types .
-                                                                 }""", OWLClassA.class)
+                                                                 } ORDER BY ?x""", OWLClassA.class)
                                                          .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_A))
                                                          .setParameter("hasString", URI.create(Vocabulary.P_A_STRING_ATTRIBUTE))
                                                          .getResultList();
