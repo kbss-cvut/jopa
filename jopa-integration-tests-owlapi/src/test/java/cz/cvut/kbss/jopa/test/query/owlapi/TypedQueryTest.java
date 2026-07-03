@@ -148,4 +148,11 @@ public class TypedQueryTest extends TypedQueryRunner {
     public void querySupportsNestedNamedFetchGraphs() {
         // OWL2Query does not support OPTIONAL
     }
+
+    @Disabled
+    @Override
+    public void querySupportsMappingResultsDirectlyToEntity() {
+        // OWL2Query does not seem to correctly implement ORDER BY, causing result rows not always to be consecutive by subject identifier
+        // And thus the query sometimes fails
+    }
 }
