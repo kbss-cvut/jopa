@@ -54,6 +54,13 @@ public interface CriteriaQuery<T> {
     CriteriaQuery<T> select(Selection<? extends T> selection);
 
     /**
+     * Specify that the query is an ask query.
+     *
+     * @return the modified query
+     */
+    CriteriaQuery<Boolean> ask();
+
+    /**
      * Modify the query to restrict the query result according to the specified boolean expression. Replaces the
      * previously added restriction(s), if any.
      *
