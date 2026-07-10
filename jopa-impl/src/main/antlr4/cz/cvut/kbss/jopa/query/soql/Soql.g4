@@ -2,9 +2,11 @@ grammar Soql;
 
 start: querySentence EOF ;
 
-querySentence: selectStatement ;
+querySentence: selectStatement | askStatement ;
 
 selectStatement: selectClause fromClause whereClause? groupByClause? orderByClause? ;
+
+askStatement: ASK fromClause whereClause? ;
 
 singleValuedObjectPathExpression: simpleSubpath DOT singleValuedObjectField ;
 
@@ -151,6 +153,8 @@ comparisonOperator
     ;
 
 SELECT: 'SELECT' ;
+
+ASK: 'ASK' ;
 
 WHERE: 'WHERE' ;
 
