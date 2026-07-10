@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassD_;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
+import cz.cvut.kbss.jopa.environment.Person;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
@@ -702,6 +703,32 @@ public class CriteriaQueryTranslateQueryTest {
             final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
             final String expectedSoqlQuery =
                     "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+    }
+
+    @Nested
+    class AskQueryTests {
+
+        @Test
+        void testTranslateAskQuery() {
+            CriteriaQueryImpl<Boolean> query = cb.createQuery(Boolean.class);
+            Root<Person> root = query.from(Person.class);
+            query.ask().where(cb.greaterThan(root.getAttr("age"), cb.literal(18)));
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "ASK FROM Person person WHERE person.age > :generatedName0";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        void askOverridesSelection() {
+            CriteriaQueryImpl<Boolean> query = cb.createQuery(Boolean.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root.getAttr("booleanAttribute")).ask().where(cb.lessThan(root.getAttr("intAttribute"), cb.literal(100)));
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "ASK FROM OWLClassM owlclassm WHERE owlclassm.intAttribute < :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
     }
