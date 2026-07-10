@@ -1029,4 +1029,21 @@ public class SoqlQueryParserTest {
         final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . } ORDER BY ?x";
         parseAndAssertEquality(expectedSparql, soql);
     }
+
+    @Test
+    void parseQuerySupportsBasicAskQueries() {
+        final String soql = "ASK FROM Person p WHERE p.age > :age";
+        final String expectedSparql = "ASK WHERE { ?x a " + strUri(Vocabulary.c_Person) +
+                " . ?x " + strUri(Vocabulary.p_p_age) + " ?pAge . FILTER (?pAge > ?age) }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsMoreComplexAskQueries() {
+        final String soql = "ASK FROM Person p WHERE p.age > :age AND p.gender = :gender";
+        final String expectedSparql = "ASK WHERE { ?x a " + strUri(Vocabulary.c_Person) +
+                " . ?x " + strUri(Vocabulary.p_p_age) + " ?pAge . ?x " + strUri(Vocabulary.p_p_gender) + " ?gender . " +
+                "FILTER (?pAge > ?age) }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
 }
