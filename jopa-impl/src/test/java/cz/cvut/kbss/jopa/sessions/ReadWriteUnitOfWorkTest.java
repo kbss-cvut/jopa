@@ -29,6 +29,7 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exception.IdentifierNotSetException;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.EntityNotFoundException;
+import cz.cvut.kbss.jopa.id.IdentifierGenerator;
 import cz.cvut.kbss.jopa.model.EntityState;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.MultilingualString;
@@ -44,6 +45,7 @@ import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.sessions.util.LoadingParameters;
+import cz.cvut.kbss.ontodriver.Connection;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -157,10 +159,14 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         final OWLClassE entity = new OWLClassE();
         entity.setStringAttribute("Test value");
         final URI id = Generators.createIndividualIdentifier();
-        when(storageMock.generateIdentifier(any(EntityType.class))).thenReturn(id);
+        final IdentifierGenerator idGenerator = mock(IdentifierGenerator.class);
+        when(idGenerator.generate(eq(entity), any(), any())).thenReturn(id);
+        final Connection conn = mock(Connection.class);
+        when(storageMock.getConnection()).thenReturn(conn);
+        when(metamodelMock.getIdentifierGenerator(any(EntityType.class))).thenReturn(idGenerator);
         uow.registerNewObject(entity, descriptor);
         assertEquals(id, entity.getUri());
-        verify(storageMock).generateIdentifier(metamodelMocks.forOwlClassE().entityType());
+        verify(idGenerator).generate(entity, metamodelMocks.forOwlClassE().entityType(), conn);
     }
 
     @Test

@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.id;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 
@@ -15,12 +15,12 @@ public class RandomNumberIdentifierGenerator extends AbstractIdentifierGenerator
     private static final Random RANDOM = new Random();
 
     @Override
-    public URI generate(Object entity, Metamodel metamodel, Connection connection) {
+    public <T> URI generate(Object entity, EntityType<T> entityClass, Connection connection) {
         Objects.requireNonNull(entity);
-        Objects.requireNonNull(metamodel);
+        Objects.requireNonNull(entityClass);
         Objects.requireNonNull(connection);
 
-        final URI classUri = getEntityClassUri(entity, metamodel);
+        final URI classUri = entityClass.getIRI().toURI();
         int counter = 0;
         while (counter++ < GENERATION_THRESHOLD) {
             final URI id = generate(classUri);

@@ -252,12 +252,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public URI generateIdentifier(EntityType<?> et) {
-        try {
-            return storageConnection.generateIdentifier(et.getIRI().toURI());
-        } catch (OntoDriverException e) {
-            throw new StorageAccessException(e);
-        }
+    public Object generateIdentifier(Object entity, EntityType<?> et) {
+        return uow.getMetamodel().getIdentifierGenerator(et).generate(entity, et, storageConnection);
     }
 
     private <T> void persistPendingReferences(T instance, NamedResource identifier) {
@@ -293,23 +289,25 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         if (orig != null) {
             return orig;
         }
-        return defaultInstanceLoader.loadCached(getEntityType(cls), identifier, objectGraphInfo.descriptor()).orElseGet(() -> {
-            if (instanceRegistry.containsKey(identifier)) {
-                final Object existing = instanceRegistry.get(identifier);
-                if (!cls.isAssignableFrom(existing.getClass())) {
-                    throw individualAlreadyManaged(identifier);
-                }
-                // This prevents endless cycles in bidirectional relationships
-                return cls.cast(existing);
-            } else {
-                // setup loading params
-                LoadingParameters<T> params = initEntityLoadingParameters(cls, identifier, objectGraphInfo);
-                return axiomsPerEntity.containsKey(identifier) ? loadEntityFromAxioms(params) : loadEntityInternal(params);
-            }
-        });
+        return defaultInstanceLoader.loadCached(getEntityType(cls), identifier, objectGraphInfo.descriptor())
+                                    .orElseGet(() -> {
+                                        if (instanceRegistry.containsKey(identifier)) {
+                                            final Object existing = instanceRegistry.get(identifier);
+                                            if (!cls.isAssignableFrom(existing.getClass())) {
+                                                throw individualAlreadyManaged(identifier);
+                                            }
+                                            // This prevents endless cycles in bidirectional relationships
+                                            return cls.cast(existing);
+                                        } else {
+                                            // setup loading params
+                                            LoadingParameters<T> params = initEntityLoadingParameters(cls, identifier, objectGraphInfo);
+                                            return axiomsPerEntity.containsKey(identifier) ? loadEntityFromAxioms(params) : loadEntityInternal(params);
+                                        }
+                                    });
     }
 
-    private <T> LoadingParameters<T> initEntityLoadingParameters(Class<T> cls, URI identifier, ObjectGraphInfo objectGraphInfo) {
+    private <T> LoadingParameters<T> initEntityLoadingParameters(Class<T> cls, URI identifier,
+                                                                 ObjectGraphInfo objectGraphInfo) {
         return new LoadingParameters<>(cls, identifier, objectGraphInfo.descriptor(), objectGraphInfo.fetchGraph(), false, uow.isReadOnly());
     }
 

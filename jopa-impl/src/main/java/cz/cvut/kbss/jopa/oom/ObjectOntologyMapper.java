@@ -82,12 +82,13 @@ public interface ObjectOntologyMapper {
     <T> void loadFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor);
 
     /**
-     * Generates a fresh identifier for an instance of the specified entity type.
+     * Generates a fresh identifier for the specified entity.
      *
-     * @param et Entity type used as base for the identifier
+     * @param entity Entity for which to generate the identifier
+     * @param et     Entity type
      * @return New entity identifier
      */
-    URI generateIdentifier(EntityType<?> et);
+    Object generateIdentifier(Object entity, EntityType<?> et);
 
     /**
      * Persists the specified entity into the underlying ontology.

@@ -2,21 +2,19 @@ package cz.cvut.kbss.jopa.id;
 
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 import java.net.URI;
 import java.util.regex.Pattern;
@@ -28,42 +26,33 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
+@Execution(ExecutionMode.CONCURRENT)
 class RandomNumberIdentifierGeneratorTest {
 
     private static final URI CLASS_URI = URI.create("http://example.org/entities#TestEntity");
-
-    @Mock
-    private Metamodel metamodel;
 
     @Mock
     private Connection connection;
 
     private final RandomNumberIdentifierGenerator sut = new RandomNumberIdentifierGenerator();
 
-    @BeforeEach
-    void setUp() {
-        reset(metamodel, connection);
-    }
-
-    private void configureMetamodel(URI classUri) {
+    private EntityType<TestEntity> configureMetamodel(URI classUri) {
         final EntityType<TestEntity> entityType = mock(EntityType.class);
         when(entityType.getIRI()).thenReturn(IRI.create(classUri.toString()));
-        when(metamodel.entity(TestEntity.class)).thenReturn(entityType);
+        return entityType;
     }
 
     @Test
     void generateReturnsUniqueIdentifierWhenItDoesNotExist() throws Exception {
-        configureMetamodel(CLASS_URI);
+        final EntityType<TestEntity> entityType = configureMetamodel(CLASS_URI);
         when(connection.contains(any(Axiom.class), any())).thenReturn(false);
 
-        final URI result = sut.generate(new TestEntity(), metamodel, connection);
+        final URI result = sut.generate(new TestEntity(), entityType, connection);
 
         assertNotNull(result);
         assertTrue(result.toString().startsWith(CLASS_URI.toString()));
@@ -76,21 +65,21 @@ class RandomNumberIdentifierGeneratorTest {
 
     @Test
     void generateThrowsIdentifierGenerationExceptionWhenAllGeneratedIdentifiersExist() throws Exception {
-        configureMetamodel(CLASS_URI);
+        final EntityType<TestEntity> entityType = configureMetamodel(CLASS_URI);
         when(connection.contains(any(Axiom.class), any())).thenReturn(true);
 
         final IdentifierGenerationException ex = assertThrows(IdentifierGenerationException.class,
-                () -> sut.generate(new TestEntity(), metamodel, connection));
+                () -> sut.generate(new TestEntity(), entityType, connection));
         assertEquals("Unable to generate a unique identifier.", ex.getMessage());
         verify(connection, times(64)).contains(any(Axiom.class), any());
     }
 
     @Test
     void generateRetriesUntilItFindsUniqueIdentifier() throws Exception {
-        configureMetamodel(CLASS_URI);
+        final EntityType<TestEntity> entityType = configureMetamodel(CLASS_URI);
         when(connection.contains(any(Axiom.class), any())).thenReturn(true, true, false);
 
-        final URI result = sut.generate(new TestEntity(), metamodel, connection);
+        final URI result = sut.generate(new TestEntity(), entityType, connection);
 
         assertNotNull(result);
         verify(connection, times(3)).contains(any(Axiom.class), any());
@@ -98,11 +87,11 @@ class RandomNumberIdentifierGeneratorTest {
 
     @Test
     void generateThrowsIdentifierGenerationExceptionWhenConnectionFails() throws Exception {
-        configureMetamodel(CLASS_URI);
+        final EntityType<TestEntity> entityType = configureMetamodel(CLASS_URI);
         when(connection.contains(any(Axiom.class), any())).thenThrow(new OntoDriverException("Storage error"));
 
         final IdentifierGenerationException ex = assertThrows(IdentifierGenerationException.class,
-                () -> sut.generate(new TestEntity(), metamodel, connection));
+                () -> sut.generate(new TestEntity(), entityType, connection));
         assertTrue(ex.getMessage().contains("Unable to check if identifier"));
         assertEquals(OntoDriverException.class, ex.getCause().getClass());
     }
@@ -115,10 +104,10 @@ class RandomNumberIdentifierGeneratorTest {
     })
     void generateBuildsUriAccordingToClassIriFormat(String classUriString) throws Exception {
         final URI classUri = URI.create(classUriString);
-        configureMetamodel(classUri);
+        final EntityType<TestEntity> entityType = configureMetamodel(classUri);
         when(connection.contains(any(Axiom.class), any())).thenReturn(false);
 
-        final URI result = sut.generate(new TestEntity(), metamodel, connection);
+        final URI result = sut.generate(new TestEntity(), entityType, connection);
 
         final String prefix = expectedPrefix(classUri);
         assertTrue(result.toString().matches(Pattern.quote(prefix) + "-?\\d+"));

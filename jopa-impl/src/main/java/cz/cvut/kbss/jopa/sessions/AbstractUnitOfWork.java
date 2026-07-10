@@ -738,7 +738,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         Object id = getIdentifier(entity);
         if (id == null) {
             EntityPropertiesUtils.verifyIdentifierIsGenerated(entity, et);
-            id = storage.generateIdentifier(et);
+            id = getMetamodel().getIdentifierGenerator(et).generate(entity, et, storage.getConnection());
             EntityPropertiesUtils.setIdentifier(id, entity, et);
         }
         return id;

@@ -35,7 +35,7 @@ interface EntityMappingHelper extends ConfigurationHolder {
 
     <T> EntityType<T> getEntityType(Class<T> cls);
 
-    URI generateIdentifier(EntityType<?> et);
+    Object generateIdentifier(Object entity, EntityType<?> et);
 
     <T> T getOriginalInstance(T clone);
 
