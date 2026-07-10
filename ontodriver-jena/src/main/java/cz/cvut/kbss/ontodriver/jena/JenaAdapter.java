@@ -30,7 +30,6 @@ import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
 import cz.cvut.kbss.ontodriver.jena.list.ReferencedListHandler;
 import cz.cvut.kbss.ontodriver.jena.list.SimpleListHandler;
 import cz.cvut.kbss.ontodriver.jena.query.AbstractResultSet;
-import cz.cvut.kbss.ontodriver.jena.util.IdentifierGenerator;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.util.Transaction;
 import org.apache.jena.query.Query;
@@ -116,11 +115,6 @@ public class JenaAdapter implements StatementExecutor, Wrapper {
     List<URI> getContext() {
         beginTransactionIfNotActive();
         return connector.getContexts().stream().map(URI::create).collect(Collectors.toList());
-    }
-
-    URI generateIdentifier(URI classUri) {
-        beginTransactionIfNotActive();
-        return new IdentifierGenerator(connector).generateIdentifier(classUri);
     }
 
     boolean isConsistent(URI context) {

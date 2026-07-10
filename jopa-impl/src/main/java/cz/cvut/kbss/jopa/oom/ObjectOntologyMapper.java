@@ -18,7 +18,6 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingParameters;
@@ -80,15 +79,6 @@ public interface ObjectOntologyMapper {
      * @param descriptor Descriptor possibly specifying the field context
      */
     <T> void loadFieldValue(T entity, FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor);
-
-    /**
-     * Generates a fresh identifier for the specified entity.
-     *
-     * @param entity Entity for which to generate the identifier
-     * @param et     Entity type
-     * @return New entity identifier
-     */
-    Object generateIdentifier(Object entity, EntityType<?> et);
 
     /**
      * Persists the specified entity into the underlying ontology.

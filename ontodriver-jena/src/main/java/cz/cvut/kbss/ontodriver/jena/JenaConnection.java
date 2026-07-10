@@ -179,13 +179,6 @@ public class JenaConnection implements Connection {
     }
 
     @Override
-    public URI generateIdentifier(URI classUri) {
-        ensureOpen();
-        Objects.requireNonNull(classUri);
-        return adapter.generateIdentifier(classUri);
-    }
-
-    @Override
     public void update(AxiomValueDescriptor descriptor) throws OntoDriverException {
         ensureOpen();
         Objects.requireNonNull(descriptor);

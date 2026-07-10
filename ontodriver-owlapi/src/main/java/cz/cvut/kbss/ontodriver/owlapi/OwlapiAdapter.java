@@ -30,7 +30,6 @@ import cz.cvut.kbss.ontodriver.owlapi.list.SimpleListHandler;
 import cz.cvut.kbss.ontodriver.owlapi.query.OwlapiPreparedStatement;
 import cz.cvut.kbss.ontodriver.owlapi.query.OwlapiStatement;
 import cz.cvut.kbss.ontodriver.owlapi.query.StatementExecutorFactory;
-import cz.cvut.kbss.ontodriver.owlapi.util.IdentifierGenerator;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -180,11 +179,6 @@ public class OwlapiAdapter {
     public void persist(AxiomValueDescriptor descriptor) {
         startTransactionIfNotActive();
         new AxiomSaver(this, ontologySnapshot).persist(descriptor);
-    }
-
-    public URI generateIdentifier(URI classUri) {
-        startTransactionIfNotActive();
-        return new IdentifierGenerator(ontology()).generateIdentifier(classUri);
     }
 
     public void update(AxiomValueDescriptor descriptor) {

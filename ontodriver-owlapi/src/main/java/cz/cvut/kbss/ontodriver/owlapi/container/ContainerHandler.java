@@ -18,7 +18,6 @@
 package cz.cvut.kbss.ontodriver.owlapi.container;
 
 import com.google.common.collect.Multimap;
-import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ContainerValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
@@ -35,6 +34,7 @@ import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.list.ListContentStorageHelper;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
+import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationValue;
@@ -235,18 +235,27 @@ public class ContainerHandler {
         final OWLNamedIndividual owner = dataFactory.getOWLNamedIndividual(IRI.create(descriptor.getOwner()
                                                                                                 .getIdentifier()));
         final List<TransactionalChange> changes = new ArrayList<>(descriptor.getValues().size() + 1);
-        final OWLNamedIndividual container = createContainer(owner, descriptor.getProperty(), descriptor.getType(), changes);
+        final OWLNamedIndividual container = createContainer(owner, descriptor, changes);
         changes.addAll(createContainerContent(container, descriptor.getProperty(), descriptor.getValues()));
         owlapiAdapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
 
-    private OWLNamedIndividual createContainer(OWLNamedIndividual owner, Assertion property, URI containerType,
-                                               List<TransactionalChange> changes) {
-        final OWLNamedIndividual container = dataFactory.getOWLNamedIndividual(IRI.create(owlapiAdapter.generateIdentifier(URI.create(RDFS.CONTAINER))));
-        final OWLObjectProperty containerOwnerProperty = dataFactory.getOWLObjectProperty(IRI.create(property.getIdentifier()));
+    private OWLNamedIndividual createContainer(OWLNamedIndividual owner, ContainerValueDescriptor<?> descriptor, List<TransactionalChange> changes) {
+        final OWLNamedIndividual container = dataFactory.getOWLNamedIndividual(generateContainerIri(descriptor));
+        final OWLObjectProperty containerOwnerProperty = dataFactory.getOWLObjectProperty(IRI.create(descriptor.getProperty().getIdentifier()));
         changes.add(new MutableAddAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(containerOwnerProperty, owner, container)));
-        changes.add(new MutableAddAxiom(ontology, dataFactory.getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(containerType)), container)));
+        changes.add(new MutableAddAxiom(ontology, dataFactory.getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(descriptor.getType())), container)));
         return container;
+    }
+
+    private IRI generateContainerIri(ContainerValueDescriptor<?> descriptor) {
+        IRI iri;
+        do {
+            iri = IRI.create(descriptor.getOwner().getIdentifier()
+                                       .toString() + descriptor.getType().getFragment()
+                                                               .toLowerCase() + "_" + IdentifierUtils.randomInt());
+        } while (ontology.containsIndividualInSignature(iri));
+        return iri;
     }
 
     private <T> List<MutableAddAxiom> createContainerContent(OWLIndividual container,

@@ -143,11 +143,6 @@ public class DataSourceStub implements DataSource {
         public void persist(AxiomValueDescriptor descriptor) {}
 
         @Override
-        public URI generateIdentifier(URI classUri) {
-            return null;
-        }
-
-        @Override
         public void update(AxiomValueDescriptor descriptor) {}
 
         @Override
