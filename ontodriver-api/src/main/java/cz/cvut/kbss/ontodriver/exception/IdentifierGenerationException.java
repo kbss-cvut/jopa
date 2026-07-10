@@ -22,4 +22,8 @@ public class IdentifierGenerationException extends OntoDriverRuntimeException {
     public IdentifierGenerationException(String message) {
         super(message);
     }
+
+    public IdentifierGenerationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
