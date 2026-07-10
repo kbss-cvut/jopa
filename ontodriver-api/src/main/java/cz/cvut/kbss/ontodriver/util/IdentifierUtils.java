@@ -21,7 +21,6 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -36,29 +35,6 @@ public class IdentifierUtils {
 
     private IdentifierUtils() {
         throw new AssertionError();
-    }
-
-    /**
-     * Generates a (pseudo) random identifier based on the specified class URI.
-     * <p>
-     * The identifier consists of the class URI and then contains the string 'instance' and a random integer to ensure
-     * uniqueness. The 'instance' part is appended after a slash or a _, if the class URI contains a hash fragment.
-     *
-     * @param classUri Class URI used as identifier base
-     * @return Generated identifier
-     */
-    public static URI generateIdentifier(URI classUri) {
-        Objects.requireNonNull(classUri);
-        if (classUri.getFragment() != null) {
-            return URI.create(classUri + "_instance" + RANDOM.nextInt());
-        } else {
-            String base = classUri.toString();
-            if (base.endsWith("/")) {
-                return URI.create(base + "instance" + RANDOM.nextInt());
-            } else {
-                return URI.create(base + "/instance" + RANDOM.nextInt());
-            }
-        }
     }
 
     /**

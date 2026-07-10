@@ -44,9 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -151,22 +149,6 @@ public class OwlapiConnectionTest {
         final Types result = connection.types();
         assertNotNull(result);
         assertEquals(types, result);
-    }
-
-    @Test
-    public void generateIdentifierGetsNewIdentifier() {
-        final URI identifier = URI.create("http://newIdentifier");
-        when(adapterMock.generateIdentifier(any(URI.class))).thenReturn(identifier);
-
-        final URI result = connection.generateIdentifier(URI.create("http://baseUri"));
-        assertEquals(identifier, result);
-    }
-
-    @Test
-    public void generateIdentifierOnClosedThrowsException() {
-        connection.close();
-        assertThrows(IllegalStateException.class, () -> connection.generateIdentifier(URI.create("http://baseUri")));
-        verify(adapterMock, never()).generateIdentifier(any(URI.class));
     }
 
     @Test

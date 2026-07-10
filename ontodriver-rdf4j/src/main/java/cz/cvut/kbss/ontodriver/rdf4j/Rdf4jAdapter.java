@@ -22,7 +22,6 @@ import cz.cvut.kbss.ontodriver.RepositoryMetadata;
 import cz.cvut.kbss.ontodriver.Wrapper;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
@@ -35,29 +34,21 @@ import cz.cvut.kbss.ontodriver.rdf4j.list.ReferencedListHandler;
 import cz.cvut.kbss.ontodriver.rdf4j.list.SimpleListHandler;
 import cz.cvut.kbss.ontodriver.rdf4j.query.QuerySpecification;
 import cz.cvut.kbss.ontodriver.rdf4j.util.Rdf4jUtils;
-import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import cz.cvut.kbss.ontodriver.util.Transaction;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Rdf4jAdapter implements StatementExecutor, Closeable, Wrapper {
-
-    /**
-     * Maximum number of attempts to generate a unique identifier
-     */
-    private static final int ID_GENERATION_THRESHOLD = 64;
 
     private final RepoConnection connector;
     private final ValueFactory valueFactory;
@@ -143,33 +134,11 @@ public class Rdf4jAdapter implements StatementExecutor, Closeable, Wrapper {
         return contexts;
     }
 
-    URI generateIdentifier(URI classUri) throws Rdf4jDriverException {
-        startTransactionIfNotActive();
-        boolean unique = false;
-        URI id = null;
-        int counter = 0;
-        while (!unique && counter++ < ID_GENERATION_THRESHOLD) {
-            id = IdentifierUtils.generateIdentifier(classUri);
-            unique = isIdentifierUnique(id, classUri);
-        }
-        if (!unique) {
-            throw new IdentifierGenerationException("Unable to generate a unique identifier.");
-        }
-        return id;
-
-    }
-
     private void startTransactionIfNotActive() throws Rdf4jDriverException {
         if (!transaction.isActive()) {
             connector.begin();
             transaction.begin();
         }
-    }
-
-    private boolean isIdentifierUnique(URI identifier, URI classUri) throws Rdf4jDriverException {
-        return !connector.containsStatement(
-                Rdf4jUtils.toRdf4jIri(identifier, valueFactory), RDF.TYPE,
-                Rdf4jUtils.toRdf4jIri(classUri, valueFactory), true, Collections.emptySet());
     }
 
     boolean contains(Axiom<?> axiom, Set<URI> contexts) throws Rdf4jDriverException {
@@ -223,10 +192,6 @@ public class Rdf4jAdapter implements StatementExecutor, Closeable, Wrapper {
     void remove(AxiomDescriptor axiomDescriptor) throws Rdf4jDriverException {
         startTransactionIfNotActive();
         new EpistemicAxiomRemover(connector, valueFactory).remove(axiomDescriptor);
-    }
-
-    StatementExecutor getQueryExecutor() {
-        return connector;
     }
 
     SimpleListHandler getSimpleListHandler() throws Rdf4jDriverException {

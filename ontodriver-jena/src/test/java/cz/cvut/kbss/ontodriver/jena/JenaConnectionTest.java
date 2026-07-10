@@ -211,21 +211,6 @@ public class JenaConnectionTest {
     }
 
     @Test
-    public void generateIdentifierCallsAdapter() {
-        final URI uri = Generator.generateUri();
-        when(adapterMock.generateIdentifier(uri)).thenReturn(uri);
-        final URI result = connection.generateIdentifier(uri);
-        assertNotNull(result);
-        verify(adapterMock).generateIdentifier(uri);
-    }
-
-    @Test
-    public void generateIdentifierThrowsIllegalStateExceptionForClosedConnection() throws Exception {
-        connection.close();
-        assertThrows(IllegalStateException.class, () -> connection.generateIdentifier(Generator.generateUri()));
-    }
-
-    @Test
     public void findCallsAdapterWithDescriptor() throws Exception {
         final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
         connection.find(descriptor);
