@@ -18,6 +18,8 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.id.IdentifierGenerator;
+import cz.cvut.kbss.jopa.id.RandomNumberIdentifierGenerator;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
@@ -40,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -60,6 +63,8 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider, MetamodelCla
     private final Map<Class<?>, Class<?>> lazyLoadingProxyClasses = new ConcurrentHashMap<>();
     // Proxy classes for results of EntityManager.getReference
     private final Map<Class<?>, Class<?>> referenceProxyClasses = new ConcurrentHashMap<>();
+
+    private final Map<EntityType<?>, IdentifierGenerator> idGenerators = new HashMap<>();
 
     private NamedQueryManager namedQueryManager;
     private ResultSetMappingManager resultSetMappingManager;
@@ -174,6 +179,10 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider, MetamodelCla
 
     public NamedEntityGraphManager getNamedEntityGraphManager() {
         return namedEntityGraphManager;
+    }
+
+    public IdentifierGenerator getIdentifierGenerator(EntityType<?> entityType) {
+        return idGenerators.getOrDefault(entityType, new RandomNumberIdentifierGenerator());
     }
 
     @Override

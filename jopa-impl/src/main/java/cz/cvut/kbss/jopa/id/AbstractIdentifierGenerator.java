@@ -1,7 +1,5 @@
 package cz.cvut.kbss.jopa.id;
 
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -14,7 +12,7 @@ import java.net.URI;
 import java.util.Set;
 
 /**
- * Common utilities for identifier generation.
+ * Common superclass with utilities for identifier generation.
  */
 public abstract class AbstractIdentifierGenerator implements IdentifierGenerator {
 
@@ -37,17 +35,5 @@ public abstract class AbstractIdentifierGenerator implements IdentifierGenerator
         } catch (OntoDriverException e) {
             throw new IdentifierGenerationException("Unable to check if identifier '" + identifier + "' exists.", e);
         }
-    }
-
-    /**
-     * Resolves the identifier of the ontological class of the specified entity.
-     *
-     * @param entity    Entity whose class IRI to resolve
-     * @param metamodel Metamodel
-     * @return Class IRI
-     */
-    protected URI getEntityClassUri(Object entity, Metamodel metamodel) {
-        final EntityType<?> et = metamodel.entity(entity.getClass());
-        return et.getIRI().toURI();
     }
 }

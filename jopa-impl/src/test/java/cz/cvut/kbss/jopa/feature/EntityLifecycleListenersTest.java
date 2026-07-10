@@ -123,8 +123,7 @@ public class EntityLifecycleListenersTest {
         final Map<Object, Object> mockMap = spy(new HashMap<>());
         TestEnvironmentUtils.setMock(uow, AbstractUnitOfWork.class.getDeclaredField("newObjectsKeyToClone"), mockMap);
         final URI rId = Generators.createIndividualIdentifier();
-        final OWLClassR rInstance = spy(new OWLClassR());
-        when(storageMock.generateIdentifier(metamodelMock.entity(OWLClassR.class))).thenReturn(rId);
+        final OWLClassR rInstance = spy(new OWLClassR(rId));
         uow.registerNewObject(rInstance, descriptor);
         final InOrder inOrder = inOrder(rInstance, parentListenerMock, concreteListenerMock, anotherListenerMock,
                 storageMock, mockMap);
@@ -156,9 +155,8 @@ public class EntityLifecycleListenersTest {
     @Test
     public void postPersistEntityLifecycleListenerIsCalledAfterInstanceIsInsertedIntoStorage() {
         final URI rId = Generators.createIndividualIdentifier();
-        final OWLClassR rInstance = spy(new OWLClassR());
+        final OWLClassR rInstance = spy(new OWLClassR(rId));
         when(cloneBuilderMock.buildClone(eq(rInstance), any(CloneConfiguration.class))).thenReturn(rInstance);
-        when(storageMock.generateIdentifier(metamodelMock.entity(OWLClassR.class))).thenReturn(rId);
         uow.registerNewObject(rInstance, descriptor);
         uow.commit();
         final InOrder inOrder = inOrder(rInstance, concreteListenerMock, storageMock);
