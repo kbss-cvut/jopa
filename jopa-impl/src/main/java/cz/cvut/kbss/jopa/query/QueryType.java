@@ -17,12 +17,14 @@
  */
 package cz.cvut.kbss.jopa.query;
 
+import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
+
 /**
  * Types of queries.
  */
 public enum QueryType {
-    SELECT("SELECT"),
-    ASK("ASK"),
+    SELECT(SoqlConstants.SELECT),
+    ASK(SoqlConstants.ASK),
     DESCRIBE("DESCRIBE"),
     DELETE("DELETE"),
     INSERT("INSERT"),

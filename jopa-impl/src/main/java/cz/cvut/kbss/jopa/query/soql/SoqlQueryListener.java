@@ -57,7 +57,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
     private String soql;
     private String sparql;
 
-    private String typeDef = SoqlConstants.SELECT;
+    private QueryType typeDef = QueryType.SELECT;
 
     // keeps pointer at created object of SoqlAttribute while processing other necessary rules
     private SoqlAttribute attrPointer;
@@ -151,9 +151,14 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     @Override
     public void enterSelectClause(SoqlParser.SelectClauseContext ctx) {
-        this.typeDef = QueryType.SELECT.getKeyword();
+        this.typeDef = QueryType.SELECT;
 
         this.selectProjection = selectProjection.withDistinct(ctx.DISTINCT() != null);
+    }
+
+    @Override
+    public void enterAskStatement(SoqlParser.AskStatementContext ctx) {
+        this.typeDef = QueryType.ASK;
     }
 
     private void pushNewAttribute(SoqlAttribute myAttr) {
@@ -540,22 +545,11 @@ public class SoqlQueryListener extends SoqlBaseListener {
             return;
         }
 
-        // the first attribute is either a projected parameter or a type attribute
-        String selectParameter = getSelectParameter(attributes.get(0));
-
-        StringBuilder newQueryBuilder = new StringBuilder(typeDef);
-        if (selectProjection.aggregateFunction() != null) {
-            if (selectProjection.distinct()) {
-                newQueryBuilder.append(' ').append(SoqlConstants.DISTINCT);
-            }
-            newQueryBuilder.append(getAggregatePart(selectParameter));
-        } else {
-            if (selectProjection.distinct()) {
-                newQueryBuilder.append(' ').append(SoqlConstants.DISTINCT);
-            }
-            newQueryBuilder.append(' ').append(selectParameter).append(' ');
+        StringBuilder newQueryBuilder = new StringBuilder(typeDef.getKeyword());
+        if (typeDef == QueryType.SELECT) {
+            appendProjection(newQueryBuilder);
         }
-        newQueryBuilder.append("WHERE { ");
+        newQueryBuilder.append(" WHERE { ");
         newQueryBuilder.append(processSupremeAttributes());
         if (!objectOfNextOr.isEmpty()) {
             newQueryBuilder.append("{ ");
@@ -575,13 +569,29 @@ public class SoqlQueryListener extends SoqlBaseListener {
         LOG.trace("Translated SOQL query '{}' to SPARQL '{}'.", soql, sparql);
     }
 
+    private void appendProjection(StringBuilder sparqlBuilder) {
+        // the first attribute is either a projected parameter or a type attribute
+        final String selectParameter = getSelectParameter(attributes.get(0));
+        if (selectProjection.aggregateFunction() != null) {
+            if (selectProjection.distinct()) {
+                sparqlBuilder.append(' ').append(SoqlConstants.DISTINCT);
+            }
+            sparqlBuilder.append(getAggregatePart(selectParameter));
+        } else {
+            if (selectProjection.distinct()) {
+                sparqlBuilder.append(' ').append(SoqlConstants.DISTINCT);
+            }
+            sparqlBuilder.append(' ').append(selectParameter);
+        }
+    }
+
     private StringBuilder getAggregatePart(String selectParameter) {
         final AggregateFunction fn = selectProjection.aggregateFunction();
         final StringBuilder aggregatePart = new StringBuilder(" (").append(fn.soqlName()).append('(');
         if (selectProjection.aggregateDistinct()) {
             aggregatePart.append(SoqlConstants.DISTINCT).append(' ');
         }
-        aggregatePart.append(selectParameter).append(") AS ").append(fn.resultVariable()).append(") ");
+        aggregatePart.append(selectParameter).append(") AS ").append(fn.resultVariable()).append(")");
         return aggregatePart;
     }
 
