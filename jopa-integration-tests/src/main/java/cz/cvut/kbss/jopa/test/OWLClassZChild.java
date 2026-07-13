@@ -17,14 +17,18 @@
  */
 package cz.cvut.kbss.jopa.test;
 
+import cz.cvut.kbss.jopa.id.AbstractIdentifierGenerator;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.IdGenerator;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
+import cz.cvut.kbss.ontodriver.Connection;
 
 import java.net.URI;
 import java.util.HashSet;
@@ -34,7 +38,8 @@ import java.util.Set;
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_Z_CHILD)
 public class OWLClassZChild {
 
-    @Id
+    @Id(generated = true)
+    @IdGenerator(NamedBasedIdGenerator.class)
     private URI id;
 
     @ParticipationConstraints(nonEmpty = true)
@@ -91,5 +96,16 @@ public class OWLClassZChild {
         return "OWLClassZChild{<" + getId() + ">" +
                 ", name='" + name + '\'' +
                 '}';
+    }
+
+    public static class NamedBasedIdGenerator extends AbstractIdentifierGenerator {
+
+        @Override
+        public <T> Object generate(Object entity, EntityType<T> entityClass, Connection connection) {
+            final String name = ((OWLClassZChild) entity).getName();
+            final URI result = URI.create(Vocabulary.C_OWL_CLASS_Z_CHILD + "/" + name);
+            assert !exists(result, entityClass.getIRI().toURI(), connection);
+            return result;
+        }
     }
 }
