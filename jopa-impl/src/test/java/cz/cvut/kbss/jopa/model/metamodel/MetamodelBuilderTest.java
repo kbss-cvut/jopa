@@ -31,10 +31,12 @@ import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.environment.utils.TestLocal;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
+import cz.cvut.kbss.jopa.id.AbstractIdentifierGenerator;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.IdGenerator;
 import cz.cvut.kbss.jopa.model.annotations.Inferred;
 import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
 import cz.cvut.kbss.jopa.model.annotations.Namespace;
@@ -63,6 +65,7 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
+import cz.cvut.kbss.ontodriver.Connection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -77,6 +80,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.containsStringIgnoringCase;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -780,5 +784,29 @@ class MetamodelBuilderTest {
     @TestLocal
     @OWLClass(iri = Vocabulary.CLASS_BASE + "SubClassWithInferredParent")
     public static class SubClassWithInferredParent extends MappedSuperclassWithInferredAttribute {
+    }
+
+    @Test
+    void buildMetamodelResolvesCustomIdentifierGeneratorForEntityClass() {
+        when(finderMock.getEntities()).thenReturn(Set.of(ClassWithIdGenerator.class));
+        builder.buildMetamodel(finderMock);
+        final EntityType<ClassWithIdGenerator> et = (EntityType<ClassWithIdGenerator>) builder.getEntityClass(ClassWithIdGenerator.class);
+        assertInstanceOf(CustomIdGenerator.class, builder.getIdGenerators().get(et));
+    }
+
+    @TestLocal
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ClassWithIdGenerator")
+    public static class ClassWithIdGenerator {
+        @Id(generated = true)
+        @IdGenerator(CustomIdGenerator.class)
+        private URI id;
+    }
+
+    public static class CustomIdGenerator extends AbstractIdentifierGenerator {
+        @Override
+        public <T> Object generate(Object entity, EntityType<T> entityClass, Connection connection) {
+            final String classIri = entityClass.getIRI().toString();
+            return classIri + "_" + UUID.randomUUID().toString();
+        }
     }
 }
