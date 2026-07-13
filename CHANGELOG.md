@@ -1,5 +1,11 @@
 # JOPA - Change Log
 
+### 2.11.0 - 2026-07-13
+
+- Add support for `countDistinct` in Criteria API, properly implement COUNT DISTINCT in SOQL (Enhancement #448).
+- Add support for ASK queries in SOQL/Criteria API (Enhancement #451).
+- Add support for custom identifier generators (Enhancement #373).
+
 ### 2.10.1 - 2026-06-30
 
 - Allow ordering by entity identifier in SOQL (Bug #439).
