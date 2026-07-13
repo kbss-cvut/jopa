@@ -179,7 +179,7 @@ public class StaticMetamodelInitializer {
         }
     }
 
-    private <T> FieldSpecification<T, ?> getMetamodelMember(Field field, ManagedType<T> type) {
+    private static <T> FieldSpecification<T, ?> getMetamodelMember(Field field, ManagedType<T> type) {
         LOG.trace("Finding metamodel member for static metamodel field {}.", field);
         return getDeclaredIdentifier(field, type)
                 .orElseGet(() -> getDeclaredAttribute(field, type)

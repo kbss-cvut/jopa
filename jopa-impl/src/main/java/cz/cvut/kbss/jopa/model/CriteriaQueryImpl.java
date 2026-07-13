@@ -64,7 +64,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public <X> Root<X> from(EntityType<X> entity) {
-        RootImpl<X> root = new RootImpl<>(metamodel, null, entity.getBindableJavaType(), this.cb);
+        RootImpl<X> root = new RootImpl<>(metamodel, null, entity.getJavaType(), this.cb);
         query.setRoot(root);
         return root;
     }
@@ -210,27 +210,49 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
             ((AbstractExpression) query.getSelection()).setExpressionToQuery(soqlQuery, parameterFiller);
         }
 
+        appendFromClause(parameterFiller, soqlQuery);
+
+        appendWhereClause(parameterFiller, soqlQuery);
+
+        appendGroupByClause(parameterFiller, soqlQuery);
+
+        appendHavingClause(parameterFiller, soqlQuery);
+
+        appendOrderByClause(parameterFiller, soqlQuery);
+
+        return soqlQuery.toString();
+    }
+
+    private void appendFromClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {
         soqlQuery.append(' ').append(SoqlConstants.FROM).append(' ')
                  .append(((RootImpl) query.getRoot()).getJavaType().getSimpleName()).append(' ');
         ((RootImpl) query.getRoot()).setExpressionToQuery(soqlQuery, parameterFiller);
+    }
 
+    private void appendWhereClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {
         if (query.getWhere() != null && !query.getWhere().getExpressions().isEmpty()) {
             soqlQuery.append(' ').append(SoqlConstants.WHERE).append(' ');
             ((AbstractPredicate) query.getWhere()).setExpressionToQuery(soqlQuery, parameterFiller);
         }
+    }
 
+    private void appendGroupByClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {
         if (query.getGroupBy() != null && !query.getGroupBy().isEmpty()) {
             soqlQuery.append(' ').append(SoqlConstants.GROUP_BY).append(' ');
             for (Expression groupBy : query.getGroupBy()) {
                 ((AbstractExpression) groupBy).setExpressionToQuery(soqlQuery, parameterFiller);
             }
         }
+    }
 
+    private void appendHavingClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {
         if (query.getHaving() != null && !query.getHaving().getExpressions().isEmpty()) {
             soqlQuery.append(" HAVING ");
             ((AbstractPredicate) query.getHaving()).setExpressionToQuery(soqlQuery, parameterFiller);
         }
+    }
 
+    private void appendOrderByClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {
         if (!getOrderList().isEmpty()) {
             soqlQuery.append(' ').append(SoqlConstants.ORDER_BY).append(' ');
             List<Order> orders = getOrderList();
@@ -242,6 +264,5 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
                 }
             }
         }
-        return soqlQuery.toString();
     }
 }
