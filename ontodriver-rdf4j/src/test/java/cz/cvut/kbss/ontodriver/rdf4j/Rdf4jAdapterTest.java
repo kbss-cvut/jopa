@@ -21,7 +21,6 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
@@ -65,10 +64,8 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
@@ -566,51 +563,6 @@ class Rdf4jAdapterTest {
         assertEquals(1, res.size());
         final Axiom<?> ax = res.iterator().next();
         assertEquals(type, ax.getValue().stringValue());
-    }
-
-    @Test
-    void testGenerateIdentifier_ClassWithHash() throws Exception {
-        final URI clsUri = URI.create("http://someClass.cz#class");
-        when(connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(false);
-        final URI res = adapter.generateIdentifier(clsUri);
-        assertNotNull(res);
-        assertTrue(res.toString().contains(clsUri.toString()));
-        verify(connectorMock).containsStatement(VF.createIRI(res.toString()), RDF.TYPE,
-                VF.createIRI(clsUri.toString()), true, Collections.emptySet());
-    }
-
-    @Test
-    void testGenerateIdentifier_ClassWithoutHash() throws Exception {
-        final URI clsUri = URI.create("http://someClass.cz/class");
-        when(connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(false);
-        final URI res = adapter.generateIdentifier(clsUri);
-        assertNotNull(res);
-        assertTrue(res.toString().contains(clsUri.toString()));
-        assertTrue(res.toString().contains("/instance"));
-        verify(connectorMock).containsStatement(VF.createIRI(res.toString()), RDF.TYPE,
-                VF.createIRI(clsUri.toString()), true, Collections.emptySet());
-    }
-
-    @Test
-    void testGenerateIdentifier_ClassEndsWithSlash() throws Exception {
-        final URI clsUri = URI.create("http://someClass.cz/class/");
-        when(connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(false);
-        final URI res = adapter.generateIdentifier(clsUri);
-        assertNotNull(res);
-        assertTrue(res.toString().contains(clsUri.toString()));
-        verify(connectorMock).containsStatement(VF.createIRI(res.toString()), RDF.TYPE,
-                VF.createIRI(clsUri.toString()), true, Collections.emptySet());
-    }
-
-    @Test
-    void testGenerateIdentifierNeverUnique() throws Exception {
-        final URI clsUri = URI.create("http://someClass.cz#class");
-        when(connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
-                eq(VF.createIRI(clsUri.toString())), eq(true), eq(Collections.emptySet()))).thenReturn(true);
-        assertThrows(IdentifierGenerationException.class, () -> adapter.generateIdentifier(clsUri));
     }
 
     @Test

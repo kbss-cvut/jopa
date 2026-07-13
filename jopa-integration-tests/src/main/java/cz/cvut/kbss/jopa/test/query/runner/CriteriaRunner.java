@@ -584,8 +584,8 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
 
     @Test
     void testSelectionByIdentifierInCollection() {
-        final List<OWLClassM> aInstances = QueryTestEnvironment.getData(OWLClassM.class);
-        final List<OWLClassM> expected = aInstances.subList(1, 3);
+        final List<OWLClassM> mInstances = QueryTestEnvironment.getData(OWLClassM.class);
+        final List<OWLClassM> expected = mInstances.subList(1, 3);
         final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         final CriteriaQuery<OWLClassM> query = cb.createQuery(OWLClassM.class);
         final Root<OWLClassM> root = query.from(OWLClassM.class);
@@ -596,5 +596,20 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         final TypedQuery<OWLClassM> tq = getEntityManager().createQuery(query);
         final List<OWLClassM> result = tq.getResultList();
         assertEquals(expected.size(), result.size());
+    }
+
+    @Test
+    void testAskQuery() {
+        final List<OWLClassM> mInstances = QueryTestEnvironment.getData(OWLClassM.class);
+        final Optional<Integer> max = mInstances.stream().map(OWLClassM::getIntAttribute).max(Integer::compare);
+        assertTrue(max.isPresent());
+        final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<Boolean> query = cb.createQuery(Boolean.class);
+        final Root<OWLClassM> root = query.from(OWLClassM.class);
+        query.ask().where(cb.greaterThanOrEqual(root.getAttr("intAttribute"), cb.literal(max.get())));
+
+        final TypedQuery<Boolean> tq = getEntityManager().createQuery(query);
+        final Boolean result = tq.getSingleResult();
+        assertTrue(result);
     }
 }

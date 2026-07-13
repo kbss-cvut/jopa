@@ -18,11 +18,13 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
+import cz.cvut.kbss.jopa.id.IdentifierGenerator;
 import cz.cvut.kbss.jopa.loaders.PersistenceUnitClassFinder;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.NamedEntityGraphManager;
 import cz.cvut.kbss.jopa.model.NamedEntityGraphProcessor;
 import cz.cvut.kbss.jopa.model.TypeReferenceMap;
+import cz.cvut.kbss.jopa.model.annotations.IdGenerator;
 import cz.cvut.kbss.jopa.model.annotations.Inheritance;
 import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
@@ -38,7 +40,9 @@ import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -331,6 +335,32 @@ public class MetamodelBuilder implements MetamodelClassMapper {
 
     public Map<Class<?>, Class<?>> getLazyLoadingEntityProxyClasses() {
         return Collections.unmodifiableMap(lazyLoadingProxyClasses);
+    }
+
+    public Map<EntityType<?>, IdentifierGenerator> getIdGenerators() {
+        final Map<Class<? extends IdentifierGenerator>, IdentifierGenerator> generators = new HashMap<>();
+        final Map<EntityType<?>, IdentifierGenerator> result = new HashMap<>();
+        for (EntityType<?> et : getEntities().values()) {
+            if (et.getJavaType().isInterface() || !et.getIdentifier().isGenerated()) {
+                continue;
+            }
+            final IdGenerator idGeneratorAnn = et.getIdentifier().getJavaField().getAnnotation(IdGenerator.class);
+            if (idGeneratorAnn == null) {
+                continue;
+            }
+            final IdentifierGenerator gen = generators.computeIfAbsent(idGeneratorAnn.value(), cls -> {
+                try {
+                    final Constructor<? extends IdentifierGenerator> constructor = cls.getDeclaredConstructor();
+                    return constructor.newInstance();
+                } catch (NoSuchMethodException | SecurityException e) {
+                    throw new MetamodelInitializationException("Custom identifier generator class " + cls + " is missing public no-arg constructor.");
+                } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+                    throw new MetamodelInitializationException("Failed to create instance of custom identifier generator " + cls, e);
+                }
+            });
+            result.put(et, gen);
+        }
+        return result;
     }
 
     public Set<AnnotatedAccessor> getAnnotatedAccessorsForClass(IdentifiableType<?> k) {

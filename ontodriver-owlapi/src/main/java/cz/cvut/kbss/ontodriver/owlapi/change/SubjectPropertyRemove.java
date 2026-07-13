@@ -35,10 +35,9 @@ public abstract class SubjectPropertyRemove<T extends OWLProperty> implements Tr
 
     @Override
     public boolean overrides(TransactionalChange existing) {
-        if (existing instanceof MutableAddAxiom ax) {
-            if (ax.getAxiom() instanceof OWLPropertyAssertionAxiom<?, ?> assertionAxiom) {
-                return subject.equals(assertionAxiom.getSubject()) && property.equals(assertionAxiom.getProperty());
-            }
+        if (existing instanceof MutableAddAxiom ax
+                && ax.getAxiom() instanceof OWLPropertyAssertionAxiom<?, ?> assertionAxiom) {
+            return subject.equals(assertionAxiom.getSubject()) && property.equals(assertionAxiom.getProperty());
         }
         return false;
     }

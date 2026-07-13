@@ -188,17 +188,6 @@ public interface Connection extends AutoCloseable, Wrapper {
     void persist(AxiomValueDescriptor descriptor) throws OntoDriverException;
 
     /**
-     * Generates a new unique identifier based on the specified type.
-     * <p>
-     * The identifier is required to be unique in the whole repository.
-     *
-     * @param classUri OWL class identifier
-     * @return Unique identifier
-     * @throws OntoDriverException If an ontology access error occurs
-     */
-    URI generateIdentifier(URI classUri) throws OntoDriverException;
-
-    /**
      * Persists the values specified by this descriptor, removing existing property values from the ontology.
      * <p>
      * This method removes original values of properties specified in the descriptor and persists new values specified

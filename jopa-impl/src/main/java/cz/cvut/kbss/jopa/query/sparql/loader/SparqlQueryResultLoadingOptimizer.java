@@ -143,7 +143,7 @@ public class SparqlQueryResultLoadingOptimizer {
      * @param descriptor Descriptor to examine
      * @return {@code true} if at most one context is used, {@code false} otherwise
      */
-    private boolean descriptorSpecifiesAtMostOneContext(Descriptor descriptor) {
+    private static boolean descriptorSpecifiesAtMostOneContext(Descriptor descriptor) {
         return descriptor.getContexts().size() <= 1 && descriptor.getAttributeDescriptors().stream()
                                                                  .allMatch(d -> d.getContexts().size() <= 1);
     }

@@ -27,7 +27,6 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
@@ -172,17 +171,6 @@ public class Rdf4jConnection implements Connection {
     public List<URI> getContexts() throws OntoDriverException {
         ensureOpen();
         return adapter.getContexts();
-    }
-
-    @Override
-    public URI generateIdentifier(URI classUri) throws OntoDriverException {
-        ensureOpen();
-        Objects.requireNonNull(classUri);
-        try {
-            return adapter.generateIdentifier(classUri);
-        } catch (IdentifierGenerationException e) {
-            throw new Rdf4jDriverException(e);
-        }
     }
 
     @Override

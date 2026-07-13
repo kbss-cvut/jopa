@@ -32,7 +32,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -217,56 +216,17 @@ public class OutputFilesGenerator {
             attributes.append(INDENT + "public static volatile ");
             //@Id
             if (field.isAnnotatedWith(MappingAnnotation.ID)) {
-                attributes.append("Identifier<")
-                          .append(declaringClass)
-                          .append(", ")
-                          .append(field.getType().getTypeName()
-                                       .substring(field.getType().getTypeName().lastIndexOf(".") + 1));
+                outputIdentifierField(field, attributes, declaringClass);
                 //@Types
             } else if (field.isAnnotatedWith(MappingAnnotation.TYPES)) {
-                attributes.append("TypesSpecification<")
-                          .append(declaringClass)
-                          .append(", ");
-                if (field.getType().getIsSimple()) {
-                    attributes.append(field.getType().getSimpleName());
-                } else {
-                    attributes.append(field.getType().getTypes().get(0).getSimpleName());
-                }
+                outputTypesField(field, attributes, declaringClass);
                 //@Properties
             } else if (field.isAnnotatedWith(MappingAnnotation.PROPERTIES)) {
-                attributes.append("PropertiesSpecification<")
-                          .append(declaringClass)
-                          .append(", ");
-                Type type = field.getType();
-                if (!Objects.equals(type.getTypeName(), Map.class.getName())) {
-                    attributes
-                            .append(type.getTypes().get(0).getTypeName()
-                                        .substring(type.getTypes().get(0).getTypeName().lastIndexOf(".") + 1));
-                } else {
-                    attributes.append("Map, ")
-                              .append(type.getTypes().get(0).getSimpleName())
-                              .append(", ")
-                              .append(type.getTypes().get(1).getTypes().get(0).getSimpleName());
-                }
+                outputUnmappedPropertiesField(field, attributes, declaringClass);
             } else if (field.isAnnotatedWith(MappingAnnotation.DATA_PROPERTY)
                     || field.isAnnotatedWith(MappingAnnotation.OBJECT_PROPERTY)
                     || field.isAnnotatedWith(MappingAnnotation.ANNOTATION_PROPERTY)) {
-                Type type = field.getType();
-                if (type.getIsSimple()) {
-                    attributes.append("SingularAttribute<")
-                              .append(declaringClass)
-                              .append(", ")
-                              .append(type.getSimpleName());
-                } else {
-                    if (type.getTypeName().equals(List.class.getName())) {
-                        attributes.append("ListAttribute<");
-                    } else if (type.getTypeName().equals(Set.class.getName())) {
-                        attributes.append("SetAttribute<");
-                    }
-                    attributes.append(declaringClass)
-                              .append(", ")
-                              .append(type.getTypes().get(0).getSimpleName());
-                }
+                outputMappedAttributeField(field, attributes, declaringClass);
             }
             attributes
                     .append("> ")
@@ -274,5 +234,60 @@ public class OutputFilesGenerator {
                     .append(";\n");
         }
         return attributes.toString();
+    }
+
+    private static void outputIdentifierField(Field field, StringBuilder attributes, String declaringClass) {
+        attributes.append("Identifier<")
+                  .append(declaringClass)
+                  .append(", ")
+                  .append(field.getType().getTypeName()
+                               .substring(field.getType().getTypeName().lastIndexOf(".") + 1));
+    }
+
+    private static void outputTypesField(Field field, StringBuilder attributes, String declaringClass) {
+        attributes.append("TypesSpecification<")
+                  .append(declaringClass)
+                  .append(", ");
+        if (field.getType().getIsSimple()) {
+            attributes.append(field.getType().getSimpleName());
+        } else {
+            attributes.append(field.getType().getTypes().get(0).getSimpleName());
+        }
+    }
+
+    private static void outputUnmappedPropertiesField(Field field, StringBuilder attributes, String declaringClass) {
+        attributes.append("PropertiesSpecification<")
+                  .append(declaringClass)
+                  .append(", ");
+        Type type = field.getType();
+        if (!Map.class.getName().equals(type.getTypeName())) {
+            attributes
+                    .append(type.getTypes().get(0).getTypeName()
+                                .substring(type.getTypes().get(0).getTypeName().lastIndexOf(".") + 1));
+        } else {
+            attributes.append("Map, ")
+                      .append(type.getTypes().get(0).getSimpleName())
+                      .append(", ")
+                      .append(type.getTypes().get(1).getTypes().get(0).getSimpleName());
+        }
+    }
+
+    private static void outputMappedAttributeField(Field field, StringBuilder attributes, String declaringClass) {
+        Type type = field.getType();
+        if (type.getIsSimple()) {
+            attributes.append("SingularAttribute<")
+                      .append(declaringClass)
+                      .append(", ")
+                      .append(type.getSimpleName());
+        } else {
+            if (type.getTypeName().equals(List.class.getName())) {
+                attributes.append("ListAttribute<");
+            } else if (type.getTypeName().equals(Set.class.getName())) {
+                attributes.append("SetAttribute<");
+            }
+            attributes.append(declaringClass)
+                      .append(", ")
+                      .append(type.getTypes().get(0).getSimpleName());
+        }
     }
 }

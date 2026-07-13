@@ -224,12 +224,12 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     }
 
     <E> URI resolveValueIdentifier(E instance, EntityType<E> valEt) {
-        URI id = EntityPropertiesUtils.getIdentifier(instance, valEt);
+        Object id = EntityPropertiesUtils.getIdentifier(instance, valEt);
         if (id == null) {
-            id = mapper.generateIdentifier(valEt);
+            id = mapper.generateIdentifier(instance, valEt);
             EntityPropertiesUtils.setIdentifier(id, instance, valEt);
         }
-        return id;
+        return id instanceof URI uri ? uri : URI.create(id.toString());
     }
 
     /**

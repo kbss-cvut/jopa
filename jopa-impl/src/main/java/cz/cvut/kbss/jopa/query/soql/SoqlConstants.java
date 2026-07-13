@@ -28,6 +28,11 @@ public class SoqlConstants {
     public static final String SELECT = "SELECT";
 
     /**
+     * {@code ASK} keyword.
+     */
+    public static final String ASK = "ASK";
+
+    /**
      * {@code DISTINCT} operator.
      */
     public static final String DISTINCT = "DISTINCT";

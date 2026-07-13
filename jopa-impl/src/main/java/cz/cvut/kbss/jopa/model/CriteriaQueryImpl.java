@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.query.criteria.Order;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.Root;
 import cz.cvut.kbss.jopa.model.query.criteria.Selection;
+import cz.cvut.kbss.jopa.query.QueryType;
 import cz.cvut.kbss.jopa.query.criteria.AbstractPredicate;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
@@ -45,6 +46,8 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     private final Metamodel metamodel;
     private final CriteriaBuilderImpl cb;
 
+    private QueryType queryType = QueryType.SELECT;
+
 
     public CriteriaQueryImpl(CriteriaQueryHolder<T> query, Metamodel metamodel, CriteriaBuilderImpl cb) {
         this.query = Objects.requireNonNull(query);
@@ -61,7 +64,7 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public <X> Root<X> from(EntityType<X> entity) {
-        RootImpl<X> root = new RootImpl<>(metamodel, null, entity.getBindableJavaType(), this.cb);
+        RootImpl<X> root = new RootImpl<>(metamodel, null, entity.getJavaType(), this.cb);
         query.setRoot(root);
         return root;
     }
@@ -69,7 +72,16 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     @Override
     public CriteriaQuery<T> select(Selection<? extends T> selection) {
         query.setSelection(selection);
+        this.queryType = QueryType.SELECT;
         return this;
+    }
+
+    @Override
+    public CriteriaQuery<Boolean> ask() {
+        this.queryType = QueryType.ASK;
+        query.setSelection(null);
+        assert Boolean.class.equals(query.getResultType());
+        return (CriteriaQuery<Boolean>) this;
     }
 
     @Override
@@ -188,44 +200,69 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
      * @return string representation of SOQL query
      */
     public String translateQuery(CriteriaParameterFiller parameterFiller) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(SoqlConstants.SELECT).append(' ');
+        StringBuilder soqlQuery = new StringBuilder();
+        soqlQuery.append(queryType.getKeyword());
         if (isDistinct()) {
-            stringBuilder.append(SoqlConstants.DISTINCT).append(' ');
+            soqlQuery.append(' ').append(SoqlConstants.DISTINCT);
         }
-        ((AbstractExpression) query.getSelection()).setExpressionToQuery(stringBuilder, parameterFiller);
+        if (queryType == QueryType.SELECT) {
+            soqlQuery.append(' ');
+            ((AbstractExpression) query.getSelection()).setExpressionToQuery(soqlQuery, parameterFiller);
+        }
 
-        stringBuilder.append(' ').append(SoqlConstants.FROM).append(' ').append(((RootImpl) query.getRoot()).getJavaType().getSimpleName()).append(' ');
-        ((RootImpl) query.getRoot()).setExpressionToQuery(stringBuilder, parameterFiller);
+        appendFromClause(parameterFiller, soqlQuery);
 
+        appendWhereClause(parameterFiller, soqlQuery);
+
+        appendGroupByClause(parameterFiller, soqlQuery);
+
+        appendHavingClause(parameterFiller, soqlQuery);
+
+        appendOrderByClause(parameterFiller, soqlQuery);
+
+        return soqlQuery.toString();
+    }
+
+    private void appendFromClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {
+        soqlQuery.append(' ').append(SoqlConstants.FROM).append(' ')
+                 .append(((RootImpl) query.getRoot()).getJavaType().getSimpleName()).append(' ');
+        ((RootImpl) query.getRoot()).setExpressionToQuery(soqlQuery, parameterFiller);
+    }
+
+    private void appendWhereClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {
         if (query.getWhere() != null && !query.getWhere().getExpressions().isEmpty()) {
-            stringBuilder.append(' ').append(SoqlConstants.WHERE).append(' ');
-            ((AbstractPredicate) query.getWhere()).setExpressionToQuery(stringBuilder, parameterFiller);
+            soqlQuery.append(' ').append(SoqlConstants.WHERE).append(' ');
+            ((AbstractPredicate) query.getWhere()).setExpressionToQuery(soqlQuery, parameterFiller);
         }
+    }
 
+    private void appendGroupByClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {
         if (query.getGroupBy() != null && !query.getGroupBy().isEmpty()) {
-            stringBuilder.append(' ').append(SoqlConstants.GROUP_BY).append(' ');
+            soqlQuery.append(' ').append(SoqlConstants.GROUP_BY).append(' ');
             for (Expression groupBy : query.getGroupBy()) {
-                ((AbstractExpression) groupBy).setExpressionToQuery(stringBuilder, parameterFiller);
+                ((AbstractExpression) groupBy).setExpressionToQuery(soqlQuery, parameterFiller);
             }
         }
+    }
 
+    private void appendHavingClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {
         if (query.getHaving() != null && !query.getHaving().getExpressions().isEmpty()) {
-            stringBuilder.append(" HAVING ");
-            ((AbstractPredicate) query.getHaving()).setExpressionToQuery(stringBuilder, parameterFiller);
+            soqlQuery.append(" HAVING ");
+            ((AbstractPredicate) query.getHaving()).setExpressionToQuery(soqlQuery, parameterFiller);
         }
+    }
 
+    private void appendOrderByClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {
         if (!getOrderList().isEmpty()) {
-            stringBuilder.append(' ').append(SoqlConstants.ORDER_BY).append(' ');
+            soqlQuery.append(' ').append(SoqlConstants.ORDER_BY).append(' ');
             List<Order> orders = getOrderList();
             for (int i = 0; i < orders.size(); i++) {
-                ((AbstractExpression) orders.get(i).getExpression()).setExpressionToQuery(stringBuilder, parameterFiller);
-                stringBuilder.append(' ').append(orders.get(i).isAscending() ? SoqlConstants.ASC : SoqlConstants.DESC);
+                ((AbstractExpression) orders.get(i).getExpression()).setExpressionToQuery(soqlQuery, parameterFiller);
+                soqlQuery.append(' ').append(orders.get(i).isAscending() ? SoqlConstants.ASC : SoqlConstants.DESC);
                 if (orders.size() > 1 && (i + 1) != orders.size()) {
-                    stringBuilder.append(", ");
+                    soqlQuery.append(", ");
                 }
             }
         }
-        return stringBuilder.toString();
     }
 }

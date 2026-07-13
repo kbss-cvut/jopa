@@ -112,6 +112,16 @@ public class SoqlQueryParserTest {
     public void testParseDistinctCountQuery() {
         final String soqlQuery = "SELECT DISTINCT COUNT(p) FROM Person p";
         final String expectedSparqlQuery =
+                "SELECT DISTINCT (COUNT(?x) AS ?count) WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . }";
+        final QueryHolder holder = sut.parseQuery(soqlQuery);
+        assertEquals(expectedSparqlQuery, holder.getQuery());
+        assertEquals(2, holder.getParameters().size());
+    }
+
+    @Test
+    void testParseCountDistinctQuery() {
+        final String soqlQuery = "SELECT COUNT(DISTINCT p) FROM Person p";
+        final String expectedSparqlQuery =
                 "SELECT (COUNT(DISTINCT ?x) AS ?count) WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . }";
         final QueryHolder holder = sut.parseQuery(soqlQuery);
         assertEquals(expectedSparqlQuery, holder.getQuery());
@@ -769,8 +779,8 @@ public class SoqlQueryParserTest {
     }
 
     @Test
-    void parseQuerySupportsDistinctCountWithProjectedAttribute() {
-        final String soqlIdFirst = "SELECT DISTINCT COUNT(d.owlClassA) FROM OWLClassD d WHERE d.uri = :uri";
+    void parseQuerySupportsCountDistinctWithProjectedAttribute() {
+        final String soqlIdFirst = "SELECT COUNT(DISTINCT d.owlClassA) FROM OWLClassD d WHERE d.uri = :uri";
         final String expectedSparql = "SELECT (COUNT(DISTINCT ?owlClassA) AS ?count) WHERE { ?uri a " + strUri(Vocabulary.c_OwlClassD) + " . " +
                 "?uri " + strUri(Vocabulary.p_h_hasA) + " ?owlClassA . }";
         parseAndAssertEquality(expectedSparql, soqlIdFirst);
@@ -1017,6 +1027,23 @@ public class SoqlQueryParserTest {
     void parseQuerySupportsOrderingByEntity() {
         final String soql = "SELECT p FROM Person p ORDER BY p";
         final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . } ORDER BY ?x";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsBasicAskQueries() {
+        final String soql = "ASK FROM Person p WHERE p.age > :age";
+        final String expectedSparql = "ASK WHERE { ?x a " + strUri(Vocabulary.c_Person) +
+                " . ?x " + strUri(Vocabulary.p_p_age) + " ?pAge . FILTER (?pAge > ?age) }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsMoreComplexAskQueries() {
+        final String soql = "ASK FROM Person p WHERE p.age > :age AND p.gender = :gender";
+        final String expectedSparql = "ASK WHERE { ?x a " + strUri(Vocabulary.c_Person) +
+                " . ?x " + strUri(Vocabulary.p_p_age) + " ?pAge . ?x " + strUri(Vocabulary.p_p_gender) + " ?gender . " +
+                "FILTER (?pAge > ?age) }";
         parseAndAssertEquality(expectedSparql, soql);
     }
 }

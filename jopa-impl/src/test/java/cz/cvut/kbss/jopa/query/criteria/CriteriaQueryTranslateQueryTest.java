@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassD_;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
+import cz.cvut.kbss.jopa.environment.Person;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
@@ -64,12 +65,13 @@ public class CriteriaQueryTranslateQueryTest {
     @Mock
     private UnitOfWork uowMock;
 
+    private MetamodelImpl metamodel;
     private CriteriaBuilderImpl cb;
     private CriteriaParameterFiller criteriaParameterFiller;
 
     @BeforeEach
     void setUp() throws Exception {
-        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
+        this.metamodel = mock(MetamodelImpl.class);
         new MetamodelMocks().setMocks(metamodel);
         final MetamodelProvider mpp = mock(MetamodelProvider.class);
         when(uowMock.getMetamodel()).thenReturn(metamodel);
@@ -85,6 +87,17 @@ public class CriteriaQueryTranslateQueryTest {
     public void testTranslateQuerySelectAll() {
         CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root);
+
+        final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+        final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa";
+        assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+    }
+
+    @Test
+    void translateSelectFromEntityType() {
+        CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        Root<OWLClassA> root = query.from(metamodel.entity(OWLClassA.class));
         query.select(root);
 
         final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
@@ -126,6 +139,17 @@ public class CriteriaQueryTranslateQueryTest {
     }
 
     @Test
+    void testTranslationQueryCountDistinct() {
+        CriteriaQueryImpl<Integer> query = cb.createQuery(Integer.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(cb.countDistinct(root));
+
+        final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+        final String expectedSoqlQuery = "SELECT COUNT(DISTINCT owlclassa) FROM OWLClassA owlclassa";
+        assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+    }
+
+    @Test
     public void testTranslateQuerySelectAllOrderByEntityDesc() {
         CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
         Root<OWLClassA> root = query.from(OWLClassA.class);
@@ -133,6 +157,17 @@ public class CriteriaQueryTranslateQueryTest {
 
         final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
         final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa ORDER BY owlclassa DESC";
+        assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+    }
+
+    @Test
+    void translateQuerySupportsOrderByMultipleConditions() {
+        CriteriaQueryImpl<OWLClassM> query = cb.createQuery(OWLClassM.class);
+        Root<OWLClassM> root = query.from(OWLClassM.class);
+        query.select(root).orderBy(List.of(cb.asc(root.getAttr("intAttribute")), cb.asc(root.getAttr("longAttribute"))));
+
+        final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+        final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm ORDER BY owlclassm.intAttribute ASC, owlclassm.longAttribute ASC";
         assertEquals(expectedSoqlQuery, generatedSoqlQuery);
     }
 
@@ -691,6 +726,32 @@ public class CriteriaQueryTranslateQueryTest {
             final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
             final String expectedSoqlQuery =
                     "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+    }
+
+    @Nested
+    class AskQueryTests {
+
+        @Test
+        void testTranslateAskQuery() {
+            CriteriaQueryImpl<Boolean> query = cb.createQuery(Boolean.class);
+            Root<Person> root = query.from(Person.class);
+            query.ask().where(cb.greaterThan(root.getAttr("age"), cb.literal(18)));
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "ASK FROM Person person WHERE person.age > :generatedName0";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        void askOverridesSelection() {
+            CriteriaQueryImpl<Boolean> query = cb.createQuery(Boolean.class);
+            Root<OWLClassM> root = query.from(OWLClassM.class);
+            query.select(root.getAttr("booleanAttribute")).ask().where(cb.lessThan(root.getAttr("intAttribute"), cb.literal(100)));
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "ASK FROM OWLClassM owlclassm WHERE owlclassm.intAttribute < :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
     }

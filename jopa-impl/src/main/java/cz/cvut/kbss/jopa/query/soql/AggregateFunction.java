@@ -15,15 +15,28 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package cz.cvut.kbss.ontodriver.exception;
+package cz.cvut.kbss.jopa.query.soql;
 
-public class IdentifierGenerationException extends OntoDriverRuntimeException {
+/**
+ * Aggregate functions supported in SOQL select expressions.
+ */
+enum AggregateFunction {
 
-    public IdentifierGenerationException(String message) {
-        super(message);
+    COUNT(SoqlConstants.Functions.COUNT, "?count");
+
+    private final String soqlName;
+    private final String resultVariable;
+
+    AggregateFunction(String soqlName, String resultVariable) {
+        this.soqlName = soqlName;
+        this.resultVariable = resultVariable;
     }
 
-    public IdentifierGenerationException(String message, Throwable cause) {
-        super(message, cause);
+    String soqlName() {
+        return soqlName;
+    }
+
+    String resultVariable() {
+        return resultVariable;
     }
 }

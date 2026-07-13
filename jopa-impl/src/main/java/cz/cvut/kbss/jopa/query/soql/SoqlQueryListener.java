@@ -57,7 +57,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
     private String soql;
     private String sparql;
 
-    private String typeDef = SoqlConstants.SELECT;
+    private QueryType typeDef = QueryType.SELECT;
 
     // keeps pointer at created object of SoqlAttribute while processing other necessary rules
     private SoqlAttribute attrPointer;
@@ -78,9 +78,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     private final Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers = new HashMap<>();
 
-    private boolean isSelectedParamDistinct = false;
-
-    private boolean isSelectedParamCount = false;
+    private SelectProjection selectProjection = new SelectProjection(null, false, false);
 
     private boolean isInObjectIdentifierExpression = false;
 
@@ -153,11 +151,14 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     @Override
     public void enterSelectClause(SoqlParser.SelectClauseContext ctx) {
-        this.typeDef = QueryType.SELECT.getKeyword();
+        this.typeDef = QueryType.SELECT;
 
-        if (ctx.DISTINCT() != null) {
-            this.isSelectedParamDistinct = true;
-        }
+        this.selectProjection = selectProjection.withDistinct(ctx.DISTINCT() != null);
+    }
+
+    @Override
+    public void enterAskStatement(SoqlParser.AskStatementContext ctx) {
+        this.typeDef = QueryType.ASK;
     }
 
     private void pushNewAttribute(SoqlAttribute myAttr) {
@@ -175,7 +176,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     @Override
     public void exitSelectExpression(SoqlParser.SelectExpressionContext ctx) {
-        if (!isSelectedParamCount) {
+        if (selectProjection.aggregateFunction() == null) {
             this.projectedVariable = ctx.getText();
         }
     }
@@ -183,10 +184,8 @@ public class SoqlQueryListener extends SoqlBaseListener {
     @Override
     public void enterAggregateExpression(SoqlParser.AggregateExpressionContext ctx) {
         if (ctx.COUNT() != null) {
-            isSelectedParamCount = true;
-            if (ctx.DISTINCT() != null) {
-                isSelectedParamDistinct = true;
-            }
+            selectProjection = selectProjection.withAggregateFunction(AggregateFunction.COUNT)
+                                               .withAggregateDistinct(ctx.DISTINCT() != null);
 
             if (ctx.simpleSubpath() != null) {
                 this.projectedVariable = ctx.simpleSubpath().getText();
@@ -546,19 +545,11 @@ public class SoqlQueryListener extends SoqlBaseListener {
             return;
         }
 
-        // the first attribute is either a projected parameter or a type attribute
-        String selectParameter = getSelectParameter(attributes.get(0));
-
-        StringBuilder newQueryBuilder = new StringBuilder(typeDef);
-        if (isSelectedParamCount) {
-            newQueryBuilder.append(getCountPart(selectParameter));
-        } else {
-            if (isSelectedParamDistinct) {
-                newQueryBuilder.append(' ').append(SoqlConstants.DISTINCT);
-            }
-            newQueryBuilder.append(' ').append(selectParameter).append(' ');
+        StringBuilder newQueryBuilder = new StringBuilder(typeDef.getKeyword());
+        if (typeDef == QueryType.SELECT) {
+            appendProjection(newQueryBuilder);
         }
-        newQueryBuilder.append("WHERE { ");
+        newQueryBuilder.append(" WHERE { ");
         newQueryBuilder.append(processSupremeAttributes());
         if (!objectOfNextOr.isEmpty()) {
             newQueryBuilder.append("{ ");
@@ -578,13 +569,30 @@ public class SoqlQueryListener extends SoqlBaseListener {
         LOG.trace("Translated SOQL query '{}' to SPARQL '{}'.", soql, sparql);
     }
 
-    private StringBuilder getCountPart(String selectParameter) {
-        StringBuilder countPart = new StringBuilder(" (COUNT(");
-        if (isSelectedParamDistinct) {
-            countPart.append(SoqlConstants.DISTINCT).append(' ');
+    private void appendProjection(StringBuilder sparqlBuilder) {
+        // the first attribute is either a projected parameter or a type attribute
+        final String selectParameter = getSelectParameter(attributes.get(0));
+        if (selectProjection.aggregateFunction() != null) {
+            if (selectProjection.distinct()) {
+                sparqlBuilder.append(' ').append(SoqlConstants.DISTINCT);
+            }
+            sparqlBuilder.append(getAggregatePart(selectParameter));
+        } else {
+            if (selectProjection.distinct()) {
+                sparqlBuilder.append(' ').append(SoqlConstants.DISTINCT);
+            }
+            sparqlBuilder.append(' ').append(selectParameter);
         }
-        countPart.append(selectParameter).append(") AS ?count) ");
-        return countPart;
+    }
+
+    private StringBuilder getAggregatePart(String selectParameter) {
+        final AggregateFunction fn = selectProjection.aggregateFunction();
+        final StringBuilder aggregatePart = new StringBuilder(" (").append(fn.soqlName()).append('(');
+        if (selectProjection.aggregateDistinct()) {
+            aggregatePart.append(SoqlConstants.DISTINCT).append(' ');
+        }
+        aggregatePart.append(selectParameter).append(") AS ").append(fn.resultVariable()).append(")");
+        return aggregatePart;
     }
 
     private StringBuilder processSupremeAttributes() {

@@ -23,7 +23,6 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.rdf4j.environment.Generator;
 import cz.cvut.kbss.ontodriver.rdf4j.query.Rdf4jPreparedStatement;
 import cz.cvut.kbss.ontodriver.rdf4j.query.Rdf4jStatement;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,10 +32,26 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anySet;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class Rdf4jConnectionTest {
@@ -147,16 +162,6 @@ public class Rdf4jConnectionTest {
         connection.close();
         assertThrows(IllegalStateException.class, () -> connection.getContexts());
         verify(adapterMock, never()).getContexts();
-    }
-
-    @Test
-    public void testGenerateIdentifier() throws Exception {
-        final URI classUri = URI.create("https://onto.fel.cvut.cz/ontologies/jopa/owlClassA");
-        final URI identifier = Generator.generateUri();
-        when(adapterMock.generateIdentifier(classUri)).thenReturn(identifier);
-        final URI res = connection.generateIdentifier(classUri);
-        assertEquals(identifier, res);
-        verify(adapterMock).generateIdentifier(classUri);
     }
 
     @Test
