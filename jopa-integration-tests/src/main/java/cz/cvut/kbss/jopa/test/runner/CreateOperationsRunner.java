@@ -40,6 +40,7 @@ import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr3;
 import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr4;
 import cz.cvut.kbss.jopa.test.OWLClassWithQueryAttr5;
 import cz.cvut.kbss.jopa.test.OWLClassX;
+import cz.cvut.kbss.jopa.test.OWLClassZChild;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
@@ -765,5 +766,18 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         verifyStatementsPresent(List.of(
                 new Quad(URI.create(entityM.getKey()), URI.create(Vocabulary.p_m_objectAnnotationProperty),
                         entityM.getObjectAnnotation())), em);
+    }
+
+    @Test
+    void persistUsesCustomIdentifierGeneratorDeclaredForEntityClass() {
+        this.em = getEntityManager("persistUsesCustomIdentifierGeneratorDeclaredForEntityClass", false);
+        final OWLClassZChild instance = new OWLClassZChild();
+        instance.setName("test-instance");
+        persist(instance);
+
+        assertNotNull(instance.getId());
+        assertEquals(Vocabulary.C_OWL_CLASS_Z_CHILD + "/test-instance", instance.getId().toString());
+        final OWLClassZChild result = findRequired(OWLClassZChild.class, instance.getId());
+        assertNotNull(result);
     }
 }
