@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -64,7 +63,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider, MetamodelCla
     // Proxy classes for results of EntityManager.getReference
     private final Map<Class<?>, Class<?>> referenceProxyClasses = new ConcurrentHashMap<>();
 
-    private final Map<EntityType<?>, IdentifierGenerator> idGenerators = new HashMap<>();
+    private Map<EntityType<?>, IdentifierGenerator> idGenerators;
 
     private NamedQueryManager namedQueryManager;
     private ResultSetMappingManager resultSetMappingManager;
@@ -113,6 +112,7 @@ public class MetamodelImpl implements Metamodel, MetamodelProvider, MetamodelCla
         this.namespaceResolver = metamodelBuilder.getNamespaceResolver();
         this.typeReferenceMap = metamodelBuilder.getTypeReferenceMap();
         this.lazyLoadingProxyClasses.putAll(metamodelBuilder.getLazyLoadingEntityProxyClasses());
+        this.idGenerators = metamodelBuilder.getIdGenerators();
     }
 
     /**
