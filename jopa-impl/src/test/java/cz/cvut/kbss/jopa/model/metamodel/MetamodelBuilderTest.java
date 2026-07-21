@@ -806,7 +806,7 @@ class MetamodelBuilderTest {
         @Override
         public <T> Object generate(Object entity, EntityType<T> entityClass, Connection connection) {
             final String classIri = entityClass.getIRI().toString();
-            return classIri + "_" + UUID.randomUUID().toString();
+            return classIri + "_" + UUID.randomUUID();
         }
     }
 }

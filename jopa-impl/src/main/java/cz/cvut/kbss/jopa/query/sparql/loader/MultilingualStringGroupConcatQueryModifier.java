@@ -18,7 +18,7 @@ class MultilingualStringGroupConcatQueryModifier extends GroupConcatQueryModifie
 
     @Override
     String generateGroupConcat() {
-        // (GROUP_CONCAT(DISTINCT CONCAT(STR(?var), "@", LANG(?var)); SEPARATOR='') AS ?var_gc)
+        // (GROUP_CONCAT(DISTINCT CONCAT('"', STR(?var), '"@' LANG(?var)); SEPARATOR='') AS ?var_gc)
         final String queryVar = "?" + variableMapping.attributeVar();
         return "(GROUP_CONCAT(DISTINCT CONCAT('\"', STR(" + queryVar + "), '\"@', " +
                 "LANG(" + queryVar + ")); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') " +
