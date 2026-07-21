@@ -155,4 +155,10 @@ public class TypedQueryTest extends TypedQueryRunner {
         // OWL2Query does not seem to correctly implement ORDER BY, causing result rows not always to be consecutive by subject identifier
         // And thus the query sometimes fails
     }
+
+    @Disabled
+    @Override
+    public void queryOptimizerDoesNotBreakLanguageTaggedStrings() {
+        // OWL2Query does not support OPTIONAL
+    }
 }

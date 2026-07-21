@@ -317,8 +317,8 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         fetchGraph.addAttributeNodes("singularStringAtt");
         final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassU> sut = new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassU.class, descriptor, fetchGraph);
         final OWLClassU instance = new OWLClassU(Generators.createIndividualIdentifier());
-        final String concatenated = "value-en@en"
-                + AttributeEnumeratingSparqlAssemblyModifier.GROUP_CONCAT_SEPARATOR + "hodnota-cs@cs";
+        final String concatenated = "\"value-en\"@en"
+                + AttributeEnumeratingSparqlAssemblyModifier.GROUP_CONCAT_SEPARATOR + "\"hodnota-cs\"@cs";
         final ResultRow row = mockRow(List.of(
                 new Pair<>("x", instance.getId()),
                 new Pair<>("x_singularStringAtt", concatenated)
@@ -345,7 +345,7 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
         fetchGraph.addAttributeNodes("pluralAnnotation");
         final AttributeBasedRowsToAxiomsQueryResultLoader<OWLClassN> sut = new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, OWLClassN.class, descriptor, fetchGraph);
         final OWLClassN instance = new OWLClassN(Generators.createIndividualIdentifier().toString());
-        final ResultRow row = mockRow(List.of(new Pair<>("x", URI.create(instance.getId())), new Pair<>("x_pluralAnnotation", "value-one@" + AttributeEnumeratingSparqlAssemblyModifier.GROUP_CONCAT_SEPARATOR + "value-two@")));
+        final ResultRow row = mockRow(List.of(new Pair<>("x", URI.create(instance.getId())), new Pair<>("x_pluralAnnotation", "\"value-one\"@" + AttributeEnumeratingSparqlAssemblyModifier.GROUP_CONCAT_SEPARATOR + "\"value-two\"@")));
         when(uow.readObjectFromAxioms(eq(OWLClassN.class), anyCollection(), any(AxiomBasedLoadingConfigGroup.class))).thenReturn(instance);
 
         final Optional<OWLClassN> intermediate = sut.loadResult(row);
