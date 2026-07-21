@@ -58,8 +58,10 @@ import java.util.stream.IntStream;
 import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -569,6 +571,22 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
             assertNotNull(r.getOwlClassA());
             assertNotNull(r.getOwlClassA().getStringAttribute());
             assertNull(r.getIntAttribute());
+        });
+    }
+
+    @Test
+    public void queryOptimizerDoesNotBreakLanguageTaggedStrings() {
+        final List<OWLClassY> result = getEntityManager().createNativeQuery("SELECT ?y WHERE { " +
+                                                                 "?y a ?type . " +
+                                                                 "?y ?hasString ?stringAtt . } ORDER BY ?stringAtt", OWLClassY.class)
+                                                         .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_Y))
+                                                         .setParameter("hasString", URI.create(Vocabulary.P_Y_SINGULAR_MULTILINGUAL_ATTRIBUTE))
+                                                         .setHint(QueryHints.ENABLE_ENTITY_LOADING_OPTIMIZER, true)
+                                                         .getResultList();
+        assertFalse(result.isEmpty());
+        result.forEach(a -> {
+            assertNotNull(a.getSingularString());
+            assertThat(a.getSingularString().get(), not(containsString("\"")));
         });
     }
 }

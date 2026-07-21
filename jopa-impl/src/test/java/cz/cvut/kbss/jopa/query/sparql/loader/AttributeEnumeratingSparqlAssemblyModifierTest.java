@@ -264,7 +264,7 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, containsString("(GROUP_CONCAT(DISTINCT CONCAT(STR(?x_singularStringAtt), \"@\", LANG(?x_singularStringAtt)); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_singularStringAtt_gc)"));
+        assertThat(result, containsString("(GROUP_CONCAT(DISTINCT CONCAT('\"', STR(?x_singularStringAtt), '\"@', LANG(?x_singularStringAtt)); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_singularStringAtt_gc)"));
         assertThat(result, containsString("GROUP BY ?x ?x_modified"));
     }
 
@@ -279,7 +279,7 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, containsString("(GROUP_CONCAT(DISTINCT CONCAT(STR(?x_pluralStringAtt), \"@\", LANG(?x_pluralStringAtt)); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_pluralStringAtt_gc)"));
+        assertThat(result, containsString("(GROUP_CONCAT(DISTINCT CONCAT('\"', STR(?x_pluralStringAtt), '\"@', LANG(?x_pluralStringAtt)); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_pluralStringAtt_gc)"));
         assertThat(result, containsString("GROUP BY ?x ?x_modified"));
     }
 
@@ -294,7 +294,7 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
         holder.setAssemblyModifier(sut);
 
         final String result = holder.assembleQuery();
-        assertThat(result, containsString("GROUP_CONCAT(DISTINCT CONCAT(STR(?x_pluralAnnotation), \"@\", LANG(?x_pluralAnnotation)); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_pluralAnnotation_gc"));
+        assertThat(result, containsString("GROUP_CONCAT(DISTINCT CONCAT('\"', STR(?x_pluralAnnotation), '\"@', LANG(?x_pluralAnnotation)); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') AS ?x_pluralAnnotation_gc"));
         assertThat(result, containsString("GROUP BY ?x"));
     }
 
