@@ -18,9 +18,9 @@ class MultilingualStringGroupConcatQueryModifier extends GroupConcatQueryModifie
 
     @Override
     String generateGroupConcat() {
-        // (GROUP_CONCAT(DISTINCT CONCAT(STR(?var), "@", LANG(?var)); SEPARATOR='') AS ?var_gc)
+        // (GROUP_CONCAT(DISTINCT CONCAT('"', STR(?var), '"@' LANG(?var)); SEPARATOR='') AS ?var_gc)
         final String queryVar = "?" + variableMapping.attributeVar();
-        return "(GROUP_CONCAT(DISTINCT CONCAT(STR(" + queryVar + "), \"@\", " +
+        return "(GROUP_CONCAT(DISTINCT CONCAT('\"', STR(" + queryVar + "), '\"@', " +
                 "LANG(" + queryVar + ")); SEPARATOR='" + GROUP_CONCAT_SEPARATOR + "') " +
                 "AS " + queryVar + GROUP_CONCAT_SUFFIX + ")";
     }
@@ -43,7 +43,7 @@ class MultilingualStringGroupConcatQueryModifier extends GroupConcatQueryModifie
         if (sep < 0) {
             return new Value<>(token);
         }
-        final String value = token.substring(0, sep);
+        final String value = token.substring(1, sep - 1);
         final String language = token.substring(sep + 1);
         return new Value<>(language.isEmpty() ? value : new LangString(value, language));
     }

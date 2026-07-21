@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+### 2.11.1 - 2026-07-21
+
+- Fix an issue with inconsistent handling of projected language tagged strings with and without `GROUP_CONCAT` (Bug #457).
+
 ### 2.11.0 - 2026-07-13
 
 - Add support for `countDistinct` in Criteria API, properly implement COUNT DISTINCT in SOQL (Enhancement #448).
