@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
@@ -191,6 +192,11 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
     public CriteriaQuery<T> having(Predicate... restrictions) {
         query.setHaving(cb.and(restrictions));
         return this;
+    }
+
+    @Override
+    public Set<Root<?>> getRoots() {
+        return Set.of(query.getRoot());
     }
 
     /**

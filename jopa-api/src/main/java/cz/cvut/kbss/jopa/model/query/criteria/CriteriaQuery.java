@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.model.query.criteria;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Interface used to control the execution of typed queries.
@@ -199,4 +200,16 @@ public interface CriteriaQuery<T> {
      * @return the modified query
      */
     CriteriaQuery<T> having(Predicate... restrictions);
+
+    /**
+     * Gets the query roots.
+     * <p>
+     * These are the roots that have been defined for the CriteriaQuery or Subquery itself, including any subquery roots
+     * defined as a result of correlation. Returns empty set if no roots have been defined.
+     * <p>
+     * Modifications to the set do not affect the query.
+     *
+     * @return Set of query roots
+     */
+    Set<Root<?>> getRoots();
 }

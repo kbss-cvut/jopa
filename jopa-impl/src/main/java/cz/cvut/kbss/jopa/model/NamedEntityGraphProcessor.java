@@ -3,8 +3,8 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.model.annotations.NamedAttributeNode;
 import cz.cvut.kbss.jopa.model.annotations.NamedEntityGraph;
 import cz.cvut.kbss.jopa.model.annotations.NamedSubgraph;
-import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.MetamodelClassMapper;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 
@@ -51,7 +51,7 @@ public class NamedEntityGraphProcessor {
     }
 
     private <T> EntityGraphImpl<T> createGraph(Class<?> rootType, String name, NamedEntityGraph declaration) {
-        final AbstractIdentifiableType<T> entityType = metamodel.entity((Class<T>) rootType);
+        final EntityType<T> entityType = metamodel.entity((Class<T>) rootType);
         final EntityGraphImpl<T> graph = new EntityGraphImpl<>(name, entityType, metamodel);
         final Map<String, NamedSubgraph> namedSubgraphs = indexSubgraphs(declaration.subgraphs());
         addAttributeNodes(declaration.attributeNodes(), graph, entityType, namedSubgraphs);
@@ -59,7 +59,7 @@ public class NamedEntityGraphProcessor {
     }
 
     private <T> void addAttributeNodes(NamedAttributeNode[] nodes, EntityGraphImpl<T> graph,
-                                       AbstractIdentifiableType<T> entityType,
+                                       EntityType<T> entityType,
                                        Map<String, NamedSubgraph> namedSubgraphs) {
         for (NamedAttributeNode node : nodes) {
             graph.addAttributeNodes(node.value());
@@ -69,7 +69,7 @@ public class NamedEntityGraphProcessor {
         }
     }
 
-    private void attachSubgraph(EntityGraphImpl<?> parent, AbstractIdentifiableType<?> rootEntityType,
+    private void attachSubgraph(EntityGraphImpl<?> parent, EntityType<?> rootEntityType,
                                 NamedAttributeNode node, Map<String, NamedSubgraph> namedSubgraphs) {
         final NamedSubgraph subDecl = namedSubgraphs.get(node.subgraph());
         if (subDecl == null) {
@@ -85,13 +85,13 @@ public class NamedEntityGraphProcessor {
 
     private <S> EntityGraphImpl<S> buildSubgraph(Class<?> subType, NamedSubgraph declaration,
                                                  Map<String, NamedSubgraph> namedSubgraphs) {
-        final AbstractIdentifiableType<S> entityType = metamodel.entity((Class<S>) subType);
+        final EntityType<S> entityType = metamodel.entity((Class<S>) subType);
         final EntityGraphImpl<S> graph = new EntityGraphImpl<>(declaration.name(), entityType, metamodel);
         addAttributeNodes(declaration.attributeNodes(), graph, entityType, namedSubgraphs);
         return graph;
     }
 
-    private static Class<?> resolveSubgraphType(AbstractIdentifiableType<?> rootEntityType, String attributeName,
+    private static Class<?> resolveSubgraphType(EntityType<?> rootEntityType, String attributeName,
                                                 NamedSubgraph subDecl) {
         if (subDecl.type() != void.class) {
             return subDecl.type();
