@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -160,6 +161,13 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
                 rowToAxioms(resultRow);
                 return Optional.ofNullable(result);
             }
+        } catch (IllegalArgumentException e) {
+            if (e.getCause() instanceof URISyntaxException) {
+                LOG.trace("Skipping row with subject blank node.");
+                return Optional.empty();
+            } else {
+                throw e;
+            }
         } catch (OntoDriverException e) {
             throw new OWLPersistenceException("Unable to load query result as entity of type " + resultType, e);
         }
@@ -174,10 +182,18 @@ class AttributeBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoade
         for (QueryVariableMapping mapping : mappings) {
             if (row.isBound(mapping.attributeVar())) {
                 assert row.isBound(mapping.subjectVar());
-                final NamedResource subject = NamedResource.create(row.getObject(mapping.subjectVar(), URI.class));
-                final Assertion assertion = attributeToAssertion(mapping.attribute());
-                extractValue(row, mapping).map(v -> new AxiomImpl<>(subject, assertion, v))
-                                          .forEach(currentEntityAxioms::add);
+                try {
+                    final NamedResource subject = NamedResource.create(row.getObject(mapping.subjectVar(), URI.class));
+                    final Assertion assertion = attributeToAssertion(mapping.attribute());
+                    extractValue(row, mapping).map(v -> new AxiomImpl<>(subject, assertion, v))
+                                              .forEach(currentEntityAxioms::add);
+                } catch (IllegalArgumentException e) {
+                    if (e.getCause() instanceof URISyntaxException ex) {
+                        LOG.trace("Skipping blank node value. Error: {}", ex.getMessage());
+                    } else {
+                        throw e;
+                    }
+                }
             }
         }
     }

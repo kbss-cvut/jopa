@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -89,6 +90,13 @@ class TripleBasedRowsToAxiomsQueryResultLoader<T> implements QueryResultLoader<T
                 reset(newSubject);
                 currentEntityAxioms.add(new AxiomImpl<>(newSubject, propertyToAssertion(property), new Value<>(value)));
                 return Optional.ofNullable(result);
+            }
+        } catch (IllegalArgumentException e) {
+            if (e.getCause() instanceof URISyntaxException) {
+                LOG.trace("Skipping row with subject blank node.");
+                return Optional.empty();
+            } else {
+                throw e;
             }
         } catch (OntoDriverException e) {
             throw new OWLPersistenceException("Unable to load query result as entity of type " + resultType, e);
