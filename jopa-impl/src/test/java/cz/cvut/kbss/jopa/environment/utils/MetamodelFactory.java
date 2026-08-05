@@ -118,6 +118,7 @@ import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.PRE_PERSIST;
 import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.PRE_REMOVE;
 import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.PRE_UPDATE;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -178,6 +179,7 @@ public class MetamodelFactory {
         when(et.getIRI()).thenReturn(IRI.create(cls.getAnnotation(OWLClass.class).iri()));
         when(et.getName()).thenReturn(cls.getSimpleName());
         when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
+        when(et.getAttribute(anyString())).thenThrow(IllegalArgumentException.class);
     }
 
     private static <X> void initIdentifier(IdentifiableEntityType<X> et, Identifier id, Field idField,
@@ -195,7 +197,7 @@ public class MetamodelFactory {
                                           AttributeInfo attInfo) {
         when(attMock.isMappedAttribute()).thenReturn(true);
         when(etMock.getFieldSpecification(attInfo.field.getName())).thenReturn(attMock);
-        when(etMock.getAttribute(attInfo.field.getName())).thenReturn(attMock);
+        doReturn(attMock).when(etMock).getAttribute(attInfo.field.getName());
         when(attMock.getName()).thenReturn(attInfo.field.getName());
         when(attMock.getDeclaringType()).thenReturn(etMock);
         when(attMock.getJavaField()).thenReturn(attInfo.field);
@@ -340,7 +342,7 @@ public class MetamodelFactory {
         initListAttribute(etMock, refListMock, new AttributeInfo(OWLClassC.getRefListField(), Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.LIST)
                                                                                                                                        .elementType(OWLClassA.class)
                                                                                                                                        .valueType(etAMock));
-        when(etMock.getAttribute(OWLClassC.getRdfCollectionField().getName())).thenReturn(rdfCollectionMock);
+        doReturn(rdfCollectionMock).when(etMock).getAttribute(OWLClassC.getRdfCollectionField().getName());
         when(rdfCollectionMock.getJavaField()).thenReturn(OWLClassC.getRdfCollectionField());
         when(rdfCollectionMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(rdfCollectionMock.getCollectionType()).thenReturn(CollectionType.LIST);
@@ -360,7 +362,7 @@ public class MetamodelFactory {
         when(rdfCollectionMock.getJavaType()).thenReturn(List.class);
         when(rdfCollectionMock.isMappedAttribute()).thenReturn(true);
 
-        when(etMock.getAttribute(OWLClassC.getRdfSeqField().getName())).thenReturn(rdfSeqMock);
+        doReturn(rdfSeqMock).when(etMock).getAttribute(OWLClassC.getRdfSeqField().getName());
         when(rdfSeqMock.getJavaField()).thenReturn(OWLClassC.getRdfSeqField());
         when(rdfSeqMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(rdfSeqMock.getCollectionType()).thenReturn(CollectionType.LIST);
@@ -750,7 +752,8 @@ public class MetamodelFactory {
         initAttribute(et, owlClassAAtt, new AttributeInfo(OWLClassR.getOwlClassAField(), Attribute.PersistentAttributeType.OBJECT));
 
         for (Attribute att : parentEt.getAttributes()) {
-            when(et.getAttribute(att.getName())).thenReturn((AbstractAttribute) att);
+            final String attName = att.getName();
+            doReturn(att).when(et).getAttribute(attName);
         }
         for (FieldSpecification fs : parentEt.getFieldSpecifications()) {
             when(et.getFieldSpecification(fs.getName())).thenReturn(fs);
