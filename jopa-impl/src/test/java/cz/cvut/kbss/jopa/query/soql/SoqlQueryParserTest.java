@@ -33,6 +33,7 @@ import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
@@ -845,7 +846,6 @@ public class SoqlQueryParserTest {
     @Test
     void parseQueryThrowsSoqlExceptionWhenUnknownAttributeNameIsUsed() {
         final String soql = "SELECT p FROM Person p WHERE p.unknownAttribute = :param";
-        when(metamodel.entity(Person.class).getAttribute(anyString())).thenThrow(IllegalArgumentException.class);
         final SoqlException ex = assertThrows(SoqlException.class, () -> sut.parseQuery(soql));
         assertThat(ex.getMessage(), containsString("No matching attribute"));
     }
@@ -1044,6 +1044,43 @@ public class SoqlQueryParserTest {
         final String expectedSparql = "ASK WHERE { ?x a " + strUri(Vocabulary.c_Person) +
                 " . ?x " + strUri(Vocabulary.p_p_age) + " ?pAge . ?x " + strUri(Vocabulary.p_p_gender) + " ?gender . " +
                 "FILTER (?pAge > ?age) }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQueryThrowsWhenOrderingByNonExistingAttribute() {
+        final String soql = "SELECT p FROM Person p ORDER BY p.NON_EXISTING";
+        final SoqlException ex = assertThrows(SoqlException.class, () -> sut.parseQuery(soql));
+        assertThat(ex.getMessage(), containsString("No matching attribute with name 'NON_EXISTING'"));
+    }
+
+    @Disabled
+    @Test
+    void parseQueryThrowsWhenOrderingByNonExistingNestedAttribute() {
+        final String soql = "SELECT p FROM Person p ORDER BY p.phone.NON_EXISTING";
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> sut.parseQuery(soql));
+        assertThat(ex.getMessage(), containsString("No matching attribute with name 'NON_EXISTING'"));
+    }
+
+    @Disabled
+    @Test
+    void parseQuerySupportsOrderingByNestedAttribute() {
+        final String soql = "SELECT p FROM Person p ORDER BY p.phone.number";
+        final String expectedSparql = "SELECT ?x WHERE { " +
+                "?x a " + strUri(Vocabulary.c_Person) + " . " +
+                "?x " + strUri(Vocabulary.p_p_hasPhone) + " ?phone . " +
+                "?phone " + strUri(Vocabulary.p_p_phoneNumber) + " ?number . } ORDER BY ?number";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Disabled
+    @Test
+    void parseQuerySupportsOrderingByNestedAttributeWhenSelectingNestedEntity() {
+        final String soql = "SELECT p.phone FROM Person p ORDER BY p.phone.number";
+        final String expectedSparql = "SELECT ?phone WHERE { " +
+                "?x a " + strUri(Vocabulary.c_Person) + " . " +
+                "?x " + strUri(Vocabulary.p_p_hasPhone) + " ?phone . " +
+                "?phone " + strUri(Vocabulary.p_p_phoneNumber) + " ?number . } ORDER BY ?number";
         parseAndAssertEquality(expectedSparql, soql);
     }
 }
