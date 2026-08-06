@@ -1077,4 +1077,14 @@ public class SoqlQueryParserTest {
                 "?x a " + strUri(Vocabulary.c_Person) + " . } ORDER BY ASC(?phoneNumber)";
         parseAndAssertEquality(expectedSparql, soql);
     }
+
+    @Test
+    public void parseQuerySupportsGroupByNestedAttribute() {
+        final String soql = "SELECT COUNT(p) FROM Person p GROUP BY p.phone.brand";
+        final String expectedSparqlQuery =
+                "SELECT (COUNT(?x) AS ?count) WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . " +
+                        "?x " + strUri(Vocabulary.p_p_hasPhone) + " ?phone . " +
+                        "?phone " + strUri(Vocabulary.p_p_phoneBrand) + " ?phoneBrand . } GROUP BY ?phoneBrand ";
+        parseAndAssertEquality(expectedSparqlQuery, soql);
+    }
 }
