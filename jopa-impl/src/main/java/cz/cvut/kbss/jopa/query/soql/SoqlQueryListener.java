@@ -82,6 +82,8 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     private boolean isInObjectIdentifierExpression = false;
 
+    private ParentClause parentClause = null;
+
     private String projectedVariable;
 
     private String rootVariable = "?x";
@@ -109,7 +111,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
         }
 
         // node was already processed by parent
-        if (ctx.getParent() instanceof SoqlParser.SimpleSubpathContext) {
+        if (ctx.getParent() instanceof SoqlParser.SimpleSubpathContext || inClauseWithOwnAttributeHandling()) {
             return;
         }
 
@@ -132,6 +134,17 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     private SoqlNode linkSimpleSubpath(ParserRuleContext ctx) {
         AttributeNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
+        AttributeNode currentNode = traverseSimpleSubpath(ctx, firstNode);
+        setIris(firstNode);
+        // Identifier can only be the last node in a subpath
+        if (isIdentifier(currentNode.getParent(), currentNode)) {
+            this.isInObjectIdentifierExpression = true;
+            currentNode.setIdentifier(true);
+        }
+        return firstNode;
+    }
+
+    private AttributeNode traverseSimpleSubpath(ParserRuleContext ctx, AttributeNode firstNode) {
         AttributeNode currentNode = firstNode;
 
         while (ctx.getChildCount() == 3) {
@@ -140,13 +153,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
             currentNode = new AttributeNode(prevNode, ctx.getChild(0).getText());
             prevNode.addChild(currentNode);
         }
-        setIris(firstNode);
-        // Identifier can only be the last node in a subpath
-        if (isIdentifier(currentNode.getParent(), currentNode)) {
-            this.isInObjectIdentifierExpression = true;
-            currentNode.setIdentifier(true);
-        }
-        return firstNode;
+        return currentNode;
     }
 
     @Override
@@ -336,12 +343,14 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     @Override
     public void enterFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
+        this.parentClause = ParentClause.FUNCTION;
         functionArguments.push(new ArrayList<>());
         functionCallDepth++;
     }
 
     @Override
     public void exitFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
+        this.parentClause = null;
         createFunctionNode(ctx);
         functionCallDepth--;
     }
@@ -361,30 +370,40 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     @Override
     public void enterFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
+        this.parentClause = ParentClause.FUNCTION;
         functionArguments.push(new ArrayList<>());
         functionCallDepth++;
     }
 
     @Override
     public void exitFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
+        this.parentClause = null;
         createFunctionNode(ctx);
         functionCallDepth--;
     }
 
     @Override
     public void enterFunctionsReturningBoolean(SoqlParser.FunctionsReturningBooleanContext ctx) {
+        this.parentClause = ParentClause.FUNCTION;
         functionArguments.push(new ArrayList<>());
         functionCallDepth++;
     }
 
     @Override
     public void exitFunctionsReturningBoolean(SoqlParser.FunctionsReturningBooleanContext ctx) {
+        this.parentClause = null;
         createFunctionNode(ctx);
         functionCallDepth--;
     }
 
     @Override
     public void enterOrderByItem(SoqlParser.OrderByItemContext ctx) {
+        this.parentClause = ParentClause.ORDER_BY;
+    }
+
+    @Override
+    public void exitOrderByItem(SoqlParser.OrderByItemContext ctx) {
+        this.parentClause = null;
         SoqlNode firstNode = linkObjectPathExpression(ctx);
         String orderingBy = getOrderingBy(ctx);
         SoqlOrderParameter orderParam = new SoqlOrderParameter(firstNode, orderingBy);
@@ -407,6 +426,12 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     @Override
     public void enterGroupByItem(SoqlParser.GroupByItemContext ctx) {
+        this.parentClause = ParentClause.GROUP_BY;
+    }
+
+    @Override
+    public void exitGroupByItem(SoqlParser.GroupByItemContext ctx) {
+        this.parentClause = null;
         SoqlNode firstNode = linkObjectPathExpression(ctx);
         SoqlGroupParameter groupParam = new SoqlGroupParameter(firstNode);
         boolean attrSet = false;
@@ -427,12 +452,17 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     private SoqlNode linkObjectPathExpression(ParserRuleContext ctx) {
-        SoqlNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
-        SoqlNode currentNode = firstNode;
-        for (int i = 2; i < ctx.getChild(0).getChildCount(); i += 2) {
-            SoqlNode prevNode = currentNode;
-            currentNode = new AttributeNode(prevNode, ctx.getChild(0).getChild(i).getText());
-            prevNode.addChild(currentNode);
+        ctx = (ParserRuleContext) ctx.getChild(0);
+        AttributeNode firstNode = new AttributeNode(getOwnerFromParam(ctx));
+        AttributeNode currentNode;
+        if (ctx.getChild(0).getChildCount() == 3) {
+            // Nested attribute reference
+            currentNode = traverseSimpleSubpath((ParserRuleContext) ctx.getChild(0), firstNode);
+            AttributeNode leafNode = new AttributeNode(currentNode, ctx.getChild(2).getText());
+            currentNode.addChild(leafNode);
+            currentNode = leafNode;
+        } else {
+            currentNode = traverseSimpleSubpath(ctx, firstNode);
         }
         setIris(firstNode);
         if (currentNode.getIri().isEmpty()) {
@@ -550,11 +580,12 @@ public class SoqlQueryListener extends SoqlBaseListener {
             appendProjection(newQueryBuilder);
         }
         newQueryBuilder.append(" WHERE { ");
-        newQueryBuilder.append(processSupremeAttributes());
+        final String supremeAttributes = processSupremeAttributes().toString();
+        newQueryBuilder.append(supremeAttributes);
         if (!objectOfNextOr.isEmpty()) {
             newQueryBuilder.append("{ ");
         }
-        newQueryBuilder.append(processAttributes());
+        newQueryBuilder.append(processAttributes(supremeAttributes));
         if (!objectOfNextOr.isEmpty()) {
             newQueryBuilder.append("} ");
         }
@@ -608,7 +639,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
         return attributesPart;
     }
 
-    private StringBuilder processAttributes() {
+    private StringBuilder processAttributes(String supremeAttributes) {
         StringBuilder attributesPart = new StringBuilder();
         ArrayList<SoqlAttribute> toFilter = new ArrayList<>();
         ArrayList<SoqlAttribute> toInvFilter = new ArrayList<>();
@@ -628,7 +659,8 @@ public class SoqlQueryListener extends SoqlBaseListener {
                     toFilter.add(myAttr);
                 }
                 final List<String> bgps = processAttribute(myAttr);
-                bgps.stream().filter(bgp -> attributesPart.indexOf(bgp) == -1).forEach(attributesPart::append);
+                bgps.stream().filter(bgp -> attributesPart.indexOf(bgp) == -1 && !supremeAttributes.contains(bgp))
+                    .forEach(attributesPart::append);
             }
         }
         attributesPart.append(processAllFilters(toFilter, toInvFilter));
@@ -694,5 +726,13 @@ public class SoqlQueryListener extends SoqlBaseListener {
             sb.append(' ').append(groupParam.getGroupByPart(rootVariable));
         }
         return sb.toString();
+    }
+
+    private boolean inClauseWithOwnAttributeHandling() {
+        return parentClause == ParentClause.ORDER_BY || parentClause == ParentClause.GROUP_BY;
+    }
+
+    private enum ParentClause {
+        ORDER_BY, GROUP_BY, FUNCTION
     }
 }
