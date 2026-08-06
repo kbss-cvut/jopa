@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
-import cz.cvut.kbss.jopa.environment.Person;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exception.SoqlException;
@@ -33,7 +32,6 @@ import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
@@ -53,7 +51,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -1054,33 +1051,30 @@ public class SoqlQueryParserTest {
         assertThat(ex.getMessage(), containsString("No matching attribute with name 'NON_EXISTING'"));
     }
 
-    @Disabled
     @Test
     void parseQueryThrowsWhenOrderingByNonExistingNestedAttribute() {
         final String soql = "SELECT p FROM Person p ORDER BY p.phone.NON_EXISTING";
-        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> sut.parseQuery(soql));
+        final SoqlException ex = assertThrows(SoqlException.class, () -> sut.parseQuery(soql));
         assertThat(ex.getMessage(), containsString("No matching attribute with name 'NON_EXISTING'"));
     }
 
-    @Disabled
     @Test
     void parseQuerySupportsOrderingByNestedAttribute() {
         final String soql = "SELECT p FROM Person p ORDER BY p.phone.number";
         final String expectedSparql = "SELECT ?x WHERE { " +
                 "?x a " + strUri(Vocabulary.c_Person) + " . " +
                 "?x " + strUri(Vocabulary.p_p_hasPhone) + " ?phone . " +
-                "?phone " + strUri(Vocabulary.p_p_phoneNumber) + " ?number . } ORDER BY ?number";
+                "?phone " + strUri(Vocabulary.p_p_phoneNumber) + " ?phoneNumber . } ORDER BY ASC(?phoneNumber)";
         parseAndAssertEquality(expectedSparql, soql);
     }
 
-    @Disabled
     @Test
     void parseQuerySupportsOrderingByNestedAttributeWhenSelectingNestedEntity() {
         final String soql = "SELECT p.phone FROM Person p ORDER BY p.phone.number";
         final String expectedSparql = "SELECT ?phone WHERE { " +
-                "?x a " + strUri(Vocabulary.c_Person) + " . " +
                 "?x " + strUri(Vocabulary.p_p_hasPhone) + " ?phone . " +
-                "?phone " + strUri(Vocabulary.p_p_phoneNumber) + " ?number . } ORDER BY ?number";
+                "?phone " + strUri(Vocabulary.p_p_phoneNumber) + " ?phoneNumber . " +
+                "?x a " + strUri(Vocabulary.c_Person) + " . } ORDER BY ASC(?phoneNumber)";
         parseAndAssertEquality(expectedSparql, soql);
     }
 }
