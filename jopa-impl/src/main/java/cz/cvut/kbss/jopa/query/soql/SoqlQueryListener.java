@@ -314,7 +314,13 @@ public class SoqlQueryListener extends SoqlBaseListener {
                     popAttribute();
                 } else {
                     final String varName = whereClauseValue.getText();
-                    attrPointer.getFirstNode().getChild().setValue(
+                    // Rename the node whose child is the identifier (the last attribute in the path),
+                    // so that the identifier comparison value binds to the correct triple pattern object
+                    SoqlNode identifierParent = attrPointer.getFirstNode();
+                    while (identifierParent.hasChild() && !identifierParent.getChild().isIdentifier()) {
+                        identifierParent = identifierParent.getChild();
+                    }
+                    identifierParent.setValue(
                             varName.charAt(0) == SoqlConstants.VARIABLE_PREFIX ? varName.substring(1) : varName);
                 }
             }

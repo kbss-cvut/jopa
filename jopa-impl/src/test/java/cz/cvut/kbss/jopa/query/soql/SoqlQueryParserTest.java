@@ -1087,4 +1087,13 @@ public class SoqlQueryParserTest {
                         "?phone " + strUri(Vocabulary.p_p_phoneBrand) + " ?phoneBrand . } GROUP BY ?phoneBrand ";
         parseAndAssertEquality(expectedSparqlQuery, soql);
     }
+
+    @Test
+    public void parseQuerySupportsNestedIdentifierAccess() {
+        final String soql = "SELECT owlclassg FROM OWLClassG owlclassg WHERE owlclassg.owlClassH.owlClassA.uri = :generatedName0";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassG) + " . " +
+                "?x " + strUri(Vocabulary.p_g_hasH) + " ?owlClassH . " +
+                "?owlClassH " + strUri(Vocabulary.p_h_hasA) + " ?generatedName0 . }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
 }
