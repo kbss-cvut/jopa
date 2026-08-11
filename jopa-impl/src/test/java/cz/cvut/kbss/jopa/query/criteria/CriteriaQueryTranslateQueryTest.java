@@ -23,6 +23,8 @@ import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassD_;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
+import cz.cvut.kbss.jopa.environment.OWLClassG;
+import cz.cvut.kbss.jopa.environment.OWLClassH;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.Person;
@@ -31,6 +33,7 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
+import cz.cvut.kbss.jopa.model.query.criteria.Path;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.Root;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
@@ -754,5 +757,23 @@ public class CriteriaQueryTranslateQueryTest {
             final String expectedSoqlQuery = "ASK FROM OWLClassM owlclassm WHERE owlclassm.intAttribute < :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
+    }
+
+    @Test
+    public void testNestedIdentifierReference() {
+        CriteriaQueryImpl<OWLClassG> query = cb.createQuery(OWLClassG.class);
+        Root<OWLClassG> root = query.from(OWLClassG.class);
+        final Path<OWLClassH> hPath = root.getAttr("owlClassH");
+        final Path<URI> idAPath = hPath.getAttr("owlClassA").getAttr("uri");
+
+        query.select(root).where(
+                cb.equal(
+                        idAPath,
+                        Generators.createIndividualIdentifier()
+                )
+        );
+        final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+        final String expectedSoqlQuery = "SELECT owlclassg FROM OWLClassG owlclassg WHERE owlclassg.owlClassH.owlClassA.uri = :generatedName0";
+        assertEquals(expectedSoqlQuery, generatedSoqlQuery);
     }
 }
