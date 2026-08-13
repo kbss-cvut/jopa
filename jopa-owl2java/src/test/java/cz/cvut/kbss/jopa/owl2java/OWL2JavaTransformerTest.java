@@ -468,11 +468,11 @@ public class OWL2JavaTransformerTest {
     @Test
     public void generateVocabularyDoesNotGenerateDuplicateConstantsForImportedOntologies() throws Exception {
         this.targetDir = getTempDirectory();
-        transformer.setOntology("http://onto.fel.cvut.cz/ontologies/dataset-descriptor", mappingFilePath);
+        transformer.setOntology("http://onto.fel.cvut.cz/ontologies/ufo-c", mappingFilePath);
         transformer.generateVocabulary(config(null, "", targetDir.getAbsolutePath(), true, true).build());
         final File vocabularyFile = targetDir.listFiles()[0];
         final String fileContents = readFile(vocabularyFile);
-        final Matcher m = Pattern.compile("\"http://onto.fel.cvut.cz/ontologies/ufo-c\";").matcher(fileContents);
+        final Matcher m = Pattern.compile("\"http://onto.fel.cvut.cz/ontologies/ufo-a\";").matcher(fileContents);
         final List<String> matches = new ArrayList<>();
         while (m.find()) {
             matches.add(m.group());

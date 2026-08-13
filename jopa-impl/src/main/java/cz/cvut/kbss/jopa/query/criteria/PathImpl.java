@@ -55,4 +55,11 @@ public class PathImpl<X> extends AbstractPathExpression<X> implements Path<X> {
         }
     }
 
+    public FieldSpecification<?, ?> getAttribute() {
+        return attribute;
+    }
+
+    public String getAttributeName() {
+        return attributeName;
+    }
 }

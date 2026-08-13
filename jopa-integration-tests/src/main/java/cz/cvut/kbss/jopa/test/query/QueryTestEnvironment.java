@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public final class QueryTestEnvironment {
 
@@ -326,6 +328,8 @@ public final class QueryTestEnvironment {
             m.setEnumAttribute(Generators.getRandomItem(Arrays.asList(OWLClassM.Severity.values())));
             m.setEnumSimpleLiteral(m.getEnumAttribute());
             m.setOrdinalEnumAttribute(m.getEnumAttribute());
+            m.setStringCollection(IntStream.range(0, 5).mapToObj(j -> Generators.randomString())
+                                           .collect(Collectors.toSet()));
             lst.add(m);
         }
         return lst;

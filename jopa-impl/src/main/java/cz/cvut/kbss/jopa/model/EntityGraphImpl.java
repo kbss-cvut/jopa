@@ -96,4 +96,8 @@ public class EntityGraphImpl<T> implements EntityGraph<T>, Subgraph<T> {
     public Class<T> getClassType() {
         return entityType.getJavaType();
     }
+
+    public ManagedType<T> getEntityType() {
+        return entityType;
+    }
 }

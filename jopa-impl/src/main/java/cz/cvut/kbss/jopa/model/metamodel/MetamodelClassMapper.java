@@ -12,5 +12,5 @@ public interface MetamodelClassMapper {
      * @param <X> Class type
      * @return Entity type
      */
-    <X> AbstractIdentifiableType<X> entity(Class<X> cls);
+    <X> EntityType<X> entity(Class<X> cls);
 }

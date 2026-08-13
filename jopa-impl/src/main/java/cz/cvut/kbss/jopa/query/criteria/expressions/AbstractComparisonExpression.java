@@ -39,6 +39,14 @@ public abstract class AbstractComparisonExpression extends AbstractExpression<Bo
     }
 
     protected abstract String getComparisonOperator();
+
+    public AbstractExpression<?> getRight() {
+        return right;
+    }
+
+    public AbstractExpression<?> getLeft() {
+        return left;
+    }
 }
 
 

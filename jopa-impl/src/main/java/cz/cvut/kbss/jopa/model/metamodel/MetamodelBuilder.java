@@ -260,8 +260,8 @@ public class MetamodelBuilder implements MetamodelClassMapper {
     }
 
     @Override
-    public <X> AbstractIdentifiableType<X> entity(Class<X> cls) {
-        return (AbstractIdentifiableType<X>) typeMap.get(cls);
+    public <X> IdentifiableEntityType<X> entity(Class<X> cls) {
+        return (IdentifiableEntityType<X>) typeMap.get(cls);
     }
 
     public Map<Class<?>, EntityType<?>> getEntities() {

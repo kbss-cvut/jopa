@@ -37,6 +37,7 @@ import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
 import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.iteration.ResultRow;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -76,6 +77,7 @@ import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -379,5 +381,19 @@ class AttributeBasedRowsToAxiomsQueryResultLoaderTest {
             }
         }
         return row;
+    }
+
+    @Test
+    void loadResultsSkipsRowsWhereSubjectIsBlankNode() throws OntoDriverException {
+        final ResultRow row = mock(ResultRow.class);
+        when(row.getColumnCount()).thenReturn(2);
+        when(row.getColumnNames()).thenReturn(List.of("x", "x_number"));
+        when(row.getObject(0, URI.class)).thenAnswer(invocation -> URI.create("_:blank-node"));
+        when(row.getObject("x", URI.class)).thenAnswer(invocation -> URI.create("_:blank-node"));
+        when(row.isBound("x")).thenReturn(true);
+        final AttributeBasedRowsToAxiomsQueryResultLoader<Phone> sut = new AttributeBasedRowsToAxiomsQueryResultLoader<>(uow, Phone.class, descriptor, null);
+        final Optional<Phone> result = sut.loadResult(row);
+        assertFalse(result.isPresent());
+        verify(uow, never()).readObjectFromAxioms(any(), anyCollection(), any());
     }
 }

@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.model.annotations;
 import cz.cvut.kbss.jopa.model.query.Query;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -55,6 +56,7 @@ import java.lang.annotation.Target;
  * @see Query
  * @see NamedNativeQuery
  */
+@Repeatable(SparqlResultSetMappings.class)
 @Target(value = ElementType.TYPE)
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface SparqlResultSetMapping {

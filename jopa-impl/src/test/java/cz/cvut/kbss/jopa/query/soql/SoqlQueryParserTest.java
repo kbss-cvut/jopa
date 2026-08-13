@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
-import cz.cvut.kbss.jopa.environment.Person;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exception.SoqlException;
@@ -52,7 +51,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -845,7 +843,6 @@ public class SoqlQueryParserTest {
     @Test
     void parseQueryThrowsSoqlExceptionWhenUnknownAttributeNameIsUsed() {
         final String soql = "SELECT p FROM Person p WHERE p.unknownAttribute = :param";
-        when(metamodel.entity(Person.class).getAttribute(anyString())).thenThrow(IllegalArgumentException.class);
         final SoqlException ex = assertThrows(SoqlException.class, () -> sut.parseQuery(soql));
         assertThat(ex.getMessage(), containsString("No matching attribute"));
     }
@@ -1044,6 +1041,59 @@ public class SoqlQueryParserTest {
         final String expectedSparql = "ASK WHERE { ?x a " + strUri(Vocabulary.c_Person) +
                 " . ?x " + strUri(Vocabulary.p_p_age) + " ?pAge . ?x " + strUri(Vocabulary.p_p_gender) + " ?gender . " +
                 "FILTER (?pAge > ?age) }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQueryThrowsWhenOrderingByNonExistingAttribute() {
+        final String soql = "SELECT p FROM Person p ORDER BY p.NON_EXISTING";
+        final SoqlException ex = assertThrows(SoqlException.class, () -> sut.parseQuery(soql));
+        assertThat(ex.getMessage(), containsString("No matching attribute with name 'NON_EXISTING'"));
+    }
+
+    @Test
+    void parseQueryThrowsWhenOrderingByNonExistingNestedAttribute() {
+        final String soql = "SELECT p FROM Person p ORDER BY p.phone.NON_EXISTING";
+        final SoqlException ex = assertThrows(SoqlException.class, () -> sut.parseQuery(soql));
+        assertThat(ex.getMessage(), containsString("No matching attribute with name 'NON_EXISTING'"));
+    }
+
+    @Test
+    void parseQuerySupportsOrderingByNestedAttribute() {
+        final String soql = "SELECT p FROM Person p ORDER BY p.phone.number";
+        final String expectedSparql = "SELECT ?x WHERE { " +
+                "?x a " + strUri(Vocabulary.c_Person) + " . " +
+                "?x " + strUri(Vocabulary.p_p_hasPhone) + " ?phone . " +
+                "?phone " + strUri(Vocabulary.p_p_phoneNumber) + " ?phoneNumber . } ORDER BY ASC(?phoneNumber)";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsOrderingByNestedAttributeWhenSelectingNestedEntity() {
+        final String soql = "SELECT p.phone FROM Person p ORDER BY p.phone.number";
+        final String expectedSparql = "SELECT ?phone WHERE { " +
+                "?x " + strUri(Vocabulary.p_p_hasPhone) + " ?phone . " +
+                "?phone " + strUri(Vocabulary.p_p_phoneNumber) + " ?phoneNumber . " +
+                "?x a " + strUri(Vocabulary.c_Person) + " . } ORDER BY ASC(?phoneNumber)";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    public void parseQuerySupportsGroupByNestedAttribute() {
+        final String soql = "SELECT COUNT(p) FROM Person p GROUP BY p.phone.brand";
+        final String expectedSparqlQuery =
+                "SELECT (COUNT(?x) AS ?count) WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . " +
+                        "?x " + strUri(Vocabulary.p_p_hasPhone) + " ?phone . " +
+                        "?phone " + strUri(Vocabulary.p_p_phoneBrand) + " ?phoneBrand . } GROUP BY ?phoneBrand ";
+        parseAndAssertEquality(expectedSparqlQuery, soql);
+    }
+
+    @Test
+    public void parseQuerySupportsNestedIdentifierAccess() {
+        final String soql = "SELECT owlclassg FROM OWLClassG owlclassg WHERE owlclassg.owlClassH.owlClassA.uri = :generatedName0";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassG) + " . " +
+                "?x " + strUri(Vocabulary.p_g_hasH) + " ?owlClassH . " +
+                "?owlClassH " + strUri(Vocabulary.p_h_hasA) + " ?generatedName0 . }";
         parseAndAssertEquality(expectedSparql, soql);
     }
 }

@@ -29,6 +29,7 @@ import java.lang.annotation.*;
  * @see Namespaces
  */
 @Inherited
+@Repeatable(Namespaces.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE})
 public @interface Namespace {

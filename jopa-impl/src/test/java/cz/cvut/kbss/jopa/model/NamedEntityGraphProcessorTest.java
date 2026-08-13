@@ -10,7 +10,7 @@ import cz.cvut.kbss.jopa.model.annotations.NamedSubgraph;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.MetamodelClassMapper;
 import cz.cvut.kbss.jopa.vocabulary.RDFS;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ class NamedEntityGraphProcessorTest {
 
     @Test
     void buildEntityGraphBuildsEntityGraphFromAnnotationDeclaringAttributeNodes() {
-        final AbstractIdentifiableType<EntityWithAttributes> ait = mock(AbstractIdentifiableType.class);
+        final IdentifiableEntityType<EntityWithAttributes> ait = mock(IdentifiableEntityType.class);
         when(metamodelMapper.entity(EntityWithAttributes.class)).thenReturn(ait);
         final AbstractAttribute nameAtt = mock(AbstractAttribute.class);
         when(nameAtt.getName()).thenReturn("name");
@@ -83,7 +83,7 @@ class NamedEntityGraphProcessorTest {
 
     @Test
     void buildEntityGraphDefaultNameToAnnotatedEntityClassName() {
-        final AbstractIdentifiableType<EntityWithAttributes> ait = mock(AbstractIdentifiableType.class);
+        final IdentifiableEntityType<EntityWithAttributes> ait = mock(IdentifiableEntityType.class);
         when(metamodelMapper.entity(EntityWithAttributes.class)).thenReturn(ait);
         when(ait.getAttribute(anyString())).thenAnswer(inv -> mock(AbstractAttribute.class));
         final NamedEntityGraphs ne = EntityWithAttributes.class.getAnnotation(NamedEntityGraphs.class);
@@ -96,12 +96,12 @@ class NamedEntityGraphProcessorTest {
 
     @Test
     void buildEntityGraphSupportsReferenceToOtherEntityGraph() {
-        final AbstractIdentifiableType<ReferencingEntity> rootAit = mock(AbstractIdentifiableType.class);
+        final IdentifiableEntityType<ReferencingEntity> rootAit = mock(IdentifiableEntityType.class);
         when(metamodelMapper.entity(ReferencingEntity.class)).thenReturn(rootAit);
         final AbstractAttribute referencedEntityAtt = mock(AbstractAttribute.class);
         when(referencedEntityAtt.getJavaType()).thenReturn(EntityWithAttributes.class);
         when(rootAit.getAttribute("referencedEntity")).thenReturn(referencedEntityAtt);
-        final AbstractIdentifiableType<EntityWithAttributes> subgraphAit = mock(AbstractIdentifiableType.class);
+        final IdentifiableEntityType<EntityWithAttributes> subgraphAit = mock(IdentifiableEntityType.class);
         when(metamodelMapper.entity(EntityWithAttributes.class)).thenReturn(subgraphAit);
         when(subgraphAit.getAttribute("name")).thenReturn(mock(AbstractAttribute.class));
         when(subgraphAit.getJavaType()).thenReturn(EntityWithAttributes.class);
@@ -136,16 +136,16 @@ class NamedEntityGraphProcessorTest {
 
     @Test
     void buildEntityGraphSupportsTraversalAcrossMultipleLevels() {
-        final AbstractIdentifiableType<ReferencingReferencingEntity> rootAit = mock(AbstractIdentifiableType.class);
+        final IdentifiableEntityType<ReferencingReferencingEntity> rootAit = mock(IdentifiableEntityType.class);
         when(metamodelMapper.entity(ReferencingReferencingEntity.class)).thenReturn(rootAit);
         final AbstractAttribute referencedEntityAtt = mock(AbstractAttribute.class);
         when(rootAit.getAttribute("referencedEntity")).thenReturn(referencedEntityAtt);
-        final AbstractIdentifiableType<ReferencingEntity> middleAit = mock(AbstractIdentifiableType.class);
+        final IdentifiableEntityType<ReferencingEntity> middleAit = mock(IdentifiableEntityType.class);
         when(metamodelMapper.entity(ReferencingEntity.class)).thenReturn(middleAit);
         when(middleAit.getJavaType()).thenReturn(ReferencingEntity.class);
         final AbstractAttribute middleReferencedEntityAtt = mock(AbstractAttribute.class);
         when(middleAit.getAttribute("referencedEntity")).thenReturn(middleReferencedEntityAtt);
-        final AbstractIdentifiableType<EntityWithAttributes> subgraphAit = mock(AbstractIdentifiableType.class);
+        final IdentifiableEntityType<EntityWithAttributes> subgraphAit = mock(IdentifiableEntityType.class);
         when(metamodelMapper.entity(EntityWithAttributes.class)).thenReturn(subgraphAit);
         final AbstractAttribute nameAtt = mock(AbstractAttribute.class);
         when(nameAtt.getName()).thenReturn("name");
