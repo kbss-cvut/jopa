@@ -612,4 +612,22 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         final Boolean result = tq.getSingleResult();
         assertTrue(result);
     }
+
+    @Test
+    void testIsMemberByMultipleValues() {
+        final List<OWLClassM> mInstances = QueryTestEnvironment.getData(OWLClassM.class);
+        final OWLClassM sample = Generators.getRandomItem(mInstances);
+        final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassM> query = cb.createQuery(OWLClassM.class);
+        final Root<OWLClassM> root = query.from(OWLClassM.class);
+        final List<Predicate> predicates = sample.getStringCollection().stream()
+                                                 .map(s -> cb.isMember(new LangString(s, TestEnvironment.PERSISTENCE_LANGUAGE), root.getAttr("stringCollection")))
+                                                 .toList();
+        query.select(root).where(predicates);
+
+        final TypedQuery<OWLClassM> tq = getEntityManager().createQuery(query);
+        final List<OWLClassM> result = tq.getResultList();
+        assertFalse(result.isEmpty());
+        result.forEach(m -> assertTrue(m.getStringCollection().containsAll(sample.getStringCollection())));
+    }
 }

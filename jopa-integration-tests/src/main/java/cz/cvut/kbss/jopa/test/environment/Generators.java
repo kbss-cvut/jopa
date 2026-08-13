@@ -243,6 +243,10 @@ public abstract class Generators {
         return RANDOM.nextBoolean();
     }
 
+    public static String randomString() {
+        return "String " + randomInt(10000);
+    }
+
     public static Set<URI> createUriTypes() {
         final int count = randomPositiveInt(DEFAULT_MIN, DEFAULT_SIZE);
         final Set<URI> result = new HashSet<>();
