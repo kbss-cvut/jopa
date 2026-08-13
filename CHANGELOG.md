@@ -1,5 +1,12 @@
 # JOPA - Change Log
 
+### 2.11.2 - 2026-08-13
+
+- Fix missing support for referencing nested attributes in `ORDER BY`/`GROUP BY` clause in SOQL (Bug #460).
+- Fix an issue with referencing nested identifier in SOQL (Bug #462).
+- Provide access to current Criteria query (builder) state.
+- Make annotations `@NamedNativeQuery`, `@Namespace` and `SparqlResultSetMapping` repeatable.
+
 ### 2.11.1 - 2026-07-21
 
 - Fix an issue with inconsistent handling of projected language tagged strings with and without `GROUP_CONCAT` (Bug #457).
