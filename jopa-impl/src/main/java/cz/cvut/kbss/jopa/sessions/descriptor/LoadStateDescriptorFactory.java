@@ -24,9 +24,11 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
 /**
  * Builds {@link LoadStateDescriptor}s on various occasions.
@@ -92,13 +94,17 @@ public class LoadStateDescriptorFactory {
     public static <T> LoadStateDescriptor<T> createForFetchGraph(T instance, IdentifiableEntityType<T> et,
                                                                  FetchGraphWrapper fetchGraph) {
         final LoadStateDescriptor<T> descriptor = createAllUnknown(instance, et);
-        et.getAttributes().stream().filter(Attribute::isAssociation)
+        et.getAttributes().stream().filter(att -> att.isAssociation() && isAssociatedWithEntity(att))
           .forEach(att -> descriptor.setLoaded(att, LoadState.NOT_LOADED));
         fetchGraph.getAttributeNodes().forEach(an -> {
             final Attribute<? super T, ?> fs = (an instanceof AttributeNodeImpl attNode) ? attNode.getAttribute() : et.getAttributeIncludingSubTypes(an.getAttributeName());
             descriptor.setLoaded(fs, LoadState.LOADED);
         });
         return descriptor;
+    }
+
+    private static boolean isAssociatedWithEntity(Attribute<?, ?> att) {
+        return !IdentifierTransformer.isValidIdentifierType(att.isCollection() ? ((PluralAttribute) att).getBindableJavaType() : att.getJavaType());
     }
 
     /**
