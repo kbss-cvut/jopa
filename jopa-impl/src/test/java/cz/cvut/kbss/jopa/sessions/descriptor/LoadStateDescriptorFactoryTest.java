@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
+import cz.cvut.kbss.jopa.environment.OWLClassP;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.EntityGraph;
@@ -164,5 +165,20 @@ class LoadStateDescriptorFactoryTest {
         assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassL().owlClassAAtt()));
         assertEquals(LoadState.NOT_LOADED, result.isLoaded(metamodelMocks.forOwlClassL().referencedListAtt()));
         assertEquals(LoadState.NOT_LOADED, result.isLoaded(metamodelMocks.forOwlClassL().setAttribute()));
+    }
+
+    @Test
+    void createForFetchGraphCreatesLoadStateDescriptionWithPlainIdentifierObjectPropertyAttributesAsUnknown() {
+        final OWLClassP instance = new OWLClassP(Generators.createIndividualIdentifier());
+        final MetamodelImpl metamodel = mock(MetamodelImpl.class);
+        metamodelMocks.setMocks(metamodel);
+        final EntityGraph<OWLClassP> fetchGraph = new EntityGraphImpl<>(metamodelMocks.forOwlClassP()
+                                                                                      .entityType(), metamodel);
+        fetchGraph.addAttributeNodes("individualUrls");
+
+        final LoadStateDescriptor<OWLClassP> result = LoadStateDescriptorFactory.createForFetchGraph(instance, metamodelMocks.forOwlClassP()
+                                                                                                                             .entityType(), new FetchGraphWrapper(fetchGraph));
+        assertEquals(LoadState.LOADED, result.isLoaded(metamodelMocks.forOwlClassP().pUrlsAttribute()));
+        assertEquals(LoadState.UNKNOWN, result.isLoaded(metamodelMocks.forOwlClassP().pUriAttribute()));
     }
 }

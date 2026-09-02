@@ -53,6 +53,13 @@ public class OWLClassP implements HasUri {
     @Properties
     private Map<URI, Set<Object>> properties;
 
+    public OWLClassP() {
+    }
+
+    public OWLClassP(URI uri) {
+        this.uri = uri;
+    }
+
     public URI getUri() {
         return uri;
     }
