@@ -5,6 +5,7 @@ import cz.cvut.kbss.jopa.model.Subgraph;
 import cz.cvut.kbss.jopa.query.QueryHints;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassM;
 import cz.cvut.kbss.jopa.test.OWLClassS;
 import cz.cvut.kbss.jopa.test.OWLClassU;
 import cz.cvut.kbss.jopa.test.Vocabulary;
@@ -95,6 +96,7 @@ public class FetchGraphEntityLoadingTest extends IntegrationTestBase {
         expected.setUri(Generators.generateUri());
         expected.setName("test");
         expected.setDescription("test description");
+        expected.setUriAttribute(Generators.generateUri());
         final OWLClassS reference = new OWLClassS();
         reference.setUri(Generators.generateUri());
         reference.setName("test reference");
@@ -117,6 +119,7 @@ public class FetchGraphEntityLoadingTest extends IntegrationTestBase {
         assertEquals(reference.getUri(), result.get(0).getOwlClassS().getUri());
         assertEquals(reference.getName(), result.get(0).getOwlClassS().getName());
         assertNull(result.get(0).getOwlClassS().getDescription());
+        assertNull(result.get(0).getUriAttribute());
     }
 
     private void mockQueryResultSet(OWLClassU expected) throws OntoDriverException {
@@ -144,5 +147,49 @@ public class FetchGraphEntityLoadingTest extends IntegrationTestBase {
         when(resultRowMock.getObject("x_owlClassS_name")).thenReturn(expected.getOwlClassS().getName());
         when(resultRowMock.isBound("x_owlClassS_types_gc")).thenReturn(true);
         when(resultRowMock.getString("x_owlClassS_types_gc")).thenReturn(Vocabulary.C_OWL_CLASS_S);
+    }
+
+    @Test
+    void fetchGraphBasedLoadingOfDataPropertyValuesLeavesThemAsNull() throws Exception {
+        when(connectionMock.getRepositoryMetadata()).thenReturn(() -> "");
+        final OWLClassM expected = new OWLClassM();
+        expected.setKey(Generators.generateUri().toString());
+        expected.setIntAttribute(Generators.randomInt());
+        expected.setSimpleLiteral("Test value");
+        mockQueryResultSet(expected);
+        final EntityGraph<OWLClassM> fetchGraph = em.createEntityGraph(OWLClassM.class);
+        fetchGraph.addAttributeNodes("intAttribute", "simpleLiteral");
+
+        final List<OWLClassM> result = em.createQuery("SELECT m FROM OWLClassM m", OWLClassM.class)
+                                         .setHint(QueryHints.FETCH_GRAPH, fetchGraph)
+                                         .getResultList();
+        assertEquals(1, result.size());
+        assertEquals(expected.getKey(), result.get(0).getKey());
+        assertEquals(expected.getIntAttribute(), result.get(0).getIntAttribute());
+        assertEquals(expected.getSimpleLiteral(), result.get(0).getSimpleLiteral());
+        assertNull(result.get(0).getAnnotationSimpleLiteral());
+        assertNull(result.get(0).getBooleanAttribute());
+    }
+
+    private void mockQueryResultSet(OWLClassM expected) throws OntoDriverException {
+        final Statement statementMock = mock(Statement.class);
+        final ResultSet resultSetMock = mock(ResultSet.class);
+        final ResultSetIterator resultSetIteratorMock = mock(ResultSetIterator.class);
+        final ResultRow resultRowMock = mock(ResultRow.class);
+        when(connectionMock.createStatement()).thenReturn(statementMock);
+        when(statementMock.executeQuery(anyString())).thenReturn(resultSetMock);
+        when(resultSetMock.iterator()).thenReturn(resultSetIteratorMock);
+        when(resultSetIteratorMock.next()).thenReturn(resultRowMock);
+        when(resultSetIteratorMock.hasNext()).thenReturn(true, false);
+        when(resultRowMock.getColumnCount()).thenReturn(5);
+        when(resultRowMock.isBound("x")).thenReturn(true);
+        when(resultRowMock.getObject("x", URI.class)).thenReturn(URI.create(expected.getKey()));
+        when(resultRowMock.getObject(0, URI.class)).thenReturn(URI.create(expected.getKey()));
+        when(resultRowMock.isBound("x_types")).thenReturn(true);
+        when(resultRowMock.getObject("x_types")).thenReturn(URI.create(Vocabulary.C_OWL_CLASS_M));
+        when(resultRowMock.isBound("x_intAttribute")).thenReturn(true);
+        when(resultRowMock.getObject("x_intAttribute")).thenReturn(expected.getIntAttribute());
+        when(resultRowMock.isBound("x_simpleLiteral")).thenReturn(true);
+        when(resultRowMock.getObject("x_simpleLiteral")).thenReturn(expected.getSimpleLiteral());
     }
 }
