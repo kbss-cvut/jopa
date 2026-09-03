@@ -3,7 +3,6 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.metamodel.MetamodelClassMapper;
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,10 +49,7 @@ public class EntityGraphImpl<T> implements EntityGraph<T>, Subgraph<T> {
     @Override
     public <X> EntityGraphImpl<X> addSubgraph(Attribute<T, X> attribute) {
         final AttributeNodeImpl<X> node = (AttributeNodeImpl<X>) attributeNodes.computeIfAbsent(attribute.getName(), k -> new AttributeNodeImpl<>(attribute));
-        Class<?> javaType = attribute.getJavaType();
-        if (attribute.isCollection()) {
-            javaType = ((PluralAttribute<T, ?, X>) attribute).getBindableJavaType();
-        }
+        final Class<?> javaType = attribute.getValueJavaType();
         final EntityGraphImpl<X> g = new EntityGraphImpl(metamodel.entity(javaType), metamodel);
         node.addSubgraph(g);
         return g;

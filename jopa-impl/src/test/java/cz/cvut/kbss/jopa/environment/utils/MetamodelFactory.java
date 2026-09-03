@@ -195,6 +195,7 @@ public class MetamodelFactory {
 
     private static <X> void initAttribute(IdentifiableEntityType<X> etMock, AbstractAttribute attMock,
                                           AttributeInfo attInfo) {
+        when(attMock.getValueJavaType()).thenCallRealMethod();
         when(attMock.isMappedAttribute()).thenReturn(true);
         when(etMock.getFieldSpecification(attInfo.field.getName())).thenReturn(attMock);
         doReturn(attMock).when(etMock).getAttribute(attInfo.field.getName());

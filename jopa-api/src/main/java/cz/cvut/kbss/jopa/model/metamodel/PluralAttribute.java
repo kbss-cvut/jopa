@@ -60,4 +60,9 @@ public interface PluralAttribute<X, C, E> extends Attribute<X, C>, Bindable<E> {
      */
     @NonJPA
     default boolean isRDFCollection() { return false; }
+
+    @Override
+    default Class<?> getValueJavaType() {
+        return getBindableJavaType();
+    }
 }
