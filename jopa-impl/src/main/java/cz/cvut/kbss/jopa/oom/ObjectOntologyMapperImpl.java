@@ -81,7 +81,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     private final PendingReferenceRegistry pendingReferences;
 
     private Map<URI, Object> instanceRegistry;
-    private Map<URI, Set<Axiom<?>>> axiomsPerEntity = Map.of();
+    private Map<URI, Set<Axiom<?>>> axiomsPerEntity = new HashMap<>();
 
     private final EntityInstanceLoader defaultInstanceLoader;
     private final EntityInstanceLoader twoStepInstanceLoader;
@@ -165,7 +165,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         if (loadingParameters.axioms().isEmpty()) {
             return null;
         }
-        this.axiomsPerEntity = new HashMap<>();
         loadingParameters.axioms().forEach(ax -> axiomsPerEntity.computeIfAbsent(ax.getSubject()
                                                                                    .getIdentifier(), k -> new HashSet<>())
                                                                 .add(ax));
@@ -173,7 +172,9 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
                 loadingParameters.config().subject(),
                 loadingParameters.config().descriptor(), new FetchGraphWrapper(loadingParameters.config()
                                                                                                 .fetchGraph()), false, loadingParameters.bypassCache());
-        return loadEntityFromAxioms(params);
+        T result = loadEntityFromAxioms(params);
+        this.axiomsPerEntity = new HashMap<>();
+        return result;
     }
 
     private <T> T loadEntityFromAxioms(LoadingParameters<T> params) {
