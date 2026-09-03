@@ -113,8 +113,8 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
      * Gets the explicitly specified identifier of the attribute datatype.
      * <p>
      * Note that the returned value may be {@code null} in case the datatype is not explicitly specified and automatic
-     * datatype resolution provided by the underlying OntoDriver is used. {@code null} is also returned for object property
-     * attributes, as this does not apply to them.
+     * datatype resolution provided by the underlying OntoDriver is used. {@code null} is also returned for object
+     * property attributes, as this does not apply to them.
      *
      * @return Datatype identifier, possibly {@code null}
      */
@@ -134,8 +134,8 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
     /**
      * Indicates whether a language is specified for this attribute.
      * <p>
-     * Note that language applies only to String-based data or annotation property attribute values, for which {@code
-     * rdfs:langString} values will be read and its language tag compared to the one required.
+     * Note that language applies only to String-based data or annotation property attribute values, for which
+     * {@code rdfs:langString} values will be read and its language tag compared to the one required.
      * <p>
      * Also note that if the attribute is a simple literal or in lexical form only, it has no language and this method
      * will return false.
@@ -147,8 +147,8 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
     /**
      * Gets the language configured for this attribute.
      * <p>
-     * Note that language applies only to String-based data or annotation property attribute values, for which {@code
-     * rdfs:langString} values will be read and its language tag compared to the one required.
+     * Note that language applies only to String-based data or annotation property attribute values, for which
+     * {@code rdfs:langString} values will be read and its language tag compared to the one required.
      * <p>
      * If no language is specified directly for the attribute, persistence unit-level language setting is used.
      *
@@ -167,5 +167,18 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
     @Override
     default boolean isMappedAttribute() {
         return true;
+    }
+
+    /**
+     * Gets the actual value type of this attribute.
+     * <p>
+     * For example, for singular attributes it would be the field value class, for plural it would be the element
+     * class.
+     *
+     * @return Actual
+     */
+    @NonJPA
+    default Class<?> getValueJavaType() {
+        return getJavaType();
     }
 }

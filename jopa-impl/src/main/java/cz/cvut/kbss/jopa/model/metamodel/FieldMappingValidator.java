@@ -114,14 +114,14 @@ class FieldMappingValidator {
     }
 
     private static void validateLexicalFormAttribute(AbstractAttribute<?, ?> attribute) {
-        if (attribute.isLexicalForm() && !String.class.isAssignableFrom(getBindableType(attribute))) {
+        if (attribute.isLexicalForm() && !String.class.isAssignableFrom(attribute.getValueJavaType())) {
             throw new InvalidFieldMappingException(
                     attribute.getJavaField(), "lexicalForm mapping can be used only on fields of type String.");
         }
     }
 
     private static void validateSimpleLiteralField(AbstractAttribute<?, ?> attribute) {
-        final Class<?> fieldType = getBindableType(attribute);
+        final Class<?> fieldType = attribute.getValueJavaType();
 
         if (!attribute.isSimpleLiteral() || String.class.isAssignableFrom(fieldType) || Enum.class.isAssignableFrom(fieldType)) {
             return;
@@ -134,13 +134,8 @@ class FieldMappingValidator {
         throw new InvalidFieldMappingException(attribute.getJavaField(),"simpleLiteral mapping can only be used on fields of type String or Enum or using a suitable converter.");
     }
 
-    private static Class<?> getBindableType(AbstractAttribute<?, ?> attribute) {
-        return attribute.isCollection() ? ((AbstractPluralAttribute) attribute).getBindableJavaType() :
-               attribute.getJavaType();
-    }
-
     private static void validateObjectPropertyEnumMapping(Attribute<?, ?> attribute) {
-        if (!attribute.getJavaType().isEnum()) {
+        if (!attribute.getValueJavaType().isEnum()) {
             return;
         }
         final Enumerated enumeratedAnn = attribute.getJavaField().getAnnotation(Enumerated.class);

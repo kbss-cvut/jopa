@@ -25,7 +25,6 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.oom.exception.EntityReconstructionException;
 import cz.cvut.kbss.jopa.sessions.cache.CacheManager;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
@@ -157,8 +156,7 @@ abstract class EntityInstanceLoader {
         visited.put(instance, null);
         handlers.forEach(h -> h.accept(new Pair<>(instance, et)));
         et.getAttributes().stream().filter(Attribute::isAssociation).forEach(att -> {
-            final Class<?> cls = att.isCollection() ? ((PluralAttribute<?, ?, ?>) att).getElementType()
-                                                                                      .getJavaType() : att.getJavaType();
+            final Class<?> cls = att.getValueJavaType();
             if (!metamodel.isEntityType(cls)) {
                 return;
             }

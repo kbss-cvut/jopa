@@ -24,7 +24,6 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.sessions.util.FetchGraphWrapper;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -104,7 +103,7 @@ public class LoadStateDescriptorFactory {
     }
 
     private static boolean isAssociatedWithEntity(Attribute<?, ?> att) {
-        return !IdentifierTransformer.isValidIdentifierType(att.isCollection() ? ((PluralAttribute) att).getBindableJavaType() : att.getJavaType());
+        return !IdentifierTransformer.isValidIdentifierType(att.getValueJavaType());
     }
 
     /**
