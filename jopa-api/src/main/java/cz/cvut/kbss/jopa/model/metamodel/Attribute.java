@@ -175,7 +175,7 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
      * For example, for singular attributes it would be the field value class, for plural it would be the element
      * class.
      *
-     * @return Actual
+     * @return Actual value type of this attribute
      */
     @NonJPA
     default Class<?> getValueJavaType() {
