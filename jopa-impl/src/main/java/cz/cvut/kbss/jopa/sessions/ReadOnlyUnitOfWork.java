@@ -86,7 +86,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             throw new IllegalStateException("Cannot commit inactive Unit of Work!");
         }
         this.clear();
-        this.commitToStorage();
+        this.flushChangesToStorage();
         LOG.trace("UnitOfWork commit finished.");
     }
 
@@ -418,7 +418,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
     }
 
     @Override
-    public void commitToStorage() {
+    public void flushChangesToStorage() {
         storage.commit();
     }
 

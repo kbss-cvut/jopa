@@ -54,13 +54,13 @@ public class CloningReadOnlyUnitOfWork extends AbstractUnitOfWork {
         if (!isActive()) {
             throw new IllegalStateException("Cannot commit inactive Unit of Work!");
         }
-        commitToStorage();
+        flushChangesToStorage();
         clear();
         LOG.trace("UnitOfWork commit finished.");
     }
 
     @Override
-    public void commitToStorage() {
+    public void flushChangesToStorage() {
         storage.commit();
     }
 

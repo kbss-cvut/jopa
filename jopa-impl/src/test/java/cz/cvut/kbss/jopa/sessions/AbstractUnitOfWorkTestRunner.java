@@ -573,4 +573,15 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         verify(storageMock).loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup<>(id, descriptor)));
         assertNotSame(entityA, result);
     }
+
+    @Test
+    void writeUncommittedChangesWritesChangesButDoesNotCommitStorageTransaction() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA instance = Generators.generateOwlClassAInstance();
+        uow.registerNewObject(instance, descriptor);
+        uow.writeUncommittedChanges();
+
+        verify(storageMock).persist(instance.getUri(), instance, descriptor);
+        verify(storageMock, never()).commit();
+    }
 }

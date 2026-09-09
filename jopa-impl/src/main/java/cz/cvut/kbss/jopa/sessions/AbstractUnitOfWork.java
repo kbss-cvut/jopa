@@ -203,7 +203,9 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
      */
     private void commitUnitOfWork() {
         this.flushingChanges = true;
-        commitToStorage();
+        flushChangesToStorage();
+        validateIntegrityConstraints();
+        storage.commit();
         mergeChangesIntoParent();
         postCommit();
     }
@@ -220,9 +222,9 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     /**
-     * If there are any changes, commit them to the ontology.
+     * If there are any changes, write them to the repository.
      */
-    abstract void commitToStorage();
+    abstract void flushChangesToStorage();
 
     /**
      * Merge the changes from this Unit of Work's change set into the server session.
@@ -823,7 +825,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     @Override
     public void writeUncommittedChanges() {
         if (hasChanges()) {
-            commitUnitOfWork();
+            flushChangesToStorage();
         }
     }
 
