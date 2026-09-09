@@ -77,11 +77,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -740,5 +742,15 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         assertTrue(uow.contains(result));
         verify(storageMock).loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup<>(id, descriptor, null)));
         assertSame(entityA, result);
+    }
+
+    @Override
+    void writeUncommittedChangesWritesChangesButDoesNotCommitStorageTransaction() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA instance = Generators.generateOwlClassAInstance();
+        uow.registerNewObject(instance, descriptor);
+        assertThrows(UnsupportedOperationException.class, () -> uow.writeUncommittedChanges());
+        verify(storageMock, never()).persist(any(), any(), any());
+        verify(storageMock, never()).commit();
     }
 }

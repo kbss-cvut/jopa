@@ -43,7 +43,7 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
     }
 
     @Override
-    void commitToStorage() {
+    void flushChangesToStorage() {
         calculateChanges();
         if (this.hasNew) {
             persistNewObjects();
@@ -70,8 +70,6 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
             storage.remove(identifier, chSet.getObjectClass(), chSet.getDescriptor());
             et.getLifecycleListenerManager().invokePostRemoveCallbacks(chSet.getClone());
         });
-        validateIntegrityConstraints();
-        storage.commit();
     }
 
     @Override
