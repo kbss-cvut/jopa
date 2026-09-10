@@ -84,8 +84,6 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     private ParentClause parentClause = null;
 
-    private String projectedVariable;
-
     private String rootVariable = "?x";
 
     private String rootIdentificationVariable;
@@ -127,9 +125,6 @@ public class SoqlQueryListener extends SoqlBaseListener {
         SoqlAttribute newAttr = new SoqlAttribute(owner);
         if (owner.hasChild() && owner.getChild().isIdentifier()) {
             newAttr.setValue(objectTypes.get(owner.getValue()));
-            if (Objects.equals(projectedVariable, owner.getValue())) {
-                newAttr.setProjected(true);
-            }
         }
         pushNewAttribute(newAttr);
     }
@@ -184,21 +179,11 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     @Override
-    public void exitSelectExpression(SoqlParser.SelectExpressionContext ctx) {
-        if (selectProjection.aggregateFunction() == null) {
-            this.projectedVariable = ctx.getText();
-        }
-    }
-
-    @Override
     public void enterAggregateExpression(SoqlParser.AggregateExpressionContext ctx) {
         if (ctx.COUNT() != null) {
             selectProjection = selectProjection.withAggregateFunction(AggregateFunction.COUNT)
                                                .withAggregateDistinct(ctx.DISTINCT() != null);
 
-            if (ctx.simpleSubpath() != null) {
-                this.projectedVariable = ctx.simpleSubpath().getText();
-            }
         }
     }
 
