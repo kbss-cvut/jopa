@@ -17,12 +17,12 @@
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public class UpperFunction extends AbstractFunctionExpression<String> {
 
-    public UpperFunction(AbstractPathExpression internExpression, CriteriaBuilder cb) {
+    public UpperFunction(AbstractPathExpression internExpression, CriteriaBuilderImpl cb) {
         super(String.class, cb, internExpression);
     }
 

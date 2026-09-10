@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassD_;
 import cz.cvut.kbss.jopa.environment.OWLClassF;
 import cz.cvut.kbss.jopa.environment.OWLClassG;
 import cz.cvut.kbss.jopa.environment.OWLClassH;
+import cz.cvut.kbss.jopa.environment.OWLClassJ;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
 import cz.cvut.kbss.jopa.environment.Person;
@@ -32,6 +33,7 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.CriteriaQueryImpl;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.query.criteria.Join;
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.model.query.criteria.Path;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
@@ -167,7 +169,8 @@ public class CriteriaQueryTranslateQueryTest {
     void translateQuerySupportsOrderByMultipleConditions() {
         CriteriaQueryImpl<OWLClassM> query = cb.createQuery(OWLClassM.class);
         Root<OWLClassM> root = query.from(OWLClassM.class);
-        query.select(root).orderBy(List.of(cb.asc(root.getAttr("intAttribute")), cb.asc(root.getAttr("longAttribute"))));
+        query.select(root)
+             .orderBy(List.of(cb.asc(root.getAttr("intAttribute")), cb.asc(root.getAttr("longAttribute"))));
 
         final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
         final String expectedSoqlQuery = "SELECT owlclassm FROM OWLClassM owlclassm ORDER BY owlclassm.intAttribute ASC, owlclassm.longAttribute ASC";
@@ -751,7 +754,8 @@ public class CriteriaQueryTranslateQueryTest {
         void askOverridesSelection() {
             CriteriaQueryImpl<Boolean> query = cb.createQuery(Boolean.class);
             Root<OWLClassM> root = query.from(OWLClassM.class);
-            query.select(root.getAttr("booleanAttribute")).ask().where(cb.lessThan(root.getAttr("intAttribute"), cb.literal(100)));
+            query.select(root.getAttr("booleanAttribute")).ask()
+                 .where(cb.lessThan(root.getAttr("intAttribute"), cb.literal(100)));
 
             final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
             final String expectedSoqlQuery = "ASK FROM OWLClassM owlclassm WHERE owlclassm.intAttribute < :generatedName0";
@@ -775,5 +779,55 @@ public class CriteriaQueryTranslateQueryTest {
         final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
         final String expectedSoqlQuery = "SELECT owlclassg FROM OWLClassG owlclassg WHERE owlclassg.owlClassH.owlClassA.uri = :generatedName0";
         assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+    }
+
+    @Nested
+    class JoinTests {
+
+        @Test
+        void testTranslateQueryWithJoinOnSingularAttribute() {
+            CriteriaQueryImpl<OWLClassD> query = cb.createQuery(OWLClassD.class);
+            Root<OWLClassD> root = query.from(OWLClassD.class);
+            Join<OWLClassD, OWLClassA> join = root.join("owlClassA");
+
+            query.select(root).where(cb.equal(
+                    join.getAttr("stringAttribute"), "testValue"
+            ));
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "SELECT owlclassd FROM OWLClassD owlclassd JOIN owlclassd.owlClassA owlclassa_0 WHERE owlclassa_0.stringAttribute = :generatedName0";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        void testTranslateQueryWithJoinOnPluralAttribute() {
+            CriteriaQueryImpl<OWLClassJ> query = cb.createQuery(OWLClassJ.class);
+            Root<OWLClassJ> root = query.from(OWLClassJ.class);
+            Join<OWLClassJ, OWLClassA> join = root.join("owlClassA");
+
+            query.select(root).where(cb.equal(
+                    join.getAttr("stringAttribute"), "testValue"
+            ));
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "SELECT owlclassj FROM OWLClassJ owlclassj JOIN owlclassj.owlClassA owlclassa_0 WHERE owlclassa_0.stringAttribute = :generatedName0";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        void testTranslateQueryWithMultipleJoinsOnSameAttributeGeneratesSeparateJoins() {
+            CriteriaQueryImpl<OWLClassJ> query = cb.createQuery(OWLClassJ.class);
+            Root<OWLClassJ> root = query.from(OWLClassJ.class);
+            Join<OWLClassJ, OWLClassA> joinOne = root.join("owlClassA");
+            Join<OWLClassJ, OWLClassA> joinTwo = root.join("owlClassA");
+
+            query.select(root).where(cb.equal(
+                            joinOne.getAttr("stringAttribute"), "testValueOne"
+                    ),
+                    cb.equal(joinTwo.getAttr("stringAttribute"), "testValueTwo"));
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "SELECT owlclassj FROM OWLClassJ owlclassj " +
+                    "JOIN owlclassj.owlClassA owlclassa_0 JOIN owlclassj.owlClassA owlclassa_1 " +
+                    "WHERE owlclassa_0.stringAttribute = :generatedName0 AND owlclassa_1.stringAttribute = :generatedName1";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
     }
 }

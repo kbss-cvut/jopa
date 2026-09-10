@@ -17,12 +17,12 @@
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public class CountFunction extends AbstractFunctionExpression<Integer> {
 
-    public CountFunction(AbstractPathExpression expression, CriteriaBuilder cb) {
+    public CountFunction(AbstractPathExpression expression, CriteriaBuilderImpl cb) {
         super(Integer.class, cb, expression);
     }
 

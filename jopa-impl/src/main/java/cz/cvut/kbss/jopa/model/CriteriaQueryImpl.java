@@ -58,14 +58,14 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     @Override
     public <X> Root<X> from(Class<X> entityClass) {
-        RootImpl<X> root = new RootImpl<>(metamodel, null, entityClass, this.cb);
+        RootImpl<X> root = new RootImpl<>(metamodel, entityClass, this.cb);
         query.setRoot(root);
         return root;
     }
 
     @Override
     public <X> Root<X> from(EntityType<X> entity) {
-        RootImpl<X> root = new RootImpl<>(metamodel, null, entity.getJavaType(), this.cb);
+        RootImpl<X> root = new RootImpl<>(metamodel, entity.getJavaType(), this.cb);
         query.setRoot(root);
         return root;
     }
@@ -231,8 +231,9 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
     private void appendFromClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {
         soqlQuery.append(' ').append(SoqlConstants.FROM).append(' ')
-                 .append(((RootImpl) query.getRoot()).getJavaType().getSimpleName()).append(' ');
-        ((RootImpl) query.getRoot()).setExpressionToQuery(soqlQuery, parameterFiller);
+                 .append(query.getRoot().getJavaType().getSimpleName()).append(' ');
+        query.getRoot().setExpressionToQuery(soqlQuery, parameterFiller);
+        query.getRoot().appendJoins(soqlQuery);
     }
 
     private void appendWhereClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {

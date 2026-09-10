@@ -17,12 +17,12 @@
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public class AbsFunction<Y extends Number> extends AbstractFunctionExpression<Y> {
 
-    public AbsFunction(Class<Y> type, AbstractPathExpression argumentExpression, CriteriaBuilder cb) {
+    public AbsFunction(Class<Y> type, AbstractPathExpression argumentExpression, CriteriaBuilderImpl cb) {
         super(type, cb, argumentExpression);
     }
 

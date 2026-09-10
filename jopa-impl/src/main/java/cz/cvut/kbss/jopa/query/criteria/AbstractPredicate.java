@@ -20,7 +20,6 @@ package cz.cvut.kbss.jopa.query.criteria;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ public abstract class AbstractPredicate extends AbstractExpression<Boolean> impl
 
     protected BooleanOperator booleanOperator;
 
-    public AbstractPredicate(BooleanOperator booleanOperator, CriteriaBuilder cb) {
+    public AbstractPredicate(BooleanOperator booleanOperator, CriteriaBuilderImpl cb) {
         super(Boolean.class, cb);
         this.booleanOperator = booleanOperator;
     }

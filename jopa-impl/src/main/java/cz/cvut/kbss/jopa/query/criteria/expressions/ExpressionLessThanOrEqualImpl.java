@@ -18,11 +18,11 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 
 public class ExpressionLessThanOrEqualImpl extends AbstractComparisonExpression {
 
-    public ExpressionLessThanOrEqualImpl(AbstractExpression<?> x, AbstractExpression<?> y,  CriteriaBuilder cb) {
+    public ExpressionLessThanOrEqualImpl(AbstractExpression<?> x, AbstractExpression<?> y,  CriteriaBuilderImpl cb) {
         super(x, y, cb);
     }
 

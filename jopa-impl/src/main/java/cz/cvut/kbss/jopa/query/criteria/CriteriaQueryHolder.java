@@ -25,7 +25,7 @@ public class CriteriaQueryHolder<T> {
     protected final Class<T> resultType;
     protected Selection<? extends T> selection;
     private boolean distinct;
-    protected Root<?> root;
+    protected RootImpl<?> root;
     protected Predicate where;
     protected List<Order> orderBy;
     protected List<Expression<?>> groupBy;
@@ -48,11 +48,11 @@ public class CriteriaQueryHolder<T> {
         this.having = having;
     }
 
-    public Root<?> getRoot() {
+    public RootImpl<?> getRoot() {
         return root;
     }
 
-    public void setRoot(Root<?> root) {
+    public void setRoot(RootImpl<?> root) {
         this.root = root;
     }
 

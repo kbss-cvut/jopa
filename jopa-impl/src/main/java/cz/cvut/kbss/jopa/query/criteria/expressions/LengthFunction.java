@@ -17,12 +17,12 @@
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public class LengthFunction extends AbstractFunctionExpression<Integer> {
 
-    public LengthFunction(AbstractPathExpression argumentExpression, CriteriaBuilder cb) {
+    public LengthFunction(AbstractPathExpression argumentExpression, CriteriaBuilderImpl cb) {
         super(Integer.class, cb, argumentExpression);
     }
 

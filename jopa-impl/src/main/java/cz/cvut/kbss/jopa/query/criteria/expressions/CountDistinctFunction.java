@@ -1,11 +1,11 @@
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 
 public class CountDistinctFunction extends CountFunction {
 
-    public CountDistinctFunction(AbstractPathExpression expression, CriteriaBuilder cb) {
+    public CountDistinctFunction(AbstractPathExpression expression, CriteriaBuilderImpl cb) {
         super(expression, cb);
     }
 

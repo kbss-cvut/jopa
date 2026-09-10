@@ -19,10 +19,10 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
-import cz.cvut.kbss.jopa.query.criteria.AbstractPredicate;
-import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.model.query.criteria.PredicateFactory;
+import cz.cvut.kbss.jopa.query.criteria.AbstractPredicate;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class ExpressionInImpl<Y> extends AbstractPredicate implements PredicateF
     private final Expression<Y> expression;
     private final List<Y> values = new ArrayList<>();
 
-    public ExpressionInImpl(Expression<? extends Y> expression, CriteriaBuilder cb) {
+    public ExpressionInImpl(Expression<? extends Y> expression, CriteriaBuilderImpl cb) {
         super(BooleanOperator.AND, cb);
         this.expression = (Expression<Y>) expression;
     }
