@@ -122,37 +122,37 @@ class SoqlAttribute extends SoqlParameter {
         }
     }
 
-    public List<String> getBasicGraphPattern(String rootVariable, Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers) {
+    public List<String> getBasicGraphPattern(String rootVariable, String rootIdentificationVariable, Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers) {
         if (isInstanceOf()) {
             return List.of(rootVariable + " " + SoqlConstants.RDF_TYPE + " " + toIri(getFirstNode()) + TRIPLE_END);
         } else {
             if (isObject()) {
                 return List.of();
             }
-            return buildTriplePatterns(rootVariable, tpEnhancers);
+            return buildTriplePatterns(rootVariable, rootIdentificationVariable, tpEnhancers);
         }
     }
 
-    private List<String> buildTriplePatterns(String rootVariable, Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers) {
+    private List<String> buildTriplePatterns(String rootVariable, String rootIdentificationVariable, Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers) {
         String buildParam = "?" + getFirstNode().getValue();
         SoqlNode pointer = getFirstNode();
 
-        return triplePatterns(pointer, 0, rootVariable, buildParam, tpEnhancers);
+        return triplePatterns(pointer, rootVariable, rootIdentificationVariable, buildParam, tpEnhancers);
     }
 
-    private List<String> triplePatterns(SoqlNode pointer, int depth, String rootVariable, String buildParam, Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers) {
+    private List<String> triplePatterns(SoqlNode pointer, String rootVariable, String rootIdentificationVariable, String buildParam, Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers) {
         final List<String> triplePatterns = new ArrayList<>();
         for (SoqlNode newPointer: pointer.getChildren()) {
             if (newPointer.getIri().isEmpty()) {
-                triplePatterns.addAll(triplePatterns(newPointer, depth, rootVariable, buildParam, tpEnhancers));
+                triplePatterns.addAll(triplePatterns(newPointer, rootVariable, rootIdentificationVariable, buildParam, tpEnhancers));
                 continue;
             }
-            final String variable = depth == 0 ? rootVariable : "?" + pointer.getValue();
+            final String variable = pointer.getValue().equals(rootIdentificationVariable) ? rootVariable : "?" + pointer.getValue();
             buildParam += newPointer.getCapitalizedValue();
             final String param = buildTriplePatternObject(newPointer, buildParam);
             final TriplePatternEnhancer triplePatternEnhancer = tpEnhancers.computeIfAbsent(newPointer.getAttribute(), TriplePatternEnhancer::create);
             triplePatterns.addAll(triplePatternEnhancer.getTriplePatterns(variable, toIri(newPointer), param));
-            triplePatterns.addAll(triplePatterns(newPointer, depth + 1, rootVariable, buildParam, tpEnhancers));
+            triplePatterns.addAll(triplePatterns(newPointer, rootVariable, rootIdentificationVariable, buildParam, tpEnhancers));
         }
         return triplePatterns;
     }

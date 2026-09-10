@@ -88,6 +88,8 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     private String rootVariable = "?x";
 
+    private String rootIdentificationVariable;
+
 
     public SoqlQueryListener(MetamodelImpl metamodel) {
         this.metamodel = Objects.requireNonNull(metamodel);
@@ -340,11 +342,46 @@ public class SoqlQueryListener extends SoqlBaseListener {
     public void enterFromClause(SoqlParser.FromClauseContext ctx) {
         String entityName = ctx.entityName().getText();
         String identificationVariable = ctx.IDENTIFICATION_VARIABLE().getText();
+        this.rootIdentificationVariable = identificationVariable;
         objectTypes.put(identificationVariable, entityName);
         SoqlNode node = new AttributeNode(entityName);
         setObjectIri(node);
         SoqlAttribute myAttr = new SoqlAttribute(node);
         pushNewAttribute(myAttr);
+    }
+
+    @Override
+    public void enterJoinClause(SoqlParser.JoinClauseContext ctx) {
+        this.parentClause = ParentClause.JOIN;
+    }
+
+    @Override
+    public void exitJoinClause(SoqlParser.JoinClauseContext ctx) {
+        this.parentClause = null;
+        final SoqlNode firstNode = linkSimpleSubpath(ctx.simpleSubpath());
+        SoqlNode leaf = firstNode;
+        while (leaf.hasChild()) {
+            leaf = leaf.getChild();
+        }
+        final String alias = ctx.IDENTIFICATION_VARIABLE().getText();
+        final String joinedType = resolveJoinedTypeName(leaf);
+        leaf.setValue(alias);
+        if (joinedType != null) {
+            objectTypes.put(alias, joinedType);
+        }
+        pushNewAttribute(new SoqlAttribute(firstNode));
+    }
+
+    private String resolveJoinedTypeName(SoqlNode leaf) {
+        final FieldSpecification<?, ?> att = leaf.getAttribute();
+        if (!(att instanceof Attribute<?, ?>)) {
+            return null;
+        }
+        final Type<?> type = resolveBindableType((Attribute<?, ?>) att);
+        if (type.getPersistenceType() != Type.PersistenceType.ENTITY) {
+            return null;
+        }
+        return ((EntityType<?>) type).getName();
     }
 
     @Override
@@ -715,7 +752,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     private List<String> processAttribute(SoqlAttribute attr) {
-        return attr.getBasicGraphPattern(rootVariable, tpEnhancers);
+        return attr.getBasicGraphPattern(rootVariable, rootIdentificationVariable, tpEnhancers);
     }
 
     private String buildOrdering() {
@@ -735,10 +772,10 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     private boolean inClauseWithOwnAttributeHandling() {
-        return parentClause == ParentClause.ORDER_BY || parentClause == ParentClause.GROUP_BY;
+        return parentClause == ParentClause.ORDER_BY || parentClause == ParentClause.GROUP_BY || parentClause == ParentClause.JOIN;
     }
 
     private enum ParentClause {
-        ORDER_BY, GROUP_BY, FUNCTION
+        ORDER_BY, GROUP_BY, FUNCTION, JOIN
     }
 }
