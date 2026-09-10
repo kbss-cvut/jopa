@@ -56,6 +56,11 @@ import java.util.Collection;
 
 public class CriteriaBuilderImpl implements CriteriaBuilder {
 
+    /**
+     * Just a simple counter for generated names within a single query.
+     */
+    private int counter = 0;
+
     private final Metamodel metamodel;
 
     public CriteriaBuilderImpl(Metamodel metamodel) {
@@ -375,4 +380,12 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
         }
     }
 
+    /**
+     * Gets the next counter value and increments the counter.
+     *
+     * @return Next counter value
+     */
+    int nextCounter() {
+        return counter++;
+    }
 }

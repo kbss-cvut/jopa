@@ -19,10 +19,10 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
+import cz.cvut.kbss.jopa.model.query.criteria.PredicateFactory;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.query.criteria.SelectionImpl;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
-import cz.cvut.kbss.jopa.model.query.criteria.PredicateFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,11 +35,11 @@ import java.util.Collection;
  */
 public abstract class AbstractExpression<Y> extends SelectionImpl<Y> implements Expression<Y> {
 
-    protected final CriteriaBuilder cb;
+    protected final CriteriaBuilderImpl cb;
 
     protected boolean negated;
 
-    public AbstractExpression(Class<Y> type, CriteriaBuilder cb) {
+    public AbstractExpression(Class<Y> type, CriteriaBuilderImpl cb) {
         super(type);
         this.cb = cb;
         negated = false;

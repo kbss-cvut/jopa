@@ -17,12 +17,12 @@
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 
 public class ExpressionNotLikeImpl extends AbstractComparisonExpression {
 
 
-    public ExpressionNotLikeImpl(AbstractExpression<?> x, AbstractExpression<?> y, CriteriaBuilder cb) {
+    public ExpressionNotLikeImpl(AbstractExpression<?> x, AbstractExpression<?> y, CriteriaBuilderImpl cb) {
         super(x, y,cb);
     }
 

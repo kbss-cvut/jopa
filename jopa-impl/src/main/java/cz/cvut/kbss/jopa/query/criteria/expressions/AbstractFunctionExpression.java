@@ -17,7 +17,7 @@
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 
 import java.util.List;
@@ -26,7 +26,7 @@ public abstract class AbstractFunctionExpression<X> extends AbstractExpression<X
 
     protected final List<AbstractPathExpression> arguments;
 
-    public AbstractFunctionExpression(Class<X> type, CriteriaBuilder cb, AbstractPathExpression ... arguments) {
+    public AbstractFunctionExpression(Class<X> type, CriteriaBuilderImpl cb, AbstractPathExpression ... arguments) {
         super(type, cb);
         this.arguments = List.of(arguments);
     }

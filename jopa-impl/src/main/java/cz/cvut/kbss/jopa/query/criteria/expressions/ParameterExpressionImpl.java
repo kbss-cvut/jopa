@@ -19,15 +19,15 @@ package cz.cvut.kbss.jopa.query.criteria.expressions;
 
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 import java.util.Objects;
 
 public class ParameterExpressionImpl<T> extends AbstractExpression<T> implements ParameterExpression<T> {
     private String name;
 
-    public ParameterExpressionImpl(Class<T> type, String name, CriteriaBuilder cb) {
+    public ParameterExpressionImpl(Class<T> type, String name, CriteriaBuilderImpl cb) {
         super(type, cb);
         this.name = name;
     }
