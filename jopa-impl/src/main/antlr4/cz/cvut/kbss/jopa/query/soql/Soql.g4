@@ -22,7 +22,9 @@ selectExpression: simpleSubpath | aggregateExpression ;
 
 aggregateExpression: COUNT '(' (DISTINCT)? simpleSubpath ')';
 
-fromClause: FROM entityName IDENTIFICATION_VARIABLE;
+fromClause: FROM entityName IDENTIFICATION_VARIABLE joinClause* ;
+
+joinClause: JOIN simpleSubpath IDENTIFICATION_VARIABLE ;
 
 entityName: IDENTIFICATION_VARIABLE ;
 
