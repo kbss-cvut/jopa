@@ -1,40 +1,45 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.CollectionAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.model.metamodel.SetAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.From;
 import cz.cvut.kbss.jopa.model.query.criteria.Join;
 import cz.cvut.kbss.jopa.model.query.criteria.JoinType;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
-import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractPathExpression;
+import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
 
-import java.util.Set;
-
-public class JoinImpl<Z, X> extends AbstractPathExpression<X> implements Join<Z, X> {
+public class JoinImpl<Z, X> extends AbstractFrom<Z, X> implements Join<Z, X> {
 
     private final JoinType joinType;
 
     private final Attribute<? super Z, X> attribute;
 
-    private final RootImpl<Z> parent;
+    private final AbstractFrom<?, Z> parent;
 
     private final String targetAlias;
 
-    public JoinImpl(RootImpl<Z> parent, Attribute<? super Z, X> attribute, JoinType joinType, Metamodel metamodel,
+    public JoinImpl(AbstractFrom<?, Z> parent, Attribute<? super Z, X> attribute, JoinType joinType,
+                    Metamodel metamodel,
                     CriteriaBuilderImpl cb) {
         super((Class<X>) attribute.getValueJavaType(), null, metamodel, cb);
         this.parent = parent;
         this.attribute = attribute;
+        if (joinType != JoinType.INNER) {
+            throw new UnsupportedOperationException("Only INNER JOINs are supported at the moment.");
+        }
         this.joinType = joinType;
         this.targetAlias = resolveJoinTargetAlias();
     }
 
     private String resolveJoinTargetAlias() {
         return attribute.getName().toLowerCase() + "_" + cb.nextCounter();
+    }
+
+    @Override
+    public String getAlias() {
+        return targetAlias;
     }
 
     @Override
@@ -59,66 +64,28 @@ public class JoinImpl<Z, X> extends AbstractPathExpression<X> implements Join<Z,
 
     @Override
     public Join<Z, X> on(Expression<Boolean> restriction) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Join<Z, X> on(Predicate... restrictions) {
-        return null;
-    }
-
-    @Override
-    public Set<Join<X, ?>> getJoins() {
-        return Set.of();
-    }
-
-    @Override
-    public <Y> Join<X, Y> join(CollectionAttribute<? super X, Y> collection) {
-        return null;
-    }
-
-    @Override
-    public <Y> Join<X, Y> join(CollectionAttribute<? super X, Y> collection, JoinType jt) {
-        return null;
-    }
-
-    @Override
-    public <Y> Join<X, Y> join(SetAttribute<? super X, Y> set) {
-        return null;
-    }
-
-    @Override
-    public <Y> Join<X, Y> join(SetAttribute<? super X, Y> set, JoinType jt) {
-        return null;
-    }
-
-    @Override
-    public <Y> Join<X, Y> join(SingularAttribute<? super X, Y> attribute) {
-        return null;
-    }
-
-    @Override
-    public <Y> Join<X, Y> join(SingularAttribute<? super X, Y> attribute, JoinType jt) {
-        return null;
-    }
-
-    @Override
-    public <X1, Y> Join<X1, Y> join(String attributeName) {
-        return null;
-    }
-
-    @Override
-    public <X1, Y> Join<X1, Y> join(String attributeName, JoinType jt) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     void generateJoinExpression(StringBuilder query) {
-        query.append("JOIN ")
-             .append(parent.getRootVariableName())
+        query.append(SoqlConstants.JOIN)
+             .append(' ')
+             .append(parent.getAlias())
              .append('.')
              .append(attribute.getName())
              .append(' ')
              .append(targetAlias);
+        if (!joins.isEmpty()) {
+            joins.forEach(join -> {
+                query.append(' ');
+                join.generateJoinExpression(query);
+            });
+        }
     }
 
     @Override
@@ -129,5 +96,10 @@ public class JoinImpl<Z, X> extends AbstractPathExpression<X> implements Join<Z,
         } else {
             query.append(targetAlias);
         }
+    }
+
+    @Override
+    protected EntityType<?> entityType() {
+        return metamodel.entity(attribute.getValueJavaType());
     }
 }

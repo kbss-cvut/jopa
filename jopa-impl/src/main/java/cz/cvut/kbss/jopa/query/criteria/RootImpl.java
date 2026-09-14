@@ -17,28 +17,15 @@
  */
 package cz.cvut.kbss.jopa.query.criteria;
 
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.CollectionAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.model.metamodel.SetAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
-import cz.cvut.kbss.jopa.model.query.criteria.Join;
-import cz.cvut.kbss.jopa.model.query.criteria.JoinType;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.PredicateFactory;
 import cz.cvut.kbss.jopa.model.query.criteria.Root;
-import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractPathExpression;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 
-public class RootImpl<X> extends AbstractPathExpression<X> implements Root<X> {
-
-    private final List<JoinImpl<X, ?>> joins = new ArrayList<>();
+public class RootImpl<X> extends AbstractFrom<X, X> implements Root<X> {
 
     public RootImpl(Metamodel metamodel, Class<X> type, CriteriaBuilderImpl cb) {
         super(type, null, metamodel, cb);
@@ -53,9 +40,9 @@ public class RootImpl<X> extends AbstractPathExpression<X> implements Root<X> {
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
         if (this.pathSource != null) {
             this.pathSource.setExpressionToQuery(query, parameterFiller);
-            query.append('.').append(getRootVariableName());
+            query.append('.').append(getAlias());
         } else {
-            query.append(getRootVariableName());
+            query.append(getAlias());
         }
     }
 
@@ -66,7 +53,8 @@ public class RootImpl<X> extends AbstractPathExpression<X> implements Root<X> {
         });
     }
 
-    public String getRootVariableName() {
+    @Override
+    public String getAlias() {
         return type.getSimpleName().toLowerCase();
     }
 
@@ -77,55 +65,7 @@ public class RootImpl<X> extends AbstractPathExpression<X> implements Root<X> {
     }
 
     @Override
-    public Set<Join<X, ?>> getJoins() {
-        return new LinkedHashSet<>(joins);
-    }
-
-    @Override
-    public <Y> Join<X, Y> join(CollectionAttribute<? super X, Y> collection) {
-        return joinImpl((Attribute<? super X, Y>) collection, JoinType.INNER);
-    }
-
-    private <Y> Join<X, Y> joinImpl(Attribute<? super X, Y> attribute, JoinType jt) {
-        final JoinImpl<X, Y> join = new JoinImpl<>(this, attribute, jt, metamodel, cb);
-        joins.add(join);
-        return join;
-    }
-
-    @Override
-    public <Y> Join<X, Y> join(CollectionAttribute<? super X, Y> collection, JoinType jt) {
-        return joinImpl((Attribute<? super X, Y>) collection, jt);
-    }
-
-    @Override
-    public <Y> Join<X, Y> join(SetAttribute<? super X, Y> set) {
-        return joinImpl((Attribute<? super X, Y>) set, JoinType.INNER);
-    }
-
-    @Override
-    public <Y> Join<X, Y> join(SetAttribute<? super X, Y> set, JoinType jt) {
-        return joinImpl((Attribute<? super X, Y>) set, jt);
-    }
-
-    @Override
-    public <Y> Join<X, Y> join(SingularAttribute<? super X, Y> attribute) {
-        return joinImpl(attribute, JoinType.INNER);
-    }
-
-    @Override
-    public <Y> Join<X, Y> join(SingularAttribute<? super X, Y> attribute, JoinType jt) {
-        return joinImpl(attribute, jt);
-    }
-
-    @Override
-    public <X1, Y> Join<X1, Y> join(String attributeName) {
-        final Attribute att = getModel().getAttribute(attributeName);
-        return joinImpl(att, JoinType.INNER);
-    }
-
-    @Override
-    public <X1, Y> Join<X1, Y> join(String attributeName, JoinType jt) {
-        final Attribute att = getModel().getAttribute(attributeName);
-        return joinImpl(att, jt);
+    protected EntityType<X> entityType() {
+        return getModel();
     }
 }

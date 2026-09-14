@@ -17,15 +17,17 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
-import java.lang.reflect.Field;
-import java.net.URI;
-
 import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
+
+import java.lang.reflect.Field;
+import java.net.URI;
 
 @OWLClass(iri = Vocabulary.c_OwlClassG)
 public class OWLClassG implements HasUri {
@@ -34,6 +36,9 @@ public class OWLClassG implements HasUri {
 
 	@Id
 	private URI uri;
+
+    @OWLAnnotationProperty(iri = RDFS.LABEL, simpleLiteral = true)
+    private String name;
 
 	@OWLObjectProperty(iri = Vocabulary.p_g_hasH, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	// @ParticipationConstraints({
@@ -64,7 +69,15 @@ public class OWLClassG implements HasUri {
 		return uri;
 	}
 
-	public void setOwlClassH(OWLClassH owlClassH) {
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setOwlClassH(OWLClassH owlClassH) {
 		this.owlClassH = owlClassH;
 	}
 
@@ -76,7 +89,11 @@ public class OWLClassG implements HasUri {
 		return OWLClassG.class.getAnnotation(OWLClass.class).iri();
 	}
 
-	public static Field getOwlClassHField() throws NoSuchFieldException, SecurityException {
+    public static Field getNameField() throws NoSuchFieldException {
+        return OWLClassG.class.getDeclaredField("name");
+    }
+
+	public static Field getOwlClassHField() throws NoSuchFieldException {
 		return OWLClassG.class.getDeclaredField(CLS_H_FIELD);
 	}
 }

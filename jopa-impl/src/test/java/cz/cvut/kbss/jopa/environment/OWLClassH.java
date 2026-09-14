@@ -17,16 +17,18 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.util.Objects;
-
 import cz.cvut.kbss.jopa.environment.utils.HasUri;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.vocabulary.RDFS;
+
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.Objects;
 
 @OWLClass(iri = Vocabulary.c_OwlClassH)
 public class OWLClassH implements HasUri {
@@ -36,6 +38,9 @@ public class OWLClassH implements HasUri {
 
     @Id
     private URI uri;
+
+    @OWLAnnotationProperty(iri = RDFS.LABEL, simpleLiteral = true)
+    private String name;
 
     @OWLObjectProperty(iri = Vocabulary.p_h_hasA, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private OWLClassA owlClassA;
@@ -69,6 +74,14 @@ public class OWLClassH implements HasUri {
         this.owlClassA = owlClassA;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public OWLClassA getOwlClassA() {
         return owlClassA;
     }
@@ -98,11 +111,15 @@ public class OWLClassH implements HasUri {
         return OWLClassH.class.getAnnotation(OWLClass.class).iri();
     }
 
-    public static Field getOwlClassAField() throws NoSuchFieldException, SecurityException {
+    public static Field getNameField() throws NoSuchFieldException {
+        return OWLClassH.class.getDeclaredField("name");
+    }
+
+    public static Field getOwlClassAField() throws NoSuchFieldException {
         return OWLClassH.class.getDeclaredField(CLS_A_FIELD);
     }
 
-    public static Field getOwlClassGField() throws NoSuchFieldException, SecurityException {
+    public static Field getOwlClassGField() throws NoSuchFieldException {
         return OWLClassH.class.getDeclaredField(CLS_G_FIELD);
     }
 }

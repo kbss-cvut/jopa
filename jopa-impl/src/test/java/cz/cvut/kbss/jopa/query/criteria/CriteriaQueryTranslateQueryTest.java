@@ -825,8 +825,24 @@ public class CriteriaQueryTranslateQueryTest {
                     cb.equal(joinTwo.getAttr("stringAttribute"), "testValueTwo"));
             final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
             final String expectedSoqlQuery = "SELECT owlclassj FROM OWLClassJ owlclassj " +
-                    "JOIN owlclassj.owlClassA owlclassa_0 JOIN owlclassj.owlClassA owlclassa_1 " +
-                    "WHERE owlclassa_0.stringAttribute = :generatedName0 AND owlclassa_1.stringAttribute = :generatedName1";
+                    "JOIN owlclassj.owlClassA owlclassa_0 JOIN owlclassj.owlClassA owlclassa_1 WHERE " +
+                    "owlclassa_0.stringAttribute = :generatedName0 AND owlclassa_1.stringAttribute = :generatedName1";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        void translateQueryWithNestedJoins() {
+            CriteriaQueryImpl<OWLClassG> query = cb.createQuery(OWLClassG.class);
+            Root<OWLClassG> root = query.from(OWLClassG.class);
+            Join<OWLClassG, OWLClassH> rootJoin = root.join("owlClassH");
+            Join<OWLClassH, OWLClassA> embeddedJoin = rootJoin.join("owlClassA");
+
+            query.select(root).where(cb.equal(rootJoin.getAttr("name"), "test"),
+                    cb.equal(embeddedJoin.getAttr("stringAttribute"), "test"));
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "SELECT owlclassg FROM OWLClassG owlclassg " +
+                    "JOIN owlclassg.owlClassH owlclassh_0 JOIN owlclassh_0.owlClassA owlclassa_1 WHERE " +
+                    "owlclassh_0.name = :generatedName0 AND owlclassa_1.stringAttribute = :generatedName1";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
         }
     }

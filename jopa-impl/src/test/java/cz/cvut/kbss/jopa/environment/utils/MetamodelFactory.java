@@ -118,7 +118,6 @@ import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.PRE_PERSIST;
 import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.PRE_REMOVE;
 import static cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent.PRE_UPDATE;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -449,25 +448,29 @@ public class MetamodelFactory {
         initIdentifier(etMock, idMock, OWLClassF.class.getDeclaredField("uri"), false);
     }
 
-    public static void initOWLClassGMocks(IdentifiableEntityType<OWLClassG> etMock, SingularAttributeImpl clsHMock,
+    public static void initOWLClassGMocks(IdentifiableEntityType<OWLClassG> etMock,
+                                          SingularAttributeImpl gNameMock, SingularAttributeImpl clsHMock,
                                           IdentifiableEntityType<OWLClassH> etHMock, Identifier idMock)
             throws NoSuchFieldException, SecurityException {
         initEntityType(etMock, OWLClassG.class, EntityLifecycleListenerManager.empty());
-        when(etMock.getAttributes()).thenReturn(Collections.singleton(clsHMock));
+        when(etMock.getAttributes()).thenReturn(Set.of(gNameMock, clsHMock));
         when(etMock.getFieldSpecifications()).thenReturn(Set.of(clsHMock, idMock));
+        initAttribute(etMock, gNameMock, new AttributeInfo(OWLClassG.getNameField(), Attribute.PersistentAttributeType.ANNOTATION));
         initAttribute(etMock, clsHMock, new AttributeInfo(OWLClassG.getOwlClassHField(), Attribute.PersistentAttributeType.OBJECT)
                 .valueType(etHMock));
         initIdentifier(etMock, idMock, OWLClassG.class.getDeclaredField("uri"), false);
     }
 
-    public static void initOWLClassHMocks(IdentifiableEntityType<OWLClassH> etMock, SingularAttributeImpl clsAMock,
+    public static void initOWLClassHMocks(IdentifiableEntityType<OWLClassH> etMock,
+                                          SingularAttributeImpl nameMock, SingularAttributeImpl clsAMock,
                                           SingularAttributeImpl clsGMock, IdentifiableEntityType<OWLClassA> etAMock,
                                           IdentifiableEntityType<OWLClassG> etGMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
         initEntityType(etMock, OWLClassH.class, EntityLifecycleListenerManager.empty());
-        when(etMock.getAttributes()).thenReturn(Set.of(clsAMock, clsGMock));
-        when(etMock.getFieldSpecifications()).thenReturn(Set.of(clsAMock, clsGMock, idMock));
+        when(etMock.getAttributes()).thenReturn(Set.of(nameMock, clsAMock, clsGMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Set.of(nameMock, clsAMock, clsGMock, idMock));
 
+        initAttribute(etMock, nameMock, new AttributeInfo(OWLClassH.getNameField(), Attribute.PersistentAttributeType.ANNOTATION));
         initAttribute(etMock, clsAMock, new AttributeInfo(OWLClassH.getOwlClassAField(), Attribute.PersistentAttributeType.OBJECT)
                 .valueType(etAMock));
         initAttribute(etMock, clsGMock, new AttributeInfo(OWLClassH.getOwlClassGField(), Attribute.PersistentAttributeType.OBJECT)
