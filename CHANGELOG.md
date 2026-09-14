@@ -1,5 +1,12 @@
 # JOPA - Change Log
 
+### 2.12.0 - 2026-09-14
+
+- Fixed lazy loading proxy access when `EntityGraph` is used (Bug #466).
+- Fix stale axiom cache in object-ontology mapper (Bug #467).
+- Properly implement `EntityManager.flush` - flush changes into repository connection, but do not commit (Bug #470).
+- Add support for explicit inner JOINs in SOQL/Criteria API (Enhancement #465).
+
 ### 2.11.2 - 2026-08-13
 
 - Fix missing support for referencing nested attributes in `ORDER BY`/`GROUP BY` clause in SOQL (Bug #460).
