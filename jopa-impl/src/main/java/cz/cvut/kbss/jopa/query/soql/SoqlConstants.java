@@ -43,6 +43,11 @@ public class SoqlConstants {
     public static final String FROM = "FROM";
 
     /**
+     * {@code JOIN} keyword.
+     */
+    public static final String JOIN = "JOIN";
+
+    /**
      * {@code WHERE} keyword.
      */
     public static final String WHERE = "WHERE";
