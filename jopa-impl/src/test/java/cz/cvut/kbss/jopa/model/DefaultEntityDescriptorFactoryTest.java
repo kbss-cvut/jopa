@@ -51,6 +51,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -124,7 +125,7 @@ class DefaultEntityDescriptorFactoryTest {
         final IdentifiableEntityType<WithReference> rootType = mock(IdentifiableEntityType.class);
         final IdentifiableEntityType<SimpleWithNamespacedContext> referencedType = mock(IdentifiableEntityType.class);
         final Attribute<WithReference, SimpleWithNamespacedContext> att = mock(Attribute.class);
-        when(att.getJavaType()).thenReturn(SimpleWithNamespacedContext.class);
+        doReturn(SimpleWithNamespacedContext.class).when(att).getValueJavaType();
         when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(att.getJavaMember()).thenReturn(WithReference.class.getDeclaredField("reference"));
         when(rootType.getAttributes()).thenReturn(Set.of(att));
@@ -190,11 +191,9 @@ class DefaultEntityDescriptorFactoryTest {
         final Attribute<PropagatesContext, OWLClassA> att = mock(Attribute.class);
         when(type.getAttributes()).thenReturn(Set.of(att));
         when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(att.getJavaType()).thenReturn(OWLClassA.class);
+        doReturn(OWLClassA.class).when(att).getJavaType();
         when(att.getJavaMember()).thenReturn(PropagatesContext.class.getDeclaredField("reference"));
         final IdentifiableEntityType<OWLClassA> referencedType = mock(IdentifiableEntityType.class);
-        when(metamodel.entity(OWLClassA.class)).thenReturn(referencedType);
-        when(metamodel.isEntityType(OWLClassA.class)).thenReturn(true);
 
         final Descriptor result = sut.createDescriptor(PropagatesContext.class);
         assertInstanceOf(EntityDescriptor.class, result);
@@ -224,7 +223,7 @@ class DefaultEntityDescriptorFactoryTest {
         when(type.getAttributes()).thenReturn(Set.of(att));
         when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(att.getJavaMember()).thenReturn(WithAttributeContexts.class.getDeclaredField("reference"));
-        when(att.getJavaType()).thenReturn(OWLClassA.class);
+        doReturn(OWLClassA.class).when(att).getValueJavaType();
         when(metamodel.entity(OWLClassA.class)).thenReturn(referencedType);
         when(metamodel.isEntityType(OWLClassA.class)).thenReturn(true);
 
@@ -243,8 +242,7 @@ class DefaultEntityDescriptorFactoryTest {
         final IdentifiableEntityType<SimpleWithNamespacedContext> referencedType = mock(IdentifiableEntityType.class);
         final PluralAttribute<WithPluralReference, Set, SimpleWithNamespacedContext> att = mock(PluralAttribute.class);
         when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
-        when(att.getBindableJavaType()).thenReturn(SimpleWithNamespacedContext.class);
-        when(att.isCollection()).thenReturn(true);
+        doReturn(SimpleWithNamespacedContext.class).when(att).getValueJavaType();
         when(att.getJavaMember()).thenReturn(WithPluralReference.class.getDeclaredField("reference"));
         when(att.getElementType()).thenReturn(referencedType);
         when(rootType.getAttributes()).thenReturn(Set.of(att));

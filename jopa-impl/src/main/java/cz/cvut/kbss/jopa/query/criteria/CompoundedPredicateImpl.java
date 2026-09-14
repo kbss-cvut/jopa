@@ -20,7 +20,6 @@ package cz.cvut.kbss.jopa.query.criteria;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 import java.util.List;
 
@@ -29,7 +28,7 @@ public class CompoundedPredicateImpl extends AbstractPredicate {
     protected final List<Expression<Boolean>> expressions;
 
     public CompoundedPredicateImpl(BooleanOperator booleanOperator, List<Expression<Boolean>> expressions,
-                                   CriteriaBuilder cb) {
+                                   CriteriaBuilderImpl cb) {
         super(booleanOperator, cb);
         this.expressions = expressions;
     }

@@ -104,13 +104,11 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
     /**
      * If there are any changes, commit them to the ontology.
      */
-    void commitToStorage() {
+    void flushChangesToStorage() {
         if (this.hasNew || this.hasChanges || this.hasDeleted) {
             persistNewObjects();
             calculateChanges();
         }
-        validateIntegrityConstraints();
-        storage.commit();
     }
 
     @Override

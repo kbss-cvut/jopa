@@ -1275,4 +1275,34 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertEquals("NewUpdatedStringAttribute", result.getStringAttribute());
         assertEquals("NewUpdatedStringAttribute", result.getStringQueryAttribute());
     }
+
+    /**
+     * Bug #470
+     */
+    @Test
+    public void flushingAndClearingEntityManagerMustNotAllowChangesToEscapeTheActiveTransaction() {
+        this.em = getEntityManager("flushingAndClearingEntityManagerMustNotAllowChangesToEscapeTheActiveTransaction", false);
+        final String originalString = "EntityWithQueryAttrStringAttribute";
+
+        OWLClassWithQueryAttr entity = new OWLClassWithQueryAttr();
+        entity.setUri(Generators.generateUri());
+        entity.setStringAttribute(originalString);
+        transactional(() -> em.persist(entity));
+
+        em.getTransaction().begin();
+
+        OWLClassWithQueryAttr managed = findRequired(OWLClassWithQueryAttr.class, entity.getUri());
+        em.detach(managed);
+        managed.setStringAttribute("updatedStringAttributeValue");
+
+        em.merge(managed);
+
+        em.flush();
+        em.clear();
+
+        em.getTransaction().rollback();
+
+        OWLClassWithQueryAttr result = findRequired(OWLClassWithQueryAttr.class, entity.getUri());
+        assertEquals(originalString, result.getStringAttribute(), "The string attribute must not be updated when transaction is rolled back");
+    }
 }

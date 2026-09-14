@@ -1096,4 +1096,26 @@ public class SoqlQueryParserTest {
                 "?owlClassH " + strUri(Vocabulary.p_h_hasA) + " ?generatedName0 . }";
         parseAndAssertEquality(expectedSparql, soql);
     }
+
+    @Test
+    void parseQuerySupportsMultipleJoinsOnSameAttribute() {
+        final String soql = "SELECT j FROM OWLClassJ j JOIN j.owlClassA a1 JOIN j.owlClassA a2 WHERE a1.stringAttribute = :paramOne AND a2.stringAttribute = :paramTwo";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassJ) + " . " +
+                "?x " + strUri(Vocabulary.P_HAS_A) + " ?a1 . " +
+                "?x " + strUri(Vocabulary.P_HAS_A) + " ?a2 . " +
+                "?a1 " + strUri(Vocabulary.p_a_stringAttribute) + " ?paramOne . " +
+                "?a2 " + strUri(Vocabulary.p_a_stringAttribute) + " ?paramTwo . }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsNestedJoins() {
+        final String soql = "SELECT g FROM OWLClassG g JOIN g.owlClassH h JOIN h.owlClassA a WHERE h.name = :hName AND a.stringAttribute = :aStringAtt";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassG) + " . " +
+                "?x " + strUri(Vocabulary.p_g_hasH) + " ?h . " +
+                "?h " + strUri(Vocabulary.p_h_hasA) + " ?a . " +
+                "?h " + strUri(RDFS.LABEL) + " ?hName . " +
+                "?a " + strUri(Vocabulary.p_a_stringAttribute) + " ?aStringAtt . }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
 }

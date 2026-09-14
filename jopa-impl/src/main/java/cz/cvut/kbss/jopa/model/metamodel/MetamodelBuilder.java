@@ -315,7 +315,7 @@ public class MetamodelBuilder implements MetamodelClassMapper {
     }
 
     private <X> void registerTypeReference(Attribute<X, ?> attribute) {
-        final Class<?> type = attribute.isCollection() ? ((PluralAttribute<X, ?, ?>) attribute).getBindableJavaType() : attribute.getJavaType();
+        final Class<?> type = attribute.getValueJavaType();
         if (hasManagedType(type)) {
             typeReferenceMap.addReference(type, attribute.getDeclaringType().getJavaType());
         }

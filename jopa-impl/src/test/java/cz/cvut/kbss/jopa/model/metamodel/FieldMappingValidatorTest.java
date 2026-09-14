@@ -126,7 +126,7 @@ class FieldMappingValidatorTest {
         when(attribute.isLexicalForm()).thenReturn(true);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_lexicalForm));
         when(attribute.getJavaField()).thenReturn(OWLClassM.getLexicalFormField());
-        when(attribute.getJavaType()).thenReturn(OWLClassM.getLexicalFormField().getType());
+        when(attribute.getValueJavaType()).thenReturn(OWLClassM.getLexicalFormField().getType());
         sut.validateAttributeMapping(attribute);
     }
 
@@ -137,7 +137,7 @@ class FieldMappingValidatorTest {
         when(attribute.isLexicalForm()).thenReturn(true);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_lexicalForm));
         when(attribute.getJavaField()).thenReturn(getField("invalidLexicalForm"));
-        when(attribute.getJavaType()).thenReturn(getField("invalidLexicalForm").getType());
+        when(attribute.getValueJavaType()).thenReturn(getField("invalidLexicalForm").getType());
         assertThrows(InvalidFieldMappingException.class, () -> sut.validateAttributeMapping(attribute));
     }
 
@@ -147,7 +147,7 @@ class FieldMappingValidatorTest {
         when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(attribute.isSimpleLiteral()).thenReturn(true);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
-        when(attribute.getJavaType()).thenReturn(OWLClassM.getSimpleLiteralField().getType());
+        when(attribute.getValueJavaType()).thenReturn(OWLClassM.getSimpleLiteralField().getType());
         sut.validateAttributeMapping(attribute);
     }
 
@@ -158,7 +158,7 @@ class FieldMappingValidatorTest {
         when(attribute.isSimpleLiteral()).thenReturn(true);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
         when(attribute.getJavaField()).thenReturn(getField("invalidSimpleLiteral"));
-        when(attribute.getJavaType()).thenReturn(getField("invalidSimpleLiteral").getType());
+        when(attribute.getValueJavaType()).thenReturn(getField("invalidSimpleLiteral").getType());
         when(attribute.getConverter()).thenReturn(DefaultConverterWrapper.INSTANCE);
         assertThrows(InvalidFieldMappingException.class, () -> sut.validateAttributeMapping(attribute));
     }
@@ -170,7 +170,7 @@ class FieldMappingValidatorTest {
         when(attribute.isSimpleLiteral()).thenReturn(true);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
         when(attribute.getJavaField()).thenReturn(getField("invalidSimpleLiteral"));
-        when(attribute.getJavaType()).thenReturn(getField("invalidSimpleLiteral").getType());
+        when(attribute.getValueJavaType()).thenReturn(getField("invalidSimpleLiteral").getType());
         final ConverterWrapper<Integer, String> wrapper = mock(ConverterWrapper.class);
         when(wrapper.supportsAxiomValueType(String.class)).thenReturn(true);
         when(attribute.getConverter()).thenReturn(wrapper);
@@ -185,7 +185,7 @@ class FieldMappingValidatorTest {
         when(attribute.isSimpleLiteral()).thenReturn(true);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
         when(attribute.getJavaField()).thenReturn(getField("validSimpleLiteralSet"));
-        when(attribute.getBindableJavaType()).thenReturn(String.class);
+        when(attribute.getValueJavaType()).thenReturn(String.class);
         sut.validateAttributeMapping(attribute);
     }
 
@@ -196,7 +196,7 @@ class FieldMappingValidatorTest {
         when(attribute.isSimpleLiteral()).thenReturn(true);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_simpleLiteral));
         when(attribute.getJavaField()).thenReturn(getField("validEnumSimpleLiteral"));
-        when(attribute.getJavaType()).thenReturn(getField("validEnumSimpleLiteral").getType());
+        when(attribute.getValueJavaType()).thenReturn(getField("validEnumSimpleLiteral").getType());
         sut.validateAttributeMapping(attribute);
     }
 
@@ -208,7 +208,7 @@ class FieldMappingValidatorTest {
         when(attribute.isLexicalForm()).thenReturn(true);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_lexicalForm));
         when(attribute.getJavaField()).thenReturn(OWLClassM.getLexicalFormField());
-        when(attribute.getBindableJavaType()).thenReturn(String.class);
+        when(attribute.getValueJavaType()).thenReturn(String.class);
         sut.validateAttributeMapping(attribute);
     }
 
@@ -290,7 +290,7 @@ class FieldMappingValidatorTest {
         final AbstractAttribute attribute = mock(AbstractAttribute.class);
         when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_enumAttribute));
-        when(attribute.getJavaType()).thenReturn(OneOfEnum.class);
+        when(attribute.getValueJavaType()).thenReturn(OneOfEnum.class);
         when(attribute.getJavaField()).thenReturn(getField("invalidEnumOneOf"));
         assertThrows(InvalidFieldMappingException.class, () -> sut.validateAttributeMapping(attribute));
     }
@@ -300,7 +300,7 @@ class FieldMappingValidatorTest {
         final AbstractAttribute attribute = mock(AbstractAttribute.class);
         when(attribute.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(attribute.getIRI()).thenReturn(IRI.create(Vocabulary.p_h_hasA));
-        when(attribute.getJavaType()).thenReturn(OWLClassA.class);
+        when(attribute.getValueJavaType()).thenReturn(OWLClassA.class);
         assertDoesNotThrow(() -> sut.validateAttributeMapping(attribute));
     }
 }

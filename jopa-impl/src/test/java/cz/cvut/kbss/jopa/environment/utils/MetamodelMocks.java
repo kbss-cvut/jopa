@@ -140,6 +140,8 @@ public class MetamodelMocks {
     @Mock
     private Identifier<OWLClassG, URI> idG;
     @Mock
+    private SingularAttributeImpl<OWLClassG, String> gNameAtt;
+    @Mock
     private SingularAttributeImpl<OWLClassG, OWLClassH> gOwlClassHAtt;
 
     @Mock
@@ -155,6 +157,8 @@ public class MetamodelMocks {
     private IdentifiableEntityType<OWLClassH> etH;
     @Mock
     private Identifier<OWLClassH, URI> idH;
+    @Mock
+    private SingularAttributeImpl<OWLClassH, String> hNameAtt;
     @Mock
     private SingularAttributeImpl<OWLClassH, OWLClassA> hOwlClassAAtt;
     @Mock
@@ -393,8 +397,8 @@ public class MetamodelMocks {
         MetamodelClassInitializer.initMetamodelClassOWLClassD(dOwlClassAAtt, idD);
         MetamodelFactory.initOWLClassEMocks(etE, eStringAtt, idE);
         MetamodelFactory.initOWLClassFMocks(etF, fSetAtt, fStringAtt, etA, idF);
-        MetamodelFactory.initOWLClassGMocks(etG, gOwlClassHAtt, etH, idG);
-        MetamodelFactory.initOWLClassHMocks(etH, hOwlClassAAtt, hOwlClassGAtt, etA, etG, idH);
+        MetamodelFactory.initOWLClassGMocks(etG, gNameAtt, gOwlClassHAtt, etH, idG);
+        MetamodelFactory.initOWLClassHMocks(etH, hNameAtt, hOwlClassAAtt, hOwlClassGAtt, etA, etG, idH);
         MetamodelFactory.initOWLClassIMocks(etI, iOwlClassAAtt, etA, idI);
         MetamodelFactory.initOWLClassJMocks(etJ, jSetAtt, etA, idJ);
         MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, etE, idK);
@@ -681,6 +685,8 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idG;
         }
 
+        public AbstractAttribute<OWLClassG, String> nameAtt() {return MetamodelMocks.this.gNameAtt; }
+
         public AbstractAttribute<OWLClassG, OWLClassH> owlClassHAtt() {
             return MetamodelMocks.this.gOwlClassHAtt;
         }
@@ -694,6 +700,8 @@ public class MetamodelMocks {
         public Identifier<OWLClassH, URI> identifier() {
             return MetamodelMocks.this.idH;
         }
+
+        public AbstractAttribute<OWLClassH, String> nameAtt() { return MetamodelMocks.this.hNameAtt; }
 
         public AbstractAttribute<OWLClassH, OWLClassG> owlClassGAtt() {
             return MetamodelMocks.this.hOwlClassGAtt;

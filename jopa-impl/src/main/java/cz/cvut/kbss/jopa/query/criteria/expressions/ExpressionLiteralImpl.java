@@ -17,21 +17,21 @@
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public class ExpressionLiteralImpl<T> extends AbstractExpression<T>  {
 
     private final Object literal;
     private final String languageTag;
 
-    public ExpressionLiteralImpl(T literal, CriteriaBuilder cb) {
+    public ExpressionLiteralImpl(T literal, CriteriaBuilderImpl cb) {
         super(determineClass(literal), cb);
         this.literal = literal;
         languageTag = null;
     }
 
-    public ExpressionLiteralImpl(String literal, String languageTag, CriteriaBuilder cb) {
+    public ExpressionLiteralImpl(String literal, String languageTag, CriteriaBuilderImpl cb) {
         super(determineClass(literal), cb);
         this.literal = literal;
         this.languageTag = languageTag;

@@ -20,6 +20,8 @@ package cz.cvut.kbss.jopa.test;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 
+import java.net.URI;
+
 @OWLClass(iri = Vocabulary.C_OWL_CLASS_U)
 public class OWLClassU extends OWLClassS {
 
@@ -27,11 +29,22 @@ public class OWLClassU extends OWLClassS {
     @OWLObjectProperty(iri = Vocabulary.P_HAS_OWL_CLASS_S)
     private OWLClassS owlClassS;
 
+    @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_IRI_BASE + "uriAttribute")
+    private URI uriAttribute;
+
     public OWLClassS getOwlClassS() {
         return owlClassS;
     }
 
     public void setOwlClassS(OWLClassS owlClassS) {
         this.owlClassS = owlClassS;
+    }
+
+    public URI getUriAttribute() {
+        return uriAttribute;
+    }
+
+    public void setUriAttribute(URI uriAttribute) {
+        this.uriAttribute = uriAttribute;
     }
 }

@@ -17,15 +17,15 @@
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public abstract class AbstractComparisonExpression extends AbstractExpression<Boolean> {
 
     protected final AbstractExpression<?> right;
     protected final AbstractExpression<?> left;
 
-    public AbstractComparisonExpression(AbstractExpression<?> left, AbstractExpression<?> right, CriteriaBuilder cb) {
+    public AbstractComparisonExpression(AbstractExpression<?> left, AbstractExpression<?> right, CriteriaBuilderImpl cb) {
         super(Boolean.class, cb);
         this.left = left;
         this.right = right;

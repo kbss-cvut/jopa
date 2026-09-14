@@ -99,7 +99,7 @@ class NamedEntityGraphProcessorTest {
         final IdentifiableEntityType<ReferencingEntity> rootAit = mock(IdentifiableEntityType.class);
         when(metamodelMapper.entity(ReferencingEntity.class)).thenReturn(rootAit);
         final AbstractAttribute referencedEntityAtt = mock(AbstractAttribute.class);
-        when(referencedEntityAtt.getJavaType()).thenReturn(EntityWithAttributes.class);
+        when(referencedEntityAtt.getValueJavaType()).thenReturn(EntityWithAttributes.class);
         when(rootAit.getAttribute("referencedEntity")).thenReturn(referencedEntityAtt);
         final IdentifiableEntityType<EntityWithAttributes> subgraphAit = mock(IdentifiableEntityType.class);
         when(metamodelMapper.entity(EntityWithAttributes.class)).thenReturn(subgraphAit);

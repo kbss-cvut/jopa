@@ -6,7 +6,6 @@ import cz.cvut.kbss.jopa.model.annotations.NamedSubgraph;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.MetamodelClassMapper;
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -98,10 +97,7 @@ public class NamedEntityGraphProcessor {
         }
         final Attribute<?, ?> att = rootEntityType.getAttribute(attributeName);
         assert att != null;
-        if (att.isCollection()) {
-            return ((PluralAttribute<?, ?, ?>) att).getBindableJavaType();
-        }
-        return att.getJavaType();
+        return att.getValueJavaType();
     }
 
     private static Map<String, NamedSubgraph> indexSubgraphs(NamedSubgraph[] subgraphs) {

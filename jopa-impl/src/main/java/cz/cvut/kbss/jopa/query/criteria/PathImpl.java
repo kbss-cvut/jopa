@@ -23,7 +23,6 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.model.query.criteria.Path;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractPathExpression;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 public class PathImpl<X> extends AbstractPathExpression<X> implements Path<X> {
 
@@ -31,7 +30,7 @@ public class PathImpl<X> extends AbstractPathExpression<X> implements Path<X> {
     protected final FieldSpecification<?, ?> attribute;
 
     public PathImpl(Metamodel metamodel, AbstractPathExpression pathSource, FieldSpecification<?, ?> attribute,
-                    CriteriaBuilder cb) {
+                    CriteriaBuilderImpl cb) {
         super(resolveBindableJavaType(attribute), pathSource, metamodel, cb);
         this.attribute = attribute;
         this.attributeName = attribute.getName();

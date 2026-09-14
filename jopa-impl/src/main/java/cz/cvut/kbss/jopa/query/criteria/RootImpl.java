@@ -22,15 +22,13 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.PredicateFactory;
 import cz.cvut.kbss.jopa.model.query.criteria.Root;
-import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractPathExpression;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 import java.util.Collection;
 
-public class RootImpl<X> extends AbstractPathExpression<X> implements Root<X> {
+public class RootImpl<X> extends AbstractFrom<X, X> implements Root<X> {
 
-    public RootImpl(Metamodel metamodel, AbstractPathExpression<X> expression, Class<X> type, CriteriaBuilder cb) {
-        super(type, expression, metamodel, cb);
+    public RootImpl(Metamodel metamodel, Class<X> type, CriteriaBuilderImpl cb) {
+        super(type, null, metamodel, cb);
     }
 
     @Override
@@ -40,17 +38,34 @@ public class RootImpl<X> extends AbstractPathExpression<X> implements Root<X> {
 
     @Override
     public void setExpressionToQuery(StringBuilder query, CriteriaParameterFiller parameterFiller) {
-        if (this.pathSource != null){
+        if (this.pathSource != null) {
             this.pathSource.setExpressionToQuery(query, parameterFiller);
-            query.append('.').append(type.getSimpleName().toLowerCase());
+            query.append('.').append(getAlias());
         } else {
-            query.append(type.getSimpleName().toLowerCase());
+            query.append(getAlias());
         }
+    }
+
+    public void appendJoins(StringBuilder query) {
+        joins.forEach(join -> {
+            query.append(' ');
+            join.generateJoinExpression(query);
+        });
+    }
+
+    @Override
+    public String getAlias() {
+        return type.getSimpleName().toLowerCase();
     }
 
     @Override
     public Predicate in(Collection<?> values) {
         final EntityType<X> et = getModel();
         return ((PredicateFactory.In) cb.in(getAttr(et.getIdentifier()))).value(values);
+    }
+
+    @Override
+    protected EntityType<X> entityType() {
+        return getModel();
     }
 }

@@ -17,15 +17,15 @@
  */
 package cz.cvut.kbss.jopa.query.criteria.expressions;
 
+import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
-import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 
 /**
  * Represents the SOQL {@link SoqlConstants.Functions#LANG} function.
  */
 public class LangFunction extends AbstractFunctionExpression<String> {
 
-    public LangFunction(AbstractPathExpression internExpression, CriteriaBuilder cb) {
+    public LangFunction(AbstractPathExpression internExpression, CriteriaBuilderImpl cb) {
         super(String.class, cb, internExpression);
     }
 
