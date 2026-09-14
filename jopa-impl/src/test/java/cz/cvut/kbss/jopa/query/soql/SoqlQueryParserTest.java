@@ -1107,4 +1107,15 @@ public class SoqlQueryParserTest {
                 "?a2 " + strUri(Vocabulary.p_a_stringAttribute) + " ?paramTwo . }";
         parseAndAssertEquality(expectedSparql, soql);
     }
+
+    @Test
+    void parseQuerySupportsNestedJoins() {
+        final String soql = "SELECT g FROM OWLClassG g JOIN g.owlClassH h JOIN h.owlClassA a WHERE h.name = :hName AND a.stringAttribute = :aStringAtt";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_OwlClassG) + " . " +
+                "?x " + strUri(Vocabulary.p_g_hasH) + " ?h . " +
+                "?h " + strUri(Vocabulary.p_h_hasA) + " ?a . " +
+                "?h " + strUri(RDFS.LABEL) + " ?hName . " +
+                "?a " + strUri(Vocabulary.p_a_stringAttribute) + " ?aStringAtt . }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
 }
