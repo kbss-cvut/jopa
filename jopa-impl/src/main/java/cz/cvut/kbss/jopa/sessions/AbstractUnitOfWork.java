@@ -824,9 +824,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
     @Override
     public void writeUncommittedChanges() {
-        if (hasChanges()) {
-            flushChangesToStorage();
-        }
+        flushChangesToStorage();
     }
 
     @Override

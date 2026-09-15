@@ -30,6 +30,7 @@ import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassBB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.OWLClassF;
 import cz.cvut.kbss.jopa.test.OWLClassG;
 import cz.cvut.kbss.jopa.test.OWLClassH;
 import cz.cvut.kbss.jopa.test.OWLClassI;
@@ -1304,5 +1305,46 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         OWLClassWithQueryAttr result = findRequired(OWLClassWithQueryAttr.class, entity.getUri());
         assertEquals(originalString, result.getStringAttribute(), "The string attribute must not be updated when transaction is rolled back");
+    }
+
+    @Test
+    public void flushAppliesRemovalFromManagedCollectionFieldInsideTransaction() {
+        this.em = getEntityManager("flushAppliesRemovalFromManagedCollectionField", false);
+
+        OWLClassF f = new OWLClassF();
+        f.setUri(Generators.generateUri());
+        f.setSimpleSet(new HashSet<>());
+
+        OWLClassA a = new OWLClassA();
+        a.setUri(Generators.generateUri());
+        OWLClassA aa = new OWLClassA();
+        aa.setUri(Generators.generateUri());
+
+        f.getSimpleSet().add(a);
+        f.getSimpleSet().add(aa);
+
+        transactional(() -> { // when persists are removed from transaction, the test passes
+            em.persist(a);
+            em.persist(aa);
+            em.persist(f);
+        });
+
+        transactional(() -> {
+            OWLClassF managedF = findRequired(OWLClassF.class, f.getUri());
+
+            assertTrue(managedF.getSimpleSet().contains(a));
+            assertTrue(managedF.getSimpleSet().contains(aa));
+
+            managedF.getSimpleSet().remove(a);
+            assertFalse(managedF.getSimpleSet().contains(a));
+            em.flush();
+            em.clear();
+
+            OWLClassF updatedF = findRequired(OWLClassF.class, f.getUri());
+            // a was removed
+            assertFalse(updatedF.getSimpleSet().contains(a));
+            // aa remained
+            assertTrue(updatedF.getSimpleSet().contains(aa));
+        });
     }
 }

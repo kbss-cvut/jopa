@@ -584,4 +584,16 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         verify(storageMock).persist(instance.getUri(), instance, descriptor);
         verify(storageMock, never()).commit();
     }
+
+    @Test
+    void writeUncommittedChangesDetectsChangesAndWritesThem() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA original = Generators.generateOwlClassAInstance();
+        final OWLClassA clone = (OWLClassA) uow.registerExistingObject(original, descriptor);
+        clone.setStringAttribute("Different string");
+
+        uow.writeUncommittedChanges();
+        verify(storageMock).merge(clone, metamodelMocks.forOwlClassA().stringAttribute(), descriptor);
+        verify(storageMock, never()).commit();
+    }
 }
