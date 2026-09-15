@@ -1,5 +1,11 @@
 # JOPA - Change Log
 
+### 2.12.1 - 2026-09-15
+
+- Fixed incorrect `EntityManager.flush` behavior that cause changes not to be propagated to the repository when there
+  were no new objects
+- Publish only required checksums (MD5, SHA-1) into Maven Central.
+
 ### 2.12.0 - 2026-09-14
 
 - Fixed lazy loading proxy access when `EntityGraph` is used (Bug #466).
@@ -16,7 +22,8 @@
 
 ### 2.11.1 - 2026-07-21
 
-- Fix an issue with inconsistent handling of projected language tagged strings with and without `GROUP_CONCAT` (Bug #457).
+- Fix an issue with inconsistent handling of projected language tagged strings with and without `GROUP_CONCAT` (Bug
+  #457).
 
 ### 2.11.0 - 2026-07-13
 
@@ -31,8 +38,11 @@
 
 ### 2.10.0 - 2026-05-29
 
-- Support optimizing entity loading from query result by using [fetch graphs](https://github.com/kbss-cvut/jopa/wiki/Performance#fetch-graph-based-entity-loading) (Enhancement #425, #431, #434).
-- Implement more predictable naming strategy in OWL2Java (Enhancement #432) - see the [README](jopa-owl2java/README.md) for details.
+- Support optimizing entity loading from query result by
+  using [fetch graphs](https://github.com/kbss-cvut/jopa/wiki/Performance#fetch-graph-based-entity-loading) (Enhancement
+  #425, #431, #434).
+- Implement more predictable naming strategy in OWL2Java (Enhancement #432) - see the [README](jopa-owl2java/README.md)
+  for details.
 - Ensure annotation-based entity descriptor is honored when loading entities from query result (Enhancement #437).
 - Dependency updates: RDF4J 5.3.1.
 
@@ -226,8 +236,8 @@
 
 ## 2.2.1 - 2024-12-12
 
-- Rename `MultilingualString` in OntoDriver to `Translations` to prevent confusion with `MultilingualString` from JOPA (
-  GH #288).
+- Rename `MultilingualString` in OntoDriver to `Translations` to prevent confusion with `MultilingualString` from JOPA
+  (GH #288).
 - Fix a SPARQL query parsing issue (Bug #294).
 
 ## 2.2.0 - 2024-11-22
@@ -320,8 +330,8 @@
 
 ## 1.1.3 - 2023-09-22
 
-- Fix a transaction isolation issue. Now when multiple transactions edit the same data, the one that commits last wins (
-  same behavior as JPA, Bug #202).
+- Fix a transaction isolation issue. Now when multiple transactions edit the same data, the one that commits last wins
+  (same behavior as JPA, Bug #202).
 - Fix an issue with missing interpretation of prefixes in the `@Sequence` annotation values (Bug #204).
 
 ## 1.1.2 - 2023-09-14
@@ -349,8 +359,8 @@
 
 ## 1.0.0 - 2023-06-29
 
-- Add support for disabling inference when loading an entity (e.g., when loaded with disable inference query hint) (
-  Enhancement #144).
+- Add support for disabling inference when loading an entity (e.g., when loaded with disable inference query hint)
+  (Enhancement #144).
 - Add API allowing to check whether an attribute value is inferred (Enhancement #141).
 - Support multiple inheritance via interfaces in the object model (Enhancement #157).
 - Add implementation of static metamodel generator (Feature #79).
@@ -412,8 +422,8 @@
 ## 0.20.0 - 2023-01-26
 
 - Allow editing inferred attributes (see Wiki for details) (Feature #121).
-- Support for `IN`, `NOT LIKE`, `<>` (`!=`) operators in SOQL (and the corresponding operators in Criteria API). (
-  Enhancement #123, #129).
+- Support for `IN`, `NOT LIKE`, `<>` (`!=`) operators in SOQL (and the corresponding operators in Criteria API).
+  (Enhancement #123, #129).
 
 ## 0.19.3 - 2022-12-13
 
@@ -598,8 +608,8 @@
 
 ## 0.14.0 - 2020-03-02
 
-- [JOPA] Implement basic support for the Semantic Object Query Language (SOQL), an object model-based query language. (
-  Feature #19)
+- [JOPA] Implement basic support for the Semantic Object Query Language (SOQL), an object model-based query language.
+  (Feature #19)
 - [JOPA] Support annotation properties of type `Object`, which allow to accommodate both literals and URIs.
 - Dependency updates - RDF4J 3.1.1.
 
