@@ -746,9 +746,17 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
 
     @Override
     void writeUncommittedChangesWritesChangesButDoesNotCommitStorageTransaction() {
+        // Not relevant here
+    }
+
+    @Test
+    @Override
+    void writeUncommittedChangesDetectsChangesAndWritesThem() {
         when(transactionMock.isActive()).thenReturn(true);
-        final OWLClassA instance = Generators.generateOwlClassAInstance();
-        uow.registerNewObject(instance, descriptor);
+        final OWLClassA original = Generators.generateOwlClassAInstance();
+        final OWLClassA clone = (OWLClassA) uow.registerExistingObject(original, descriptor);
+        clone.setStringAttribute("Different string");
+
         assertThrows(UnsupportedOperationException.class, () -> uow.writeUncommittedChanges());
         verify(storageMock, never()).persist(any(), any(), any());
         verify(storageMock, never()).commit();
