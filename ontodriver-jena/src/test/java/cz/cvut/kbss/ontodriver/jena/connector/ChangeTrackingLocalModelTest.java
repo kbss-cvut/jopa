@@ -21,6 +21,7 @@ import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.NAMED_GRAPH;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.RESOURCE;
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.SUBJECT;
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.TYPE_ONE;
 import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.TYPE_TWO;
@@ -317,5 +319,16 @@ public class ChangeTrackingLocalModelTest {
 
         assertThat(sut.getAdded().getNamedModel(NAMED_GRAPH).listStatements().toList(), not(hasItem(addedOne)));
         assertThat(sut.getAdded().getNamedModel(NAMED_GRAPH).listStatements().toList(), hasItem(addedOther));
+    }
+
+    @Test
+    void enhanceAddsStatementsForPropertyForWhichAllValuesWerePreviouslyRemoved() {
+        final LocalModel sut = new ChangeTrackingLocalModel(true);
+        sut.removePropertyValues(Set.of(new SubjectPredicateContext(RESOURCE, RDF.type, Set.of())));
+        final Statement addedOne = statement(SUBJECT, Vocabulary.RDF_TYPE, TYPE_TWO);
+        sut.addStatements(List.of(addedOne), NAMED_GRAPH);
+
+        final Collection<Statement> result = sut.enhanceStatements(List.of(), RESOURCE, null, null, Set.of());
+        assertThat(result, hasItem(addedOne));
     }
 }

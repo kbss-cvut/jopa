@@ -83,13 +83,13 @@ class ChangeTrackingLocalModel implements LocalModel {
     private Collection<Statement> enhanceStatements(Collection<Statement> toEnhance, Resource subject,
                                                     Property property, RDFNode value, Model addedModel,
                                                     Model removedModel, String context) {
-        final Set<Statement> statements = new HashSet<>(toEnhance);
+        final Set<Statement> statements = toEnhance.stream()
+                                                   .filter(s -> removedSubjectPredicateStatements.stream()
+                                                                                                 .noneMatch(spc -> spc.matches(s, context)))
+                                                   .collect(Collectors.toSet());
         statements.addAll(addedModel.listStatements(subject, property, value).toList());
         removedModel.listStatements(subject, property, value).toList().forEach(statements::remove);
-        return statements.stream()
-                         .filter(s -> removedSubjectPredicateStatements.stream()
-                                                                       .noneMatch(spc -> spc.matches(s, context)))
-                         .collect(Collectors.toSet());
+        return statements;
     }
 
     @Override
