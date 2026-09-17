@@ -98,10 +98,10 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     boolean hasChanges;
     boolean hasNew;
     boolean hasDeleted;
+    boolean hasFlushedChanges;
 
-    private boolean transactionActive;
-    private boolean isActive;
     private boolean flushingChanges;
+    private State state;
 
     UnitOfWorkChangeSet uowChangeSet = ChangeSetFactory.createUoWChangeSet();
 
@@ -113,6 +113,10 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     final ChangeCalculator changeCalculator;
     final SparqlQueryFactory queryFactory;
     final InferredAttributeChangeValidator inferredAttributeChangeValidator;
+
+    private enum State {
+        ACTIVE, IN_TRANSACTION, RELEASED
+    }
 
     public AbstractUnitOfWork(AbstractSession parent, Configuration configuration) {
         super(configuration);
@@ -131,7 +135,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         this.mergeManager = new MergeManager(this, cloneBuilder);
         this.changeCalculator = new ChangeCalculator(this);
         this.inferredAttributeChangeValidator = new InferredAttributeChangeValidator(storage);
-        this.isActive = true;
+        this.state = State.ACTIVE;
     }
 
     @Override
@@ -144,8 +148,9 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     @Override
     public void release() {
         clear();
+        clearChangeState();
         storage.close();
-        this.isActive = false;
+        this.state = State.RELEASED;
         LOG.debug("UnitOfWork released.");
     }
 
@@ -157,15 +162,21 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         deletedObjects.clear();
         newObjectsCloneToOriginal.clear();
         newObjectsKeyToClone.clear();
-        loadStateRegistry.clear();
+        this.state = State.ACTIVE;
+        if (!hasFlushedChanges) {
+            clearChangeState();
+        }
+    }
+
+    private void clearChangeState() {
         this.hasChanges = false;
         this.hasDeleted = false;
         this.hasNew = false;
+        this.hasFlushedChanges = false;
+        loadStateRegistry.clear();
         cloneBuilder.reset();
         this.repoMap = new RepositoryMap();
-        repoMap.initDescriptors();
         this.uowChangeSet = ChangeSetFactory.createUoWChangeSet();
-        this.transactionActive = false;
     }
 
     /**
@@ -180,12 +191,12 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
     @Override
     public boolean isActive() {
-        return isActive;
+        return state != State.RELEASED;
     }
 
     @Override
     public void begin() {
-        this.transactionActive = true;
+        this.state = State.IN_TRANSACTION;
     }
 
     @Override
@@ -233,15 +244,6 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         if (hasChanges()) {
             mergeManager.mergeChangesFromChangeSet(uowChangeSet);
         }
-        evictPossiblyUpdatedReferencesFromCache();
-    }
-
-    private void evictPossiblyUpdatedReferencesFromCache() {
-        cloneToOriginals.forEach((clone, orig) -> {
-            if (orig == null && !deletedObjects.containsKey(clone)) {
-                removeObjectFromCache(clone, getDescriptor(clone).getSingleContext().orElse(null));
-            }
-        });
     }
 
     /**
@@ -825,6 +827,9 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     @Override
     public void writeUncommittedChanges() {
         flushChangesToStorage();
+        if (hasChanges || hasNew || hasDeleted) {
+            this.hasFlushedChanges = true;
+        }
     }
 
     @Override
@@ -839,7 +844,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
 
     @Override
     public boolean isInTransaction() {
-        return transactionActive;
+        return state == State.IN_TRANSACTION;
     }
 
     @Override

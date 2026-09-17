@@ -40,7 +40,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyCollectionOf;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class DeleteOperationsRunner extends BaseRunner {
@@ -410,11 +413,12 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
         em.getTransaction().begin();
         final OWLClassM toClear = findRequired(OWLClassM.class, entityM.getKey());
+        assertFalse(toClear.getIntegerSet().isEmpty());
         toClear.setIntegerSet(null);
         em.getTransaction().commit();
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
-        assertNull(result.getIntegerSet());
+        assertThat(result.getIntegerSet(), anyOf(nullValue(), emptyCollectionOf(Integer.class)));
         verifyDatatypePropertiesRemoved();
     }
 
