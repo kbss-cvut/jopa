@@ -358,13 +358,10 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
 
     @Test
     void clearCleansUpPersistenceContext() {
-        final OWLClassD d = new OWLClassD();
-        d.setUri(URI.create("http://dUri"));
+        final OWLClassD d = new OWLClassD(Generators.createIndividualIdentifier());
         defaultLoadStateDescriptor(d);
         uow.registerExistingObject(d, descriptor);
-        final OWLClassB newOne = new OWLClassB();
-        final URI pk = URI.create("http://testObject");
-        newOne.setUri(pk);
+        final OWLClassB newOne = new OWLClassB(Generators.createIndividualIdentifier());
         defaultLoadStateDescriptor(newOne);
         uow.registerNewObject(newOne, descriptor);
         defaultLoadStateDescriptor(entityA, entityB);
@@ -379,6 +376,37 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         assertTrue(uow.newObjectsCloneToOriginal.isEmpty());
         assertTrue(uow.newObjectsKeyToClone.isEmpty());
         assertFalse(uow.hasChanges());
+    }
+
+    @Test
+    void clearRetainsInformationAboutFlushedChanges() {
+        final OWLClassD original = new OWLClassD(Generators.createIndividualIdentifier());
+        defaultLoadStateDescriptor(original);
+        final OWLClassD clone = (OWLClassD) uow.registerExistingObject(original, descriptor);
+        clone.setOwlClassA(Generators.generateOwlClassAInstance());
+        uow.registerNewObject(clone.getOwlClassA(), descriptor);
+        uow.writeUncommittedChanges();
+        uow.clear();
+
+        assertTrue(uow.hasChanges);
+        assertTrue(uow.hasNew);
+        assertTrue(uow.uowChangeSet.hasChanges());
+        assertTrue(uow.uowChangeSet.hasNew());
+    }
+
+    @Test
+    void clearDiscardsUnflushedChanges() {
+        final OWLClassD d = new OWLClassD(Generators.createIndividualIdentifier());
+        defaultLoadStateDescriptor(d);
+        uow.registerExistingObject(d, descriptor);
+        d.setOwlClassA(Generators.generateOwlClassAInstance());
+        uow.registerNewObject(d.getOwlClassA(), descriptor);
+        uow.clear();
+
+        assertFalse(uow.hasChanges);
+        assertFalse(uow.hasNew);
+        assertFalse(uow.uowChangeSet.hasChanges());
+        assertFalse(uow.uowChangeSet.hasNew());
     }
 
     @Test

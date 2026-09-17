@@ -98,7 +98,9 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     boolean hasChanges;
     boolean hasNew;
     boolean hasDeleted;
+    boolean hasFlushedChanges;
 
+    // TODO Possibly unify into a single state enum
     private boolean transactionActive;
     private boolean isActive;
     private boolean flushingChanges;
@@ -144,6 +146,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     @Override
     public void release() {
         clear();
+        clearChangeState();
         storage.close();
         this.isActive = false;
         LOG.debug("UnitOfWork released.");
@@ -157,15 +160,21 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         deletedObjects.clear();
         newObjectsCloneToOriginal.clear();
         newObjectsKeyToClone.clear();
-        loadStateRegistry.clear();
+        this.transactionActive = false;
+        if (!hasFlushedChanges) {
+            clearChangeState();
+        }
+    }
+
+    private void clearChangeState() {
         this.hasChanges = false;
         this.hasDeleted = false;
         this.hasNew = false;
+        this.hasFlushedChanges = false;
+        loadStateRegistry.clear();
         cloneBuilder.reset();
         this.repoMap = new RepositoryMap();
-        repoMap.initDescriptors();
         this.uowChangeSet = ChangeSetFactory.createUoWChangeSet();
-        this.transactionActive = false;
     }
 
     /**
@@ -237,10 +246,9 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     }
 
     private void evictPossiblyUpdatedReferencesFromCache() {
-        cloneToOriginals.forEach((clone, orig) -> {
-            if (orig == null && !deletedObjects.containsKey(clone)) {
-                removeObjectFromCache(clone, getDescriptor(clone).getSingleContext().orElse(null));
-            }
+        uowChangeSet.getExistingObjectsChanges().forEach(chSet -> {
+            final Object clone = chSet.getClone();
+            removeObjectFromCache(clone, getDescriptor(clone).getSingleContext().orElse(null));
         });
     }
 
@@ -825,6 +833,9 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     @Override
     public void writeUncommittedChanges() {
         flushChangesToStorage();
+        if (hasChanges || hasNew || hasDeleted) {
+            this.hasFlushedChanges = true;
+        }
     }
 
     @Override
