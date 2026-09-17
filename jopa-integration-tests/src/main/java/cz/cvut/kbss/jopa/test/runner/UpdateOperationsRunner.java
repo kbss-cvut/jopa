@@ -1365,9 +1365,8 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
             em.flush();
             em.clear();
-            // TODO Enable this later, it should also pass but is a slightly different issue
-//            OWLClassF updatedF = findRequired(OWLClassF.class, f.getUri());
-//            assertTrue(updatedF.getSimpleSet().contains(a));
+            OWLClassF updatedF = findRequired(OWLClassF.class, f.getUri());
+            assertTrue(updatedF.getSimpleSet().contains(a));
         });
 
         OWLClassF result = findRequired(OWLClassF.class, f.getUri());
