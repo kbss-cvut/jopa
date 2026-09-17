@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+### 2.12.2 - 2026-09-17
+
+- More fixes of the `EntityManager.flush` behavior (Bug #477).
+
 ### 2.12.1 - 2026-09-15
 
 - Fixed incorrect `EntityManager.flush` behavior that cause changes not to be propagated to the repository when there
