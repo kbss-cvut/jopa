@@ -242,14 +242,6 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         if (hasChanges()) {
             mergeManager.mergeChangesFromChangeSet(uowChangeSet);
         }
-        evictPossiblyUpdatedReferencesFromCache();
-    }
-
-    private void evictPossiblyUpdatedReferencesFromCache() {
-        uowChangeSet.getExistingObjectsChanges().forEach(chSet -> {
-            final Object clone = chSet.getClone();
-            removeObjectFromCache(clone, getDescriptor(clone).getSingleContext().orElse(null));
-        });
     }
 
     /**

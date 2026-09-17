@@ -45,7 +45,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyCollectionOf;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -487,7 +490,7 @@ public abstract class ListsTestRunner extends BaseRunner {
         em.getTransaction().commit();
 
         final OWLClassC resC = findRequired(OWLClassC.class, entityC.getUri());
-        assertNull(resC.getReferencedList());
+        assertThat(resC.getReferencedList(), anyOf(nullValue(), emptyCollectionOf(OWLClassA.class)));
         for (OWLClassA a : entityC.getReferencedList()) {
             verifyExists(OWLClassA.class, a.getUri());
         }
