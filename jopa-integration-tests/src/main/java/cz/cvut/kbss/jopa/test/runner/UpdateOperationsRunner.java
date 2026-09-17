@@ -1311,14 +1311,11 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     public void flushAppliesRemovalFromManagedCollectionFieldInsideTransaction() {
         this.em = getEntityManager("flushAppliesRemovalFromManagedCollectionField", false);
 
-        OWLClassF f = new OWLClassF();
-        f.setUri(Generators.generateUri());
+        OWLClassF f = new OWLClassF(Generators.generateUri());
         f.setSimpleSet(new HashSet<>());
 
-        OWLClassA a = new OWLClassA();
-        a.setUri(Generators.generateUri());
-        OWLClassA aa = new OWLClassA();
-        aa.setUri(Generators.generateUri());
+        OWLClassA a = new OWLClassA(Generators.generateUri());
+        OWLClassA aa = new OWLClassA(Generators.generateUri());
 
         f.getSimpleSet().add(a);
         f.getSimpleSet().add(aa);
@@ -1346,5 +1343,34 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
             // aa remained
             assertTrue(updatedF.getSimpleSet().contains(aa));
         });
+    }
+
+    /**
+     * Bug #477
+     */
+    @Test
+    public void flushAppliesAddToManagedCollectionFieldInsideTransactionWithCacheEnabled() {
+        this.em = getEntityManager("flushAppliesAddToManagedCollectionFieldInsideTransactionWithCacheEnabled", true);
+        OWLClassF f = new OWLClassF(Generators.generateUri());
+        f.setSimpleSet(new HashSet<>());
+        OWLClassA a = new OWLClassA(Generators.generateUri());
+        transactional(() -> {
+            em.persist(a);
+            em.persist(f);
+        });
+
+        transactional(() -> {
+            OWLClassF managedF = findRequired(OWLClassF.class, f.getUri());
+            managedF.getSimpleSet().add(a);
+
+            em.flush();
+            em.clear();
+            // TODO Enable this later, it should also pass but is a slightly different issue
+//            OWLClassF updatedF = findRequired(OWLClassF.class, f.getUri());
+//            assertTrue(updatedF.getSimpleSet().contains(a));
+        });
+
+        OWLClassF result = findRequired(OWLClassF.class, f.getUri());
+        assertTrue(result.getSimpleSet().contains(a));
     }
 }
