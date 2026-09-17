@@ -50,6 +50,7 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -297,6 +298,20 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         assertTrue(uow.deletedObjects.isEmpty());
         assertTrue(uow.newObjectsCloneToOriginal.isEmpty());
         assertTrue(uow.newObjectsKeyToClone.isEmpty());
+    }
+
+    @Disabled
+    @Test
+    @Override
+    void clearRetainsInformationAboutFlushedChanges() {
+        // Not relevant here
+    }
+
+    @Disabled
+    @Test
+    @Override
+    void clearDiscardsUnflushedChanges() {
+        // Not relevant here
     }
 
     @Test
