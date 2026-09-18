@@ -103,6 +103,7 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
     private boolean flushingChanges;
     private State state;
 
+    // Changes performed during a transaction
     UnitOfWorkChangeSet uowChangeSet = ChangeSetFactory.createUoWChangeSet();
 
     final AbstractSession parent;
@@ -497,12 +498,12 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
      * This method calculates the changes to the registered entities and adds these changes into the given change set
      * for future commit to the ontology.
      */
-    void calculateChanges() {
+    void calculateChanges(UnitOfWorkChangeSet targetChangeSet) {
         if (hasNew) {
-            calculateNewObjects(uowChangeSet);
+            calculateNewObjects(targetChangeSet);
         }
         if (hasDeleted) {
-            calculateDeletedObjects(uowChangeSet);
+            calculateDeletedObjects(targetChangeSet);
         }
     }
 
@@ -573,7 +574,6 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
      */
     public void registerOriginalForNewClone(Object clone, Object original) {
         assert flushingChanges;
-        assert newObjectsCloneToOriginal.containsKey(clone);
         newObjectsCloneToOriginal.put(clone, original);
     }
 

@@ -107,7 +107,7 @@ public class ChangeTrackingUnitOfWork extends AbstractUnitOfWork {
     void flushChangesToStorage() {
         if (this.hasNew || this.hasChanges || this.hasDeleted) {
             persistNewObjects();
-            calculateChanges();
+            calculateChanges(uowChangeSet);
         }
     }
 

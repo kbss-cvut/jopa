@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.sessions.validator.AttributeModificationValidator;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -44,11 +45,12 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
 
     @Override
     void flushChangesToStorage() {
-        calculateChanges();
+        final UnitOfWorkChangeSet unflushedChanges = ChangeSetFactory.createUoWChangeSet();
+        calculateChanges(unflushedChanges);
         if (this.hasNew) {
             persistNewObjects();
         }
-        uowChangeSet.getExistingObjectsChanges().forEach(chSet -> {
+        unflushedChanges.getExistingObjectsChanges().forEach(chSet -> {
             final IdentifiableEntityType<?> et = entityType(chSet.getObjectClass());
             final Object entity = chSet.getClone();
             et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
@@ -64,17 +66,18 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
                  });
             et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
         });
-        uowChangeSet.getDeletedObjects().forEach(chSet -> {
+        unflushedChanges.getDeletedObjects().forEach(chSet -> {
             final IdentifiableEntityType<?> et = entityType(chSet.getObjectClass());
             final Object identifier = getIdentifier(chSet.getClone());
             storage.remove(identifier, chSet.getObjectClass(), chSet.getDescriptor());
             et.getLifecycleListenerManager().invokePostRemoveCallbacks(chSet.getClone());
         });
+        uowChangeSet.addAll(unflushedChanges);
     }
 
     @Override
-    void calculateChanges() {
-        super.calculateChanges();
+    void calculateChanges(UnitOfWorkChangeSet targetChangeSet) {
+        super.calculateChanges(targetChangeSet);
         cloneToOriginals.entrySet().stream().filter(e -> !deletedObjects.containsKey(e.getKey())).forEach(e -> {
             final Object original = e.getValue();
             final Object clone = e.getKey();
@@ -82,10 +85,10 @@ public class OnCommitChangePropagatingUnitOfWork extends AbstractUnitOfWork {
             changeCalculator.calculateChanges(chSet);
             processInferredValueChanges(chSet);
             if (chSet.hasChanges()) {
-                uowChangeSet.addObjectChangeSet(chSet);
+                targetChangeSet.addObjectChangeSet(chSet);
             }
         });
-        if (uowChangeSet.hasChanges()) {
+        if (targetChangeSet.hasChanges()) {
             setHasChanges();
         }
     }

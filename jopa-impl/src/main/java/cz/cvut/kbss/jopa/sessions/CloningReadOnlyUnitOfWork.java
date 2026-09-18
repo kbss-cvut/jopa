@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.lang.reflect.Field;
@@ -195,7 +196,7 @@ public class CloningReadOnlyUnitOfWork extends AbstractUnitOfWork {
      * @throws UnsupportedOperationException Always thrown
      */
     @Override
-    void calculateChanges() throws UnsupportedOperationException {
+    void calculateChanges(UnitOfWorkChangeSet targetChangeSet) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 

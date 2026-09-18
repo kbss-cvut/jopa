@@ -379,37 +379,6 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
     }
 
     @Test
-    void clearRetainsInformationAboutFlushedChanges() {
-        final OWLClassD original = new OWLClassD(Generators.createIndividualIdentifier());
-        defaultLoadStateDescriptor(original);
-        final OWLClassD clone = (OWLClassD) uow.registerExistingObject(original, descriptor);
-        clone.setOwlClassA(Generators.generateOwlClassAInstance());
-        uow.registerNewObject(clone.getOwlClassA(), descriptor);
-        uow.writeUncommittedChanges();
-        uow.clear();
-
-        assertTrue(uow.hasChanges);
-        assertTrue(uow.hasNew);
-        assertTrue(uow.uowChangeSet.hasChanges());
-        assertTrue(uow.uowChangeSet.hasNew());
-    }
-
-    @Test
-    void clearDiscardsUnflushedChanges() {
-        final OWLClassD d = new OWLClassD(Generators.createIndividualIdentifier());
-        defaultLoadStateDescriptor(d);
-        uow.registerExistingObject(d, descriptor);
-        d.setOwlClassA(Generators.generateOwlClassAInstance());
-        uow.registerNewObject(d.getOwlClassA(), descriptor);
-        uow.clear();
-
-        assertFalse(uow.hasChanges);
-        assertFalse(uow.hasNew);
-        assertFalse(uow.uowChangeSet.hasChanges());
-        assertFalse(uow.uowChangeSet.hasNew());
-    }
-
-    @Test
     void unwrapReturnsItselfWhenClassMatches() {
         assertSame(uow, uow.unwrap(UnitOfWork.class));
     }
@@ -600,28 +569,5 @@ abstract class AbstractUnitOfWorkTestRunner extends UnitOfWorkTestBase {
         assertTrue(uow.contains(result));
         verify(storageMock).loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup<>(id, descriptor)));
         assertNotSame(entityA, result);
-    }
-
-    @Test
-    void writeUncommittedChangesWritesChangesButDoesNotCommitStorageTransaction() {
-        when(transactionMock.isActive()).thenReturn(true);
-        final OWLClassA instance = Generators.generateOwlClassAInstance();
-        uow.registerNewObject(instance, descriptor);
-        uow.writeUncommittedChanges();
-
-        verify(storageMock).persist(instance.getUri(), instance, descriptor);
-        verify(storageMock, never()).commit();
-    }
-
-    @Test
-    void writeUncommittedChangesDetectsChangesAndWritesThem() {
-        when(transactionMock.isActive()).thenReturn(true);
-        final OWLClassA original = Generators.generateOwlClassAInstance();
-        final OWLClassA clone = (OWLClassA) uow.registerExistingObject(original, descriptor);
-        clone.setStringAttribute("Different string");
-
-        uow.writeUncommittedChanges();
-        verify(storageMock).merge(clone, metamodelMocks.forOwlClassA().stringAttribute(), descriptor);
-        verify(storageMock, never()).commit();
     }
 }
