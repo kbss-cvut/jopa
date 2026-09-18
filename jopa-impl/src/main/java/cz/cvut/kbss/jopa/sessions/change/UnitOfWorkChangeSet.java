@@ -19,7 +19,12 @@ package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A set of changes made in a {@link UnitOfWork}.
@@ -34,6 +39,17 @@ public class UnitOfWorkChangeSet {
         this.objectChanges = new HashMap<>();
         this.deletedObjects = new HashSet<>();
         this.newObjectChanges = new HashSet<>();
+    }
+
+    /**
+     * Adds all changes from the specified change set to this one.
+     *
+     * @param other Source change set
+     */
+    public void addAll(UnitOfWorkChangeSet other) {
+        deletedObjects.addAll(other.deletedObjects);
+        objectChanges.putAll(other.objectChanges);
+        newObjectChanges.addAll(other.newObjectChanges);
     }
 
     /**

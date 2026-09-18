@@ -26,6 +26,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxyFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptor;
 import cz.cvut.kbss.jopa.sessions.descriptor.LoadStateDescriptorFactory;
 import cz.cvut.kbss.jopa.sessions.util.AxiomBasedLoadingConfigGroup;
@@ -536,7 +537,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
      * @throws UnsupportedOperationException Always thrown
      */
     @Override
-    void calculateChanges() throws UnsupportedOperationException {
+    void calculateChanges(UnitOfWorkChangeSet targetChangeSet) throws UnsupportedOperationException {
         throwUnsupportedOperationException();
     }
 

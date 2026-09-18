@@ -597,4 +597,73 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         assertThat(managed.getSingularStringAtt(), instanceOf(MultilingualString.class));
         assertThat(managed.getSingularStringAtt(), not(instanceOf(ChangeTrackingIndirectMultilingualString.class)));
     }
+
+    @Test
+    void writeUncommittedChangesWritesChangesButDoesNotCommitStorageTransaction() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA instance = Generators.generateOwlClassAInstance();
+        uow.registerNewObject(instance, descriptor);
+        uow.writeUncommittedChanges();
+
+        verify(storageMock).persist(instance.getUri(), instance, descriptor);
+        verify(storageMock, never()).commit();
+    }
+
+    @Test
+    void writeUncommittedChangesDetectsChangesAndWritesThem() {
+        when(transactionMock.isActive()).thenReturn(true);
+        final OWLClassA original = Generators.generateOwlClassAInstance();
+        final OWLClassA clone = (OWLClassA) uow.registerExistingObject(original, descriptor);
+        clone.setStringAttribute("Different string");
+
+        uow.writeUncommittedChanges();
+        verify(storageMock).merge(clone, metamodelMocks.forOwlClassA().stringAttribute(), descriptor);
+        verify(storageMock, never()).commit();
+    }
+
+    @Test
+    void clearRetainsInformationAboutFlushedChanges() {
+        final OWLClassD original = new OWLClassD(Generators.createIndividualIdentifier());
+        defaultLoadStateDescriptor(original);
+        final OWLClassD clone = (OWLClassD) uow.registerExistingObject(original, descriptor);
+        clone.setOwlClassA(Generators.generateOwlClassAInstance());
+        uow.registerNewObject(clone.getOwlClassA(), descriptor);
+        uow.writeUncommittedChanges();
+        uow.clear();
+
+        assertTrue(uow.hasChanges);
+        assertTrue(uow.hasNew);
+        assertTrue(uow.uowChangeSet.hasChanges());
+        assertTrue(uow.uowChangeSet.hasNew());
+    }
+
+    @Test
+    void clearDiscardsUnflushedChanges() {
+        final OWLClassD d = new OWLClassD(Generators.createIndividualIdentifier());
+        defaultLoadStateDescriptor(d);
+        uow.registerExistingObject(d, descriptor);
+        d.setOwlClassA(Generators.generateOwlClassAInstance());
+        uow.registerNewObject(d.getOwlClassA(), descriptor);
+        uow.clear();
+
+        assertFalse(uow.hasChanges);
+        assertFalse(uow.hasNew);
+        assertFalse(uow.uowChangeSet.hasChanges());
+        assertFalse(uow.uowChangeSet.hasNew());
+    }
+
+    @Test
+    void writeUncommittedChangesClearAndCommitAllowRemovingAndPersistingInstance() {
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        defaultLoadStateDescriptor(a);
+        OWLClassA clone = (OWLClassA) uow.registerExistingObject(a, descriptor);
+        uow.removeObject(clone);
+        uow.writeUncommittedChanges();
+        uow.clear();
+        uow.registerNewObject(a, descriptor);
+        uow.commit();
+        
+        verify(storageMock).persist(a.getUri(), a, descriptor);
+        verify(storageMock, times(1)).remove(a.getUri(), OWLClassA.class, descriptor);
+    }
 }

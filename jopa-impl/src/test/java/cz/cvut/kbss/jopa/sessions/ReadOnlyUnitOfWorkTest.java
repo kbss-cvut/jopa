@@ -50,7 +50,6 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -78,13 +77,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -190,7 +187,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
 
     @Test
     void throwsUnsupportedOperationOnCalculateChanges() {
-        assertThrows(UnsupportedOperationException.class, () -> uow.calculateChanges());
+        assertThrows(UnsupportedOperationException.class, () -> uow.calculateChanges(uow.uowChangeSet));
     }
 
     @Test
@@ -298,20 +295,6 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         assertTrue(uow.deletedObjects.isEmpty());
         assertTrue(uow.newObjectsCloneToOriginal.isEmpty());
         assertTrue(uow.newObjectsKeyToClone.isEmpty());
-    }
-
-    @Disabled
-    @Test
-    @Override
-    void clearRetainsInformationAboutFlushedChanges() {
-        // Not relevant here
-    }
-
-    @Disabled
-    @Test
-    @Override
-    void clearDiscardsUnflushedChanges() {
-        // Not relevant here
     }
 
     @Test
@@ -757,23 +740,5 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
         assertTrue(uow.contains(result));
         verify(storageMock).loadFromAxioms(new AxiomBasedLoadingParameters<>(OWLClassA.class, axioms, new AxiomBasedLoadingConfigGroup<>(id, descriptor, null)));
         assertSame(entityA, result);
-    }
-
-    @Override
-    void writeUncommittedChangesWritesChangesButDoesNotCommitStorageTransaction() {
-        // Not relevant here
-    }
-
-    @Test
-    @Override
-    void writeUncommittedChangesDetectsChangesAndWritesThem() {
-        when(transactionMock.isActive()).thenReturn(true);
-        final OWLClassA original = Generators.generateOwlClassAInstance();
-        final OWLClassA clone = (OWLClassA) uow.registerExistingObject(original, descriptor);
-        clone.setStringAttribute("Different string");
-
-        assertThrows(UnsupportedOperationException.class, () -> uow.writeUncommittedChanges());
-        verify(storageMock, never()).persist(any(), any(), any());
-        verify(storageMock, never()).commit();
     }
 }
