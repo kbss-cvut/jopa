@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+### 2.12.3 - 2026-09-18
+
+- Another fix of `EntityManager.flush` - ensure changes are not applied twice when flush and then commit are invoked.
+
 ### 2.12.2 - 2026-09-17
 
 - More fixes of the `EntityManager.flush` behavior (Bug #477).
