@@ -18,12 +18,15 @@
 package cz.cvut.kbss.jopa.test.integration;
 
 import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.test.GenericSubclass;
 import cz.cvut.kbss.jopa.test.OWLClassM;
+import cz.cvut.kbss.jopa.test.OWLClassP;
 import cz.cvut.kbss.jopa.test.OWLClassX;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
+import cz.cvut.kbss.jopa.vocabulary.SKOS;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -42,11 +45,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -141,5 +146,22 @@ class AttributesTest extends IntegrationTestBase {
         assertNotNull(result);
         assertEquals(1, result.getGenericValue().size());
         assertEquals(a.getIdentifier(), result.getGenericValue().iterator().next().getUri());
+    }
+
+    @Test
+    void loadingEntitySupportsMappingMultipleLangStringsIntoMultilingualStringInTypedUnmappedProperties() throws Exception {
+        final URI property = URI.create(SKOS.EDITORIAL_NOTE);
+        final NamedResource subject = NamedResource.create(Generators.generateUri());
+        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(List.of(
+                new AxiomImpl<>(subject, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_P))),
+                new AxiomImpl<>(subject, Assertion.createPropertyAssertion(property, false), new Value<>(new LangString("Value", "en"))),
+                new AxiomImpl<>(subject, Assertion.createPropertyAssertion(property, false), new Value<>(new LangString("Hodnota", "cs")))
+        ));
+        em.getTransaction().begin();
+        final OWLClassP result = em.find(OWLClassP.class, subject.getIdentifier());
+        assertNotNull(result);
+        assertThat(result.getProperties(), hasKey(property));
+        final Set<Object> propertyValues = result.getProperties().get(property);
+        assertEquals(Set.of(new MultilingualString(Map.of("en", "Value", "cs", "Hodnota"))), propertyValues);
     }
 }
