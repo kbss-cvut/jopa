@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.MultilingualStringCondenser;
 import cz.cvut.kbss.ontodriver.model.*;
 
 import java.util.Collection;
@@ -35,6 +36,8 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
     final Class<?> elementType;
 
     final Collection<Object> values;
+
+    final MultilingualStringCondenser multilingualStringCondenser = new MultilingualStringCondenser();
 
     PluralDataPropertyStrategy(EntityType<X> et, AbstractPluralAttribute<? super X, ?, ?> att,
                                Descriptor attributeDescriptor, EntityMappingHelper mapper) {
@@ -63,6 +66,7 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
 
     @Override
     void buildInstanceFieldValue(Object instance) {
+        values.addAll(multilingualStringCondenser.getValues());
         setValueOnInstance(instance, values);
     }
 
