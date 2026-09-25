@@ -21,12 +21,14 @@ import cz.cvut.kbss.jopa.environment.OWLClassP;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -290,5 +293,47 @@ public class TypedPropertiesFieldStrategyTest {
         final PropertiesFieldStrategy<OWLClassP> s = new PropertiesFieldStrategy<>(mocks.forOwlClassP().entityType(),
                 spec, new EntityDescriptor(), mapperMock);
         assertThrows(IllegalArgumentException.class, () -> s.addAxiomValue(axiom));
+    }
+
+    @Test
+    void buildInstanceFieldValueTransformsLangStringsToMultilingualString() {
+        final URI property = Generators.createPropertyIdentifier();
+        final Set<Object> values = Set.of(new LangString("Hodnota", "cs"), new LangString("Value", "en"));
+        final Collection<Axiom<?>> axioms = createAxiomsForProperties(Map.of(property, values));
+        axioms.forEach(ax -> strategy.addAxiomValue(ax));
+        strategy.buildInstanceFieldValue(entity);
+
+        assertEquals(Map.of(property, Set.of(new MultilingualString(Map.of("cs", "Hodnota", "en", "Value")))), entity.getProperties());
+    }
+
+    @Test
+    void buildInstanceFieldValueTransformsSingleLangStringToMultilingualString() {
+        final URI property = Generators.createPropertyIdentifier();
+        final Set<Object> values = Set.of(new LangString("Value", "en"));
+        final Collection<Axiom<?>> axioms = createAxiomsForProperties(Map.of(property, values));
+        axioms.forEach(ax -> strategy.addAxiomValue(ax));
+        strategy.buildInstanceFieldValue(entity);
+
+        assertEquals(Map.of(property, Set.of(MultilingualString.create("Value", "en"))), entity.getProperties());
+    }
+
+    @Test
+    void buildInstanceFieldValueGeneratesMultilingualStringInstancesForMultipleLangStringValuesWithSameLanguage() {
+        final URI property = Generators.createPropertyIdentifier();
+        final Set<Object> values = Set.of(new LangString("Hodnota", "cs"),
+                new LangString("Value", "en"),
+                new LangString("Worth", "en"),
+                new LangString("Cena", "cs"));
+        final Collection<Axiom<?>> axioms = createAxiomsForProperties(Map.of(property, values));
+        axioms.forEach(ax -> strategy.addAxiomValue(ax));
+        strategy.buildInstanceFieldValue(entity);
+
+        assertEquals(2, entity.getProperties().get(property).size());
+        entity.getProperties().get(property).forEach(val -> {
+            assertInstanceOf(MultilingualString.class, val);
+            final MultilingualString mls =  (MultilingualString) val;
+            assertTrue(mls.contains("cs"));
+            assertTrue(mls.contains("en"));
+        });
     }
 }

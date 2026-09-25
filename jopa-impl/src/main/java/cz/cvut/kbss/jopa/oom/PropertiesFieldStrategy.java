@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
+import cz.cvut.kbss.jopa.utils.MultilingualStringCondenser;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.model.*;
 
@@ -208,14 +209,16 @@ class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<?
     private class PropertiesValueHolder {
 
         private final Map<Object, Set<Object>> map = new HashMap<>();
+        private final Map<Object, MultilingualStringCondenser> multilingualStrings = new HashMap<>();
 
         void addValue(Axiom<?> ax) {
             final Object property = mapPropertyIdentifier(ax.getAssertion());
             final Object val = mapPropertyValue(ax.getValue());
-            if (!map.containsKey(property)) {
-                map.put(property, new HashSet<>());
+            if (val instanceof LangString ls) {
+                multilingualStrings.computeIfAbsent(property, k -> new MultilingualStringCondenser()).add(ls);
+            } else {
+                map.computeIfAbsent(property, k -> new HashSet<>()).add(val);
             }
-            map.get(property).add(val);
         }
 
         private Object mapPropertyIdentifier(Assertion a) {
@@ -246,6 +249,8 @@ class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<?
         }
 
         Map<Object, Set<Object>> getValue() {
+            multilingualStrings.forEach((property, value) -> map.computeIfAbsent(property, k -> new HashSet<>())
+                                                                .addAll(value.getValues()));
             return map;
         }
     }
