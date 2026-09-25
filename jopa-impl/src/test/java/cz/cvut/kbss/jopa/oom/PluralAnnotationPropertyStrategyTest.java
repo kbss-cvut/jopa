@@ -40,6 +40,7 @@ import cz.cvut.kbss.jopa.oom.converter.ObjectConverter;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.vocabulary.DC;
+import cz.cvut.kbss.jopa.vocabulary.SKOS;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -61,6 +62,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -344,5 +346,19 @@ class PluralAnnotationPropertyStrategyTest {
         mls.getValue().forEach((lang, value) -> assertThat(values, hasItem(new Value<>(new LangString(value, lang)))));
         mlsTwo.getValue()
               .forEach((lang, value) -> assertThat(values, hasItem(new Value<>(new LangString(value, lang)))));
+    }
+
+    @Test
+    void addValueFromAxiomCondensesLangStringsIntoMultilingualStringWhenTargetTypeIsObject() throws Exception {
+        final EntityType<ClassWithObjectAnnotation> et = mock(EntityType.class);
+        final SetAttributeImpl<ClassWithObjectAnnotation, Object> att = objectAnnotationAttribute(et);
+        final PluralAnnotationPropertyStrategy<ClassWithObjectAnnotation> sut = new PluralAnnotationPropertyStrategy<>(
+                et, att, descriptor, mapperMock);
+        final ClassWithObjectAnnotation instance = new ClassWithObjectAnnotation();
+
+        sut.addAxiomValue(new AxiomImpl<>(INDIVIDUAL, Assertion.createAnnotationPropertyAssertion(URI.create(SKOS.EDITORIAL_NOTE), false), new Value<>(new LangString("Hodnota", "cs"))));
+        sut.addAxiomValue(new AxiomImpl<>(INDIVIDUAL, Assertion.createAnnotationPropertyAssertion(URI.create(SKOS.EDITORIAL_NOTE), false), new Value<>(new LangString("Value", "en"))));
+        sut.buildInstanceFieldValue(instance);
+        assertEquals(Set.of(new MultilingualString(Map.of("cs", "Hodnota", "en", "Value"))), instance.pluralAnnotation);
     }
 }
