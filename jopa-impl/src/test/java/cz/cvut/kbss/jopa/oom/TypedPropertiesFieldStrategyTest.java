@@ -51,6 +51,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -331,9 +334,25 @@ public class TypedPropertiesFieldStrategyTest {
         assertEquals(2, entity.getProperties().get(property).size());
         entity.getProperties().get(property).forEach(val -> {
             assertInstanceOf(MultilingualString.class, val);
-            final MultilingualString mls =  (MultilingualString) val;
+            final MultilingualString mls = (MultilingualString) val;
             assertTrue(mls.contains("cs"));
             assertTrue(mls.contains("en"));
         });
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceMapsMultilingualStringToLangStringValues() throws Exception {
+        final URI property = Generators.createPropertyIdentifier();
+        entity.setProperties(Map.of(property, Set.of(new MultilingualString(Map.of("cs", "Hodnota", "en", "Value")))));
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(null);
+
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
+
+        final Map<Assertion, Set<Value<?>>> res = OOMTestUtils.getPropertiesToAdd(gatherer);
+        final Assertion assertion = Assertion.createPropertyAssertion(property, false);
+        assertThat(res, hasKey(assertion));
+        final Set<Value<?>> values = res.get(assertion);
+        assertEquals(2, values.size());
+        assertThat(values, hasItems(new Value<>(new LangString("Hodnota", "cs")), new Value<>(new LangString("Value", "en"))));
     }
 }

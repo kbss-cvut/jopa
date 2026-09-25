@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.InvalidAssertionIdentifierException;
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -27,12 +28,25 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.utils.MultilingualStringCondenser;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<? super X, ?, ?, ?>, X> {
 
@@ -128,9 +142,14 @@ class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<?
     }
 
     private static Set<Value<?>> objectsToValues(Collection<?> strValues) {
-        final Set<Value<?>> ontoValues = new HashSet<>(strValues.size());
-        ontoValues.addAll(strValues.stream().filter(Objects::nonNull).map(Value::new).toList());
-        return ontoValues;
+        return new HashSet<>(strValues.stream().filter(Objects::nonNull).flatMap(obj -> {
+            if (obj instanceof MultilingualString mls) {
+                return mls.getValue().entrySet().stream()
+                          .map(e -> new Value<>(new LangString(e.getValue(), e.getKey())));
+            } else {
+                return Stream.of(new Value<>(obj));
+            }
+        }).toList());
     }
 
     private Map<Assertion, Set<Value<?>>> resolvePropertiesToRemove(Map<?, Set<?>> current, Map<?, Set<?>> original) {
