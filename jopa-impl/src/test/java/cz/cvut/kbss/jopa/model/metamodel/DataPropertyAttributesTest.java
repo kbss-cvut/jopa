@@ -32,8 +32,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DataPropertyAttributesTest {
@@ -85,6 +90,25 @@ class DataPropertyAttributesTest {
         final DataPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassA.getStrAttFieldPropertyInfo(), metamodelBuilder, MultilingualString.class);
         assertNull(sut.getLanguage());
+    }
+
+    @Test
+    void resolveSetsLanguageToNullWhenFieldIsObject() throws Exception {
+        DataPropertyAttributes sut = initSystemUnderTest();
+        sut.resolve(PropertyInfo.from(WithObjectDataProperty.class.getDeclaredField("objectDataProperty")), metamodelBuilder, Object.class);
+        assertNull(sut.getLanguage());
+        sut = initSystemUnderTest();
+        sut.resolve(PropertyInfo.from(WithObjectDataProperty.class.getDeclaredField("pluralObjectDataProperty")), metamodelBuilder, Object.class);
+        assertNull(sut.getLanguage());
+    }
+
+    @SuppressWarnings("unused")
+    private static class WithObjectDataProperty {
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "objectDataProperty")
+        private Object objectDataProperty;
+
+        @OWLDataProperty(iri = Vocabulary.ATTRIBUTE_BASE + "pluralObjectDataProperty")
+        private Set<Object> pluralObjectDataProperty;
     }
 
     @Test

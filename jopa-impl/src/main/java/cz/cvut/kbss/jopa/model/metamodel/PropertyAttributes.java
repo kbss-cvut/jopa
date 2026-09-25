@@ -133,7 +133,10 @@ abstract class PropertyAttributes {
     }
 
     String resolveLanguage(Class<?> fieldValueCls) {
-        return MultilingualString.class.equals(fieldValueCls) || Character.class.equals(fieldValueCls) || char.class.equals(fieldValueCls)
+        return MultilingualString.class.equals(fieldValueCls)
+                || Character.class.equals(fieldValueCls)
+                || char.class.equals(fieldValueCls)
+                || Object.class.equals(fieldValueCls)
                 ? null
                 : typeBuilderContext.getPuLanguage();
     }
