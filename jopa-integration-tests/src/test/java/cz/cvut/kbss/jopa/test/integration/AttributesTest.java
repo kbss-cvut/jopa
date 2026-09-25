@@ -164,4 +164,22 @@ class AttributesTest extends IntegrationTestBase {
         final Set<Object> propertyValues = result.getProperties().get(property);
         assertEquals(Set.of(new MultilingualString(Map.of("en", "Value", "cs", "Hodnota"))), propertyValues);
     }
+
+    /**
+     * GH#483
+     */
+    @Test
+    void loadingEntitySupportsCondensingLangStringsIntoPluralMultilingualStringInAnnotationPropertyOfObjectField() throws Exception {
+        final URI property = URI.create(Vocabulary.P_X_OBJECT_ATTRIBUTE);
+        final NamedResource subject = NamedResource.create(Generators.generateUri());
+        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(List.of(
+                new AxiomImpl<>(subject, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_X))),
+                new AxiomImpl<>(subject, Assertion.createPropertyAssertion(property, false), new Value<>(new LangString("Value", "en"))),
+                new AxiomImpl<>(subject, Assertion.createPropertyAssertion(property, false), new Value<>(new LangString("Hodnota", "cs")))
+        ));
+        em.getTransaction().begin();
+        final OWLClassX result = em.find(OWLClassX.class, subject.getIdentifier());
+        assertEquals(1, result.getObjectAnnotation().size());
+        assertEquals(new MultilingualString(Map.of("en", "Value", "cs", "Hodnota")), result.getObjectAnnotation().iterator().next());
+    }
 }
