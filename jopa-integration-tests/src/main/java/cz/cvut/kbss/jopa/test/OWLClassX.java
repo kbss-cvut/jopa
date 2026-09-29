@@ -42,8 +42,11 @@ public class OWLClassX implements HasUri {
     @OWLDataProperty(iri = Vocabulary.P_X_INSTANT_ATTRIBUTE)
     private Instant instant;
 
-    @OWLAnnotationProperty(iri = Vocabulary.P_X_OBJECT_ATTRIBUTE)
+    @OWLAnnotationProperty(iri = Vocabulary.P_X_OBJECT_ANNOTATION_ATTRIBUTE)
     private Set<Object> objectAnnotation;
+
+    @OWLDataProperty(iri = Vocabulary.P_X_OBJECT_DATA_ATTRIBUTE)
+    private Set<Object> objectData;
 
     @OWLObjectProperty(iri = Vocabulary.P_X_COLLECTION_ATTRIBUTE, cascade = CascadeType.PERSIST)
     private Collection<OWLClassA> aCollection;
@@ -89,6 +92,14 @@ public class OWLClassX implements HasUri {
 
     public void setObjectAnnotation(Set<Object> objectAnnotation) {
         this.objectAnnotation = objectAnnotation;
+    }
+
+    public Set<Object> getObjectData() {
+        return objectData;
+    }
+
+    public void setObjectData(Set<Object> objectData) {
+        this.objectData = objectData;
     }
 
     public Collection<OWLClassA> getACollection() {
