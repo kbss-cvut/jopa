@@ -230,6 +230,8 @@ public class MetamodelMocks {
     private SingularAttributeImpl<OWLClassM, ZoneOffset> mWithConverterAtt;
     @Mock
     private SingularAttributeImpl<OWLClassM, OneOfEnum> mObjectOneOfEnumAttribute;
+    @Mock
+    private SetAttributeImpl<OWLClassM, Object> mDataPropertyPluralObjectAttribute;
 
     @Mock
     private IdentifiableEntityType<OWLClassN> etN;
@@ -405,7 +407,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, etA, idL);
         MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mCharacterAtt, mEnumAtt,
                                            mOrdinalEnumAtt, mIntegerSetAtt, mLexicalFormAtt, mSimpleLiteralAtt,
-                                           mExplicitDatatypeAtt, mWithConverterAtt, mObjectOneOfEnumAttribute, idM);
+                                           mExplicitDatatypeAtt, mWithConverterAtt, mObjectOneOfEnumAttribute, mDataPropertyPluralObjectAttribute, idM);
         MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nPluralAnnotationAtt,
                                            nProperties, idN);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
@@ -843,6 +845,10 @@ public class MetamodelMocks {
 
         public AbstractAttribute<OWLClassM, OneOfEnum> objectOneOfEnumAttribute() {
             return MetamodelMocks.this.mObjectOneOfEnumAttribute;
+        }
+
+        public AbstractPluralAttribute<OWLClassM, Set<Object>, Object> dataPropertyPluralObjectAttributeAttribute() {
+            return MetamodelMocks.this.mDataPropertyPluralObjectAttribute;
         }
     }
 
