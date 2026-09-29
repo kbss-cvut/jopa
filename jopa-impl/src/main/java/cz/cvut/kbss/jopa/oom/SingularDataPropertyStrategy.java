@@ -27,8 +27,10 @@ import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractAttribute<? super X, ?>, X> {
 
@@ -69,22 +71,22 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
 
     @Override
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
-        valueBuilder.addValue(createAssertion(), extractValue(instance), getAttributeWriteContext());
+        valueBuilder.addValues(createAssertion(), extractValues(instance), getAttributeWriteContext());
     }
 
-    private Value<?> extractValue(X instance) {
+    private Collection<Value<?>> extractValues(X instance) {
         final Object extractedValue = extractFieldValueFromInstance(instance);
-        return extractedValue != null ? convertToAxiomValue(extractedValue) : Value.nullValue();
+        return toAxiomValue(extractedValue);
     }
 
     @Override
     Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
-        final Value<?> val = extractValue(instance);
+        final Collection<Value<?>> val = extractValues(instance);
         if (Value.nullValue().equals(val)) {
             return Collections.emptySet();
         }
-        return Collections.singleton(
-                new AxiomImpl<>(NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et)),
-                                createAssertion(), val));
+        return val.stream().filter(v -> !Value.nullValue().equals(v))
+                  .map(v -> new AxiomImpl<>(NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et)),
+                          createAssertion(), v)).collect(Collectors.toSet());
     }
 }

@@ -81,15 +81,8 @@ class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
         if (SingularAnnotationPropertyStrategy.isResourceIdentifierType(elementType)) {
             return  v -> Collections.singleton(new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(v))));
         } else {
-            return v -> v instanceof MultilingualString ?
-                    SingularMultilingualStringFieldStrategy.translationsToLangStrings(
-                            (MultilingualString) v).collect(Collectors.toList()) : Collections.singleton(convertToAxiomValue(v));
+            return this::toAxiomValue;
         }
-    }
-
-    @Override
-    Collection<Value<?>> toAxiomValue(Object value) {
-        return resolveValueMapper().apply(value);
     }
 
     @Override

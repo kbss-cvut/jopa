@@ -148,7 +148,8 @@ public class Vocabulary {
     public static final String P_X_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDate";
     public static final String P_X_LOCAL_DATETIME_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDateTime";
     public static final String P_X_INSTANT_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xInstant";
-    public static final String P_X_OBJECT_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xObject";
+    public static final String P_X_OBJECT_ANNOTATION_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xObjectAnnotation";
+    public static final String P_X_OBJECT_DATA_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xObjectData";
     public static final String P_X_COLLECTION_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xCollection";
 
     public static final String P_Y_SINGULAR_MULTILINGUAL_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "ySingularMultilingual";
