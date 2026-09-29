@@ -18,12 +18,15 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.MultilingualStringCondenser;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 
@@ -36,6 +39,8 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
 
     Object value;
 
+    final MultilingualStringCondenser multilingualStringCondenser = new MultilingualStringCondenser();
+
     SingularDataPropertyStrategy(EntityType<X> et, AbstractAttribute<? super X, ?> att,
                                  Descriptor descriptor, EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
@@ -47,11 +52,27 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
         if (!isValidRange(val)) {
             return;
         }
-        verifyCardinalityConstraint(ax.getSubject());
-        this.value = toAttributeValue(val);
+        addLiteralValue(ax.getSubject(), val);
     }
 
-    void verifyCardinalityConstraint(NamedResource subject) {
+    void addLiteralValue(NamedResource subject, Object val) {
+        verifyValueNotPresent(subject);
+        if (val instanceof LangString ls && attribute.getJavaType().isAssignableFrom(MultilingualString.class)) {
+            multilingualStringCondenser.add(ls);
+            if (multilingualStringCondenser.getValues().size() > 1) {
+                throw new CardinalityConstraintViolatedException("Expected single value of attribute " + attribute.getName() + " of instance " + subject + " in language " + ls.getLanguage() + ", but got multiple.");
+            }
+        } else {
+            if (!multilingualStringCondenser.getValues().isEmpty()) {
+                throw new CardinalityConstraintViolatedException(
+                        "Expected single value of attribute " + attribute.getName() + " of instance " + subject +
+                                ", but got multiple.");
+            }
+            this.value = toAttributeValue(val);
+        }
+    }
+
+    void verifyValueNotPresent(NamedResource subject) {
         if (value != null) {
             throw new CardinalityConstraintViolatedException(
                     "Expected single value of attribute " + attribute.getName() + " of instance " + subject +
@@ -61,12 +82,17 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
 
     @Override
     boolean hasValue() {
-        return value != null;
+        return value != null || !multilingualStringCondenser.getValues().isEmpty();
     }
 
     @Override
     void buildInstanceFieldValue(Object entity) {
-        setValueOnInstance(entity, value);
+        if (!multilingualStringCondenser.getValues().isEmpty()) {
+            assert multilingualStringCondenser.getValues().size() == 1;
+            setValueOnInstance(entity, multilingualStringCondenser.getValues().get(0));
+        } else {
+            setValueOnInstance(entity, value);
+        }
     }
 
     @Override

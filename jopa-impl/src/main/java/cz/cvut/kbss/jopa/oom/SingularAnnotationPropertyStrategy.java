@@ -43,13 +43,13 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
         if (!isValidRange(val)) {
             return;
         }
-        verifyCardinalityConstraint(ax.getSubject());
         if (IdentifierTransformer.isValidIdentifierType(attribute.getJavaType())) {
+            verifyValueNotPresent(ax.getSubject());
             this.value = IdentifierTransformer
                     .transformToIdentifier(ToLexicalFormConverter.INSTANCE.convertToAttribute(val),
                             attribute.getJavaType());
         } else {
-            this.value = toAttributeValue(val);
+            addLiteralValue(ax.getSubject(), val);
         }
     }
 

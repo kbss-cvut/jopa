@@ -34,9 +34,6 @@ public class OWLClassV implements Serializable {
     @OWLDataProperty(iri = Vocabulary.P_V_SINGULAR_DYNAMIC_ATTRIBUTE)
     private Object singularDynamicAtt;
 
-    @OWLDataProperty(iri = Vocabulary.P_V_PLURAL_DYNAMIC_ATTRIBUTE)
-    private Object pluralDynamicAtt;
-
     public OWLClassV() {
     }
 
@@ -60,25 +57,12 @@ public class OWLClassV implements Serializable {
         this.singularDynamicAtt = singularDynamicAtt;
     }
 
-    public Object getPluralDynamicAtt() {
-        return pluralDynamicAtt;
-    }
-
-    public void setPluralDynamicAtt(Object pluralDynamicAtt) {
-        this.pluralDynamicAtt = pluralDynamicAtt;
-    }
-
     @Override
     public String toString() {
         return "OWLClassU{" +
                 "id=" + id +
                 ", singularDynamicAtt=" + singularDynamicAtt +
-                ", pluralDynamicAtt=" + pluralDynamicAtt +
                 '}';
-    }
-
-    public static String getClassIri() {
-        return OWLClassV.class.getAnnotation(OWLClass.class).iri();
     }
 
     public static Field getIdField() throws Exception {
@@ -87,10 +71,6 @@ public class OWLClassV implements Serializable {
 
     public static Field getSingularDynamicAttField() throws Exception {
         return OWLClassV.class.getDeclaredField("singularDynamicAtt");
-    }
-
-    public static Field getPluralDynamicAttField() throws Exception {
-        return OWLClassV.class.getDeclaredField("pluralDynamicAtt");
     }
 }
 
