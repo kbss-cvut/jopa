@@ -38,6 +38,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
+import cz.cvut.kbss.jopa.environment.OWLClassV;
 import cz.cvut.kbss.jopa.environment.OWLClassW;
 import cz.cvut.kbss.jopa.environment.OWLClassWithQueryAttr;
 import cz.cvut.kbss.jopa.environment.OneOfEnum;
@@ -851,6 +852,14 @@ public class MetamodelFactory {
         initAttribute(et, pluralStringAtt, new AttributeInfo(OWLClassU.getPluralStringAttField(), Attribute.PersistentAttributeType.DATA).collectionType(CollectionType.SET)
                                                                                                                                          .elementType(MultilingualString.class)
                                                                                                                                          .language(null));
+    }
+
+    static void initOwlClassVMocks(IdentifiableEntityType<OWLClassV> et,AbstractAttribute singularDynamicAtt, Identifier id) throws Exception {
+        initEntityType(et, OWLClassV.class, et.getLifecycleListenerManager());
+        initIdentifier(et, id, OWLClassV.getIdField(), false);
+        when(et.getFieldSpecifications()).thenReturn(Set.of(singularDynamicAtt, id));
+        when(et.getAttributes()).thenReturn(Set.of(singularDynamicAtt));
+        initAttribute(et, singularDynamicAtt, new AttributeInfo(OWLClassV.getSingularDynamicAttField(), Attribute.PersistentAttributeType.DATA));
     }
 
     static void initOwlClassWMocks(IdentifiableEntityType<OWLClassW> et, AbstractPluralAttribute setStringAtt,
