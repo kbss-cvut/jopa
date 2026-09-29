@@ -80,7 +80,7 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
         } else {
             final Set<Value<?>> assertionValues = valueCollection.stream()
                                                                  .filter(Objects::nonNull)
-                                                                 .map(this::convertToAxiomValue)
+                                                                 .flatMap(v -> toAxiomValue(v).stream())
                                                                  .collect(Collectors.toSet());
             valueBuilder.addValues(createAssertion(),
                     filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
@@ -99,7 +99,8 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
             final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
             final Assertion assertion = createAssertion();
             return valueCollection.stream().filter(Objects::nonNull)
-                                  .map(v -> new AxiomImpl<>(subject, assertion, convertToAxiomValue(v)))
+                                  .flatMap(v -> toAxiomValue(v).stream())
+                                  .map(v -> new AxiomImpl<>(subject, assertion, v))
                                   .collect(Collectors.toSet());
         }
     }
