@@ -71,6 +71,7 @@ public class Vocabulary {
     public static final String p_m_explicitDatatype = ATTRIBUTE_BASE + "m-explicitDatatype";
     public static final String p_m_withConverter = ATTRIBUTE_BASE + "m-withConverter";
     public static final String p_m_objectOneOfEnumAttribute = ATTRIBUTE_BASE + "m-objectOneOfEnumAttribute";
+    public static final String p_m_dataPropertyPluralObjectAttribute = ATTRIBUTE_BASE + "m-dataPropertyPluralObjectAttribute";
 
     public static final String p_q_parentStringAttribute = ATTRIBUTE_BASE + "q-parentStringAttribute";
     public static final String p_q_stringAttribute = ATTRIBUTE_BASE + "q-stringAttribute";

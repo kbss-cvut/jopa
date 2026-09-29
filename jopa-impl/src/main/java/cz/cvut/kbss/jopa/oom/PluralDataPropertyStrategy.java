@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -50,7 +51,11 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
     void addAxiomValue(Axiom<?> ax) {
         final Object value = ax.getValue().getValue();
         if (isValidRange(value)) {
-            this.values.add(toAttributeValue(value));
+            if (value instanceof LangString ls && elementType.isAssignableFrom(MultilingualString.class)) {
+                multilingualStringCondenser.add(ls);
+            } else {
+                values.add(toAttributeValue(value));
+            }
         }
     }
 
