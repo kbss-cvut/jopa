@@ -91,7 +91,7 @@ class AttributesTest extends IntegrationTestBase {
         verify(connectionMock).persist(captor.capture());
         final AxiomValueDescriptor descriptor = captor.getValue();
         final Assertion assertion = Assertion
-                .createAnnotationPropertyAssertion(URI.create(Vocabulary.P_X_OBJECT_ATTRIBUTE), false);
+                .createAnnotationPropertyAssertion(URI.create(Vocabulary.P_X_OBJECT_ANNOTATION_ATTRIBUTE), false);
         assertTrue(descriptor.getAssertions().contains(assertion));
         final List<Value<?>> values = descriptor.getAssertionValues(assertion);
         final Set<Object> rawValues = values.stream().map(Value::getValue).collect(Collectors.toSet());
@@ -100,14 +100,42 @@ class AttributesTest extends IntegrationTestBase {
         assertTrue(rawValues.contains(NamedResource.create(uri)));
     }
 
+    /**
+     * Bug #482
+     */
     @Test
-    void savingEntityWithAnnotationPropertyMappedToObjectsConvertsAxiomValuesToCorrectTypes() throws Exception {
+    void savingEntityWithPluralDataPropertyMappedToObjectsConvertsValuesToCorrectTypes() throws Exception {
+        final OWLClassX instance = new OWLClassX();
+        final URI uri = Generators.generateUri();
+        final Set<Object> dataValues = new HashSet<>(Arrays.asList(1, "Two", MultilingualString.create("Three", "en"), uri));
+        instance.setUri(Generators.generateUri());
+        instance.setObjectData(dataValues);
+        em.getTransaction().begin();
+        em.persist(instance);
+        em.getTransaction().commit();
+
+        final ArgumentCaptor<AxiomValueDescriptor> captor = ArgumentCaptor.forClass(AxiomValueDescriptor.class);
+        verify(connectionMock).persist(captor.capture());
+        final AxiomValueDescriptor descriptor = captor.getValue();
+        final Assertion assertion = Assertion
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_X_OBJECT_DATA_ATTRIBUTE), false);
+        assertTrue(descriptor.getAssertions().contains(assertion));
+        final List<Value<?>> values = descriptor.getAssertionValues(assertion);
+        final Set<Object> rawValues = values.stream().map(Value::getValue).collect(Collectors.toSet());
+        assertThat(rawValues, hasItem(1));
+        assertThat(rawValues, hasItem("Two"));
+        assertThat(rawValues, hasItem(new LangString("Three", "en")));
+        assertThat(rawValues, hasItem(NamedResource.create(uri)));
+    }
+
+    @Test
+    void loadingEntityWithAnnotationPropertyMappedToObjectsConvertsAxiomValuesToCorrectTypes() throws Exception {
         final URI uri = Generators.generateUri();
         final NamedResource individual = NamedResource.create(uri);
         final Axiom<NamedResource> classAssertion = new AxiomImpl<>(individual, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_X)));
         final Assertion annotationAssertion = Assertion
-                .createAnnotationPropertyAssertion(URI.create(Vocabulary.P_X_OBJECT_ATTRIBUTE), false);
+                .createAnnotationPropertyAssertion(URI.create(Vocabulary.P_X_OBJECT_ANNOTATION_ATTRIBUTE), false);
         final Axiom<Integer> annAssertionOne = new AxiomImpl<>(individual, annotationAssertion, new Value<>(1));
         final Axiom<String> annAssertionTwo = new AxiomImpl<>(individual, annotationAssertion, new Value<>("Two"));
         final Axiom<NamedResource> annAssertionThree = new AxiomImpl<>(individual, annotationAssertion,
@@ -170,7 +198,7 @@ class AttributesTest extends IntegrationTestBase {
      */
     @Test
     void loadingEntitySupportsCondensingLangStringsIntoPluralMultilingualStringInAnnotationPropertyOfObjectField() throws Exception {
-        final URI property = URI.create(Vocabulary.P_X_OBJECT_ATTRIBUTE);
+        final URI property = URI.create(Vocabulary.P_X_OBJECT_ANNOTATION_ATTRIBUTE);
         final NamedResource subject = NamedResource.create(Generators.generateUri());
         when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(List.of(
                 new AxiomImpl<>(subject, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_X))),
