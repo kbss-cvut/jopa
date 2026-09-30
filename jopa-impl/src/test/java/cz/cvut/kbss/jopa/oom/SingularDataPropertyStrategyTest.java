@@ -20,13 +20,21 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassM;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
+import cz.cvut.kbss.jopa.environment.OWLClassV;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,17 +47,23 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SingularDataPropertyStrategyTest {
 
-    private static final URI PK = Generators.createIndividualIdentifier();
+    private static final URI ID = Generators.createIndividualIdentifier();
+    private static final NamedResource INDIVIDUAL = NamedResource.create(ID);
 
     @Mock
     private EntityMappingHelper mapperMock;
@@ -73,10 +87,10 @@ class SingularDataPropertyStrategyTest {
         final SingularDataPropertyStrategy<OWLClassA> strategy = new SingularDataPropertyStrategy<>(
                 mocks.forOwlClassA().entityType(), mocks.forOwlClassA().stringAttribute(), descriptor, mapperMock);
         final OWLClassA a = new OWLClassA();
-        a.setUri(PK);
+        a.setUri(ID);
         a.setStringAttribute("english");
 
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        final AxiomValueGatherer builder = new AxiomValueGatherer(INDIVIDUAL, null);
         strategy.buildAxiomValuesFromInstance(a, builder);
         final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
         assertEquals(1, valueDescriptor.getAssertions().size());
@@ -96,11 +110,10 @@ class SingularDataPropertyStrategyTest {
         final SingularDataPropertyStrategy<OWLClassT> strategy = new SingularDataPropertyStrategy<>(
                 mocks.forOwlClassT().entityType(), mocks.forOwlClassT().tLocalDateTimeAtt(), descriptor, mapperMock);
         final OWLClassT t = new OWLClassT();
-        t.setUri(PK);
+        t.setUri(ID);
 
         final OffsetDateTime value = OffsetDateTime.now();
-        final Axiom<OffsetDateTime> axiom = new AxiomImpl<>(NamedResource.create(PK), strategy.createAssertion(),
-                new Value<>(value));
+        final Axiom<OffsetDateTime> axiom = new AxiomImpl<>(INDIVIDUAL, strategy.createAssertion(), new Value<>(value));
         strategy.addAxiomValue(axiom);
         strategy.buildInstanceFieldValue(t);
         assertNotNull(t.getLocalDateTime());
@@ -113,10 +126,9 @@ class SingularDataPropertyStrategyTest {
                 new SingularDataPropertyStrategy<>(mocks.forOwlClassM().entityType(),
                         mocks.forOwlClassM().enumAttribute(), descriptor, mapperMock);
         final OWLClassM m = new OWLClassM();
-        m.setKey(PK.toString());
+        m.setKey(ID.toString());
 
-        final Axiom<String> axiom = new AxiomImpl<>(NamedResource.create(PK), sut.createAssertion(),
-                new Value<>(OWLClassM.Severity.MEDIUM.toString()));
+        final Axiom<String> axiom = new AxiomImpl<>(INDIVIDUAL, sut.createAssertion(), new Value<>(OWLClassM.Severity.MEDIUM.toString()));
         sut.addAxiomValue(axiom);
         sut.buildInstanceFieldValue(m);
         assertEquals(OWLClassM.Severity.MEDIUM, m.getEnumAttribute());
@@ -128,11 +140,10 @@ class SingularDataPropertyStrategyTest {
                 mocks.forOwlClassM().entityType(),
                 mocks.forOwlClassM().lexicalFormAttribute(), descriptor, mapperMock);
         final OWLClassM m = new OWLClassM();
-        m.setKey(PK.toString());
+        m.setKey(ID.toString());
 
         final Integer value = 117;
-        final Axiom<Integer> axiom = new AxiomImpl<>(NamedResource.create(PK), sut.createAssertion(),
-                new Value<>(value));
+        final Axiom<Integer> axiom = new AxiomImpl<>(INDIVIDUAL, sut.createAssertion(), new Value<>(value));
         sut.addAxiomValue(axiom);
         sut.buildInstanceFieldValue(m);
         assertEquals(value.toString(), m.getLexicalForm());
@@ -144,8 +155,8 @@ class SingularDataPropertyStrategyTest {
                 new SingularDataPropertyStrategy<>(mocks.forOwlClassM().entityType(),
                         mocks.forOwlClassM().enumAttribute(), descriptor, mapperMock);
         final OWLClassM m = new OWLClassM();
-        m.setKey(PK.toString());
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        m.setKey(ID.toString());
+        final AxiomValueGatherer builder = new AxiomValueGatherer(INDIVIDUAL, null);
 
         sut.buildAxiomValuesFromInstance(m, builder);
         final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
@@ -160,11 +171,10 @@ class SingularDataPropertyStrategyTest {
                 mocks.forOwlClassM().entityType(),
                 mocks.forOwlClassM().withConverterAttribute(), descriptor, mapperMock);
         final OWLClassM m = new OWLClassM();
-        m.setKey(PK.toString());
+        m.setKey(ID.toString());
 
         final String value = "-01:00";
-        final Axiom<String> axiom = new AxiomImpl<>(NamedResource.create(PK), sut.createAssertion(),
-                                                     new Value<>(value));
+        final Axiom<String> axiom = new AxiomImpl<>(INDIVIDUAL, sut.createAssertion(), new Value<>(value));
         sut.addAxiomValue(axiom);
         sut.buildInstanceFieldValue(m);
         assertEquals(ZoneOffset.of(value), m.getWithConverter());
@@ -194,5 +204,56 @@ class SingularDataPropertyStrategyTest {
         final Set<Axiom<?>> result = strategy.buildAxiomsFromInstance(a);
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void buildAxiomsFromInstanceMapsMultilingualStringToLangStringAxioms() {
+        final SingularDataPropertyStrategy<OWLClassV> sut = new SingularDataPropertyStrategy<>(mocks.forOwlClassV()
+                                                                                                         .entityType(), mocks.forOwlClassV()
+                                                                                                                             .vSingularDynamicAtt(), descriptor, mapperMock);
+        final OWLClassV v = new OWLClassV(ID);
+        v.setSingularDynamicAtt(new MultilingualString(Map.of("en", "Value", "de", "Wert")));
+
+        final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(v);
+        assertEquals(2, result.size());
+        final Assertion assertion = Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_V_SINGULAR_DYNAMIC_ATTRIBUTE), "en", false);
+        assertThat(result, hasItems(
+                new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(new LangString("Value", "en"))),
+                new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(new LangString("Wert", "de")))
+        ));
+    }
+
+    @Test
+    void addAxiomValueAllowsAddingMultipleTranslationsIntoSingleMultilingualString() {
+        final SingularDataPropertyStrategy<OWLClassV> sut = new SingularDataPropertyStrategy<>(mocks.forOwlClassV()
+                                                                                                         .entityType(), mocks.forOwlClassV()
+                                                                                                                             .vSingularDynamicAtt(), descriptor, mapperMock);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_V_SINGULAR_DYNAMIC_ATTRIBUTE), "en", false);
+        sut.addAxiomValue(new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(new LangString("Value", "en"))));
+        sut.addAxiomValue(new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(new LangString("Wert", "de"))));
+
+        final OWLClassV  v = new OWLClassV(ID);
+        sut.buildInstanceFieldValue(v);
+        assertEquals(new MultilingualString(Map.of("en", "Value", "de", "Wert")), v.getSingularDynamicAtt());
+    }
+
+    @Test
+    void addAxiomValueThrowsCardinalityConstraintViolatedWhenMultipleValuesForOneLanguageAreAdded() {
+        final SingularDataPropertyStrategy<OWLClassV> sut = new SingularDataPropertyStrategy<>(mocks.forOwlClassV()
+                                                                                                    .entityType(), mocks.forOwlClassV()
+                                                                                                                        .vSingularDynamicAtt(), descriptor, mapperMock);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_V_SINGULAR_DYNAMIC_ATTRIBUTE), "en", false);
+        sut.addAxiomValue(new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(new LangString("Value", "en"))));
+        assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addAxiomValue(new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(new LangString("Worth", "en")))));
+    }
+
+    @Test
+    void addAxiomValueThrowsCardinalityConstraintViolatedExceptionWhenLangStringAndOtherValueAreAdded() {
+        final SingularDataPropertyStrategy<OWLClassV> sut = new SingularDataPropertyStrategy<>(mocks.forOwlClassV()
+                                                                                                    .entityType(), mocks.forOwlClassV()
+                                                                                                                        .vSingularDynamicAtt(), descriptor, mapperMock);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_V_SINGULAR_DYNAMIC_ATTRIBUTE), "en", false);
+        sut.addAxiomValue(new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(new LangString("Value", "en"))));
+        assertThrows(CardinalityConstraintViolatedException.class, () -> sut.addAxiomValue(new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(25))));
     }
 }

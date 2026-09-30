@@ -18,21 +18,28 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.MultilingualStringCondenser;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractAttribute<? super X, ?>, X> {
 
     Object value;
+
+    final MultilingualStringCondenser multilingualStringCondenser = new MultilingualStringCondenser();
 
     SingularDataPropertyStrategy(EntityType<X> et, AbstractAttribute<? super X, ?> att,
                                  Descriptor descriptor, EntityMappingHelper mapper) {
@@ -45,11 +52,27 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
         if (!isValidRange(val)) {
             return;
         }
-        verifyCardinalityConstraint(ax.getSubject());
-        this.value = toAttributeValue(val);
+        addLiteralValue(ax.getSubject(), val);
     }
 
-    void verifyCardinalityConstraint(NamedResource subject) {
+    void addLiteralValue(NamedResource subject, Object val) {
+        verifyValueNotPresent(subject);
+        if (val instanceof LangString ls && attribute.getJavaType().isAssignableFrom(MultilingualString.class)) {
+            multilingualStringCondenser.add(ls);
+            if (multilingualStringCondenser.getValues().size() > 1) {
+                throw new CardinalityConstraintViolatedException("Expected single value of attribute " + attribute.getName() + " of instance " + subject + " in language " + ls.getLanguage() + ", but got multiple.");
+            }
+        } else {
+            if (!multilingualStringCondenser.getValues().isEmpty()) {
+                throw new CardinalityConstraintViolatedException(
+                        "Expected single value of attribute " + attribute.getName() + " of instance " + subject +
+                                ", but got multiple.");
+            }
+            this.value = toAttributeValue(val);
+        }
+    }
+
+    void verifyValueNotPresent(NamedResource subject) {
         if (value != null) {
             throw new CardinalityConstraintViolatedException(
                     "Expected single value of attribute " + attribute.getName() + " of instance " + subject +
@@ -59,32 +82,37 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
 
     @Override
     boolean hasValue() {
-        return value != null;
+        return value != null || !multilingualStringCondenser.getValues().isEmpty();
     }
 
     @Override
     void buildInstanceFieldValue(Object entity) {
-        setValueOnInstance(entity, value);
+        if (!multilingualStringCondenser.getValues().isEmpty()) {
+            assert multilingualStringCondenser.getValues().size() == 1;
+            setValueOnInstance(entity, multilingualStringCondenser.getValues().get(0));
+        } else {
+            setValueOnInstance(entity, value);
+        }
     }
 
     @Override
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) {
-        valueBuilder.addValue(createAssertion(), extractValue(instance), getAttributeWriteContext());
+        valueBuilder.addValues(createAssertion(), extractValues(instance), getAttributeWriteContext());
     }
 
-    private Value<?> extractValue(X instance) {
+    private Collection<Value<?>> extractValues(X instance) {
         final Object extractedValue = extractFieldValueFromInstance(instance);
-        return extractedValue != null ? convertToAxiomValue(extractedValue) : Value.nullValue();
+        return toAxiomValue(extractedValue);
     }
 
     @Override
     Set<Axiom<?>> buildAxiomsFromInstance(X instance) {
-        final Value<?> val = extractValue(instance);
+        final Collection<Value<?>> val = extractValues(instance);
         if (Value.nullValue().equals(val)) {
             return Collections.emptySet();
         }
-        return Collections.singleton(
-                new AxiomImpl<>(NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et)),
-                                createAssertion(), val));
+        return val.stream().filter(v -> !Value.nullValue().equals(v))
+                  .map(v -> new AxiomImpl<>(NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et)),
+                          createAssertion(), v)).collect(Collectors.toSet());
     }
 }

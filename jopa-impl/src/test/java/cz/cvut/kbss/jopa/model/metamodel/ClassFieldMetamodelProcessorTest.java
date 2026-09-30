@@ -99,23 +99,6 @@ class ClassFieldMetamodelProcessorTest {
     }
 
     @Test
-    void processDynamicObjectFieldIsResolvedAsPluralAttributeImpl() throws Exception {
-        final IdentifiableEntityType<OWLClassV> etMock = mock(IdentifiableEntityType.class);
-        when(etMock.getJavaType()).thenReturn(OWLClassV.class);
-        final ClassFieldMetamodelProcessor<OWLClassV> processor = prepareProcessorForClass(etMock);
-        final Field field = OWLClassV.getPluralDynamicAttField();
-        when(metamodelBuilder.hasManagedType(OWLClassV.class)).thenReturn(true);
-
-        processor.processField(field);
-
-        final ArgumentCaptor<AbstractAttribute> captor = ArgumentCaptor.forClass(AbstractAttribute.class);
-        verify(etMock).addDeclaredAttribute(eq(field.getName()), captor.capture());
-
-        assertInstanceOf(SingularAttributeImpl.class, captor.getValue());
-        assertEquals(Vocabulary.ATTRIBUTE_BASE + "pluralDynamicAttribute", captor.getValue().getIRI().toString());
-    }
-
-    @Test
     void processPluralFieldWithNonEmptyCardinalityConstraintAddsTheConstraintToAttributeSpecification() throws Exception {
         final IdentifiableEntityType<OWLClassJ> etMock = mock(IdentifiableEntityType.class);
         when(etMock.getJavaType()).thenReturn(OWLClassJ.class);

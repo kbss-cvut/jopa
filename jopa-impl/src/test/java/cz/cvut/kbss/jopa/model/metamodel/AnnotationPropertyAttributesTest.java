@@ -28,6 +28,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -85,7 +87,7 @@ class AnnotationPropertyAttributesTest {
         final AnnotationPropertyAttributes sut = initSystemUnderTest();
         when(typeBuilderContext.getPuLanguage()).thenReturn("en");
         sut.resolve(OWLClassN.getAnnotationPropertyFieldInfo(), metamodelBuilder, OWLClassN.getAnnotationPropertyField()
-                .getType());
+                                                                                           .getType());
         assertEquals("en", sut.getLanguage());
     }
 
@@ -94,6 +96,25 @@ class AnnotationPropertyAttributesTest {
         final AnnotationPropertyAttributes sut = initSystemUnderTest();
         sut.resolve(OWLClassN.getAnnotationPropertyFieldInfo(), metamodelBuilder, MultilingualString.class);
         assertNull(sut.getLanguage());
+    }
+
+    @Test
+    void resolveSetsLanguageToNullWhenFieldIsObject() throws Exception {
+        AnnotationPropertyAttributes sut = initSystemUnderTest();
+        sut.resolve(PropertyInfo.from(WithObjectAnnotationProperty.class.getDeclaredField("objectAnnotationProperty")), metamodelBuilder, Object.class);
+        assertNull(sut.getLanguage());
+        sut = initSystemUnderTest();
+        sut.resolve(PropertyInfo.from(WithObjectAnnotationProperty.class.getDeclaredField("pluralObjectAnnotationProperty")), metamodelBuilder, Object.class);
+        assertNull(sut.getLanguage());
+    }
+
+    @SuppressWarnings("unused")
+    private static class WithObjectAnnotationProperty {
+        @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "objectAnnotationProperty")
+        private Object objectAnnotationProperty;
+
+        @OWLAnnotationProperty(iri = Vocabulary.ATTRIBUTE_BASE + "pluralObjectAnnotationProperty")
+        private Set<Object> pluralObjectAnnotationProperty;
     }
 
     @Test

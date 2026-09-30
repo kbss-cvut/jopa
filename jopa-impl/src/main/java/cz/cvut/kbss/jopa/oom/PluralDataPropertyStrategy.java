@@ -17,11 +17,13 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.MultilingualStringCondenser;
 import cz.cvut.kbss.ontodriver.model.*;
 
 import java.util.Collection;
@@ -36,6 +38,8 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
 
     final Collection<Object> values;
 
+    final MultilingualStringCondenser multilingualStringCondenser = new MultilingualStringCondenser();
+
     PluralDataPropertyStrategy(EntityType<X> et, AbstractPluralAttribute<? super X, ?, ?> att,
                                Descriptor attributeDescriptor, EntityMappingHelper mapper) {
         super(et, att, attributeDescriptor, mapper);
@@ -47,7 +51,11 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
     void addAxiomValue(Axiom<?> ax) {
         final Object value = ax.getValue().getValue();
         if (isValidRange(value)) {
-            this.values.add(toAttributeValue(value));
+            if (value instanceof LangString ls && elementType.isAssignableFrom(MultilingualString.class)) {
+                multilingualStringCondenser.add(ls);
+            } else {
+                values.add(toAttributeValue(value));
+            }
         }
     }
 
@@ -63,6 +71,7 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
 
     @Override
     void buildInstanceFieldValue(Object instance) {
+        values.addAll(multilingualStringCondenser.getValues());
         setValueOnInstance(instance, values);
     }
 
@@ -76,7 +85,7 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
         } else {
             final Set<Value<?>> assertionValues = valueCollection.stream()
                                                                  .filter(Objects::nonNull)
-                                                                 .map(this::convertToAxiomValue)
+                                                                 .flatMap(v -> toAxiomValue(v).stream())
                                                                  .collect(Collectors.toSet());
             valueBuilder.addValues(createAssertion(),
                     filterOutInferredValues(valueBuilder.getSubjectIdentifier(), assertionValues),
@@ -95,7 +104,8 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
             final NamedResource subject = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
             final Assertion assertion = createAssertion();
             return valueCollection.stream().filter(Objects::nonNull)
-                                  .map(v -> new AxiomImpl<>(subject, assertion, convertToAxiomValue(v)))
+                                  .flatMap(v -> toAxiomValue(v).stream())
+                                  .map(v -> new AxiomImpl<>(subject, assertion, v))
                                   .collect(Collectors.toSet());
         }
     }

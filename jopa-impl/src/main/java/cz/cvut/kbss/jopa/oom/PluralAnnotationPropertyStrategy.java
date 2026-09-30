@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 
@@ -46,7 +47,11 @@ class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
     void addAxiomValue(Axiom<?> ax) {
         final Object value = ax.getValue().getValue();
         if (isValidRange(value)) {
-            values.add(toAttributeValue(value));
+            if (value instanceof LangString ls && elementType.isAssignableFrom(MultilingualString.class)) {
+                multilingualStringCondenser.add(ls);
+            } else {
+                values.add(toAttributeValue(value));
+            }
         } else if (value instanceof NamedResource && IdentifierTransformer.isValidIdentifierType(elementType)) {
             values.add(IdentifierTransformer
                     .transformToIdentifier(ToLexicalFormConverter.INSTANCE.convertToAttribute(value),
@@ -76,15 +81,8 @@ class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
         if (SingularAnnotationPropertyStrategy.isResourceIdentifierType(elementType)) {
             return  v -> Collections.singleton(new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(v))));
         } else {
-            return v -> v instanceof MultilingualString ?
-                    SingularMultilingualStringFieldStrategy.translationsToLangStrings(
-                            (MultilingualString) v).collect(Collectors.toList()) : Collections.singleton(convertToAxiomValue(v));
+            return this::toAxiomValue;
         }
-    }
-
-    @Override
-    Collection<Value<?>> toAxiomValue(Object value) {
-        return resolveValueMapper().apply(value);
     }
 
     @Override

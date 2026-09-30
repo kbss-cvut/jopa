@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -30,7 +29,6 @@ import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.stream.Collectors;
 
 class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy<X> {
 
@@ -45,13 +43,13 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
         if (!isValidRange(val)) {
             return;
         }
-        verifyCardinalityConstraint(ax.getSubject());
         if (IdentifierTransformer.isValidIdentifierType(attribute.getJavaType())) {
+            verifyValueNotPresent(ax.getSubject());
             this.value = IdentifierTransformer
                     .transformToIdentifier(ToLexicalFormConverter.INSTANCE.convertToAttribute(val),
-                                           attribute.getJavaType());
+                            attribute.getJavaType());
         } else {
-            this.value = toAttributeValue(val);
+            addLiteralValue(ax.getSubject(), val);
         }
     }
 
@@ -73,16 +71,10 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
 
         if (isResourceIdentifierType(attribute.getJavaType())) {
             valueBuilder.addValue(createAssertion(),
-                                  new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(value))),
-                                  getAttributeWriteContext());
-        } else if (value instanceof MultilingualString) {
-            valueBuilder.addValues(createAssertion(),
-                                   SingularMultilingualStringFieldStrategy.translationsToLangStrings(
-                                                                                  (MultilingualString) value)
-                                                                          .collect(Collectors.toList()),
-                                   getAttributeWriteContext());
+                    new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(value))),
+                    getAttributeWriteContext());
         } else {
-            valueBuilder.addValue(createAssertion(), convertToAxiomValue(value), getAttributeWriteContext());
+            valueBuilder.addValues(createAssertion(), toAxiomValue(value), getAttributeWriteContext());
         }
     }
 
@@ -100,8 +92,8 @@ class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy
      * identifiers when mapping to the underlying repository.
      *
      * @param cls Type to check
-     * @return {@code true} if the specified type represents resource identifier w.r.t. annotation properties, {@code
-     * false} otherwise
+     * @return {@code true} if the specified type represents resource identifier w.r.t. annotation properties,
+     * {@code false} otherwise
      */
     static boolean isResourceIdentifierType(Class<?> cls) {
         return URI.class.equals(cls) || URL.class.equals(cls);

@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.datatype.DatatypeTransformer;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -27,8 +28,9 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, ?>, X> extends FieldStrategy<A, X> {
 
@@ -68,7 +70,13 @@ abstract class DataPropertyFieldStrategy<A extends AbstractAttribute<? super X, 
 
     @Override
     Collection<Value<?>> toAxiomValue(Object value) {
-        return Collections.singleton(value != null ? convertToAxiomValue(value) : Value.nullValue());
+        if (value == null) {
+            return Set.of(Value.nullValue());
+        }
+        if (value instanceof MultilingualString mls) {
+            return SingularMultilingualStringFieldStrategy.translationsToLangStrings(mls).collect(Collectors.toSet());
+        }
+        return Set.of(convertToAxiomValue(value));
     }
 
     String getLanguage() {

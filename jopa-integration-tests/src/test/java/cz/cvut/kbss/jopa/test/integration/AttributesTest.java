@@ -18,12 +18,15 @@
 package cz.cvut.kbss.jopa.test.integration;
 
 import cz.cvut.kbss.jopa.exceptions.AttributeModificationForbiddenException;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.test.GenericSubclass;
 import cz.cvut.kbss.jopa.test.OWLClassM;
+import cz.cvut.kbss.jopa.test.OWLClassP;
 import cz.cvut.kbss.jopa.test.OWLClassX;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
+import cz.cvut.kbss.jopa.vocabulary.SKOS;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
@@ -42,11 +45,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -86,7 +91,7 @@ class AttributesTest extends IntegrationTestBase {
         verify(connectionMock).persist(captor.capture());
         final AxiomValueDescriptor descriptor = captor.getValue();
         final Assertion assertion = Assertion
-                .createAnnotationPropertyAssertion(URI.create(Vocabulary.P_X_OBJECT_ATTRIBUTE), false);
+                .createAnnotationPropertyAssertion(URI.create(Vocabulary.P_X_OBJECT_ANNOTATION_ATTRIBUTE), false);
         assertTrue(descriptor.getAssertions().contains(assertion));
         final List<Value<?>> values = descriptor.getAssertionValues(assertion);
         final Set<Object> rawValues = values.stream().map(Value::getValue).collect(Collectors.toSet());
@@ -95,14 +100,42 @@ class AttributesTest extends IntegrationTestBase {
         assertTrue(rawValues.contains(NamedResource.create(uri)));
     }
 
+    /**
+     * Bug #482
+     */
     @Test
-    void savingEntityWithAnnotationPropertyMappedToObjectsConvertsAxiomValuesToCorrectTypes() throws Exception {
+    void savingEntityWithPluralDataPropertyMappedToObjectsConvertsValuesToCorrectTypes() throws Exception {
+        final OWLClassX instance = new OWLClassX();
+        final URI uri = Generators.generateUri();
+        final Set<Object> dataValues = new HashSet<>(Arrays.asList(1, "Two", MultilingualString.create("Three", "en"), uri));
+        instance.setUri(Generators.generateUri());
+        instance.setObjectData(dataValues);
+        em.getTransaction().begin();
+        em.persist(instance);
+        em.getTransaction().commit();
+
+        final ArgumentCaptor<AxiomValueDescriptor> captor = ArgumentCaptor.forClass(AxiomValueDescriptor.class);
+        verify(connectionMock).persist(captor.capture());
+        final AxiomValueDescriptor descriptor = captor.getValue();
+        final Assertion assertion = Assertion
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_X_OBJECT_DATA_ATTRIBUTE), false);
+        assertTrue(descriptor.getAssertions().contains(assertion));
+        final List<Value<?>> values = descriptor.getAssertionValues(assertion);
+        final Set<Object> rawValues = values.stream().map(Value::getValue).collect(Collectors.toSet());
+        assertThat(rawValues, hasItem(1));
+        assertThat(rawValues, hasItem("Two"));
+        assertThat(rawValues, hasItem(new LangString("Three", "en")));
+        assertThat(rawValues, hasItem(NamedResource.create(uri)));
+    }
+
+    @Test
+    void loadingEntityWithAnnotationPropertyMappedToObjectsConvertsAxiomValuesToCorrectTypes() throws Exception {
         final URI uri = Generators.generateUri();
         final NamedResource individual = NamedResource.create(uri);
         final Axiom<NamedResource> classAssertion = new AxiomImpl<>(individual, Assertion.createClassAssertion(false),
                 new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_X)));
         final Assertion annotationAssertion = Assertion
-                .createAnnotationPropertyAssertion(URI.create(Vocabulary.P_X_OBJECT_ATTRIBUTE), false);
+                .createAnnotationPropertyAssertion(URI.create(Vocabulary.P_X_OBJECT_ANNOTATION_ATTRIBUTE), false);
         final Axiom<Integer> annAssertionOne = new AxiomImpl<>(individual, annotationAssertion, new Value<>(1));
         final Axiom<String> annAssertionTwo = new AxiomImpl<>(individual, annotationAssertion, new Value<>("Two"));
         final Axiom<NamedResource> annAssertionThree = new AxiomImpl<>(individual, annotationAssertion,
@@ -141,5 +174,40 @@ class AttributesTest extends IntegrationTestBase {
         assertNotNull(result);
         assertEquals(1, result.getGenericValue().size());
         assertEquals(a.getIdentifier(), result.getGenericValue().iterator().next().getUri());
+    }
+
+    @Test
+    void loadingEntitySupportsMappingMultipleLangStringsIntoMultilingualStringInTypedUnmappedProperties() throws Exception {
+        final URI property = URI.create(SKOS.EDITORIAL_NOTE);
+        final NamedResource subject = NamedResource.create(Generators.generateUri());
+        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(List.of(
+                new AxiomImpl<>(subject, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_P))),
+                new AxiomImpl<>(subject, Assertion.createPropertyAssertion(property, false), new Value<>(new LangString("Value", "en"))),
+                new AxiomImpl<>(subject, Assertion.createPropertyAssertion(property, false), new Value<>(new LangString("Hodnota", "cs")))
+        ));
+        em.getTransaction().begin();
+        final OWLClassP result = em.find(OWLClassP.class, subject.getIdentifier());
+        assertNotNull(result);
+        assertThat(result.getProperties(), hasKey(property));
+        final Set<Object> propertyValues = result.getProperties().get(property);
+        assertEquals(Set.of(new MultilingualString(Map.of("en", "Value", "cs", "Hodnota"))), propertyValues);
+    }
+
+    /**
+     * GH#483
+     */
+    @Test
+    void loadingEntitySupportsCondensingLangStringsIntoPluralMultilingualStringInAnnotationPropertyOfObjectField() throws Exception {
+        final URI property = URI.create(Vocabulary.P_X_OBJECT_ANNOTATION_ATTRIBUTE);
+        final NamedResource subject = NamedResource.create(Generators.generateUri());
+        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(List.of(
+                new AxiomImpl<>(subject, Assertion.createClassAssertion(false), new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_X))),
+                new AxiomImpl<>(subject, Assertion.createPropertyAssertion(property, false), new Value<>(new LangString("Value", "en"))),
+                new AxiomImpl<>(subject, Assertion.createPropertyAssertion(property, false), new Value<>(new LangString("Hodnota", "cs")))
+        ));
+        em.getTransaction().begin();
+        final OWLClassX result = em.find(OWLClassX.class, subject.getIdentifier());
+        assertEquals(1, result.getObjectAnnotation().size());
+        assertEquals(new MultilingualString(Map.of("en", "Value", "cs", "Hodnota")), result.getObjectAnnotation().iterator().next());
     }
 }

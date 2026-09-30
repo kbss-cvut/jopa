@@ -38,6 +38,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.OWLClassT;
 import cz.cvut.kbss.jopa.environment.OWLClassU;
+import cz.cvut.kbss.jopa.environment.OWLClassV;
 import cz.cvut.kbss.jopa.environment.OWLClassW;
 import cz.cvut.kbss.jopa.environment.OWLClassWithQueryAttr;
 import cz.cvut.kbss.jopa.environment.OneOfEnum;
@@ -80,6 +81,7 @@ import cz.cvut.kbss.jopa.model.metamodel.MappedSuperclassTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.RDFCollectionAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.RdfContainerAttributeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.SetAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttributeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
@@ -90,6 +92,7 @@ import cz.cvut.kbss.jopa.oom.converter.CharacterConverter;
 import cz.cvut.kbss.jopa.oom.converter.ConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.CustomConverterWrapper;
 import cz.cvut.kbss.jopa.oom.converter.DefaultConverterWrapper;
+import cz.cvut.kbss.jopa.oom.converter.ObjectConverter;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.OrdinalEnumConverter;
 import cz.cvut.kbss.jopa.oom.converter.StringEnumConverter;
@@ -577,16 +580,17 @@ public class MetamodelFactory {
                                          SingularAttributeImpl explicitDatatypeAtt,
                                          SingularAttributeImpl mWithConverterAtt,
                                          SingularAttributeImpl mObjectOneOfEnumAttribute,
+                                         SetAttributeImpl mDataPropertyPluralObjectAttribute,
                                          Identifier idMock)
             throws Exception {
         initEntityType(etMock, OWLClassM.class, EntityLifecycleListenerManager.empty());
         initIdentifier(etMock, idMock, OWLClassM.getUriField(), false);
         when(etMock.getAttributes()).thenReturn(Set.of(booleanAtt, intAtt, longAtt, doubleAtt,
                 dateAtt, characterAtt, enumAtt, ordinalEnumAtt, intSetAtt, lexicalFormAtt,
-                simpleLiteralAtt, explicitDatatypeAtt, mObjectOneOfEnumAttribute));
+                simpleLiteralAtt, explicitDatatypeAtt, mObjectOneOfEnumAttribute, mDataPropertyPluralObjectAttribute));
         when(etMock.getFieldSpecifications()).thenReturn(Set.of(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt,
                 characterAtt, enumAtt, ordinalEnumAtt, intSetAtt, lexicalFormAtt, simpleLiteralAtt,
-                explicitDatatypeAtt, mObjectOneOfEnumAttribute, idMock));
+                explicitDatatypeAtt, mObjectOneOfEnumAttribute, mDataPropertyPluralObjectAttribute, idMock));
 
         initAttribute(etMock, booleanAtt, new AttributeInfo(OWLClassM.getBooleanAttributeField(), Attribute.PersistentAttributeType.DATA));
         initAttribute(etMock, intAtt, new AttributeInfo(OWLClassM.getIntAttributeField(), Attribute.PersistentAttributeType.DATA));
@@ -609,6 +613,11 @@ public class MetamodelFactory {
                                                                                                                                   .elementType(Integer.class)
                                                                                                                                   .valueType(BasicTypeImpl.get(Integer.class))
                                                                                                                                   .converter(new ToIntegerConverter()));
+        initAttribute(etMock, mDataPropertyPluralObjectAttribute, new AttributeInfo(OWLClassM.getDataPropertyPluralObjectAttributeField(), Attribute.PersistentAttributeType.DATA)
+                .collectionType(CollectionType.SET)
+                .elementType(Object.class)
+                .valueType(BasicTypeImpl.get(Object.class))
+                .converter(new ObjectConverter()));
     }
 
     public static void initOWLClassNMock(IdentifiableEntityType<OWLClassN> et, SingularAttributeImpl annotationAtt,
@@ -843,6 +852,14 @@ public class MetamodelFactory {
         initAttribute(et, pluralStringAtt, new AttributeInfo(OWLClassU.getPluralStringAttField(), Attribute.PersistentAttributeType.DATA).collectionType(CollectionType.SET)
                                                                                                                                          .elementType(MultilingualString.class)
                                                                                                                                          .language(null));
+    }
+
+    static void initOwlClassVMocks(IdentifiableEntityType<OWLClassV> et,AbstractAttribute singularDynamicAtt, Identifier id) throws Exception {
+        initEntityType(et, OWLClassV.class, et.getLifecycleListenerManager());
+        initIdentifier(et, id, OWLClassV.getIdField(), false);
+        when(et.getFieldSpecifications()).thenReturn(Set.of(singularDynamicAtt, id));
+        when(et.getAttributes()).thenReturn(Set.of(singularDynamicAtt));
+        initAttribute(et, singularDynamicAtt, new AttributeInfo(OWLClassV.getSingularDynamicAttField(), Attribute.PersistentAttributeType.DATA));
     }
 
     static void initOwlClassWMocks(IdentifiableEntityType<OWLClassW> et, AbstractPluralAttribute setStringAtt,

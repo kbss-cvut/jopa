@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -29,6 +30,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,11 +46,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -96,7 +100,7 @@ class PluralDataPropertyStrategyTest {
 
     private PluralDataPropertyStrategy<OWLClassM> createStrategyForM() {
         return new PluralDataPropertyStrategy<>(mocks.forOwlClassM().entityType(),
-                                                mocks.forOwlClassM().integerSetAttribute(), descriptor, mapperMock);
+                mocks.forOwlClassM().integerSetAttribute(), descriptor, mapperMock);
     }
 
     private Axiom<Integer> createMSetAxiom() {
@@ -208,7 +212,7 @@ class PluralDataPropertyStrategyTest {
         final OWLClassM m = new OWLClassM();
         m.setIntegerSet(Collections.singleton(117));
 
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        final AxiomValueGatherer builder = new AxiomValueGatherer(INDIVIDUAL, null);
         strategy.buildAxiomValuesFromInstance(m, builder);
         final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
         assertEquals(1, valueDescriptor.getAssertions().size());
@@ -276,5 +280,38 @@ class PluralDataPropertyStrategyTest {
             assertFalse(values.isEmpty());
         }
         inferred.forEach(i -> assertThat(values, not(hasItem(new Value<>(i)))));
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceMapsMultilingualStringsStoredInObjectSetToLangStrings() throws Exception {
+        final PluralDataPropertyStrategy<OWLClassM> sut = new PluralDataPropertyStrategy<>(mocks.forOwlClassM()
+                                                                                                .entityType(), mocks.forOwlClassM()
+                                                                                                                    .dataPropertyPluralObjectAttributeAttribute(), descriptor, mapperMock);
+        final OWLClassM m = new OWLClassM();
+        m.setDataPropertyPluralObjectAttribute(Set.of(new MultilingualString(Map.of("cs", "Hodnota", "en", "Value"))));
+        sut.buildAxiomValuesFromInstance(m, gatherer);
+        final AxiomValueDescriptor axiomDescriptor = OOMTestUtils.getAxiomValueDescriptor(gatherer);
+        final List<Value<?>> values = axiomDescriptor.getAssertionValues(
+                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_m_dataPropertyPluralObjectAttribute), LANG, false));
+        assertEquals(2, values.size());
+        assertThat(values, hasItems(new Value<>(new LangString("Value", "en")),
+                new Value<>(new LangString("Hodnota", "cs"))));
+    }
+
+    @Test
+    void buildFieldValueMapsLangStringAxiomsToMultilingualStringForObjectSetAttribute() {
+        final PluralDataPropertyStrategy<OWLClassM> sut = new PluralDataPropertyStrategy<>(mocks.forOwlClassM()
+                                                                                                .entityType(), mocks.forOwlClassM()
+                                                                                                                    .dataPropertyPluralObjectAttributeAttribute(), descriptor, mapperMock);
+        final Assertion assertion = Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_m_dataPropertyPluralObjectAttribute), LANG, false);
+        final Axiom<LangString> aOne = new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(new LangString("Value", "en")));
+        final Axiom<LangString> aTwo = new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(new LangString("Wert", "de")));
+        sut.addAxiomValue(aOne);
+        sut.addAxiomValue(aTwo);
+        final OWLClassM m = new OWLClassM();
+        m.setKey(INDIVIDUAL.toString());
+        sut.buildInstanceFieldValue(m);
+
+        assertEquals(Set.of(new MultilingualString(Map.of("en", "Value", "de", "Wert"))), m.getDataPropertyPluralObjectAttribute());
     }
 }

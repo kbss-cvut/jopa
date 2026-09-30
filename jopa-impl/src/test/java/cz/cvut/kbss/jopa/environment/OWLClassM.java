@@ -18,7 +18,13 @@
 package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.environment.utils.Generators;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Convert;
+import cz.cvut.kbss.jopa.model.annotations.EnumType;
+import cz.cvut.kbss.jopa.model.annotations.Enumerated;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.metamodel.PropertyInfo;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 
@@ -83,6 +89,9 @@ public class OWLClassM {
     @Enumerated(EnumType.OBJECT_ONE_OF)
     @OWLObjectProperty(iri = Vocabulary.p_m_objectOneOfEnumAttribute)
     private OneOfEnum objectOneOfEnumAttribute;
+
+    @OWLDataProperty(iri = Vocabulary.p_m_dataPropertyPluralObjectAttribute)
+    private Set<Object> dataPropertyPluralObjectAttribute;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -198,6 +207,14 @@ public class OWLClassM {
 
     public void setObjectOneOfEnumAttribute(OneOfEnum objectOneOfEnumAttribute) {
         this.objectOneOfEnumAttribute = objectOneOfEnumAttribute;
+    }
+
+    public Set<Object> getDataPropertyPluralObjectAttribute() {
+        return dataPropertyPluralObjectAttribute;
+    }
+
+    public void setDataPropertyPluralObjectAttribute(Set<Object> dataPropertyPluralObjectAttribute) {
+        this.dataPropertyPluralObjectAttribute = dataPropertyPluralObjectAttribute;
     }
 
     @Override
@@ -348,7 +365,12 @@ public class OWLClassM {
     public static Field getObjectOneOfEnumAttributeField() throws Exception {
         return OWLClassM.class.getDeclaredField("objectOneOfEnumAttribute");
     }
+
     public static PropertyInfo getObjectOneOfEnumAttributePropertyInfo() throws Exception {
         return PropertyInfo.from(getObjectOneOfEnumAttributeField());
+    }
+
+    public static Field getDataPropertyPluralObjectAttributeField() throws Exception {
+        return OWLClassM.class.getDeclaredField("dataPropertyPluralObjectAttribute");
     }
 }
