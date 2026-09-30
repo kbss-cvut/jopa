@@ -1,5 +1,10 @@
 # JOPA - Change Log
 
+### 2.12.4 - 2026-09-30
+- Support loading multilingual strings into typed unmapped properties (GH-484).
+  - `MultilingualString` is now always preferred over `LangString` in typed unmapped properties to prevent OntoDriver API leaking into the application.
+- Fix issues with handling multilingual strings as values of attributes whose Java type is `Object` (or a collection thereof) (Bug #482, Bug #483).
+
 ### 2.12.3 - 2026-09-18
 
 - Another fix of `EntityManager.flush` - ensure changes are not applied twice when flush and then commit are invoked.
