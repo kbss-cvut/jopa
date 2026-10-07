@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.oom.exception.UnpersistedChangeException;
@@ -51,6 +52,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.PersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.vocabulary.DC;
 import cz.cvut.kbss.jopa.vocabulary.XSD;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -358,7 +360,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.getTransaction().begin();
         final URI property = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newProperty");
         p.getProperties().put(property, new HashSet<>(Arrays.asList(1, "Two", OffsetDateTime.now()
-                .truncatedTo(ChronoUnit.MILLIS))));
+                                                                                            .truncatedTo(ChronoUnit.MILLIS))));
         em.getTransaction().commit();
 
         em.clear();
@@ -1371,5 +1373,24 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         OWLClassF result = findRequired(OWLClassF.class, f.getUri());
         assertTrue(result.getSimpleSet().contains(a));
+    }
+
+    /**
+     * Bug #490
+     */
+    @Test
+    public void updateOfMultilingualStringUnmappedPropertyValuesDoesNotLoseExistingValue() {
+        this.em = getEntityManager("updateOfMultilingualStringUnmappedPropertyValuesDoesNotLoseExistingValue", false);
+        final URI prop = URI.create(DC.Terms.ABSTRACT);
+        final OWLClassP p = new OWLClassP();
+        p.setProperties(Map.of(prop, Set.of(MultilingualString.create("Hodnota", "cs"))));
+        transactional(() -> em.persist(p));
+
+        ((MultilingualString) p.getProperties().get(prop).iterator().next()).set("en", "Value");
+        transactional(() -> em.merge(p));
+
+        final OWLClassP result = findRequired(OWLClassP.class, p.getUri());
+        assertEquals(Set.of(new MultilingualString(Map.of("en", "Value", "cs", "Hodnota"))),
+                result.getProperties().get(prop));
     }
 }
