@@ -45,6 +45,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -208,9 +209,13 @@ public class IntegrityConstraintsValidatorTest {
         final EntityType<OWLClassA> et = mock(EntityType.class);
         final Identifier idAtt = mock(Identifier.class);
         when(et.getIdentifier()).thenReturn(idAtt);
-        when(idAtt.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
+        final Field idField = OWLClassA.class.getDeclaredField("uri");
+        idField.trySetAccessible();
+        when(idAtt.getJavaField()).thenReturn(idField);
+        final Field strAttField = OWLClassA.getStrAttField();
+        strAttField.trySetAccessible();
         final Attribute<OWLClassA, String> strAtt = mock(Attribute.class);
-        when(strAtt.getJavaField()).thenReturn(OWLClassA.getStrAttField());
+        when(strAtt.getJavaField()).thenReturn(strAttField);
         when(et.getFieldSpecifications()).thenReturn(Collections.singleton(strAtt));
         when(strAtt.isInferred()).thenReturn(true);
         final ParticipationConstraint pc = new ParticipationConstraint() {

@@ -273,7 +273,9 @@ public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase
     void extractListValuesConvertsEnumConstantsToNamedResourcesForEnumValuedObjectProperty() throws Exception {
         final EntityType<WithEnumList> et = mock(EntityType.class);
         final Identifier id = mock(Identifier.class);
-        when(id.getJavaField()).thenReturn(WithEnumList.class.getDeclaredField("uri"));
+        final Field uriField = WithEnumList.class.getDeclaredField("uri");
+        uriField.trySetAccessible();
+        when(id.getJavaField()).thenReturn(uriField);
         when(et.getIdentifier()).thenReturn(id);
         final ListAttributeImpl<WithEnumList, OneOfEnum> att = initEnumListAttribute();
         final SimpleListPropertyStrategy<WithEnumList> sut =

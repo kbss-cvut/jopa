@@ -72,9 +72,7 @@ public class EntityPropertiesUtils {
      */
     public static void setFieldValue(Field field, Object instance, Object value) {
         Objects.requireNonNull(field);
-        if (!field.canAccess(instance)) {
-            field.setAccessible(true);
-        }
+        assert field.canAccess(instance);
         try {
             field.set(instance, value);
         } catch (IllegalAccessException e) {
@@ -91,9 +89,7 @@ public class EntityPropertiesUtils {
      */
     public static Object getFieldValue(Field field, Object instance) {
         Objects.requireNonNull(field);
-        if (!field.canAccess(instance)) {
-            field.setAccessible(true);
-        }
+        assert field.canAccess(instance);
         try {
             return field.get(instance);
         } catch (IllegalAccessException e) {
@@ -179,6 +175,8 @@ public class EntityPropertiesUtils {
             tmp = tmp.getSuperclass();
         }
         fields.removeIf(f -> Modifier.isStatic(f.getModifiers()));
+        // Resolve accessibility once here, so that getFieldValue/setFieldValue do not have to repeat the check on every call
+        fields.forEach(Field::trySetAccessible);
         return fields;
     }
 

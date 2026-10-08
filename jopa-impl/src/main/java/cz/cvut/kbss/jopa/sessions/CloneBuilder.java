@@ -171,7 +171,7 @@ public class CloneBuilder {
             } else {
                 final Class<?> origValueClass = origVal.getClass();
                 if (IndirectWrapperHelper.requiresIndirectWrapper(origVal)) {
-                    final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, configuration.getDescriptor());
+                    final Descriptor fieldDescriptor = configuration.getDescriptor().getAttributeDescriptor(fs);
                     // Collection or Map
                     clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal,
                             CloneConfiguration.withDescriptor(fieldDescriptor)
@@ -183,8 +183,7 @@ public class CloneBuilder {
                         // If the reference is already managed
                         clonedValue = uow.getCloneForOriginal(origVal);
                     } else {
-                            final Descriptor fieldDescriptor =
-                                    getFieldDescriptor(f, originalClass, configuration.getDescriptor());
+                            final Descriptor fieldDescriptor = configuration.getDescriptor().getAttributeDescriptor(fs);
                             clonedValue = getVisitedEntity(configuration.getDescriptor(), origVal);
                             if (clonedValue == null) {
                                 clonedValue = uow.registerExistingObject(origVal, new CloneRegistrationDescriptor(fieldDescriptor).postCloneHandlers(configuration.getPostRegister()));
@@ -203,12 +202,6 @@ public class CloneBuilder {
         final Identifier<?, ?> identifier = et.getIdentifier();
         final Object idValue = EntityPropertiesUtils.getFieldValue(identifier.getJavaField(), original);
         EntityPropertiesUtils.setFieldValue(identifier.getJavaField(), clone, idValue);
-    }
-
-    private Descriptor getFieldDescriptor(Field field, Class<?> entityClass, Descriptor entityDescriptor) {
-        final EntityType<?> et = getMetamodel().entity(entityClass);
-        final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(field.getName());
-        return entityDescriptor.getAttributeDescriptor(fieldSpec);
     }
 
     /**

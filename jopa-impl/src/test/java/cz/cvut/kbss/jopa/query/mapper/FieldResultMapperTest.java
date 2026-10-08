@@ -33,6 +33,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
@@ -90,7 +91,9 @@ class FieldResultMapperTest {
         final FieldResult fieldResult = WithMapping.getFieldResult();
         final FieldSpecification fsMock = mock(FieldSpecification.class);
         when(fsMock.getJavaType()).thenReturn(String.class);
-        when(fsMock.getJavaField()).thenReturn(OWLClassA.getStrAttField());
+        final Field field = OWLClassA.getStrAttField();
+        field.trySetAccessible();
+        when(fsMock.getJavaField()).thenReturn(field);
         final String value = "stringValue";
         when(resultRow.isBound(fieldResult.variable())).thenReturn(true);
         when(resultRow.getObject(fieldResult.variable())).thenReturn(value);
@@ -129,7 +132,9 @@ class FieldResultMapperTest {
         final FieldResult fieldResult = WithMapping.getFieldResult();
         final FieldSpecification fsMock = mock(FieldSpecification.class);
         when(fsMock.getJavaType()).thenReturn(String.class);
-        when(fsMock.getJavaField()).thenReturn(OWLClassA.getStrAttField());
+        final Field field = OWLClassA.getStrAttField();
+        field.trySetAccessible();
+        when(fsMock.getJavaField()).thenReturn(field);
         final LangString value = new LangString("test", "en");
         when(resultRow.isBound(fieldResult.variable())).thenReturn(true);
         when(resultRow.getObject(fieldResult.variable())).thenReturn(value);
@@ -145,7 +150,9 @@ class FieldResultMapperTest {
         final FieldResult fieldResult = WithMapping.getFieldResult();
         final FieldSpecification fsMock = mock(FieldSpecification.class);
         when(fsMock.getJavaType()).thenReturn(LocalDateTime.class);
-        when(fsMock.getJavaField()).thenReturn(OWLClassT.getLocalDateTimeField());
+        final Field field = OWLClassT.getLocalDateTimeField();
+        field.trySetAccessible();
+        when(fsMock.getJavaField()).thenReturn(field);
         final OffsetDateTime value = OffsetDateTime.now();
         when(resultRow.isBound(fieldResult.variable())).thenReturn(true);
         when(resultRow.getObject(fieldResult.variable())).thenReturn(value);

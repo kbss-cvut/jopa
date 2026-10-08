@@ -54,24 +54,12 @@ class EntityCache {
         final Class<?> cls = entityClass(entity);
         final URI ctx = descriptors.repositoryDescriptor().getSingleContext().orElse(defaultContext);
 
-        Map<Object, Map<Class<?>, Object>> ctxMap;
-        if (!repoCache.containsKey(ctx)) {
-            ctxMap = new HashMap<>();
-            repoCache.put(ctx, ctxMap);
-        } else {
-            ctxMap = repoCache.get(ctx);
+        final Map<Object, Map<Class<?>, Object>> ctxMap = repoCache.computeIfAbsent(ctx, k -> new HashMap<>());
+        final Map<Class<?>, Object> individualMap = ctxMap.computeIfAbsent(identifier, k -> new HashMap<>());
+        final Object previous = individualMap.put(cls, entity);
+        if (previous != null) {
+            this.descriptors.remove(previous);
         }
-        Map<Class<?>, Object> individualMap;
-        if (!ctxMap.containsKey(identifier)) {
-            individualMap = new HashMap<>();
-            ctxMap.put(identifier, individualMap);
-        } else {
-            individualMap = ctxMap.get(identifier);
-        }
-        if (individualMap.containsKey(cls)) {
-            this.descriptors.remove(individualMap.get(cls));
-        }
-        individualMap.put(cls, entity);
         this.descriptors.put(entity, descriptors);
     }
 
@@ -105,8 +93,8 @@ class EntityCache {
     }
 
     <T> LoadStateDescriptor<T> getLoadStateDescriptor(T instance) {
-        return descriptors.containsKey(instance) ?
-               (LoadStateDescriptor<T>) descriptors.get(instance).loadStateDescriptor() : null;
+        final Descriptors d = descriptors.get(instance);
+        return d != null ? (LoadStateDescriptor<T>) d.loadStateDescriptor() : null;
     }
 
     boolean contains(Class<?> cls, Object identifier, Descriptor descriptor) {
@@ -118,10 +106,10 @@ class EntityCache {
                 descriptor.getContexts().isEmpty() ? Collections.singleton(defaultContext) : descriptor.getContexts();
         for (URI ctx : contexts) {
             final Map<Class<?>, Object> m = getMapForId(ctx, identifier);
-            if (!m.containsKey(cls)) {
+            final Object result = m.get(cls);
+            if (result == null) {
                 continue;
             }
-            final Object result = m.get(cls);
             assert descriptors.containsKey(result);
 
             if (descriptors.get(result).repositoryDescriptor().equals(descriptor)) {
@@ -136,20 +124,20 @@ class EntityCache {
         assert identifier != null;
 
         final Map<Class<?>, Object> m = getMapForId(context, identifier);
-        if (m.containsKey(cls)) {
-            descriptors.remove(m.get(cls));
+        final Object removed = m.remove(cls);
+        if (removed != null) {
+            descriptors.remove(removed);
         }
-        m.remove(cls);
     }
 
     void evict(URI context) {
         if (context == null) {
             context = defaultContext;
         }
-        if (!repoCache.containsKey(context)) {
+        final Map<Object, Map<Class<?>, Object>> contextCache = repoCache.remove(context);
+        if (contextCache == null) {
             return;
         }
-        final Map<Object, Map<Class<?>, Object>> contextCache = repoCache.remove(context);
         contextCache.values().forEach(instances -> instances.values().forEach(descriptors::remove));
     }
 
@@ -157,9 +145,9 @@ class EntityCache {
         for (Map.Entry<URI, Map<Object, Map<Class<?>, Object>>> e : repoCache.entrySet()) {
             final Map<Object, Map<Class<?>, Object>> m = e.getValue();
             m.forEach((key, value) -> {
-                if (value.containsKey(cls)) {
-                    descriptors.remove(value.get(cls));
-                    value.remove(cls);
+                final Object removed = value.remove(cls);
+                if (removed != null) {
+                    descriptors.remove(removed);
                 }
             });
         }
@@ -170,10 +158,7 @@ class EntityCache {
 
         final URI ctx = context != null ? context : defaultContext;
 
-        if (!repoCache.containsKey(ctx)) {
-            return Collections.emptyMap();
-        }
         final Map<Object, Map<Class<?>, Object>> ctxMap = repoCache.get(ctx);
-        return ctxMap.getOrDefault(identifier, Collections.emptyMap());
+        return ctxMap != null ? ctxMap.getOrDefault(identifier, Collections.emptyMap()) : Collections.emptyMap();
     }
 }

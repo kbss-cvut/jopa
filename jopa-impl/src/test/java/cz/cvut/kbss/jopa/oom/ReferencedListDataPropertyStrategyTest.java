@@ -50,6 +50,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -102,7 +103,9 @@ class ReferencedListDataPropertyStrategyTest extends ListPropertyStrategyTestBas
         when(att.isAssociation()).thenReturn(false);
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "hasDataList"));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(att.getJavaField()).thenReturn(DataPropertyReferencedList.class.getDeclaredField("list"));
+        final Field field  = DataPropertyReferencedList.class.getDeclaredField("list");
+        field.trySetAccessible();
+        when(att.getJavaField()).thenReturn(field);
         when(att.getHasNextPropertyIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasNext));
         when(att.getHasContentsPropertyIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasContents));
         when(att.getConverter()).thenReturn(Converters.getDefaultConverter(Integer.class).get());
@@ -114,7 +117,9 @@ class ReferencedListDataPropertyStrategyTest extends ListPropertyStrategyTestBas
         when(mapperMock.getEntityType(any(Class.class))).thenThrow(IllegalArgumentException.class);
         final EntityType<DataPropertyReferencedList> et = mock(EntityType.class);
         final Identifier id = mock(Identifier.class);
-        when(id.getJavaField()).thenReturn(DataPropertyReferencedList.class.getDeclaredField("uri"));
+        final Field uriField = DataPropertyReferencedList.class.getDeclaredField("uri");
+        uriField.trySetAccessible();
+        when(id.getJavaField()).thenReturn(uriField);
         when(et.getIdentifier()).thenReturn(id);
         final DataPropertyReferencedList instance = new DataPropertyReferencedList();
         instance.uri = IDENTIFIER;
