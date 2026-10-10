@@ -72,7 +72,9 @@ public class RefreshInstanceMergerTest {
         clone.setTypes(new HashSet<>(original.getTypes()));
         final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(original, clone, new EntityDescriptor());
         final FieldSpecification<?, ?> fieldSpec = mock(FieldSpecification.class);
-        when(fieldSpec.getJavaField()).thenReturn(OWLClassA.getStrAttField());
+        final Field strAttField = OWLClassA.getStrAttField();
+        strAttField.trySetAccessible();
+        when(fieldSpec.getJavaField()).thenReturn(strAttField);
         changeSet.addChangeRecord(new ChangeRecord(fieldSpec, clone.getStringAttribute()));
 
         sut.mergeChanges(changeSet);
@@ -82,12 +84,14 @@ public class RefreshInstanceMergerTest {
     @Test
     public void mergeChangesReplacesCollectionWithNewOneWithSourceValues() throws Exception {
         final OWLClassA original = Generators.generateOwlClassAInstance();
-        original.setTypes(new ChangeTrackingIndirectSet<>(original, OWLClassA.getTypesField(), uowMock, original.getTypes()));
+        final Field typesField = OWLClassA.getTypesField();
+        typesField.trySetAccessible();
+        original.setTypes(new ChangeTrackingIndirectSet<>(original, typesField, uowMock, original.getTypes()));
         final OWLClassA clone = new OWLClassA(original.getUri());
         clone.setTypes(new HashSet<>(original.getTypes()));
         final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(original, clone, new EntityDescriptor());
         final TypesSpecification<?, ?> fieldSpec = mock(TypesSpecification.class);
-        when(fieldSpec.getJavaField()).thenReturn(OWLClassA.getTypesField());
+        when(fieldSpec.getJavaField()).thenReturn(typesField);
         changeSet.addChangeRecord(new ChangeRecord(fieldSpec, clone.getTypes()));
 
         sut.mergeChanges(changeSet);
@@ -105,11 +109,13 @@ public class RefreshInstanceMergerTest {
         final List<OWLClassA> refList = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassAInstance())
                 .collect(Collectors.toList());
         final List<OWLClassA> refListClone = new ArrayList<>(refList);
-        original.setReferencedList(new ChangeTrackingIndirectList<>(original, OWLClassC.getRefListField(), uowMock, refList));
-        clone.setReferencedList(new ChangeTrackingIndirectList<>(clone, OWLClassC.getRefListField(), uowMock, refListClone));
+        final Field refListField = OWLClassC.getRefListField();
+        refListField.trySetAccessible();
+        original.setReferencedList(new ChangeTrackingIndirectList<>(original, refListField, uowMock, refList));
+        clone.setReferencedList(new ChangeTrackingIndirectList<>(clone, refListField, uowMock, refListClone));
         clone.getReferencedList().add(Generators.generateOwlClassAInstance());
         final Attribute<?, ?> att = mock(Attribute.class);
-        when(att.getJavaField()).thenReturn(OWLClassC.getRefListField());
+        when(att.getJavaField()).thenReturn(refListField);
         final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(original, clone, new EntityDescriptor());
         changeSet.addChangeRecord(new ChangeRecord(att, refListClone));
 

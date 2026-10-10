@@ -31,7 +31,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.net.URI;
+import java.lang.reflect.Field;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -56,7 +56,9 @@ class ManagedTypeChangeDetectorTest {
         when(metamodel.entity(OWLClassA.class)).thenReturn(et);
         final Identifier idAtt = mock(Identifier.class);
         when(et.getIdentifier()).thenReturn(idAtt);
-        when(idAtt.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
+        final Field uriField = OWLClassA.class.getDeclaredField("uri");
+        uriField.trySetAccessible();
+        when(idAtt.getJavaField()).thenReturn(uriField);
 
         assertEquals(expected, sut.hasChanges(clone, original));
     }
@@ -66,7 +68,6 @@ class ManagedTypeChangeDetectorTest {
         final OWLClassA aTwo = Generators.generateOwlClassAInstance();
         final OWLClassA aNew = Generators.generateOwlClassAInstance();
         aNew.setUri(null);
-        final URI oneId = Generators.createIndividualIdentifier();
         return Stream.of(
                 Arguments.of(aOne, aTwo, true),
                 Arguments.of(aOne, aOne, false),

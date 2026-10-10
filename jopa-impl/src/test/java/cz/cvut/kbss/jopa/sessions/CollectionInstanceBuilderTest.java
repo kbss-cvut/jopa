@@ -274,7 +274,9 @@ public class CollectionInstanceBuilderTest {
     void mergeChangesReplacesEmptySetWithDefaultSet() throws Exception {
         final OWLClassM target = new OWLClassM();
         target.initializeTestValues(true);
-        builder.mergeChanges(OWLClassM.getIntegerSetField(), target, new HashSet<>(), Collections.emptySet());
+        final Field field = OWLClassM.getIntegerSetField();
+        field.trySetAccessible();
+        builder.mergeChanges(field, target, new HashSet<>(), Collections.emptySet());
         assertThat(target.getIntegerSet(),
                    instanceOf(CollectionFactory.createDefaultCollection(CollectionType.SET).getClass()));
     }

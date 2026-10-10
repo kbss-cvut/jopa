@@ -161,6 +161,11 @@ public class MetamodelBuilder implements MetamodelClassMapper {
         processMethods(cls, type);
 
         for (Field f : cls.getDeclaredFields()) {
+            // Resolve accessibility once here, so that attribute/identifier access via EntityPropertiesUtils
+            // does not have to repeat the (relatively costly) accessibility check on every single get/set call
+            if (!f.trySetAccessible()) {
+                throw new MetamodelInitializationException("Unable to make field " + f + " accessible.");
+            }
             fieldProcessor.processField(f);
         }
 

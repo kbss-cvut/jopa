@@ -297,7 +297,8 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         if (result == null) {
             return null;
         }
-        final Object clone = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor).postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel()))));
+        final Object clone = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor)
+                .postCloneHandler(new PostLoadInvoker(getMetamodel())));
         return cls.cast(clone);
     }
 
@@ -374,7 +375,8 @@ public abstract class AbstractUnitOfWork extends AbstractSession implements Unit
         if (result == null) {
             return null;
         }
-        final Object clone = registerExistingObject(result, new CloneRegistrationDescriptor(config.descriptor()).postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel()))));
+        final Object clone = registerExistingObject(result, new CloneRegistrationDescriptor(config.descriptor())
+                .postCloneHandler(new PostLoadInvoker(getMetamodel())));
         return cls.cast(clone);
     }
 

@@ -29,6 +29,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
+import java.lang.reflect.Field;
+
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -92,7 +94,9 @@ class MultilingualStringInstanceBuilderTest {
         final MultilingualString original = MultilingualString.create("construction", Generators.LANG);
         final OWLClassU target = new OWLClassU();
         target.setSingularStringAtt(original);
-        sut.mergeChanges(OWLClassU.getSingularStringAttField(), target, original, clone);
+        final Field field = OWLClassU.getSingularStringAttField();
+        field.trySetAccessible();
+        sut.mergeChanges(field, target, original, clone);
         assertEquals(clone.getValue(), target.getSingularStringAtt().getValue());
     }
 
@@ -101,7 +105,9 @@ class MultilingualStringInstanceBuilderTest {
         final MultilingualString original = MultilingualString.create("construction", Generators.LANG);
         final OWLClassU target = new OWLClassU();
         target.setSingularStringAtt(original);
-        sut.mergeChanges(OWLClassU.getSingularStringAttField(), target, original, null);
+        final Field field = OWLClassU.getSingularStringAttField();
+        field.trySetAccessible();
+        sut.mergeChanges(field, target, original, null);
         assertNull(target.getSingularStringAtt());
     }
 }

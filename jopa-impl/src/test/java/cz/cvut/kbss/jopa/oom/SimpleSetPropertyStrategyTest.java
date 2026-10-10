@@ -49,6 +49,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -281,8 +282,9 @@ class SimpleSetPropertyStrategyTest {
         final AbstractPluralAttribute<PluralObjectPropertyStrategyTest.EntityWithPluralObjectPropertyEnum, Set<OneOfEnum>, OneOfEnum>
                 att = mock(AbstractPluralAttribute.class);
         when(att.getBindableJavaType()).thenReturn(OneOfEnum.class);
-        when(att.getJavaField()).thenReturn(
-                PluralObjectPropertyStrategyTest.EntityWithPluralObjectPropertyEnum.class.getDeclaredField("enumSet"));
+        final Field field = PluralObjectPropertyStrategyTest.EntityWithPluralObjectPropertyEnum.class.getDeclaredField("enumSet");
+        field.trySetAccessible();
+        when(att.getJavaField()).thenReturn(field);
         when(att.getConverter()).thenReturn(new ObjectOneOfEnumConverter<>(OneOfEnum.class));
         when(att.getCollectionType()).thenReturn(CollectionType.SET);
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_objectOneOfEnumAttribute));

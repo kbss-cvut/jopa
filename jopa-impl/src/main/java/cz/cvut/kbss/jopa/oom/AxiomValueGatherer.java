@@ -153,12 +153,12 @@ class AxiomValueGatherer {
             if (!typesToRemove.isEmpty()) {
                 connection.types().removeTypes(axiomDescriptor.getSubject(), typesContext, typesToRemove);
             }
-            if (propertiesToAdd != null) {
-                connection.properties().addProperties(axiomDescriptor.getSubject(), propertiesContext, propertiesToAdd);
-            }
             if (propertiesToRemove != null) {
                 connection.properties()
                           .removeProperties(axiomDescriptor.getSubject(), propertiesContext, propertiesToRemove);
+            }
+            if (propertiesToAdd != null) {
+                connection.properties().addProperties(axiomDescriptor.getSubject(), propertiesContext, propertiesToAdd);
             }
             for (SimpleListValueDescriptor d : simpleListDescriptors) {
                 connection.lists().updateSimpleList(d);

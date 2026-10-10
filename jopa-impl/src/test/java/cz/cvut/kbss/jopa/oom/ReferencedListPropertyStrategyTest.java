@@ -43,6 +43,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -295,7 +296,9 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
     void extractListValuesConvertsEnumConstantsToNamedResourcesForEnumValuedObjectProperty() throws Exception {
         final EntityType<WithEnumList> et = mock(EntityType.class);
         final Identifier id = mock(Identifier.class);
-        when(id.getJavaField()).thenReturn(WithEnumList.class.getDeclaredField("uri"));
+        final Field idField = WithEnumList.class.getDeclaredField("uri");
+        idField.trySetAccessible();
+        when(id.getJavaField()).thenReturn(idField);
         when(et.getIdentifier()).thenReturn(id);
         final ListAttributeImpl<WithEnumList, OneOfEnum> att = initEnumListAttribute();
         final ReferencedListPropertyStrategy<WithEnumList> sut =

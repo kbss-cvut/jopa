@@ -50,6 +50,11 @@ public class CloneRegistrationDescriptor {
         return allEager;
     }
 
+    public CloneRegistrationDescriptor postCloneHandler(Consumer<Object> handler) {
+        postCloneHandlers.add(handler);
+        return this;
+    }
+
     public CloneRegistrationDescriptor postCloneHandlers(Collection<Consumer<Object>> handlers) {
         postCloneHandlers.addAll(handlers);
         return this;

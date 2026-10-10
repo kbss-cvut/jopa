@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.datatype.util.Pair;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -39,12 +38,8 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 /**
  * Root of the entity loading strategies.
@@ -132,10 +127,7 @@ abstract class EntityInstanceLoader {
 
     <T> Optional<T> loadCached(EntityType<T> et, URI identifier, Descriptor descriptor) {
         final Optional<T> cached = Optional.ofNullable(cache.get(et.getJavaType(), identifier, descriptor));
-        cached.ifPresent(inst -> recursivelyProcessCachedEntityReferences(inst, et, new IdentityHashMap<>(), List.of(
-                pair -> loadStateRegistry.put(pair.first(), getLoadStatDescriptor(pair.first(), pair.second())),
-                pair -> entityBuilder.populateQueryAttributes(pair.first(), (EntityType<Object>) pair.second())
-        )));
+        cached.ifPresent(inst -> recursivelyProcessCachedEntityReferences(inst, et));
         return cached;
     }
 
@@ -147,14 +139,16 @@ abstract class EntityInstanceLoader {
         return LoadStateDescriptorFactory.createAllUnknown(instance, (EntityType<Object>) et);
     }
 
-    private void recursivelyProcessCachedEntityReferences(Object instance, EntityType<?> et,
-                                                          Map<Object, Object> visited,
-                                                          List<Consumer<Pair<Object, EntityType<?>>>> handlers) {
-        if (visited.containsKey(instance)) {
+    private void recursivelyProcessCachedEntityReferences(Object instance, EntityType<?> et) {
+        // loadStateRegistry is scoped to the current persistence context (UnitOfWork), so it also serves as the
+        // visited-node marker here. This both breaks cycles within a single traversal and avoids redoing the
+        // (potentially expensive) load-state/query-attribute population for entities already processed earlier
+        // in the same transaction (e.g. shared subgraphs reachable from multiple cached root entities)
+        if (loadStateRegistry.contains(instance)) {
             return;
         }
-        visited.put(instance, null);
-        handlers.forEach(h -> h.accept(new Pair<>(instance, et)));
+        loadStateRegistry.put(instance, getLoadStatDescriptor(instance, et));
+        entityBuilder.populateQueryAttributes(instance, (EntityType<Object>) et);
         et.getAttributes().stream().filter(Attribute::isAssociation).forEach(att -> {
             final Class<?> cls = att.getValueJavaType();
             if (!metamodel.isEntityType(cls)) {
@@ -164,9 +158,9 @@ abstract class EntityInstanceLoader {
             if (value != null) {
                 // Resolve the value class instead of using the attribute type, as it may be a subclass at runtime
                 if (att.isCollection()) {
-                    ((Collection<?>) value).forEach(el -> recursivelyProcessCachedEntityReferences(el, metamodel.entity(el.getClass()), visited, handlers));
+                    ((Collection<?>) value).forEach(el -> recursivelyProcessCachedEntityReferences(el, metamodel.entity(el.getClass())));
                 } else {
-                    recursivelyProcessCachedEntityReferences(value, metamodel.entity(value.getClass()), visited, handlers);
+                    recursivelyProcessCachedEntityReferences(value, metamodel.entity(value.getClass()));
                 }
             }
         });

@@ -108,7 +108,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
             LoadingParameters<T> params = new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor);
             result = storage.find(params);
             registeredResult = registerExistingObject(result, new CloneRegistrationDescriptor(descriptor)
-                    .postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel())))
+                    .postCloneHandler(new PostLoadInvoker(getMetamodel()))
             );
         } else {
             LoadingParameters<T> params = new LoadingParameters<>(cls, getValueAsURI(identifier), descriptor, false, true);
@@ -274,7 +274,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
                         newValue = fieldValue;
                     } else if (isObjectInCache(fieldValueClass, super.getIdentifier(fieldValue), fieldDescriptor)) {
                         newValue = registerExistingObject(fieldValue, new CloneRegistrationDescriptor(fieldDescriptor)
-                                .postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel()))));
+                                .postCloneHandler(new PostLoadInvoker(getMetamodel())));
                     } else {
                         newValue = registerExistingObject(fieldValue, fieldDescriptor);
                     }
@@ -297,7 +297,7 @@ public class ReadOnlyUnitOfWork extends AbstractUnitOfWork {
                 copy.add(entity);
             } else if (isObjectInCache(entity.getClass(), super.getIdentifier(entity), descriptor)) {
                 copy.add(registerExistingObject(entity, new CloneRegistrationDescriptor(descriptor)
-                        .postCloneHandlers(List.of(new PostLoadInvoker(getMetamodel())))));
+                        .postCloneHandler(new PostLoadInvoker(getMetamodel()))));
             } else {
                 copy.add(registerExistingObject(entity, descriptor));
             }

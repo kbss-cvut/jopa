@@ -255,10 +255,10 @@ public class LruCacheManager implements CacheManager {
         @Override
         void evict(URI context) {
             final URI ctx = context != null ? context : defaultContext;
-            if (!repoCache.containsKey(ctx)) {
+            final Map<Object, Map<Class<?>, Object>> ctxContent = repoCache.get(ctx);
+            if (ctxContent == null) {
                 return;
             }
-            final Map<Object, Map<Class<?>, Object>> ctxContent = repoCache.get(ctx);
             for (Map.Entry<Object, Map<Class<?>, Object>> e : ctxContent.entrySet()) {
                 e.getValue().forEach((cls, instance) -> {
                     descriptors.remove(instance);
