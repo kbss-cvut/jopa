@@ -50,6 +50,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -284,7 +285,9 @@ class SingularAnnotationPropertyStrategyTest {
             EntityType<ClassWithObjectAnnotation> et)
             throws NoSuchFieldException {
         final SingularAttributeImpl<ClassWithObjectAnnotation, Object> att = mock(SingularAttributeImpl.class);
-        when(att.getJavaField()).thenReturn(ClassWithObjectAnnotation.class.getDeclaredField("singularAnnotation"));
+        final Field field = ClassWithObjectAnnotation.class.getDeclaredField("singularAnnotation");
+        field.trySetAccessible();
+        when(att.getJavaField()).thenReturn(field);
         when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
         when(att.getJavaType()).thenReturn(Object.class);
         when(att.getDeclaringType()).thenReturn(et);

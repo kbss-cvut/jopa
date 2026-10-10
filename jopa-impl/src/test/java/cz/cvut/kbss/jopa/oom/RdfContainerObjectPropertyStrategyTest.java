@@ -47,6 +47,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
@@ -79,7 +80,9 @@ class RdfContainerObjectPropertyStrategyTest {
         );
         when(mappingHelper.loadRdfContainer(any(ContainerDescriptor.class))).thenReturn(axioms);
         when(att.getContainerType()).thenReturn(RDFContainerType.ALT);
-        when(att.getJavaField()).thenReturn(EntityWithContainer.class.getDeclaredField("levels"));
+        final Field levelsField = EntityWithContainer.class.getDeclaredField("levels");
+        levelsField.trySetAccessible();
+        when(att.getJavaField()).thenReturn(levelsField);
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "levels"));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);
         when(att.getBindableJavaType()).thenReturn(URI.class);
@@ -112,13 +115,17 @@ class RdfContainerObjectPropertyStrategyTest {
         final EntityType<EntityWithContainer> et = mock(EntityType.class);
         final RdfContainerAttributeImpl<EntityWithContainer, List<URI>, URI> att = mock(RdfContainerAttributeImpl.class);
         when(att.getContainerType()).thenReturn(RDFContainerType.SEQ);
-        when(att.getJavaField()).thenReturn(EntityWithContainer.class.getDeclaredField("levels"));
+        final Field levelsField = EntityWithContainer.class.getDeclaredField("levels");
+        levelsField.trySetAccessible();
+        when(att.getJavaField()).thenReturn(levelsField);
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "levels"));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);
         when(att.getBindableJavaType()).thenReturn(URI.class);
         final Identifier idAtt = mock(Identifier.class);
         when(et.getIdentifier()).thenReturn(idAtt);
-        when(idAtt.getJavaField()).thenReturn(EntityWithContainer.class.getDeclaredField("uri"));
+        final Field idField = EntityWithContainer.class.getDeclaredField("uri");
+        idField.trySetAccessible();
+        when(idAtt.getJavaField()).thenReturn(idField);
         final RdfContainerObjectPropertyStrategy<EntityWithContainer> sut = new RdfContainerObjectPropertyStrategy<>(et, att, new ObjectGraphInfo(descriptor), mappingHelper);
         final EntityWithContainer entity = new EntityWithContainer();
         entity.uri = ID;

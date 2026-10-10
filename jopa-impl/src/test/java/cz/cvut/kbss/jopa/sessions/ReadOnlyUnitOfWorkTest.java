@@ -702,7 +702,7 @@ class ReadOnlyUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     void registerExistingObjectWithCloningInvokesPostCloneListeners() {
         final Consumer<Object> plVerifier = mock(Consumer.class);
         defaultLoadStateDescriptor(entityA);
-        final Object result = uow.registerExistingObject(entityA, new CloneRegistrationDescriptor(descriptor).postCloneHandlers(List.of(plVerifier)));
+        final Object result = uow.registerExistingObject(entityA, new CloneRegistrationDescriptor(descriptor).postCloneHandler(plVerifier));
         verify(plVerifier).accept(result);
     }
 

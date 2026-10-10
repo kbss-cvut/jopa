@@ -56,6 +56,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -169,7 +170,9 @@ class PluralAnnotationPropertyStrategyTest {
         when(att.getElementType()).thenReturn(BasicTypeImpl.get(elementType));
         when(att.getCollectionType()).thenReturn(CollectionType.SET);
         when(att.getBindableJavaType()).thenReturn(elementType);
-        when(att.getJavaField()).thenReturn(entity.getDeclaredField("sources"));
+        final Field field = entity.getDeclaredField("sources");
+        field.trySetAccessible();
+        when(att.getJavaField()).thenReturn(field);
         when(att.getJavaType()).thenReturn(Set.class);
         when(att.getIRI()).thenReturn(IRI.create(DC.Terms.SOURCE));
         when(att.getConverter()).thenReturn(converter);
@@ -290,13 +293,14 @@ class PluralAnnotationPropertyStrategyTest {
     private SetAttributeImpl<ClassWithObjectAnnotation, Object> objectAnnotationAttribute(
             EntityType<ClassWithObjectAnnotation> et) throws NoSuchFieldException {
         final SetAttributeImpl<ClassWithObjectAnnotation, Object> att = mock(SetAttributeImpl.class);
-        when(att.getJavaField()).thenReturn(ClassWithObjectAnnotation.class.getDeclaredField("pluralAnnotation"));
+        final Field field = ClassWithObjectAnnotation.class.getDeclaredField("pluralAnnotation");
+        field.trySetAccessible();
+        when(att.getJavaField()).thenReturn(field);
         when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
         when(att.getElementType()).thenReturn(BasicTypeImpl.get(Object.class));
         when(att.getDeclaringType()).thenReturn(et);
         when(att.getCollectionType()).thenReturn(CollectionType.SET);
-        when(att.getName())
-                .thenReturn(ClassWithObjectAnnotation.class.getDeclaredField("pluralAnnotation").getName());
+        when(att.getName()).thenReturn(field.getName());
         when(att.getConverter()).thenReturn(new ObjectConverter());
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "pluralAnnotation"));
         return att;

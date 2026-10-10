@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+### 2.12.5 - 2026-10-10
+- Fix na issue with updating unmapped properties losing existing value (Bug #490).
+- Minor performance improvements and refactoring.
+
 ### 2.12.4 - 2026-09-30
 - Support loading multilingual strings into typed unmapped properties (GH-484).
   - `MultilingualString` is now always preferred over `LangString` in typed unmapped properties to prevent OntoDriver API leaking into the application.

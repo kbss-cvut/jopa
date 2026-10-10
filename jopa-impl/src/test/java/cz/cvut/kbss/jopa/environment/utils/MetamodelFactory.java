@@ -186,6 +186,7 @@ public class MetamodelFactory {
 
     private static <X> void initIdentifier(IdentifiableEntityType<X> et, Identifier id, Field idField,
                                            boolean generated) {
+        idField.trySetAccessible();
         when(et.getIdentifier()).thenReturn(id);
         when(id.getJavaField()).thenReturn(idField);
         when(id.getDeclaringType()).thenReturn(et);
@@ -197,6 +198,7 @@ public class MetamodelFactory {
 
     private static <X> void initAttribute(IdentifiableEntityType<X> etMock, AbstractAttribute attMock,
                                           AttributeInfo attInfo) {
+        attInfo.field.trySetAccessible();
         when(attMock.getValueJavaType()).thenCallRealMethod();
         when(attMock.isMappedAttribute()).thenReturn(true);
         when(etMock.getFieldSpecification(attInfo.field.getName())).thenReturn(attMock);
@@ -279,6 +281,7 @@ public class MetamodelFactory {
 
     private static <X> void initTypesAttribute(IdentifiableEntityType<X> etMock, TypesSpecification typesMock,
                                                AttributeInfo attInfo) {
+        attInfo.field.trySetAccessible();
         when(typesMock.getJavaField()).thenReturn(attInfo.field);
         when(typesMock.getName()).thenReturn(attInfo.field.getName());
         when(typesMock.getDeclaringType()).thenReturn(etMock);
@@ -318,6 +321,7 @@ public class MetamodelFactory {
 
     private static <X> void initProperties(IdentifiableEntityType<X> etMock, PropertiesSpecification propsMock,
                                            AttributeInfo attInfo, Class<?> propertyType, Class<?> valueType) {
+        attInfo.field.trySetAccessible();
         when(propsMock.getJavaField()).thenReturn(attInfo.field);
         when(propsMock.getJavaType()).thenReturn(attInfo.field.getType());
         when(propsMock.getName()).thenReturn(attInfo.field.getName());
@@ -345,15 +349,17 @@ public class MetamodelFactory {
         initListAttribute(etMock, refListMock, new AttributeInfo(OWLClassC.getRefListField(), Attribute.PersistentAttributeType.OBJECT).collectionType(CollectionType.LIST)
                                                                                                                                        .elementType(OWLClassA.class)
                                                                                                                                        .valueType(etAMock));
-        doReturn(rdfCollectionMock).when(etMock).getAttribute(OWLClassC.getRdfCollectionField().getName());
-        when(rdfCollectionMock.getJavaField()).thenReturn(OWLClassC.getRdfCollectionField());
+        final Field rdfCollectionField = OWLClassC.getRdfCollectionField();
+        rdfCollectionField.trySetAccessible();
+        doReturn(rdfCollectionMock).when(etMock).getAttribute(rdfCollectionField.getName());
+        when(rdfCollectionMock.getJavaField()).thenReturn(rdfCollectionField);
         when(rdfCollectionMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(rdfCollectionMock.getCollectionType()).thenReturn(CollectionType.LIST);
         when(rdfCollectionMock.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(rdfCollectionMock.getName()).thenReturn(OWLClassC.getRdfCollectionField().getName());
+        when(rdfCollectionMock.getName()).thenReturn(rdfCollectionField.getName());
         when(etMock.getFieldSpecification(rdfCollectionMock.getName())).thenReturn(rdfCollectionMock);
-        when(rdfCollectionMock.getIRI()).thenReturn(IRI.create(OWLClassC.getRdfCollectionField()
-                                                                        .getAnnotation(OWLObjectProperty.class).iri()));
+        when(rdfCollectionMock.getIRI()).thenReturn(IRI.create(rdfCollectionField
+                .getAnnotation(OWLObjectProperty.class).iri()));
         when(rdfCollectionMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(rdfCollectionMock.getElementType()).thenReturn(etAMock);
         when(rdfCollectionMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
@@ -365,15 +371,16 @@ public class MetamodelFactory {
         when(rdfCollectionMock.getJavaType()).thenReturn(List.class);
         when(rdfCollectionMock.isMappedAttribute()).thenReturn(true);
 
-        doReturn(rdfSeqMock).when(etMock).getAttribute(OWLClassC.getRdfSeqField().getName());
-        when(rdfSeqMock.getJavaField()).thenReturn(OWLClassC.getRdfSeqField());
+        final Field rdfSeqField = OWLClassC.getRdfSeqField();
+        rdfSeqField.trySetAccessible();
+        doReturn(rdfSeqMock).when(etMock).getAttribute(rdfSeqField.getName());
+        when(rdfSeqMock.getJavaField()).thenReturn(rdfSeqField);
         when(rdfSeqMock.getFetchType()).thenReturn(FetchType.EAGER);
         when(rdfSeqMock.getCollectionType()).thenReturn(CollectionType.LIST);
         when(rdfSeqMock.getContainerType()).thenReturn(RDFContainerType.SEQ);
-        when(rdfSeqMock.getName()).thenReturn(OWLClassC.getRdfSeqField().getName());
+        when(rdfSeqMock.getName()).thenReturn(rdfSeqField.getName());
         when(etMock.getFieldSpecification(rdfSeqMock.getName())).thenReturn(rdfSeqMock);
-        when(rdfSeqMock.getIRI()).thenReturn(IRI.create(OWLClassC.getRdfSeqField()
-                                                                 .getAnnotation(OWLObjectProperty.class).iri()));
+        when(rdfSeqMock.getIRI()).thenReturn(IRI.create(rdfSeqField.getAnnotation(OWLObjectProperty.class).iri()));
         when(rdfSeqMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(rdfSeqMock.getElementType()).thenReturn(etAMock);
         when(rdfSeqMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
@@ -854,7 +861,8 @@ public class MetamodelFactory {
                                                                                                                                          .language(null));
     }
 
-    static void initOwlClassVMocks(IdentifiableEntityType<OWLClassV> et,AbstractAttribute singularDynamicAtt, Identifier id) throws Exception {
+    static void initOwlClassVMocks(IdentifiableEntityType<OWLClassV> et, AbstractAttribute singularDynamicAtt,
+                                   Identifier id) throws Exception {
         initEntityType(et, OWLClassV.class, et.getLifecycleListenerManager());
         initIdentifier(et, id, OWLClassV.getIdField(), false);
         when(et.getFieldSpecifications()).thenReturn(Set.of(singularDynamicAtt, id));
@@ -912,8 +920,9 @@ public class MetamodelFactory {
                                                IdentifiableEntityType<OWLClassA> etAMock,
                                                Identifier idMock) throws NoSuchFieldException {
         initEntityType(etMock, OWLClassWithQueryAttr.class, EntityLifecycleListenerManager.empty());
-        when(etMock.getQueryAttribute(OWLClassWithQueryAttr.getStrQueryAttField()
-                                                           .getName())).thenReturn(strQueryAttMock);
+        final Field queryStrAttField = OWLClassWithQueryAttr.getStrQueryAttField();
+        queryStrAttField.trySetAccessible();
+        when(etMock.getQueryAttribute(queryStrAttField.getName())).thenReturn(strQueryAttMock);
 
         when(etMock.getAttributes()).thenReturn(Set.of(strAttMock, entityAttMock));
         when(etMock.getQueryAttributes()).thenReturn(Set.of(strQueryAttMock, entityQueryAttMock));
@@ -925,22 +934,23 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(strQueryAttMock.getName())).thenReturn(strQueryAttMock);
         when(etMock.getFieldSpecification(entityQueryAttMock.getName())).thenReturn(entityQueryAttMock);
 
-        when(strQueryAttMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.getStrQueryAttField());
-        when(strQueryAttMock.getJavaType()).thenReturn(OWLClassWithQueryAttr.getStrQueryAttField().getType());
-        when(strQueryAttMock.getName()).thenReturn(OWLClassWithQueryAttr.getStrQueryAttField().getName());
+        when(strQueryAttMock.getJavaField()).thenReturn(queryStrAttField);
+        when(strQueryAttMock.getJavaType()).thenReturn(queryStrAttField.getType());
+        when(strQueryAttMock.getName()).thenReturn(queryStrAttField.getName());
         when(strQueryAttMock.getDeclaringType()).thenReturn(etMock);
         when(strQueryAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(strQueryAttMock.getQuery()).thenReturn(
-                OWLClassWithQueryAttr.getStrQueryAttField().getAnnotation(Sparql.class).query());
+                queryStrAttField.getAnnotation(Sparql.class).query());
         when(strQueryAttMock.enableReferencingAttributes()).thenReturn(true);
 
-        when(entityQueryAttMock.getJavaField()).thenReturn(OWLClassWithQueryAttr.getEntityQueryAttField());
-        when(entityQueryAttMock.getJavaType()).thenReturn(OWLClassWithQueryAttr.getEntityQueryAttField().getType());
-        when(entityQueryAttMock.getName()).thenReturn(OWLClassWithQueryAttr.getEntityQueryAttField().getName());
+        final Field queryEntityAttField = OWLClassWithQueryAttr.getEntityQueryAttField();
+        queryEntityAttField.trySetAccessible();
+        when(entityQueryAttMock.getJavaField()).thenReturn(queryEntityAttField);
+        when(entityQueryAttMock.getJavaType()).thenReturn(queryEntityAttField.getType());
+        when(entityQueryAttMock.getName()).thenReturn(queryEntityAttField.getName());
         when(entityQueryAttMock.getDeclaringType()).thenReturn(etMock);
         when(entityQueryAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
-        when(entityQueryAttMock.getQuery()).thenReturn(
-                OWLClassWithQueryAttr.getEntityQueryAttField().getAnnotation(Sparql.class).query());
+        when(entityQueryAttMock.getQuery()).thenReturn(queryEntityAttField.getAnnotation(Sparql.class).query());
         when(entityQueryAttMock.enableReferencingAttributes()).thenReturn(true);
 
         initIdentifier(etMock, idMock, OWLClassWithQueryAttr.class.getDeclaredField("uri"), false);

@@ -45,6 +45,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
@@ -88,6 +89,8 @@ public class EntityConstructorQueryAttributesTest {
 
     private EntityConstructor constructor;
 
+    private Field queryAttField;
+
     @BeforeEach
     void setUp() throws Exception {
         when(mapperMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
@@ -96,14 +99,16 @@ public class EntityConstructorQueryAttributesTest {
         this.mocks = new MetamodelMocks();
         this.descriptor = new EntityDescriptor();
         this.constructor = new EntityConstructor(mapperMock, loadStateRegistry);
+        queryAttField = OWLClassWithQueryAttr.getStrAttField();
+        queryAttField.trySetAccessible();
     }
 
     @Test
-    void testReconstructEntityWithQueryAttribute() throws Exception {
+    void testReconstructEntityWithQueryAttribute() {
         final String stringValue = "String value";
         final Set<Axiom<?>> axioms = new HashSet<>();
         axioms.add(getClassAssertionAxiomForType(IDENTIFIER, OWLClassWithQueryAttr.getClassIri()));
-        axioms.add(getStringAttAssertionAxiom(IDENTIFIER, stringValue, OWLClassWithQueryAttr.getStrAttField()));
+        axioms.add(getStringAttAssertionAxiom(IDENTIFIER, stringValue, queryAttField));
 
         doReturn(typedQueryMock)
                 .when(queryFactoryMock).createNativeQuery(any(String.class),
@@ -127,7 +132,7 @@ public class EntityConstructorQueryAttributesTest {
         final URI identifierTwo = Generators.createIndividualIdentifier();
         final Set<Axiom<?>> axioms = new HashSet<>();
         axioms.add(getClassAssertionAxiomForType(IDENTIFIER, OWLClassWithQueryAttr.getClassIri()));
-        axioms.add(getStringAttAssertionAxiom(IDENTIFIER, stringValue, OWLClassWithQueryAttr.getStrAttField()));
+        axioms.add(getStringAttAssertionAxiom(IDENTIFIER, stringValue, queryAttField));
 
         final URI assertionUri = URI.create(OWLClassWithQueryAttr.getEntityAttField()
                                                                  .getAnnotation(OWLObjectProperty.class).iri());
@@ -169,18 +174,18 @@ public class EntityConstructorQueryAttributesTest {
     }
 
     @Test
-    void reconstructEntityUsesReferencedEntityAttributeValuesWhenAssemblingQueryForAttribute() throws Exception {
+    void reconstructEntityUsesReferencedEntityAttributeValuesWhenAssemblingQueryForAttribute() {
         final String stringValue = "String value";
         final Set<Axiom<?>> axioms = new HashSet<>();
         axioms.add(getClassAssertionAxiomForType(IDENTIFIER, OWLClassWithQueryAttr.getClassIri()));
-        axioms.add(getStringAttAssertionAxiom(IDENTIFIER, stringValue, OWLClassWithQueryAttr.getStrAttField()));
+        axioms.add(getStringAttAssertionAxiom(IDENTIFIER, stringValue, queryAttField));
         when(mocks.forOwlClassWithQueryAttr().entityQueryAttribute().getFetchType()).thenReturn(FetchType.LAZY);
 
         doReturn(typedQueryMock).when(queryFactoryMock)
                                 .createNativeQuery(any(String.class), (Class<?>) any(Class.class));
         doReturn(typedQueryMock).when(typedQueryMock).setParameter(any(String.class), any());
         when(typedQueryMock.hasParameter(anyString())).thenReturn(false);
-        when(typedQueryMock.hasParameter(OWLClassWithQueryAttr.getStrAttField().getName())).thenReturn(true);
+        when(typedQueryMock.hasParameter(queryAttField.getName())).thenReturn(true);
         doReturn(stringValue).when(typedQueryMock).getSingleResult();
 
         final OWLClassWithQueryAttr res = constructor.reconstructEntity(constructionConfig(IDENTIFIER, mocks.forOwlClassWithQueryAttr()
@@ -189,22 +194,22 @@ public class EntityConstructorQueryAttributesTest {
         assertEquals(IDENTIFIER, res.getUri());
         assertEquals(stringValue, res.getStringAttribute());
         assertEquals(stringValue, res.getStringQueryAttribute());
-        verify(typedQueryMock).setParameter(OWLClassWithQueryAttr.getStrAttField().getName(), stringValue);
+        verify(typedQueryMock).setParameter(queryAttField.getName(), stringValue);
     }
 
     @Test
-    void reconstructEntityDoesNotUserReferencedEntityAttributeValuesWhenQueryDisablesIt() throws Exception {
+    void reconstructEntityDoesNotUserReferencedEntityAttributeValuesWhenQueryDisablesIt() {
         final String stringValue = "String value";
         final Set<Axiom<?>> axioms = new HashSet<>();
         axioms.add(getClassAssertionAxiomForType(IDENTIFIER, OWLClassWithQueryAttr.getClassIri()));
-        axioms.add(getStringAttAssertionAxiom(IDENTIFIER, stringValue, OWLClassWithQueryAttr.getStrAttField()));
+        axioms.add(getStringAttAssertionAxiom(IDENTIFIER, stringValue, queryAttField));
         when(mocks.forOwlClassWithQueryAttr().entityQueryAttribute().getFetchType()).thenReturn(FetchType.LAZY);
         when(mocks.forOwlClassWithQueryAttr().stringQueryAttribute().enableReferencingAttributes()).thenReturn(false);
 
         doReturn(typedQueryMock).when(queryFactoryMock)
                                 .createNativeQuery(any(String.class), (Class<?>) any(Class.class));
         doReturn(typedQueryMock).when(typedQueryMock).setParameter(any(String.class), any());
-        when(typedQueryMock.hasParameter(OWLClassWithQueryAttr.getStrAttField().getName())).thenReturn(true);
+        when(typedQueryMock.hasParameter(queryAttField.getName())).thenReturn(true);
         doReturn(stringValue).when(typedQueryMock).getSingleResult();
 
         final OWLClassWithQueryAttr res = constructor.reconstructEntity(constructionConfig(IDENTIFIER, mocks.forOwlClassWithQueryAttr()

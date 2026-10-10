@@ -70,8 +70,9 @@ class EntityResultMapper<T> implements SparqlResultMapper {
                 loadStateDescriptor.setLoaded((FieldSpecification<? super T, ?>) m.getFieldSpecification(), LoadState.LOADED);
             });
             uow.getLoadStateRegistry().put(instance, loadStateDescriptor);
-            return et.getJavaType()
-                     .cast(uow.registerExistingObject(instance, new CloneRegistrationDescriptor(new EntityDescriptor()).postCloneHandlers(List.of(new PostLoadInvoker(uow.getMetamodel())))));
+            return et.getJavaType().cast(uow.registerExistingObject(instance,
+                    new CloneRegistrationDescriptor(new EntityDescriptor())
+                            .postCloneHandler(new PostLoadInvoker(uow.getMetamodel()))));
         } catch (cz.cvut.kbss.jopa.exception.InstantiationException e) {
             // This is not expected, since an entity class must have a public no-arg constructor
             throw new SparqlResultMappingException(e);

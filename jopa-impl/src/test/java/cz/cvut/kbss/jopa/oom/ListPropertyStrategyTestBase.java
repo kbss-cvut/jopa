@@ -34,6 +34,7 @@ import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.mockito.Mock;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +104,9 @@ class ListPropertyStrategyTestBase {
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_objectOneOfEnumAttribute));
         when(att.getConverter()).thenReturn(new ObjectOneOfEnumConverter<>(OneOfEnum.class));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);
-        when(att.getJavaField()).thenReturn(WithEnumList.class.getDeclaredField("enumList"));
+        final Field enumListField = WithEnumList.class.getDeclaredField("enumList");
+        enumListField.trySetAccessible();
+        when(att.getJavaField()).thenReturn(enumListField);
         when(att.getHasNextPropertyIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasNext));
         // For referenced list only
         when(att.getHasContentsPropertyIRI()).thenReturn(IRI.create(SequencesVocabulary.s_p_hasContents));

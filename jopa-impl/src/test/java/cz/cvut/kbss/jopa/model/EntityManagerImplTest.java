@@ -432,13 +432,15 @@ class EntityManagerImplTest {
         when(idOne.getJavaField()).thenReturn(CascadeCycleOne.class.getDeclaredField("uri"));
         when(etOne.getIdentifier()).thenReturn(idOne);
         final Attribute<CascadeCycleOne, CascadeCycleTwo> attOne = mock(Attribute.class);
+        final Field twoField = CascadeCycleOne.class.getDeclaredField("two");
+        twoField.trySetAccessible();
         when(attOne.getCascadeTypes())
                 .thenReturn(new CascadeType[]{CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE});
-        when(attOne.getJavaField()).thenReturn(CascadeCycleOne.class.getDeclaredField("two"));
+        when(attOne.getJavaField()).thenReturn(twoField);
         when(attOne.getName()).thenReturn("two");
         when(attOne.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(attOne.getJavaType()).thenReturn(CascadeCycleTwo.class);
-        when(attOne.getJavaMember()).thenReturn(CascadeCycleOne.class.getDeclaredField("two"));
+        when(attOne.getJavaMember()).thenReturn(twoField);
         when(etOne.getAttributes()).thenReturn(Collections.singleton(attOne));
         when(etOne.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
         final IdentifiableEntityType<CascadeCycleTwo> etTwo = mock(IdentifiableEntityType.class);
@@ -448,11 +450,13 @@ class EntityManagerImplTest {
         final Attribute<CascadeCycleTwo, CascadeCycleOne> attTwo = mock(Attribute.class);
         when(attTwo.getCascadeTypes())
                 .thenReturn(new CascadeType[]{CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE});
-        when(attTwo.getJavaField()).thenReturn(CascadeCycleTwo.class.getDeclaredField("one"));
+        final Field oneField = CascadeCycleTwo.class.getDeclaredField("one");
+        oneField.trySetAccessible();
+        when(attTwo.getJavaField()).thenReturn(oneField);
         when(attTwo.getName()).thenReturn("one");
         when(attTwo.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(attTwo.getJavaType()).thenReturn(CascadeCycleOne.class);
-        when(attTwo.getJavaMember()).thenReturn(CascadeCycleTwo.class.getDeclaredField("one"));
+        when(attTwo.getJavaMember()).thenReturn(oneField);
         when(etTwo.getAttributes()).thenReturn(Collections.singleton(attTwo));
         when(etTwo.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
         when(metamodelMock.entity(CascadeCycleOne.class)).thenReturn(etOne);

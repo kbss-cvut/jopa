@@ -115,7 +115,7 @@ abstract class ReadWriteUnitOfWorkTest extends AbstractUnitOfWorkTestRunner {
     void registerExistingObjectPassesPostCloneListenersToCloneBuilder() {
         defaultLoadStateDescriptor(entityA);
         final Consumer<Object> plVerifier = mock(Consumer.class);
-        uow.registerExistingObject(entityA, new CloneRegistrationDescriptor(descriptor).postCloneHandlers(List.of(plVerifier)));
+        uow.registerExistingObject(entityA, new CloneRegistrationDescriptor(descriptor).postCloneHandler(plVerifier));
         final ArgumentCaptor<CloneConfiguration> captor = ArgumentCaptor.forClass(CloneConfiguration.class);
         verify(cloneBuilder).buildClone(eq(entityA), captor.capture());
         assertTrue(captor.getValue().getPostRegister().contains(plVerifier));
