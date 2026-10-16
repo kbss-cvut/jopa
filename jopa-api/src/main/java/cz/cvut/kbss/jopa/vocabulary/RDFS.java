@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.vocabulary;
 
 /**
- * A subset of the RDFS vocabulary.
+ * The RDFS vocabulary.
  */
 public final class RDFS {
 
@@ -95,9 +95,28 @@ public final class RDFS {
     public static final String MEMBER = NAMESPACE + "member";
 
     /**
-     * The {@code rdfs:ContainerMembershipProperty} class has as instances the properties {@code rdf:_1}, {@code rdf:_2}, etc.
+     * The {@code rdfs:ContainerMembershipProperty} class has as instances the properties {@code rdf:_1},
+     * {@code rdf:_2}, etc.
      */
     public static final String CONTAINER_MEMBERSHIP_PROPERTY = NAMESPACE + "ContainerMembershipProperty";
+
+    /**
+     * The {@code rdfs:Datatype} class represents the class of RDF datatypes. It is both an instance of and a subclass
+     * of {@code rdfs:Class}. Each instance of {@code rdfs:Datatype} is a subclass of {@code rdfs:Literal}.
+     */
+    public static final String DATATYPE = NAMESPACE + "Datatype";
+
+    /**
+     * The {@code rdfs:seeAlso} property is an instance of {@code rdf:Property} that is used to indicate a resource that
+     * might provide additional information about the subject resource.
+     */
+    public static final String SEE_ALSO = NAMESPACE + "seeAlso";
+
+    /**
+     * The {@code rdfs:isDefinedBy} property is an instance of {@code rdf:Property} that is used to indicate a resource
+     * defining the subject resource.
+     */
+    public static final String IS_DEFINED_BY = NAMESPACE + "isDefinedBy";
 
     private RDFS() {
         throw new AssertionError();

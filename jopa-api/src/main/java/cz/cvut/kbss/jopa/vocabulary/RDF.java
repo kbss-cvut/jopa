@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.vocabulary;
 
 /**
- * A subset of the RDF vocabulary.
+ * The RDF vocabulary.
  */
 public final class RDF {
 
@@ -76,6 +76,16 @@ public final class RDF {
      * The class {@code rdf:langString} representing language-tagged string values.
      */
     public static final String LANG_STRING = NAMESPACE + "langString";
+
+    /**
+     * The {@code rdf:HTML} datatype representing HTML literal values.
+     */
+    public static final String HTML = NAMESPACE + "HTML";
+
+    /**
+     * The {@code rdf:XMLLiteral} datatype representing XML literal values.
+     */
+    public static final String XML_LITERAL = NAMESPACE + "XMLLiteral";
 
     /**
      * The {@code rdf:List} class representing (linked) lists in RDF.
