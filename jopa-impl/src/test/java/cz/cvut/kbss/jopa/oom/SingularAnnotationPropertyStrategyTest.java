@@ -338,7 +338,7 @@ class SingularAnnotationPropertyStrategyTest {
         assertEquals(1, valueDescriptor.getAssertions().size());
         final List<Value<?>> values = valueDescriptor
                 .getAssertionValues(valueDescriptor.getAssertions().iterator().next());
-        mls.getValue().forEach((lang, value) -> assertThat(values, hasItem(new Value<>(new LangString(value, lang)))));
+        mls.forEach((lang, value) -> assertThat(values, hasItem(new Value<>(new LangString(value, lang)))));
     }
 
     @Test

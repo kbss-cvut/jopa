@@ -202,7 +202,7 @@ class SingularMultilingualStringFieldStrategyTest {
                                                                                                  Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE),
                                                                                          false));
         assertEquals(instance.getSingularStringAtt().getLanguages().size(), values.size());
-        for (Map.Entry<String, String> entry : instance.getSingularStringAtt().getValue().entrySet()) {
+        for (Map.Entry<String, String> entry : instance.getSingularStringAtt().entrySet()) {
             assertTrue(values.contains(new Value<>(new LangString(entry.getValue(), entry.getKey()))));
         }
     }
@@ -253,8 +253,8 @@ class SingularMultilingualStringFieldStrategyTest {
         instance.getSingularStringAtt().set("cs", "automobil");
 
         final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(instance);
-        assertEquals(instance.getSingularStringAtt().getValue().size(), result.size());
-        instance.getSingularStringAtt().getValue()
+        assertEquals(instance.getSingularStringAtt().size(), result.size());
+        instance.getSingularStringAtt()
                 .forEach((k, v) -> assertThat(result, hasItem(new AxiomImpl<>(NamedResource.create(ID),
                                                                               Assertion.createDataPropertyAssertion(
                                                                                       mocks.forOwlClassU()
