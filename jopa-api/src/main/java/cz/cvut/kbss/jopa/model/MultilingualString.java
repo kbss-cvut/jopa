@@ -34,12 +34,10 @@ import java.util.*;
  * <p>
  * Note that this class is not thread-safe.
  */
-public class MultilingualString implements Serializable {
-
-    private final Map<String, String> value;
+public class MultilingualString extends HashMap<String, String> implements Serializable {
 
     public MultilingualString() {
-        this.value = new HashMap<>(8);
+        super(4);
     }
 
     /**
@@ -50,7 +48,7 @@ public class MultilingualString implements Serializable {
      * @param value Map of language to translation values
      */
     public MultilingualString(Map<String, String> value) {
-        this.value = new HashMap<>(Objects.requireNonNull(value));
+        putAll(value);
     }
 
     /**
@@ -66,7 +64,7 @@ public class MultilingualString implements Serializable {
      */
     public MultilingualString set(String language, String value) {
         Objects.requireNonNull(value);
-        this.value.put(language, value);
+        put(language, value);
         return this;
     }
 
@@ -81,7 +79,7 @@ public class MultilingualString implements Serializable {
      */
     public MultilingualString set(String value) {
         Objects.requireNonNull(value);
-        this.value.put(null, value);
+        put(null, value);
         return this;
     }
 
@@ -96,7 +94,7 @@ public class MultilingualString implements Serializable {
      * @return Value of this string for the specified language (or {@code null} if not available)
      */
     public String get(String language) {
-        return language != null ? value.get(language) : get();
+        return language != null ? super.get(language) : get();
     }
 
     /**
@@ -111,7 +109,7 @@ public class MultilingualString implements Serializable {
      * @return Value of simple literal represented by this string
      */
     public String get() {
-        return value.getOrDefault(null, value.isEmpty() ? null : value.get(value.keySet().iterator().next()));
+        return getOrDefault(null, isEmpty() ? null : super.get(keySet().iterator().next()));
     }
 
     /**
@@ -124,7 +122,7 @@ public class MultilingualString implements Serializable {
      * @return {@code true} if this string exists in the specified language
      */
     public boolean contains(String language) {
-        return value.containsKey(language) || (language == null && !value.isEmpty());
+        return containsKey(language) || (language == null && !isEmpty());
     }
 
     /**
@@ -135,7 +133,7 @@ public class MultilingualString implements Serializable {
      * @return {@code true} if and only if this string exists as a simple literal
      */
     public boolean containsSimple() {
-        return value.containsKey(null);
+        return containsKey(null);
     }
 
     /**
@@ -144,7 +142,7 @@ public class MultilingualString implements Serializable {
      * @return {@code true} if no translations exist in this instance
      */
     public boolean isEmpty() {
-        return value.isEmpty();
+        return super.isEmpty();
     }
 
     /**
@@ -155,7 +153,7 @@ public class MultilingualString implements Serializable {
      * @param language Language for which translation should be removed
      */
     public void remove(String language) {
-        value.remove(language);
+        super.remove(language);
     }
 
     /**
@@ -166,7 +164,7 @@ public class MultilingualString implements Serializable {
      * @return Set of languages available in this multilingual string
      */
     public Set<String> getLanguages() {
-        return Collections.unmodifiableSet(value.keySet());
+        return Collections.unmodifiableSet(keySet());
     }
 
     /**
@@ -179,28 +177,8 @@ public class MultilingualString implements Serializable {
      * @return Map of language to translation values
      */
     public Map<String, String> getValue() {
-        return value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof MultilingualString that)) {
-            return false;
-        }
-        return value.equals(that.getValue());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value);
-    }
-
-    @Override
-    public String toString() {
-        return value.toString();
+        // TODO remove
+        return this;
     }
 
     /**

@@ -34,9 +34,10 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -81,9 +82,9 @@ class ChangeTrackingIndirectMultilingualStringTest {
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         sut.set("de", "der Bau");
         verify(uow).attributeChanged(owner, field);
-        assertEquals(translations.size() + 1, referencedString.getValue().size());
-        assertTrue(referencedString.contains("de"));
-        assertEquals("der Bau", referencedString.get("de"));
+        assertEquals(translations.size() + 1, sut.getValue().size());
+        assertTrue(sut.contains("de"));
+        assertEquals("der Bau", sut.get("de"));
     }
 
     @Test
@@ -91,8 +92,8 @@ class ChangeTrackingIndirectMultilingualStringTest {
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         sut.set("der Bau");
         verify(uow).attributeChanged(owner, field);
-        assertEquals(translations.size() + 1, referencedString.getValue().size());
-        assertEquals("der Bau", referencedString.get());
+        assertEquals(translations.size() + 1, sut.getValue().size());
+        assertEquals("der Bau", sut.get());
     }
 
     @Test
@@ -100,8 +101,40 @@ class ChangeTrackingIndirectMultilingualStringTest {
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         sut.remove("cs");
         verify(uow).attributeChanged(owner, field);
-        assertEquals(translations.size() - 1, referencedString.getValue().size());
-        assertFalse(referencedString.contains("cs"));
+        assertEquals(translations.size() - 1, sut.getValue().size());
+        assertFalse(sut.contains("cs"));
+    }
+
+    @Test
+    void putPropagatesChangeAndNotifiesPersistenceContext() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
+        sut.put("de", "der Bau");
+        verify(uow).attributeChanged(owner, field);
+        assertEquals(translations.size() + 1, sut.getValue().size());
+        assertEquals("der Bau", sut.get("de"));
+    }
+
+    @Test
+    void putAllPropagatesChangeAndNotifiesPersistenceContext() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
+        sut.putAll(Map.of("de", "der Bau", "sk", "budova"));
+        verify(uow).attributeChanged(owner, field);
+        assertEquals(translations.size() + 2, sut.getValue().size());
+    }
+
+    @Test
+    void clearPropagatesChangeAndNotifiesPersistenceContext() {
+        when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
+        sut.clear();
+        verify(uow).attributeChanged(owner, field);
+        assertTrue(sut.isEmpty());
+    }
+
+    @Test
+    void removeOfNonExistingLanguageDoesNotNotifyPersistenceContext() {
+        lenient().when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
+        sut.remove("de");
+        verify(uow, never()).attributeChanged(owner, field);
     }
 
     @Test
@@ -133,8 +166,10 @@ class ChangeTrackingIndirectMultilingualStringTest {
     }
 
     @Test
-    void getReferencedStringReturnsWrappedInstance() {
-        assertSame(referencedString, sut.unwrap());
+    void unwrapReturnsMultilingualStringWithSameContent() {
+        final MultilingualString unwrapped = sut.unwrap();
+        assertEquals(referencedString, unwrapped);
+        assertFalse(unwrapped instanceof ChangeTrackingIndirectMultilingualString);
     }
 
     @Test

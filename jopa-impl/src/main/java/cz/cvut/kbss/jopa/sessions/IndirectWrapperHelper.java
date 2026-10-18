@@ -58,10 +58,11 @@ class IndirectWrapperHelper {
             return new ChangeTrackingIndirectList<>(owner, field, uow, (List<?>) wrapped);
         } else if (wrapped instanceof Set) {
             return new ChangeTrackingIndirectSet<>(owner, field, uow, (Set<?>) wrapped);
+        } else if (wrapped instanceof MultilingualString) {
+            // MultilingualString check has to precede the Map check since it is a Map implementation
+            return new ChangeTrackingIndirectMultilingualString(owner, field, uow, (MultilingualString) wrapped);
         } else if (wrapped instanceof Map) {
             return new ChangeTrackingIndirectMap<>(owner, field, uow, (Map<?, ?>) wrapped);
-        } else if (wrapped instanceof MultilingualString) {
-            return new ChangeTrackingIndirectMultilingualString(owner, field, uow, (MultilingualString) wrapped);
         } else {
             throw new UnsupportedOperationException("Unsupported wrapped type " + wrapped.getClass());
         }
@@ -74,6 +75,6 @@ class IndirectWrapperHelper {
      * @return {@code true} if an indirect wrapper is used for the specified target
      */
     static boolean requiresIndirectWrapper(Object target) {
-        return (!(target instanceof LazyLoadingProxy)) && (target instanceof Collection || target instanceof MultilingualString || target instanceof Map);
+        return (!(target instanceof LazyLoadingProxy)) && (target instanceof Collection || target instanceof Map);
     }
 }
