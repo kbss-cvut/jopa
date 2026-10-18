@@ -17,6 +17,7 @@
  */
 package cz.cvut.kbss.jopa.sessions.merge;
 
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
@@ -53,6 +54,9 @@ public class DetachedValueMerger implements ValueMerger {
             return managedTypeMerger;
         } else if (Collection.class.isAssignableFrom(att.getJavaType())) {
             return collectionMerger;
+        } else if (MultilingualString.class.isAssignableFrom(att.getJavaType())) {
+            // MultilingualString check has to precede the Map check since it is a Map implementation
+            return defaultValueMerger;
         } else if (Map.class.isAssignableFrom(att.getJavaType())) {
             return mapValueMerger;
         } else {
