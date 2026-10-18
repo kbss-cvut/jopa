@@ -640,7 +640,7 @@ public abstract class ListsTestRunner extends BaseRunner {
 
         for (int i = 0; i < entityM.getMultilingualReferencedList().size(); i++) {
             final URI hasNextProperty = URI.create(i == 0 ? Vocabulary.p_m_multilingualReferencedList : SequencesVocabulary.s_p_hasNext);
-            entityM.getMultilingualReferencedList().get(i).getValue()
+            entityM.getMultilingualReferencedList().get(i)
                    .forEach((lang, value) -> assertTrue(em.createNativeQuery("ASK WHERE { ?prev ?hasNext ?node . ?node ?hasContent ?content . }", Boolean.class)
                                                           .setParameter("hasNext", hasNextProperty)
                                                           .setParameter("hasContent", URI.create(SequencesVocabulary.s_p_hasContents))
@@ -660,8 +660,7 @@ public abstract class ListsTestRunner extends BaseRunner {
             strings.add(mls);
             final URI node = URI.create(entityM.getKey() + "-SEQ" + (5 - i));
             data.add(new Quad(previous, URI.create(i == 5 ? Vocabulary.p_m_multilingualReferencedList : SequencesVocabulary.s_p_hasNext), node));
-            mls.getValue()
-               .forEach((lang, val) -> data.add(new Quad(node, SequencesVocabulary.p_hasContents, new LangString(val, lang))));
+            mls.forEach((lang, val) -> data.add(new Quad(node, SequencesVocabulary.p_hasContents, new LangString(val, lang))));
             previous = node;
         }
         persistTestData(data, em);
@@ -709,8 +708,7 @@ public abstract class ListsTestRunner extends BaseRunner {
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getMultilingualReferencedList().size() - 1, result.getMultilingualReferencedList().size());
-        toRemove.getValue()
-                .forEach((lang, val) -> assertFalse(em.createNativeQuery("ASK { ?node ?hasContent ?value }", Boolean.class)
+        toRemove.forEach((lang, val) -> assertFalse(em.createNativeQuery("ASK { ?node ?hasContent ?value }", Boolean.class)
                                                       .setParameter("hasContent", URI.create(Vocabulary.p_m_multilingualReferencedList))
                                                       .setParameter("value", val, lang).getSingleResult()));
     }

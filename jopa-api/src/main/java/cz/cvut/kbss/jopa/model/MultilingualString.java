@@ -168,20 +168,6 @@ public class MultilingualString extends HashMap<String, String> implements Seria
     }
 
     /**
-     * Gets the translations contained in this instance as a map of language-value pairs.
-     * <p>
-     * Convenience method for accessing all values at once. Note that this method returns the actual value used
-     * by this instance, so any changes to it will be reflected in the instance's behavior. It is not a general purpose
-     * method, rather a way to access and manipulate the underlying data structure more efficiently when necessary.
-     *
-     * @return Map of language to translation values
-     */
-    public Map<String, String> getValue() {
-        // TODO remove
-        return this;
-    }
-
-    /**
      * Creates a new instance of {@link MultilingualString} and sets the specified value in the specified language.
      * <p>
      * Convenience method for creating strings with one (initial) translation.

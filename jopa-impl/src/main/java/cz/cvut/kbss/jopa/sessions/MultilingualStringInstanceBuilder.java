@@ -40,7 +40,7 @@ class MultilingualStringInstanceBuilder extends AbstractInstanceBuilder {
         if (orig instanceof ChangeTrackingIndirectMultilingualString) {
             orig = ((ChangeTrackingIndirectMultilingualString) orig).unwrap();
         }
-        return new ChangeTrackingIndirectMultilingualString(cloneOwner, field, uow, new MultilingualString(orig.getValue()));
+        return new ChangeTrackingIndirectMultilingualString(cloneOwner, field, uow, new MultilingualString(orig));
     }
 
     @Override
@@ -49,8 +49,7 @@ class MultilingualStringInstanceBuilder extends AbstractInstanceBuilder {
         if (clone instanceof ChangeTrackingIndirectMultilingualString) {
             clone = ((ChangeTrackingIndirectMultilingualString) clone).unwrap();
         }
-        EntityPropertiesUtils
-                .setFieldValue(field, target, clone != null ? new MultilingualString(clone.getValue()) : null);
+        EntityPropertiesUtils.setFieldValue(field, target, clone != null ? new MultilingualString(clone) : null);
     }
 
     @Override

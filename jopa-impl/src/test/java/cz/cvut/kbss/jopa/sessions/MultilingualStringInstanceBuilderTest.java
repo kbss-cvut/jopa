@@ -57,7 +57,7 @@ class MultilingualStringInstanceBuilderTest {
                 new CloneConfiguration(descriptor, false));
         assertThat(result, instanceOf(MultilingualString.class));
         final MultilingualString typedResult = (MultilingualString) result;
-        assertEquals(original.getValue(), typedResult.getValue());
+        assertEquals(original, typedResult);
     }
 
     @Test
@@ -97,7 +97,7 @@ class MultilingualStringInstanceBuilderTest {
         final Field field = OWLClassU.getSingularStringAttField();
         field.trySetAccessible();
         sut.mergeChanges(field, target, original, clone);
-        assertEquals(clone.getValue(), target.getSingularStringAtt().getValue());
+        assertEquals(clone, target.getSingularStringAtt());
     }
 
     @Test

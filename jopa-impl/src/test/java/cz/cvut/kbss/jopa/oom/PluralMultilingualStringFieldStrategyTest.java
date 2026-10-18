@@ -108,7 +108,7 @@ class PluralMultilingualStringFieldStrategyTest {
 
     private void verifyAssertionValues(List<Value<?>> values, MultilingualString... strings) {
         for (MultilingualString ms : strings) {
-            for (Map.Entry<String, String> e : ms.getValue().entrySet()) {
+            for (Map.Entry<String, String> e : ms.entrySet()) {
                 assertTrue(
                         values.stream().anyMatch(v -> v.getValue().equals(new LangString(e.getValue(), e.getKey()))));
             }
@@ -239,7 +239,7 @@ class PluralMultilingualStringFieldStrategyTest {
         final Assertion assertion = Assertion
                 .createDataPropertyAssertion(URI.create(Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE), false);
         u.getPluralStringAtt().forEach(ms ->
-                ms.getValue().forEach((lang, val) -> assertThat(result,
+                ms.forEach((lang, val) -> assertThat(result,
                         hasItem(new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(new LangString(val, lang)))))));
     }
 

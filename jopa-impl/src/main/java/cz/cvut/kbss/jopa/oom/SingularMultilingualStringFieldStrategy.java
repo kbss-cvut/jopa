@@ -88,7 +88,7 @@ class SingularMultilingualStringFieldStrategy<X>
     }
 
     static Stream<Value<?>> translationsToLangStrings(MultilingualString str) {
-        return str.getValue().entrySet().stream().map(e -> new Value<>(new LangString(e.getValue(), e.getKey())));
+        return str.entrySet().stream().map(e -> new Value<>(new LangString(e.getValue(), e.getKey())));
     }
 
     @Override

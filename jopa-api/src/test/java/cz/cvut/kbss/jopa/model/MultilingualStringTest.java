@@ -121,7 +121,6 @@ class MultilingualStringTest {
         two.set(VALUE);
         assertEquals(one, two);
         assertEquals(one.hashCode(), two.hashCode());
-        assertEquals(one.getValue(), two.getValue());
     }
 
     @Test
@@ -158,12 +157,6 @@ class MultilingualStringTest {
         assertTrue(sut.contains(LANGUAGE));
         sut.remove(LANGUAGE);
         assertFalse(sut.contains(LANGUAGE));
-        assertFalse(sut.getValue().containsKey(LANGUAGE));
-    }
-
-    @Test
-    void toStringOutputsInternalValue() {
-        final MultilingualString sut = MultilingualString.create(VALUE, LANGUAGE);
-        assertEquals(sut.getValue().toString(), sut.toString());
+        assertFalse(sut.containsKey(LANGUAGE));
     }
 }

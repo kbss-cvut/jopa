@@ -62,7 +62,7 @@ class ToMultilingualStringConverterTest {
 
         final Object result = sut.convertToAxiomValue(value);
         assertInstanceOf(Translations.class, result);
-        assertEquals(value.getValue(), ((Translations) result).getValue());
+        assertEquals(value, ((Translations) result).getValue());
     }
 
     @Test
@@ -70,7 +70,7 @@ class ToMultilingualStringConverterTest {
         final Translations value = new Translations(Map.of("en", "Test"));
 
         final cz.cvut.kbss.jopa.model.MultilingualString result = sut.convertToAttribute(value);
-        assertEquals(value.getValue(), result.getValue());
+        assertEquals(value.getValue(), result);
     }
 
     @Test

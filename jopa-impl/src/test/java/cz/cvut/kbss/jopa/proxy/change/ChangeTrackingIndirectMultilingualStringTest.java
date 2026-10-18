@@ -82,7 +82,7 @@ class ChangeTrackingIndirectMultilingualStringTest {
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         sut.set("de", "der Bau");
         verify(uow).attributeChanged(owner, field);
-        assertEquals(translations.size() + 1, sut.getValue().size());
+        assertEquals(translations.size() + 1, sut.size());
         assertTrue(sut.contains("de"));
         assertEquals("der Bau", sut.get("de"));
     }
@@ -92,7 +92,7 @@ class ChangeTrackingIndirectMultilingualStringTest {
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         sut.set("der Bau");
         verify(uow).attributeChanged(owner, field);
-        assertEquals(translations.size() + 1, sut.getValue().size());
+        assertEquals(translations.size() + 1, sut.size());
         assertEquals("der Bau", sut.get());
     }
 
@@ -101,7 +101,7 @@ class ChangeTrackingIndirectMultilingualStringTest {
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         sut.remove("cs");
         verify(uow).attributeChanged(owner, field);
-        assertEquals(translations.size() - 1, sut.getValue().size());
+        assertEquals(translations.size() - 1, sut.size());
         assertFalse(sut.contains("cs"));
     }
 
@@ -110,7 +110,7 @@ class ChangeTrackingIndirectMultilingualStringTest {
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         sut.put("de", "der Bau");
         verify(uow).attributeChanged(owner, field);
-        assertEquals(translations.size() + 1, sut.getValue().size());
+        assertEquals(translations.size() + 1, sut.size());
         assertEquals("der Bau", sut.get("de"));
     }
 
@@ -119,7 +119,7 @@ class ChangeTrackingIndirectMultilingualStringTest {
         when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
         sut.putAll(Map.of("de", "der Bau", "sk", "budova"));
         verify(uow).attributeChanged(owner, field);
-        assertEquals(translations.size() + 2, sut.getValue().size());
+        assertEquals(translations.size() + 2, sut.size());
     }
 
     @Test
@@ -141,7 +141,6 @@ class ChangeTrackingIndirectMultilingualStringTest {
     void readOperationsPropagateToReferencedInstance() {
         assertEquals(referencedString.get(), sut.get());
         assertEquals(referencedString.get("cs"), sut.get("cs"));
-        assertEquals(referencedString.getValue(), sut.getValue());
         assertEquals(referencedString.getLanguages(), sut.getLanguages());
         assertEquals(referencedString.containsSimple(), sut.containsSimple());
         assertEquals(referencedString.contains("de"), sut.contains("de"));

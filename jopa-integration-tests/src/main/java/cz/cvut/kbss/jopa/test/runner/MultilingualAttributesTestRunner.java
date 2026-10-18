@@ -89,7 +89,7 @@ public abstract class MultilingualAttributesTestRunner extends BaseRunner {
 
         final OWLClassY result = findRequired(OWLClassY.class, toPersist.getUri());
         assertNotNull(result.getSingularString());
-        assertEquals(translations, result.getSingularString().getValue());
+        assertEquals(translations, result.getSingularString());
         verifyStatementsPresent(translations.entrySet().stream().map(e -> new Quad(toPersist.getUri(),
                 URI.create(Vocabulary.P_Y_SINGULAR_MULTILINGUAL_ATTRIBUTE), e.getValue(), e.getKey())).collect(
                 Collectors.toSet()), em);

@@ -31,7 +31,7 @@ public class ToMultilingualStringConverter implements ConverterWrapper<Multiling
 
     @Override
     public Object convertToAxiomValue(MultilingualString value) {
-        return new Translations(value.getValue());
+        return new Translations(value);
     }
 
     @Override
