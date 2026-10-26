@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.model;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -158,5 +159,51 @@ class MultilingualStringTest {
         sut.remove(LANGUAGE);
         assertFalse(sut.contains(LANGUAGE));
         assertFalse(sut.containsKey(LANGUAGE));
+    }
+
+    @Test
+    void setTransformsJsonLdNoneToNullKey() {
+        final MultilingualString sut = new MultilingualString();
+        sut.set("@none", "Test");
+        assertEquals("Test", sut.get());
+        assertEquals("Test", sut.get(null));
+        assertTrue(sut.containsSimple());
+        assertFalse(sut.containsKey("@none"));
+    }
+
+    @Test
+    void putTransformsJsonLdNoneToNullKey() {
+        final MultilingualString sut = new MultilingualString();
+        sut.put("@none", "Test");
+        assertEquals("Test", sut.get());
+        assertEquals("Test", sut.get(null));
+        assertTrue(sut.containsSimple());
+        assertFalse(sut.containsKey("@none"));
+    }
+
+    @Test
+    void removeTransformsJsonLdNoneToNullKey() {
+        final MultilingualString sut = new MultilingualString();
+        sut.putAll(Map.of("en", "English test", "cs", "Český test"));
+        sut.put(null, "Simple literal");
+        sut.remove("@none");
+        assertFalse(sut.containsValue("Simple literal"));
+    }
+
+    @Test
+    void containsTransformsJsonLdNoneToNullKey() {
+        final MultilingualString sut = new MultilingualString();
+        sut.putAll(Map.of("en", "English test", "cs", "Český test"));
+        sut.put(null, "Simple literal");
+        assertTrue(sut.contains("@none"));
+    }
+
+    @Test
+    void getTransformsJsonLdNoneToNullKey() {
+        final MultilingualString sut = new MultilingualString();
+        sut.putAll(Map.of("en", "English test", "cs", "Český test"));
+        sut.put(null, "Simple literal");
+        assertEquals("Simple literal", sut.get("@none"));
+        assertEquals("Simple literal", sut.get(null));
     }
 }
