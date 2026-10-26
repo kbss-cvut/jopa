@@ -49,9 +49,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -109,8 +108,9 @@ class PluralMultilingualStringFieldStrategyTest {
     private void verifyAssertionValues(List<Value<?>> values, MultilingualString... strings) {
         for (MultilingualString ms : strings) {
             for (Map.Entry<String, String> e : ms.entrySet()) {
+                final String lang = MultilingualString.NO_LANG.equals(e.getKey()) ? null : e.getKey();
                 assertTrue(
-                        values.stream().anyMatch(v -> v.getValue().equals(new LangString(e.getValue(), e.getKey()))));
+                        values.stream().anyMatch(v -> v.getValue().equals(new LangString(e.getValue(), lang))));
             }
         }
     }
@@ -236,11 +236,7 @@ class PluralMultilingualStringFieldStrategyTest {
         u.setPluralStringAtt(new HashSet<>(Arrays.asList(msOne, msTwo)));
 
         final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(u);
-        final Assertion assertion = Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.P_U_PLURAL_MULTILINGUAL_ATTRIBUTE), false);
-        u.getPluralStringAtt().forEach(ms ->
-                ms.forEach((lang, val) -> assertThat(result,
-                        hasItem(new AxiomImpl<>(INDIVIDUAL, assertion, new Value<>(new LangString(val, lang)))))));
+        verifyAssertionValues(result.stream().map(Axiom::getValue).collect(Collectors.toList()), msOne, msTwo);
     }
 
     @Test

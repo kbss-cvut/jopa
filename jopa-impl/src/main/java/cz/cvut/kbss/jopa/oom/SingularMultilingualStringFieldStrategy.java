@@ -23,7 +23,12 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.LangString;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -88,7 +93,8 @@ class SingularMultilingualStringFieldStrategy<X>
     }
 
     static Stream<Value<?>> translationsToLangStrings(MultilingualString str) {
-        return str.entrySet().stream().map(e -> new Value<>(new LangString(e.getValue(), e.getKey())));
+        return str.entrySet().stream()
+                  .map(e -> new Value<>(new LangString(e.getValue(), MultilingualString.NO_LANG.equals(e.getKey()) ? null : e.getKey())));
     }
 
     @Override
