@@ -1118,4 +1118,12 @@ public class SoqlQueryParserTest {
                 "?a " + strUri(Vocabulary.p_a_stringAttribute) + " ?aStringAtt . }";
         parseAndAssertEquality(expectedSparql, soql);
     }
+
+    @Test
+    void parseQueryReplacesPercentInLikeWithCorrectRegexAlternatives() {
+        final String soqlQuery = "SELECT p FROM Person p WHERE p.username LIKE '%@example.com'";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x " + strUri(Vocabulary.p_p_username) + " ?pUsername . FILTER (REGEX(?pUsername, '.*@example.com')) }";
+        parseAndAssertEquality(expectedSparqlQuery, soqlQuery);
+    }
 }

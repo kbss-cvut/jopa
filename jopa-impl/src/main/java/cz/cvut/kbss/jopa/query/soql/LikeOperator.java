@@ -30,7 +30,24 @@ class LikeOperator implements FilterableExpression {
 
     @Override
     public String toFilterExpression(String parameter, String value) {
-        return (isNot ? "!" : "") + "REGEX(" + parameter + ", " + value + ")";
+        return (isNot ? "!" : "") + "REGEX(" + parameter + ", " + toRegexPattern(value) + ")";
+    }
+
+    private static String toRegexPattern(String value) {
+        char current, previous = ' ';
+        final StringBuilder sb = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++) {
+            current = value.charAt(i);
+            if (current == '%' && previous != '\\') {
+                sb.append(".*");
+            } else if (current == '_' && previous != '\\') {
+                sb.append('.');
+            } else {
+                sb.append(current);
+            }
+            previous = current;
+        }
+        return sb.toString();
     }
 
     static LikeOperator like() {
