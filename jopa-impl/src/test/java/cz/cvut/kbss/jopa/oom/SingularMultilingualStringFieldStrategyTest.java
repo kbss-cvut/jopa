@@ -208,6 +208,25 @@ class SingularMultilingualStringFieldStrategyTest {
     }
 
     @Test
+    void buildAxiomValuesFromInstanceAddsSimpleLiteralLangStringForTranslationWithoutLanguage() throws Exception {
+        final SingularMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
+        final OWLClassU instance = new OWLClassU(ID);
+        instance.setSingularStringAtt(MultilingualString.create("auto", MultilingualString.NO_LANG));
+
+        final AxiomValueGatherer builder = new AxiomValueGatherer(INDIVIDUAL, null);
+        sut.buildAxiomValuesFromInstance(instance, builder);
+        final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
+        assertEquals(1, valueDescriptor.getAssertions().size());
+        final List<Value<?>> values = valueDescriptor.getAssertionValues(Assertion
+                .createDataPropertyAssertion(
+                        URI.create(
+                                Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE),
+                        false));
+        assertEquals(1, values.size());
+        assertTrue(values.contains(new Value<>(new LangString("auto", null))));
+    }
+
+    @Test
     void buildAxiomValuesFromInstanceAddsNullValueWhenAttributeValueIsNull() throws Exception {
         final SingularMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
         final OWLClassU instance = new OWLClassU(ID);

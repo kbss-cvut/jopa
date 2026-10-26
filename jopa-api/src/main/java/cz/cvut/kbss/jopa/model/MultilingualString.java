@@ -34,22 +34,19 @@ import java.util.Set;
  * Instances of this class basically represent all available translations of the string, allowing to read (and write)
  * particular versions by specifying the corresponding language tag. A special case supported by this class are <a
  * href="https://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal">simple literals</a> (language-less strings with
- * type {@code xsd:string}), for which the language tag is {@code null}.
- * <p>
- * For developer convenience JSON-LD key {@code @none} is supported and interpreted as {@code null}, i.e., no
- * language tag (simple literal).
+ * type {@code xsd:string}), for which the language tag is the JSON-LD key {@code @none}.
  * <p>
  * Note that this class is not thread-safe.
  */
 public class MultilingualString extends HashMap<String, String> implements Serializable {
 
     /**
-     * Language map key representing no language in JSON-LD.
+     * Key representing no language.
      * <p>
-     * If the multilingual string is deserialized by a regular JSON library such as Jackson from JSON-LD, we want to
-     * unify the representation of language-less strings.
+     * We are reusing the JSON-LD {@code @none} key to simplify (de)serialization library integration (they generally do
+     * not like {@code null} keys).
      */
-    private static final String JSONLD_NONE_KEY = "@none";
+    public static final String NO_LANG = "@none";
 
     public MultilingualString() {
         super(4);
@@ -71,8 +68,8 @@ public class MultilingualString extends HashMap<String, String> implements Seria
      * <p>
      * This overrides any previous value in the specified language, if it existed.
      *
-     * @param language Language to use with the specified value. Passing {@code null} has the same effect as
-     *                 {@link #set(String)}
+     * @param language Language to use with the specified value. Passing {@code null} or {@link #NO_LANG} has the same
+     *                 effect as {@link #set(String)}
      * @param value    String value in the specified language
      * @return This instance
      * @see #set(String)
@@ -85,8 +82,8 @@ public class MultilingualString extends HashMap<String, String> implements Seria
 
     @Override
     public String put(String key, String value) {
-        if (JSONLD_NONE_KEY.equals(key)) {
-            key = null;
+        if (key == null) {
+            key = NO_LANG;
         }
         return super.put(key, value);
     }
@@ -101,7 +98,7 @@ public class MultilingualString extends HashMap<String, String> implements Seria
      * @see #set(String, String)
      */
     public MultilingualString set(String value) {
-        return this.set(null, value);
+        return this.set(NO_LANG, value);
     }
 
     /**
@@ -111,14 +108,14 @@ public class MultilingualString extends HashMap<String, String> implements Seria
      * value is returned. However, note that, in case of missing simple literal, repeated calls may return values in
      * different languages. If there are no translations, {@code null} is returned.
      *
-     * @param language Requested language (language tag). Can be {@code null}
+     * @param language Requested language (language tag). Can be {@code null} or {@link #NO_LANG}
      * @return Value of this string for the specified language (or {@code null} if not available)
      */
     public String get(String language) {
-        if (JSONLD_NONE_KEY.equals(language)) {
-            language = null;
+        if (language == null || NO_LANG.equals(language)) {
+            return get();
         }
-        return language != null ? super.get(language) : get();
+        return super.get(language);
     }
 
     /**
@@ -133,23 +130,23 @@ public class MultilingualString extends HashMap<String, String> implements Seria
      * @return Value of simple literal represented by this string
      */
     public String get() {
-        return getOrDefault(null, isEmpty() ? null : super.get(keySet().iterator().next()));
+        return getOrDefault(NO_LANG, isEmpty() ? null : super.get(keySet().iterator().next()));
     }
 
     /**
      * Checks whether this string contains value in the specified language.
      * <p>
-     * If no language is specified (argument is {@code null}), this method will return {@code true} if there is value
-     * without language tag (simple literal) or in any other language.
+     * If no language is specified (argument is {@code null} or {@link #NO_LANG}), this method will return {@code true}
+     * if there is value without language tag (simple literal) or in any other language.
      *
      * @param language Requested language (language tag)
      * @return {@code true} if this string exists in the specified language
      */
     public boolean contains(String language) {
-        if (JSONLD_NONE_KEY.equals(language)) {
-            language = null;
+        if (language == null) {
+            language = NO_LANG;
         }
-        return containsKey(language) || (language == null && !isEmpty());
+        return containsKey(language) || NO_LANG.equals(language) && !isEmpty();
     }
 
     /**
@@ -160,7 +157,7 @@ public class MultilingualString extends HashMap<String, String> implements Seria
      * @return {@code true} if and only if this string exists as a simple literal
      */
     public boolean containsSimple() {
-        return containsKey(null);
+        return containsKey(NO_LANG);
     }
 
     /**
@@ -175,13 +172,13 @@ public class MultilingualString extends HashMap<String, String> implements Seria
     /**
      * Removes translation in the specified language.
      * <p>
-     * Passing in {@code null} will remove the simple literal contained in this instance.
+     * Passing in {@code null}/{@link #NO_LANG} will remove the simple literal contained in this instance.
      *
      * @param language Language for which translation should be removed
      */
     public void remove(String language) {
-        if (JSONLD_NONE_KEY.equals(language)) {
-            language = null;
+        if (language == null) {
+            language = NO_LANG;
         }
         super.remove(language);
     }
@@ -189,7 +186,7 @@ public class MultilingualString extends HashMap<String, String> implements Seria
     /**
      * Gets the set of languages for which translations exist in the instance.
      * <p>
-     * Note that the result may contain {@code null}, indicating a simple literal.
+     * Note that the result may contain {@link #NO_LANG}, indicating a simple literal.
      *
      * @return Set of languages available in this multilingual string
      */
