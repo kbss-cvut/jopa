@@ -211,6 +211,46 @@ public interface PredicateFactory {
     Predicate notLike(Expression<String> x, String pattern);
 
     /**
+     * Creates a predicate for testing whether the expression satisfies the given regular expression pattern.
+     *
+     * @param x       String expression
+     * @param pattern Regular‑expression pattern
+     * @return {@code regex} predicate
+     */
+    Predicate regex(Expression<String> x, String pattern);
+
+    /**
+     * Creates a predicate for testing whether the expression satisfies the given regular expression pattern with the
+     * specified flags.
+     *
+     * @param x       String expression
+     * @param pattern Regular‑expression pattern
+     * @param flags   Options for regular expression interpretation
+     * @return {@code regex} predicate
+     */
+    Predicate regex(Expression<String> x, String pattern, String flags);
+
+    /**
+     * Creates a predicate for testing whether the expression satisfies the given regular expression pattern.
+     *
+     * @param x       String expression
+     * @param pattern Regular‑expression pattern
+     * @return {@code regex} predicate
+     */
+    Predicate regex(Expression<String> x, Expression<String> pattern);
+
+    /**
+     * Creates a predicate for testing whether the expression satisfies the given regular expression pattern with the
+     * specified flags.
+     *
+     * @param x       String expression
+     * @param pattern Regular‑expression pattern
+     * @param flags   Options for regular expression interpretation
+     * @return {@code regex} predicate
+     */
+    Predicate regex(Expression<String> x, Expression<String> pattern, String flags);
+
+    /**
      * Creates a predicate that tests whether an element is a member of a collection.
      * <p>
      * If the collection is empty, the predicate will be false.
