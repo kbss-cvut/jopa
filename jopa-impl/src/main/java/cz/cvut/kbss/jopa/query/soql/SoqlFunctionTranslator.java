@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.exception.QueryParserException;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -27,21 +28,26 @@ import java.util.Map;
  */
 class SoqlFunctionTranslator {
 
-    private static final Map<String, String> FUNCTION_MAP = Map.of(
-            SoqlConstants.Functions.UPPER, "UCASE",
-            SoqlConstants.Functions.LOWER, "LCASE",
-            SoqlConstants.Functions.LENGTH, "STRLEN",
-            SoqlConstants.Functions.ABS, "ABS",
-            SoqlConstants.Functions.ROUND, "ROUND",
-            SoqlConstants.Functions.CEIL, "CEIL",
-            SoqlConstants.Functions.FLOOR, "FLOOR",
-            SoqlConstants.Functions.CONCAT, "CONCAT",
-            SoqlConstants.Functions.LANG, "lang",
-            SoqlConstants.Functions.LANG_MATCHES, "langMatches"
-    );
+    private static final Map<String, String> FUNCTION_MAP = initFuctionMap();
 
     private SoqlFunctionTranslator() {
         throw new AssertionError();
+    }
+
+    private static Map<String, String> initFuctionMap() {
+        final Map<String, String> result = new HashMap<>();
+        result.put(SoqlConstants.Functions.UPPER, "UCASE");
+        result.put(SoqlConstants.Functions.LOWER, "LCASE");
+        result.put(SoqlConstants.Functions.LENGTH, "STRLEN");
+        result.put(SoqlConstants.Functions.ABS, "ABS");
+        result.put(SoqlConstants.Functions.ROUND, "ROUND");
+        result.put(SoqlConstants.Functions.CEIL, "CEIL");
+        result.put(SoqlConstants.Functions.FLOOR, "FLOOR");
+        result.put(SoqlConstants.Functions.CONCAT, "CONCAT");
+        result.put(SoqlConstants.Functions.LANG, "lang");
+        result.put(SoqlConstants.Functions.LANG_MATCHES, "langMatches");
+        result.put(SoqlConstants.Functions.REGEX, "REGEX");
+        return result;
     }
 
     /**
