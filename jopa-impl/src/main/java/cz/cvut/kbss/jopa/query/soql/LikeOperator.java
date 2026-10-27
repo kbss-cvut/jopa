@@ -17,6 +17,8 @@
  */
 package cz.cvut.kbss.jopa.query.soql;
 
+import cz.cvut.kbss.jopa.query.parameter.LikePatternTranslator;
+
 /**
  * SOQL ({@code NOT}) {@code LIKE} operator.
  */
@@ -34,20 +36,13 @@ class LikeOperator implements FilterableExpression {
     }
 
     private static String toRegexPattern(String value) {
-        char current, previous = ' ';
-        final StringBuilder sb = new StringBuilder(value.length());
-        for (int i = 0; i < value.length(); i++) {
-            current = value.charAt(i);
-            if (current == '%' && previous != '\\') {
-                sb.append(".*");
-            } else if (current == '_' && previous != '\\') {
-                sb.append('.');
-            } else {
-                sb.append(current);
-            }
-            previous = current;
+        if (value.length() < 2 || (value.charAt(0) != '\'' && value.charAt(0) != '"')) {
+            // Not a string literal (e.g. a variable), leave it for evaluation at runtime
+            return value;
         }
-        return sb.toString();
+        // The pattern is emitted directly into the SPARQL query source text (not through a ParameterValue),
+        // so the regex escape backslash has to be escaped itself to remain valid in the SPARQL string literal
+        return LikePatternTranslator.translate(value).replace("\\", "\\\\");
     }
 
     static LikeOperator like() {

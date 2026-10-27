@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exception.SoqlException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
+import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
@@ -1123,7 +1124,18 @@ public class SoqlQueryParserTest {
     void parseQueryReplacesPercentInLikeWithCorrectRegexAlternatives() {
         final String soqlQuery = "SELECT p FROM Person p WHERE p.username LIKE '%@example.com'";
         final String expectedSparqlQuery =
-                "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x " + strUri(Vocabulary.p_p_username) + " ?pUsername . FILTER (REGEX(?pUsername, '.*@example.com')) }";
+                "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x " + strUri(Vocabulary.p_p_username) + " ?pUsername . FILTER (REGEX(?pUsername, '.*@example\\\\.com')) }";
         parseAndAssertEquality(expectedSparqlQuery, soqlQuery);
+    }
+
+    @Test
+    void parseQuerySupportsEscapingRegexCharactersInLikeOperatorWhenValueIsPassedAsVariable() {
+        final String soqlQuery = "SELECT p FROM Person p WHERE p.username LIKE :pattern";
+        final QueryHolder holder = sut.parseQuery(soqlQuery);
+        final Parameter<?> p = holder.getParameter("pattern");
+        holder.setParameter(p, "%@example.com");
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x " + strUri(Vocabulary.p_p_username) + " ?pUsername . FILTER (REGEX(?pUsername, \".*@example\\\\.com\")) }";
+        assertThat(holder.assembleQuery(), equalToCompressingWhiteSpace(expectedSparqlQuery));
     }
 }
