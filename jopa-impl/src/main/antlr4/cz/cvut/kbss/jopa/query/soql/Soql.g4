@@ -133,6 +133,7 @@ functionsReturningNumerics
 
 functionsReturningBoolean
     : 'LANGMATCHES' '(' stringExpression ',' stringExpression ')'
+    | 'REGEX' '(' stringExpression ',' stringExpression (',' stringExpression)? ')'
     ;
 
 orderByClause: ORDER BY orderByItem (',' orderByItem)* ;

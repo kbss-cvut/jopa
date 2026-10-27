@@ -289,6 +289,14 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     @Override
+    public void exitStringExpression(SoqlParser.StringExpressionContext ctx) {
+        if (functionCallDepth > 0 && ctx.STRING_LITERAL() != null) {
+            assert !functionArguments.isEmpty();
+            functionArguments.peek().add(new LiteralNode(ctx.getText()));
+        }
+    }
+
+    @Override
     public void exitComparisonExpression(SoqlParser.ComparisonExpressionContext ctx) {
         String operator = ctx.getChild(1).getText();
 

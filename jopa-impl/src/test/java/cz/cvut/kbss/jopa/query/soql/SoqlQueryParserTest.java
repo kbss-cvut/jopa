@@ -44,6 +44,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.util.regex.Pattern;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
@@ -51,6 +53,7 @@ import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -1137,5 +1140,21 @@ public class SoqlQueryParserTest {
         final String expectedSparqlQuery =
                 "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x " + strUri(Vocabulary.p_p_username) + " ?pUsername . FILTER (REGEX(?pUsername, \".*@example\\\\.com\")) }";
         assertThat(holder.assembleQuery(), equalToCompressingWhiteSpace(expectedSparqlQuery));
+    }
+
+    @Test
+    void parseQuerySupportsRegexFunction() {
+        Pattern p = Pattern.compile(".*@example\\.(com|org)");
+        assertTrue(p.matcher("test@example.com").matches());
+        final String soql = "SELECT p FROM Person p WHERE REGEX(p.username, '.*@example\\\\.(com|org)')";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x " + strUri(Vocabulary.p_p_username) + " ?pUsername . FILTER (REGEX(?pUsername, '.*@example\\\\.(com|org)')) }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsRegexFunctionWithFlags() {
+        final String soql = "SELECT p FROM Person p WHERE REGEX(p.username, '.*@example\\\\.(com|org)', 'i')";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x " + strUri(Vocabulary.p_p_username) + " ?pUsername . FILTER (REGEX(?pUsername, '.*@example\\\\.(com|org)', 'i')) }";
+        parseAndAssertEquality(expectedSparql, soql);
     }
 }
