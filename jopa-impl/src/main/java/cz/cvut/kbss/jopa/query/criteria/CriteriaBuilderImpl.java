@@ -49,6 +49,7 @@ import cz.cvut.kbss.jopa.query.criteria.expressions.LengthFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.LowerFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.OrderImpl;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ParameterExpressionImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.RegexFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.UpperFunction;
 
 import java.util.Arrays;
@@ -272,6 +273,36 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
         return new SimplePredicateImpl(
                 new ExpressionNotLikeImpl((AbstractExpression<String>) x, new ExpressionLiteralImpl<>(pattern, this),
                         this), this);
+    }
+
+    @Override
+    public Predicate regex(Expression<String> x, String pattern) {
+        return new SimplePredicateImpl(
+                new RegexFunction(this, (AbstractExpression<String>) x,
+                        new ExpressionLiteralImpl<>(pattern, this)), this);
+    }
+
+    @Override
+    public Predicate regex(Expression<String> x, String pattern, String flags) {
+        return new SimplePredicateImpl(
+                new RegexFunction(this, (AbstractExpression<String>) x,
+                        new ExpressionLiteralImpl<>(pattern, this),
+                        new ExpressionLiteralImpl<>(flags, this)), this);
+    }
+
+    @Override
+    public Predicate regex(Expression<String> x, Expression<String> pattern) {
+        return new SimplePredicateImpl(
+                new RegexFunction(this, (AbstractExpression<String>) x,
+                        (AbstractExpression<String>) pattern), this);
+    }
+
+    @Override
+    public Predicate regex(Expression<String> x, Expression<String> pattern, String flags) {
+        return new SimplePredicateImpl(
+                new RegexFunction(this, (AbstractExpression<String>) x,
+                        (AbstractExpression<String>) pattern,
+                        new ExpressionLiteralImpl<>(flags, this)), this);
     }
 
     @Override

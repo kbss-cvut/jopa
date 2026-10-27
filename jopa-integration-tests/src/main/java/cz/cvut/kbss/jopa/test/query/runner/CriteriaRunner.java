@@ -53,6 +53,7 @@ import static java.util.function.Predicate.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -629,5 +630,18 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         final List<OWLClassM> result = tq.getResultList();
         assertFalse(result.isEmpty());
         result.forEach(m -> assertTrue(m.getStringCollection().containsAll(sample.getStringCollection())));
+    }
+
+    @Test
+    void testSelectByRegex() {
+        final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        final Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where(cb.regex(root.getAttr("stringAttribute"), "stringAttribute.*", "i"));
+
+        final TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query);
+        final List<OWLClassA> result = tq.getResultList();
+        assertFalse(result.isEmpty());
+        result.forEach(a -> assertThat(a.getStringAttribute(), startsWith("stringAttribute")));
     }
 }

@@ -2,8 +2,10 @@ package cz.cvut.kbss.jopa.test.integration;
 
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaBuilder;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
+import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.model.query.criteria.Path;
 import cz.cvut.kbss.jopa.model.query.criteria.Root;
+import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassG;
 import cz.cvut.kbss.jopa.test.OWLClassH;
 import cz.cvut.kbss.jopa.test.Vocabulary;
@@ -58,6 +60,25 @@ public class CriteriaApiTranslationTest extends IntegrationTestBase {
         assertThat(captor.getValue(), equalToCompressingWhiteSpace("SELECT ?x WHERE { ?x a " + strUri(Vocabulary.C_OWL_CLASS_G) + " . " +
                 "?x " + strUri(Vocabulary.P_HAS_H) + " ?owlClassH . " +
                 "?owlClassH " + strUri(Vocabulary.P_HAS_OWL_CLASS_A) + " " + strUri(filterValue) + " . } "));
+    }
+
+    @Test
+    public void testSelectionByRegex() throws Exception {
+        when(connectionMock.createStatement()).thenReturn(statementMock);
+        when(resultSetMock.iterator()).thenReturn(iteratorMock);
+        when(statementMock.executeQuery(anyString())).thenReturn(resultSetMock);
+        final CriteriaBuilder cb = em.getCriteriaBuilder();
+        final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        Root<OWLClassA> root = query.from(OWLClassA.class);
+        final ParameterExpression<String> pe = cb.parameter(String.class);
+
+        query.select(root).where(cb.regex(root.getAttr("stringAttribute"), pe, "g"));
+        em.createQuery(query).setParameter(pe, ".*@example\\.(com|org)").getResultList();
+        final ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(statementMock).executeQuery(captor.capture());
+        assertThat(captor.getValue(), equalToCompressingWhiteSpace("SELECT ?x WHERE { ?x a " + strUri(Vocabulary.C_OWL_CLASS_A) + " . " +
+                "?x " + strUri(Vocabulary.P_A_STRING_ATTRIBUTE) + " ?owlclassaStringAttribute . " +
+                "FILTER (REGEX(?owlclassaStringAttribute, \".*@example\\\\.(com|org)\", \"g\")) }"));
     }
 
     private static String strUri(Object uri) {
