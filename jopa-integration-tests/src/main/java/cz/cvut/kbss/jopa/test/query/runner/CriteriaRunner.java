@@ -398,7 +398,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     }
 
     @Test
-    public void testSelectUsingStringUppercaseFunction() {
+    public void testSelectUsingLikeAndStringUppercaseFunction() {
         final List<OWLClassA> instances = QueryTestEnvironment.getData(OWLClassA.class);
         final OWLClassA sample = Generators.getRandomItem(instances);
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
@@ -410,7 +410,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         final List<OWLClassA> result = getEntityManager().createQuery(query)
                                                          .setParameter(param,
                                                                  sample.getStringAttribute().substring(0, 5)
-                                                                       .toUpperCase(Locale.ROOT) + ".+")
+                                                                       .toUpperCase(Locale.ROOT) + "%")
                                                          .getResultList();
         assertFalse(result.isEmpty());
         assertThat(result, hasItem(sample));

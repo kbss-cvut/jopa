@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.query.soql;
 
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.query.QueryHolder;
+import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -50,6 +51,12 @@ public class SoqlQueryParser implements QueryParser {
         final ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(listener, tree);
 
-        return sparqlParser.parseQuery(listener.getSparqlQuery());
+        final QueryHolder result = sparqlParser.parseQuery(listener.getSparqlQuery());
+        for (String patternVar: listener.getLikePatternParameterNames()) {
+            if (result.hasParameter(patternVar)) {
+                ((QueryParameter<?>) result.getParameter(patternVar)).markAsLikePattern();
+            }
+        }
+        return result;
     }
 }

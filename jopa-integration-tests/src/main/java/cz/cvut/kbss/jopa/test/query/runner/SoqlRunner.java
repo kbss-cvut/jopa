@@ -238,7 +238,7 @@ public abstract class SoqlRunner extends BaseQueryRunner {
                 getEntityManager().createQuery("SELECT a FROM OWLClassA a WHERE UPPER(a.stringAttribute) LIKE :value",
                                           OWLClassA.class)
                                   .setParameter("value", instance.getStringAttribute().substring(0, 3)
-                                                                 .toUpperCase(Locale.ROOT) + ".+")
+                                                                 .toUpperCase(Locale.ROOT) + "%")
                                   .getResultList();
         assertFalse(result.isEmpty());
         assertThat(result, hasItem(instance));

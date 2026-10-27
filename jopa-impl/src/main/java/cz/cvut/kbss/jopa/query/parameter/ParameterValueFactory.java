@@ -120,9 +120,19 @@ public class ParameterValueFactory {
             return new CollectionParameterValue(col.stream().map(this::create).collect(Collectors.toList()));
         } else if (value instanceof IRI iri) {
             return new IriParameterValue(iri);
-        }else {
+        } else {
             return new StringParameterValue(value.toString());
         }
+    }
+
+    /**
+     * Returns new parameter value specification for a parameter appearing in a SOQL {@literal LIKE} expression.
+     *
+     * @param value The value
+     * @return Parameter value object
+     */
+    public ParameterValue createLikePatternValue(String value) {
+        return new StringParameterValue(LikePatternTranslator.translate(value));
     }
 
     /**
