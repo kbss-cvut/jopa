@@ -21,7 +21,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.tdb1.TDB1Factory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +51,7 @@ public class SnapshotStorageTest {
     public void initializationFromCentralTDBConnectorSupportsNonTransactionalModels() throws Exception {
         this.storageDir = Files.createTempDirectory("tdb-test").toFile();
         storageDir.deleteOnExit();
-        final Dataset tdbDataset = TDBFactory.createDataset(storageDir.getAbsolutePath());
+        final Dataset tdbDataset = TDB1Factory.createDataset(storageDir.getAbsolutePath());
         tdbDataset.begin(ReadWrite.WRITE);
         generateTestData(tdbDataset);
         tdbDataset.commit();
