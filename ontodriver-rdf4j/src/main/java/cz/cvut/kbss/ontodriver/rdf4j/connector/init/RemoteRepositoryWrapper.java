@@ -20,11 +20,14 @@ package cz.cvut.kbss.ontodriver.rdf4j.connector.init;
 import cz.cvut.kbss.ontodriver.Wrapper;
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.rdf4j.config.Constants;
+import cz.cvut.kbss.ontodriver.rdf4j.config.Rdf4jConfigParam;
 import cz.cvut.kbss.ontodriver.rdf4j.exception.Rdf4jDriverException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.utils.HttpClientUtils;
 import org.eclipse.rdf4j.http.client.HttpClientSessionManager;
 import org.eclipse.rdf4j.http.client.SharedHttpClientSessionManager;
+import org.eclipse.rdf4j.http.client.spi.RDF4JHttpClient;
+import org.eclipse.rdf4j.http.client.spi.RDF4JHttpClientConfig;
+import org.eclipse.rdf4j.http.client.spi.RDF4JHttpClients;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -34,20 +37,40 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import java.io.File;
 
 /**
- * Wrapper for RDF4J {@link HTTPRepository} allowing to set custom {@link HttpClient} for it to use.
+ * Wrapper for RDF4J {@link HTTPRepository} allowing to set custom {@link RDF4JHttpClient} for it to use.
  */
 public class RemoteRepositoryWrapper implements Repository, Wrapper {
 
     private final HTTPRepository delegate;
-    private HttpClient httpClient;
+    private RDF4JHttpClient httpClient;
 
     public RemoteRepositoryWrapper(HTTPRepository delegate, DriverConfiguration configuration) {
         this.delegate = delegate;
-        this.httpClient = HttpClientFactory.createHttpClient(configuration);
+        this.httpClient = initHttpClient(configuration);
         final HttpClientSessionManager sessionManager = delegate.getHttpClientSessionManager();
         if (sessionManager instanceof SharedHttpClientSessionManager) {
-            ((SharedHttpClientSessionManager) sessionManager).setHttpClient(httpClient);
+            sessionManager.setHttpClient(httpClient);
         }
+    }
+
+    private RDF4JHttpClient initHttpClient(DriverConfiguration configuration) {
+        final int maxConnections = getMaxConnections(configuration);
+        final RDF4JHttpClientConfig rdf4jConfig = RDF4JHttpClientConfig.newBuilder()
+                .connectionRequestTimeoutMs(getConnectionRequestTimeout(configuration))
+                .maxConnectionsPerRoute(maxConnections)
+                .maxConnectionsTotal(maxConnections)
+                .build();
+        return RDF4JHttpClients.newDefaultClient(rdf4jConfig);
+    }
+
+    private static int getConnectionRequestTimeout(DriverConfiguration config) {
+        return config.getProperty(Rdf4jConfigParam.CONNECTION_REQUEST_TIMEOUT, Constants.DEFAULT_CONNECTION_REQUEST_TIMEOUT);
+    }
+
+    private static int getMaxConnections(DriverConfiguration config) {
+        final int defaultMaxConnections = Math.max(Constants.DEFAULT_MAX_CONNECTIONS, Runtime.getRuntime()
+                                                                                             .availableProcessors() * 2);
+        return config.getProperty(Rdf4jConfigParam.MAX_CONNECTION_POOL_SIZE, defaultMaxConnections);
     }
 
     @Override
@@ -74,7 +97,7 @@ public class RemoteRepositoryWrapper implements Repository, Wrapper {
     public void shutDown() throws RepositoryException {
         delegate.shutDown();
         if (httpClient != null) {
-            HttpClientUtils.closeQuietly(httpClient);
+            httpClient.close();
             this.httpClient = null;
         }
     }
