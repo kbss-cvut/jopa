@@ -534,7 +534,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     }
 
     @Test
-    void selectByMemberOfRdfCollection() {
+    public void selectByMemberOfRdfCollection() {
         runSelectByMemberOf("rdfCollection");
     }
 
