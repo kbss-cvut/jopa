@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.test.query.runner.CriteriaRunner;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,5 +68,11 @@ public class CriteriaTest extends CriteriaRunner {
     @Override
     protected EntityManager getEntityManager() {
         return em;
+    }
+
+    @Disabled
+    @Override
+    public void selectByMemberOfRdfCollection() {
+        // Does not work on Virtuoso - the query does not return any results
     }
 }
