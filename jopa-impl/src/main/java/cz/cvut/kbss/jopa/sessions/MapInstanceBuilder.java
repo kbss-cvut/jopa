@@ -19,7 +19,6 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectCollection;
-import cz.cvut.kbss.jopa.proxy.change.ChangeTrackingIndirectMap;
 import cz.cvut.kbss.jopa.sessions.util.CloneConfiguration;
 import cz.cvut.kbss.jopa.sessions.util.CloneRegistrationDescriptor;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
@@ -66,9 +65,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
                 cloneMapContent(cloneOwner, field, orig, clone, configuration);
             }
         }
-        clone = new ChangeTrackingIndirectMap<>(cloneOwner, field, uow, clone);
-        return clone;
-
+        return uow.createIndirectCollection(clone, cloneOwner, field);
     }
 
     private Map<?, ?> cloneUsingDefaultConstructor(Object cloneOwner, Field field, Class<?> origCls, Map<?, ?> original,

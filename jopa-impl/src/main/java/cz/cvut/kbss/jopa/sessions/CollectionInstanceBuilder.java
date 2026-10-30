@@ -83,8 +83,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         if (clone == null) {
             clone = buildDefaultCollectionInstance(cloneOwner, field, container, configuration);
         }
-        clone = uow.createIndirectCollection(clone, cloneOwner, field);
-        return clone;
+        return uow.createIndirectCollection(clone, cloneOwner, field);
     }
 
     /**
