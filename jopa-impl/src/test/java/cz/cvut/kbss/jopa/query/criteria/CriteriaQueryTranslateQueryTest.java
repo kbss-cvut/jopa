@@ -712,7 +712,7 @@ public class CriteriaQueryTranslateQueryTest {
     }
 
     @Nested
-    class MetamodelBasedPropertyQueryTests {
+    class StaticMetamodelBasedPropertyQueryTests {
         @Test
         public void testTranslateQuerySelectProperty() {
             CriteriaQueryImpl<String> query = cb.createQuery(String.class);
@@ -758,6 +758,16 @@ public class CriteriaQueryTranslateQueryTest {
             final String expectedSoqlQuery =
                     "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryRestrictionWithTypesSpecification() {
+            CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root).where(cb.isMember(Generators.createIndividualIdentifier(), root.getAttr(OWLClassA_.types)));
+
+            final String expectedSoql = "SELECT owlclassa FROM OWLClassA owlclassa WHERE :generatedName0 MEMBER OF owlclassa.types";
+            assertEquals(expectedSoql, query.translateQuery(criteriaParameterFiller));
         }
     }
 

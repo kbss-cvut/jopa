@@ -22,9 +22,12 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.model.query.criteria.Path;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaBuilderImpl;
 import cz.cvut.kbss.jopa.query.criteria.PathImpl;
+
+import java.util.Set;
 
 public abstract class AbstractPathExpression<X> extends AbstractExpression<X> implements Path<X> {
 
@@ -60,6 +63,11 @@ public abstract class AbstractPathExpression<X> extends AbstractExpression<X> im
     @Override
     public <Y> Path<Y> getAttr(Identifier<? super X, Y> identifier) {
         return new PathImpl<>(this.metamodel, this, identifier, this.cb);
+    }
+
+    @Override
+    public <Y> Path<Set<Y>> getAttr(TypesSpecification<? super X, Y> types) {
+        return new PathImpl<>(this.metamodel, this, types, this.cb);
     }
 
     @Override
