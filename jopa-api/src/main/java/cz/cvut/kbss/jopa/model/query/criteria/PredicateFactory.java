@@ -259,7 +259,7 @@ public interface PredicateFactory {
      * @param collection Expression
      * @return is-member predicate
      */
-    <E, C extends Collection<E>> Predicate isMember(E elem, Expression<C> collection);
+    <E> Predicate isMember(E elem, Expression<? extends Collection<?>> collection);
 
     /**
      * Creates a predicate that tests whether an element is not a member of a collection.
@@ -270,7 +270,7 @@ public interface PredicateFactory {
      * @param collection Expression
      * @return is-member predicate
      */
-    <E, C extends Collection<E>> Predicate isNotMember(E elem, Expression<C> collection);
+    <E> Predicate isNotMember(E elem, Expression<? extends Collection<?>> collection);
 
     /**
      * Create a negation of the given restriction.

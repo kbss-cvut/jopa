@@ -323,12 +323,12 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     }
 
     @Override
-    public <E, C extends Collection<E>> Predicate isMember(E elem, Expression<C> collection) {
+    public <E> Predicate isMember(E elem, Expression<? extends Collection<?>> collection) {
         return new IsMemberExpression<>(elem, collection, this);
     }
 
     @Override
-    public <E, C extends Collection<E>> Predicate isNotMember(E elem, Expression<C> collection) {
+    public <E> Predicate isNotMember(E elem, Expression<? extends Collection<?>> collection) {
         final IsMemberExpression<E> expr = new IsMemberExpression<>(elem, collection, this);
         expr.not();
         return expr;
