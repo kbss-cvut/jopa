@@ -59,11 +59,6 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
     }
 
     @Override
-    public void enterDescribeQuery(SparqlParser.DescribeQueryContext ctx) {
-        super.enterDescribeQuery(ctx);
-    }
-
-    @Override
     public void enterAskQuery(SparqlParser.AskQueryContext ctx) {
         this.queryType = QueryType.ASK;
     }
@@ -151,7 +146,7 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
             assert ctx.VAR2() != null;
             try {
                 final Integer position = Integer.parseInt(ctx.VAR2().getText().substring(1));
-                param = parameters.computeIfAbsent(position, k -> new TokenQueryParameter<>(position, parameterValueFactory));
+                param = parameters.computeIfAbsent(position, _ -> new TokenQueryParameter<>(position, parameterValueFactory));
             } catch (NumberFormatException e) {
                 throw new QueryParserException(ctx.VAR2().getText() + " is not a valid parameter position.", e);
             }

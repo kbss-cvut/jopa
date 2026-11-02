@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.MultilingualStringCondenser;
@@ -64,9 +65,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
             }
         } else {
             if (!multilingualStringCondenser.getValues().isEmpty()) {
-                throw new CardinalityConstraintViolatedException(
-                        "Expected single value of attribute " + attribute.getName() + " of instance " + subject +
-                                ", but got multiple.");
+                throw maxCardinalityViolated(attribute, subject);
             }
             this.value = toAttributeValue(val);
         }
@@ -74,10 +73,14 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
 
     void verifyValueNotPresent(NamedResource subject) {
         if (value != null) {
-            throw new CardinalityConstraintViolatedException(
-                    "Expected single value of attribute " + attribute.getName() + " of instance " + subject +
-                            ", but got multiple.");
+            throw maxCardinalityViolated(attribute, subject);
         }
+    }
+
+    static CardinalityConstraintViolatedException maxCardinalityViolated(Attribute<?, ?> att, NamedResource subject) {
+        return new CardinalityConstraintViolatedException(
+                "Expected single value of attribute " + att.getName() + " of instance " + subject +
+                        ", but got multiple.");
     }
 
     @Override
@@ -89,7 +92,7 @@ class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Abstract
     void buildInstanceFieldValue(Object entity) {
         if (!multilingualStringCondenser.getValues().isEmpty()) {
             assert multilingualStringCondenser.getValues().size() == 1;
-            setValueOnInstance(entity, multilingualStringCondenser.getValues().get(0));
+            setValueOnInstance(entity, multilingualStringCondenser.getValues().getFirst());
         } else {
             setValueOnInstance(entity, value);
         }
