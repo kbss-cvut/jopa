@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.annotations.Convert;
 import cz.cvut.kbss.jopa.model.annotations.Enumerated;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -329,7 +330,8 @@ class ClassFieldMetamodelProcessor<X> {
 
         if (Collection.class.isAssignableFrom(field.getType())) {
             a = new PluralQueryAttributeImpl<>(query, sparqlAnnotation.enableReferencingAttributes(), field, et, fetchType, participationConstraints, type, field.getType(), converterWrapper);
-        } else if (Map.class.isAssignableFrom(field.getType())) {
+        } else if (Map.class.isAssignableFrom(field.getType()) && !MultilingualString.class.isAssignableFrom(
+                field.getType())) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
             a = new SingularQueryAttributeImpl<>(query, sparqlAnnotation.enableReferencingAttributes(), field, et, fetchType, type, participationConstraints, converterWrapper);

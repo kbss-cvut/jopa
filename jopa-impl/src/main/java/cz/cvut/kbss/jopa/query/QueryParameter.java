@@ -28,6 +28,7 @@ public class QueryParameter<T> implements Parameter<T> {
     private final String name;
     private final Integer position;
     private Projection projected = Projection.NONE;
+    private boolean likePattern = false;
 
     private final ParameterValueFactory valueFactory;
 
@@ -85,9 +86,13 @@ public class QueryParameter<T> implements Parameter<T> {
         return projected == Projection.TOP_LEVEL;
     }
 
+    public void markAsLikePattern() {
+        this.likePattern = true;
+    }
+
     public void setValue(Object value) {
         assert value != null;
-        this.value = valueFactory.create(value);
+        this.value = likePattern && value instanceof String ? valueFactory.createLikePatternValue(value.toString()) : valueFactory.create(value);
     }
 
     public void setValue(String value, String language) {

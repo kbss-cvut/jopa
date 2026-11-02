@@ -267,6 +267,13 @@ public class SelectResultSet extends AbstractResultSet {
             ob = Rdf4jUtils.getLiteralValue((Literal) val);
         } else if (val instanceof IRI) {
             ob = Rdf4jUtils.toJavaUri((IRI) val);
+        } else {
+            // A blank node is neither a literal nor an IRI, so it is not a URI. Rdf4jUtils.toJavaUri
+            // returns null for it, which used to surface as a NullPointerException when the result was
+            // mapped to a non-null type such as URI.class (see issue #495). Fall back to the blank node
+            // label (its string value) as a relative URI, mirroring what the Jena driver returns for a
+            // blank node and keeping it consistent with the untyped extraction.
+            ob = val.stringValue();
         }
         try {
             return cls.cast(DatatypeTransformer.transform(ob, cls));

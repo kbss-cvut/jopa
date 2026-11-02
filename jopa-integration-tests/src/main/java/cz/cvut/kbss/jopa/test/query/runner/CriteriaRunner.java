@@ -53,6 +53,7 @@ import static java.util.function.Predicate.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -398,7 +399,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     }
 
     @Test
-    public void testSelectUsingStringUppercaseFunction() {
+    public void testSelectUsingLikeAndStringUppercaseFunction() {
         final List<OWLClassA> instances = QueryTestEnvironment.getData(OWLClassA.class);
         final OWLClassA sample = Generators.getRandomItem(instances);
         CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
@@ -410,7 +411,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         final List<OWLClassA> result = getEntityManager().createQuery(query)
                                                          .setParameter(param,
                                                                  sample.getStringAttribute().substring(0, 5)
-                                                                       .toUpperCase(Locale.ROOT) + ".+")
+                                                                       .toUpperCase(Locale.ROOT) + "%")
                                                          .getResultList();
         assertFalse(result.isEmpty());
         assertThat(result, hasItem(sample));
@@ -533,7 +534,7 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
     }
 
     @Test
-    void selectByMemberOfRdfCollection() {
+    public void selectByMemberOfRdfCollection() {
         runSelectByMemberOf("rdfCollection");
     }
 
@@ -629,5 +630,18 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         final List<OWLClassM> result = tq.getResultList();
         assertFalse(result.isEmpty());
         result.forEach(m -> assertTrue(m.getStringCollection().containsAll(sample.getStringCollection())));
+    }
+
+    @Test
+    void testSelectByRegex() {
+        final CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        final CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+        final Root<OWLClassA> root = query.from(OWLClassA.class);
+        query.select(root).where(cb.regex(root.getAttr("stringAttribute"), "stringAttribute.*", "i"));
+
+        final TypedQuery<OWLClassA> tq = getEntityManager().createQuery(query);
+        final List<OWLClassA> result = tq.getResultList();
+        assertFalse(result.isEmpty());
+        result.forEach(a -> assertThat(a.getStringAttribute(), startsWith("stringAttribute")));
     }
 }

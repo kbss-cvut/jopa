@@ -1,5 +1,15 @@
 # JOPA - Change Log
 
+### 3.0.0 - 2026-11-02
+
+- Flatten `MultilingualString` - instead of wrapping a `Map` instance it now is a `Map` (Enhancement #488).
+  - **Breaking change**: removed the `MultilingualString.getValue` method as it is no longer needed to get the raw map representing the multilingual string. 
+- Add `REGEX` support to SOQL/Criteria API. SOQL/Criteria API `LIKE` now behaves like JPQL `LIKE` - it supports `%` and `_` as wildcards, any other Regex characters are escaped (Enhancement #492).
+- Support using `TypesSpecification` in `isMember`/`isNotMember` in Criteria API (Enhancement #494).
+- Fix NPX when query returns blank nodes (Bug #495) - thanks to @XRafik for the PR.
+- Dependency updates: Jena 6.2.0, RDF4J 6.1.0.
+  - **Breaking change**: Minimum required Java version is now Java 25.
+
 ### 2.12.5 - 2026-10-10
 - Fix na issue with updating unmapped properties losing existing value (Bug #490).
 - Minor performance improvements and refactoring.

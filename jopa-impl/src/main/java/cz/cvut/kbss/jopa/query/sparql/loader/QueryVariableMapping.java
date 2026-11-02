@@ -86,8 +86,12 @@ public final class QueryVariableMapping {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this) {return true;}
-        if (obj == null || obj.getClass() != this.getClass()) {return false;}
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        }
         var that = (QueryVariableMapping) obj;
         return Objects.equals(this.subjectVar, that.subjectVar) &&
                 Objects.equals(this.attributeVar, that.attributeVar) &&

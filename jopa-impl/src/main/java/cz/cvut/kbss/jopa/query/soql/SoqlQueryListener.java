@@ -76,6 +76,8 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     private final Map<String, String> objectTypes;
 
+    private final Set<String> likePatternParameterNames = new HashSet<>();
+
     private final Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers = new HashMap<>();
 
     private SelectProjection selectProjection = new SelectProjection(null, false, false);
@@ -251,14 +253,18 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     @Override
     public void exitLikeExpression(SoqlParser.LikeExpressionContext ctx) {
+        final ParseTree whereClauseValue;
         if (ctx.getChildCount() > 2 && ctx.getChild(1).getText().equals(SoqlConstants.NOT)) {
             attrPointer.setOperator(LikeOperator.notLike());
-            ParseTree whereClauseValue = ctx.getChild(3);
-            attrPointer.setValue(whereClauseValue.getText());
+            whereClauseValue = ctx.getChild(3);
         } else {
             attrPointer.setOperator(LikeOperator.like());
-            ParseTree whereClauseValue = ctx.getChild(2);
+            whereClauseValue = ctx.getChild(2);
             attrPointer.setValue(whereClauseValue.getText());
+        }
+        attrPointer.setValue(whereClauseValue.getText());
+        if (whereClauseValue.getText().charAt(0) == SoqlConstants.VARIABLE_PREFIX) {
+            likePatternParameterNames.add(whereClauseValue.getText().substring(1));
         }
         this.isInObjectIdentifierExpression = false;
     }
@@ -279,6 +285,14 @@ public class SoqlQueryListener extends SoqlBaseListener {
         if (functionCallDepth > 0) {
             assert !functionArguments.isEmpty();
             functionArguments.peek().add(new AttributeNode(ctx.getText().substring(1)));
+        }
+    }
+
+    @Override
+    public void exitStringExpression(SoqlParser.StringExpressionContext ctx) {
+        if (functionCallDepth > 0 && ctx.STRING_LITERAL() != null) {
+            assert !functionArguments.isEmpty();
+            functionArguments.peek().add(new LiteralNode(ctx.getText()));
         }
     }
 
@@ -371,14 +385,12 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     @Override
     public void enterFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
-        this.parentClause = ParentClause.FUNCTION;
         functionArguments.push(new ArrayList<>());
         functionCallDepth++;
     }
 
     @Override
     public void exitFunctionsReturningStrings(SoqlParser.FunctionsReturningStringsContext ctx) {
-        this.parentClause = null;
         createFunctionNode(ctx);
         functionCallDepth--;
     }
@@ -398,28 +410,24 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     @Override
     public void enterFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
-        this.parentClause = ParentClause.FUNCTION;
         functionArguments.push(new ArrayList<>());
         functionCallDepth++;
     }
 
     @Override
     public void exitFunctionsReturningNumerics(SoqlParser.FunctionsReturningNumericsContext ctx) {
-        this.parentClause = null;
         createFunctionNode(ctx);
         functionCallDepth--;
     }
 
     @Override
     public void enterFunctionsReturningBoolean(SoqlParser.FunctionsReturningBooleanContext ctx) {
-        this.parentClause = ParentClause.FUNCTION;
         functionArguments.push(new ArrayList<>());
         functionCallDepth++;
     }
 
     @Override
     public void exitFunctionsReturningBoolean(SoqlParser.FunctionsReturningBooleanContext ctx) {
-        this.parentClause = null;
         createFunctionNode(ctx);
         functionCallDepth--;
     }
@@ -585,6 +593,10 @@ public class SoqlQueryListener extends SoqlBaseListener {
     public String getSparqlQuery() {
         assert sparql != null;
         return sparql;
+    }
+
+    Set<String> getLikePatternParameterNames() {
+        return likePatternParameterNames;
     }
 
     private String getSelectParameter(SoqlAttribute attribute) {
@@ -761,6 +773,6 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     private enum ParentClause {
-        ORDER_BY, GROUP_BY, FUNCTION, JOIN
+        ORDER_BY, GROUP_BY, JOIN
     }
 }

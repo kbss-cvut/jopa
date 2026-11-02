@@ -28,9 +28,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MapInstanceBuilderTest {
@@ -52,6 +57,7 @@ class MapInstanceBuilderTest {
     @Test
     void buildCloneOfSingletonMapReturnsSingletonMap() throws Exception {
         Map<String, String> map = Collections.singletonMap("key", "value");
+        when(uow.createIndirectCollection(any(), any(), any())).thenAnswer(inv -> inv.getArgument(0));
         Map<String, String> clone = (Map<String, String>) sut.buildClone(new OWLClassB(), OWLClassB.getPropertiesField(), map, new CloneConfiguration(descriptor, false));
         assertEquals(map, clone);
         assertNotSame(map, clone);
@@ -60,6 +66,7 @@ class MapInstanceBuilderTest {
     @Test
     void buildCloneOfMapOfOneReturnsSingletonMap() throws Exception {
         Map<String, String> map = Map.of("key", "value");
+        when(uow.createIndirectCollection(any(), any(), any())).thenAnswer(inv -> inv.getArgument(0));
         Map<String, String> clone = (Map<String, String>) sut.buildClone(new OWLClassB(), OWLClassB.getPropertiesField(), map, new CloneConfiguration(descriptor, false));
         assertEquals(map, clone);
         assertNotSame(map, clone);
@@ -67,7 +74,8 @@ class MapInstanceBuilderTest {
 
     @Test
     void buildCloneOfEmptyMapReturnsEmptyMap() throws Exception {
-        Map<String, String> map = Map.of();
+        Map<String, String> map = new HashMap<>();
+        when(uow.createIndirectCollection(any(), any(), any())).thenAnswer(inv -> inv.getArgument(0));
         Map<String, String> clone = (Map<String, String>) sut.buildClone(new OWLClassB(), OWLClassB.getPropertiesField(), map, new CloneConfiguration(descriptor, false));
         assertEquals(map, clone);
         assertNotSame(map, clone);
@@ -76,8 +84,18 @@ class MapInstanceBuilderTest {
     @Test
     void buildCloneOfMapOfNReturnsDefaultMap() throws Exception {
         final Map<String, String> map = Map.of("key1", "value1", "key2", "value2");
+        when(uow.createIndirectCollection(any(), any(), any())).thenAnswer(inv -> inv.getArgument(0));
         final Map<String, String> clone = (Map<String, String>) sut.buildClone(new OWLClassB(), OWLClassB.getPropertiesField(), map, new CloneConfiguration(descriptor, false));
         assertEquals(map, clone);
         assertNotSame(map, clone);
+    }
+
+    @Test
+    void buildCloneWrapsCloneInChangeTrackingWrapper() throws Exception {
+        final Map<String, String> map = Map.of("key1", "value1", "key2", "value2");
+        when(uow.createIndirectCollection(any(), any(), any())).thenAnswer(inv -> inv.getArgument(0));
+        final OWLClassB owner = new OWLClassB();
+        sut.buildClone(owner, OWLClassB.getPropertiesField(), map, new CloneConfiguration(descriptor, false));
+        verify(uow).createIndirectCollection(any(), eq(owner), eq(OWLClassB.getPropertiesField()));
     }
 }

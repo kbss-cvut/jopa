@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.model;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -58,6 +59,7 @@ class MultilingualStringTest {
         final MultilingualString sut = new MultilingualString();
         sut.set(VALUE);
         assertEquals(VALUE, sut.get(null));
+        assertEquals(VALUE, sut.get(MultilingualString.NO_LANG));
     }
 
     @Test
@@ -65,6 +67,7 @@ class MultilingualStringTest {
         final MultilingualString sut = new MultilingualString();
         sut.set(VALUE);
         assertEquals(VALUE, sut.get(null));
+        assertEquals(VALUE, sut.get(MultilingualString.NO_LANG));
     }
 
     @Test
@@ -72,6 +75,7 @@ class MultilingualStringTest {
         final MultilingualString sut = new MultilingualString();
         sut.set(LANGUAGE, VALUE);
         assertEquals(VALUE, sut.get(null));
+        assertEquals(VALUE, sut.get(MultilingualString.NO_LANG));
     }
 
     @Test
@@ -110,7 +114,7 @@ class MultilingualStringTest {
         sut.set("test");
         final Set<String> result = sut.getLanguages();
         assertEquals(2, result.size());
-        assertThat(result, hasItems(LANGUAGE, null));
+        assertThat(result, hasItems(LANGUAGE, MultilingualString.NO_LANG));
     }
 
     @Test
@@ -121,7 +125,6 @@ class MultilingualStringTest {
         two.set(VALUE);
         assertEquals(one, two);
         assertEquals(one.hashCode(), two.hashCode());
-        assertEquals(one.getValue(), two.getValue());
     }
 
     @Test
@@ -158,12 +161,54 @@ class MultilingualStringTest {
         assertTrue(sut.contains(LANGUAGE));
         sut.remove(LANGUAGE);
         assertFalse(sut.contains(LANGUAGE));
-        assertFalse(sut.getValue().containsKey(LANGUAGE));
+        assertFalse(sut.containsKey(LANGUAGE));
     }
 
     @Test
-    void toStringOutputsInternalValue() {
-        final MultilingualString sut = MultilingualString.create(VALUE, LANGUAGE);
-        assertEquals(sut.getValue().toString(), sut.toString());
+    void setTransformsNullToJsonLdNoneKey() {
+        final MultilingualString sut = new MultilingualString();
+        sut.set(null, "Test");
+        assertEquals("Test", sut.get());
+        assertEquals("Test", sut.get(null));
+        assertEquals("Test", sut.get(MultilingualString.NO_LANG));
+        assertTrue(sut.containsSimple());
+        assertTrue(sut.containsKey(MultilingualString.NO_LANG));
+    }
+
+    @Test
+    void putTransformsNullToJsonLdNoneKey() {
+        final MultilingualString sut = new MultilingualString();
+        sut.put(null, "Test");
+        assertEquals("Test", sut.get());
+        assertEquals("Test", sut.get(null));
+        assertEquals("Test", sut.get(MultilingualString.NO_LANG));
+        assertTrue(sut.containsSimple());
+        assertTrue(sut.containsKey(MultilingualString.NO_LANG));
+    }
+
+    @Test
+    void removeTransformsNullToJsonLdNoneKey() {
+        final MultilingualString sut = new MultilingualString();
+        sut.putAll(Map.of("en", "English test", "cs", "Český test"));
+        sut.put(MultilingualString.NO_LANG, "Simple literal");
+        sut.remove(null);
+        assertFalse(sut.containsValue("Simple literal"));
+    }
+
+    @Test
+    void containsTransformsNullToJsonLdNoneKey() {
+        final MultilingualString sut = new MultilingualString();
+        sut.putAll(Map.of("en", "English test", "cs", "Český test"));
+        sut.put(null, "Simple literal");
+        assertTrue(sut.contains(MultilingualString.NO_LANG));
+    }
+
+    @Test
+    void getTransformsNullToJsonLdNoneKey() {
+        final MultilingualString sut = new MultilingualString();
+        sut.putAll(Map.of("en", "English test", "cs", "Český test"));
+        sut.put(null, "Simple literal");
+        assertEquals("Simple literal", sut.get(MultilingualString.NO_LANG));
+        assertEquals("Simple literal", sut.get(null));
     }
 }

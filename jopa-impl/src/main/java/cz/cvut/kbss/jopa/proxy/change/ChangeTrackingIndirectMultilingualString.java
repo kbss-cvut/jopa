@@ -24,7 +24,8 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Wraps a {@link MultilingualString} so that calls to modifying operations are intercepted and reported to the
@@ -35,8 +36,6 @@ public class ChangeTrackingIndirectMultilingualString extends MultilingualString
     private final transient Object owner;
     private final transient Field field;
     private final transient UnitOfWork persistenceContext;
-
-    private final MultilingualString referencedString;
 
     /**
      * Create new indirect multilingual string backed by the specified referenced {@link MultilingualString}.
@@ -51,7 +50,8 @@ public class ChangeTrackingIndirectMultilingualString extends MultilingualString
         this.owner = owner;
         this.field = f;
         this.persistenceContext = Objects.requireNonNull(uow);
-        this.referencedString = Objects.requireNonNull(referencedString);
+        // Use super.putAll so that the initialization does not trigger change notification
+        super.putAll(Objects.requireNonNull(referencedString));
     }
 
     private void notifyPersistenceContext() {
@@ -63,82 +63,137 @@ public class ChangeTrackingIndirectMultilingualString extends MultilingualString
 
     @Override
     public MultilingualString set(String language, String value) {
-        referencedString.set(language, value);
+        // Call super.put directly so that the change is not reported twice (super.set calls put virtually)
+        super.put(language, Objects.requireNonNull(value));
         notifyPersistenceContext();
         return this;
     }
 
     @Override
     public MultilingualString set(String value) {
-        referencedString.set(value);
+        super.put(null, Objects.requireNonNull(value));
         notifyPersistenceContext();
         return this;
     }
 
     @Override
-    public String get(String language) {
-        return referencedString.get(language);
+    public String put(String key, String value) {
+        final String previous = super.put(key, value);
+        notifyPersistenceContext();
+        return previous;
     }
 
     @Override
-    public String get() {
-        return referencedString.get();
+    public String putIfAbsent(String key, String value) {
+        final String previous = super.putIfAbsent(key, value);
+        if (previous == null) {
+            notifyPersistenceContext();
+        }
+        return previous;
     }
 
     @Override
-    public boolean contains(String language) {
-        return referencedString.contains(language);
-    }
-
-    @Override
-    public boolean containsSimple() {
-        return referencedString.containsSimple();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return referencedString.isEmpty();
+    public void putAll(Map<? extends String, ? extends String> m) {
+        super.putAll(m);
+        if (!m.isEmpty()) {
+            notifyPersistenceContext();
+        }
     }
 
     @Override
     public void remove(String language) {
-        referencedString.remove(language);
+        remove((Object) language);
+    }
+
+    @Override
+    public String remove(Object key) {
+        final String previous = super.remove(key);
+        if (previous != null) {
+            notifyPersistenceContext();
+        }
+        return previous;
+    }
+
+    @Override
+    public boolean remove(Object key, Object value) {
+        final boolean removed = super.remove(key, value);
+        if (removed) {
+            notifyPersistenceContext();
+        }
+        return removed;
+    }
+
+    @Override
+    public void clear() {
+        if (!isEmpty()) {
+            super.clear();
+            notifyPersistenceContext();
+        }
+    }
+
+    @Override
+    public String replace(String key, String value) {
+        final String previous = super.replace(key, value);
+        if (previous != null) {
+            notifyPersistenceContext();
+        }
+        return previous;
+    }
+
+    @Override
+    public boolean replace(String key, String oldValue, String newValue) {
+        final boolean replaced = super.replace(key, oldValue, newValue);
+        if (replaced) {
+            notifyPersistenceContext();
+        }
+        return replaced;
+    }
+
+    @Override
+    public void replaceAll(BiFunction<? super String, ? super String, ? extends String> function) {
+        super.replaceAll(function);
         notifyPersistenceContext();
     }
 
     @Override
-    public Set<String> getLanguages() {
-        return referencedString.getLanguages();
-    }
-
-    @Override
-    public Map<String, String> getValue() {
-        return referencedString.getValue();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof MultilingualString) {
-            if (o instanceof ChangeTrackingIndirectMultilingualString) {
-                return referencedString.equals(((ChangeTrackingIndirectMultilingualString) o).referencedString);
-            }
-            return referencedString.equals(o);
+    public String computeIfAbsent(String key, Function<? super String, ? extends String> mappingFunction) {
+        final String previous = get(key);
+        final String result = super.computeIfAbsent(key, mappingFunction);
+        if (previous == null && result != null) {
+            notifyPersistenceContext();
         }
-        return false;
+        return result;
     }
 
     @Override
-    public int hashCode() {
-        return referencedString.hashCode();
+    public String computeIfPresent(String key,
+                                   BiFunction<? super String, ? super String, ? extends String> remappingFunction) {
+        final boolean hadValue = get(key) != null;
+        final String result = super.computeIfPresent(key, remappingFunction);
+        if (hadValue) {
+            notifyPersistenceContext();
+        }
+        return result;
     }
 
     @Override
-    public String toString() {
-        return referencedString.toString();
+    public String compute(String key,
+                          BiFunction<? super String, ? super String, ? extends String> remappingFunction) {
+        final String result = super.compute(key, remappingFunction);
+        notifyPersistenceContext();
+        return result;
+    }
+
+    @Override
+    public String merge(String key, String value,
+                        BiFunction<? super String, ? super String, ? extends String> remappingFunction) {
+        final String result = super.merge(key, value, remappingFunction);
+        notifyPersistenceContext();
+        return result;
     }
 
     @Override
     public MultilingualString unwrap() {
-        return referencedString;
+        return new MultilingualString(this);
     }
 }

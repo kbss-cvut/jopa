@@ -133,6 +133,7 @@ functionsReturningNumerics
 
 functionsReturningBoolean
     : 'LANGMATCHES' '(' stringExpression ',' stringExpression ')'
+    | 'REGEX' '(' stringExpression ',' stringExpression (',' stringExpression)? ')'
     ;
 
 orderByClause: ORDER BY orderByItem (',' orderByItem)* ;
@@ -199,6 +200,8 @@ DOT: '.' ;
 
 QMARK: '"' ;
 
+SQUOTE: '\'' ;
+
 COLON: ':' ;
 
 TRUE: 'TRUE';
@@ -207,7 +210,7 @@ FALSE: 'FALSE';
 
 IDENTIFICATION_VARIABLE: (LOWERCASE | UPPERCASE | '_') (LOWERCASE | UPPERCASE | DIGIT | '_')* ;
 
-STRING_LITERAL: QMARK TEXT QMARK ;
+STRING_LITERAL: QMARK ~["\r\n]* QMARK | SQUOTE ~['\r\n]* SQUOTE ;
 
 INT_LITERAL: DIGIT+;
 

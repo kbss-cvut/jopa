@@ -19,6 +19,9 @@ package cz.cvut.kbss.jopa.model.query.criteria;
 
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+
+import java.util.Set;
 
 public interface Path<X> extends Expression<X> {
 
@@ -46,6 +49,14 @@ public interface Path<X> extends Expression<X> {
      * @return path corresponding to the identifier attribute
      */
     <Y> Path<Y> getAttr(Identifier<? super X, Y> identifier);
+
+    /**
+     * Create a path corresponding to the specified entity types.
+     *
+     * @param types Types attribute
+     * @return path corresponding to the types specification
+     */
+    <Y> Path<Set<Y>> getAttr(TypesSpecification<? super X, Y> types);
 
     /**
      * Return the parent "node" in the path or null if no parent.

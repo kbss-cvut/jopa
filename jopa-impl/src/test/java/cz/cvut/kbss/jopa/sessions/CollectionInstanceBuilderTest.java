@@ -47,6 +47,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -279,5 +280,19 @@ public class CollectionInstanceBuilderTest {
         builder.mergeChanges(field, target, new HashSet<>(), Collections.emptySet());
         assertThat(target.getIntegerSet(),
                    instanceOf(CollectionFactory.createDefaultCollection(CollectionType.SET).getClass()));
+    }
+
+    @Test
+    void buildCloneWrapsCloneInChangeTrackingWrapper() throws Exception {
+        mockIndirectCollectionBuilder();
+        final OWLClassJ owner = new OWLClassJ(Generators.createIndividualIdentifier());
+        final OWLClassA aOrig = Generators.generateOwlClassAInstance();
+        final OWLClassA aClone = new OWLClassA(aOrig);
+        owner.setOwlClassA(Collections.singleton(aOrig));
+        when(uowMock.registerExistingObject(aOrig, new CloneRegistrationDescriptor(descriptor))).thenReturn(aClone);
+        when(uowMock.isEntityType(OWLClassA.class)).thenReturn(true);
+        final Set<OWLClassA> clone = (Set<OWLClassA>) builder.buildClone(owner, OWLClassJ.getOwlClassAField(), owner.getOwlClassA(),
+                new CloneConfiguration(descriptor, false));
+        verify(uowMock).createIndirectCollection(any(), eq(owner), eq(OWLClassJ.getOwlClassAField()));
     }
 }

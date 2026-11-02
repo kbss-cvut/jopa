@@ -202,9 +202,28 @@ class SingularMultilingualStringFieldStrategyTest {
                                                                                                  Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE),
                                                                                          false));
         assertEquals(instance.getSingularStringAtt().getLanguages().size(), values.size());
-        for (Map.Entry<String, String> entry : instance.getSingularStringAtt().getValue().entrySet()) {
+        for (Map.Entry<String, String> entry : instance.getSingularStringAtt().entrySet()) {
             assertTrue(values.contains(new Value<>(new LangString(entry.getValue(), entry.getKey()))));
         }
+    }
+
+    @Test
+    void buildAxiomValuesFromInstanceAddsSimpleLiteralLangStringForTranslationWithoutLanguage() throws Exception {
+        final SingularMultilingualStringFieldStrategy<OWLClassU> sut = createStrategy();
+        final OWLClassU instance = new OWLClassU(ID);
+        instance.setSingularStringAtt(MultilingualString.create("auto", MultilingualString.NO_LANG));
+
+        final AxiomValueGatherer builder = new AxiomValueGatherer(INDIVIDUAL, null);
+        sut.buildAxiomValuesFromInstance(instance, builder);
+        final AxiomValueDescriptor valueDescriptor = OOMTestUtils.getAxiomValueDescriptor(builder);
+        assertEquals(1, valueDescriptor.getAssertions().size());
+        final List<Value<?>> values = valueDescriptor.getAssertionValues(Assertion
+                .createDataPropertyAssertion(
+                        URI.create(
+                                Vocabulary.P_U_SINGULAR_MULTILINGUAL_ATTRIBUTE),
+                        false));
+        assertEquals(1, values.size());
+        assertTrue(values.contains(new Value<>(new LangString("auto", null))));
     }
 
     @Test
@@ -253,8 +272,8 @@ class SingularMultilingualStringFieldStrategyTest {
         instance.getSingularStringAtt().set("cs", "automobil");
 
         final Set<Axiom<?>> result = sut.buildAxiomsFromInstance(instance);
-        assertEquals(instance.getSingularStringAtt().getValue().size(), result.size());
-        instance.getSingularStringAtt().getValue()
+        assertEquals(instance.getSingularStringAtt().size(), result.size());
+        instance.getSingularStringAtt()
                 .forEach((k, v) -> assertThat(result, hasItem(new AxiomImpl<>(NamedResource.create(ID),
                                                                               Assertion.createDataPropertyAssertion(
                                                                                       mocks.forOwlClassU()

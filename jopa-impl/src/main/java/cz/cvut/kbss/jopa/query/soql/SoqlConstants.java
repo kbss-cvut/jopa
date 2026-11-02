@@ -159,6 +159,11 @@ public class SoqlConstants {
          */
         public static final String LANG_MATCHES = "LANGMATCHES";
 
+        /**
+         * Matches text against a regular expression pattern.
+         */
+        public static final String REGEX = "REGEX";
+
         private Functions() {
             throw new AssertionError();
         }

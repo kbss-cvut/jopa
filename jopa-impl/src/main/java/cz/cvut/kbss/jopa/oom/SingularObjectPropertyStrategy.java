@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.metamodel.AbstractAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.oom.util.ObjectGraphInfo;
@@ -81,9 +80,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<AbstractAttribute<
 
     private void verifyCardinality(NamedResource subject) {
         if (value != null) {
-            throw new CardinalityConstraintViolatedException(
-                    "Expected single value of attribute " + attribute.getName() + " of instance " + subject +
-                            ", but got multiple.");
+            throw SingularDataPropertyStrategy.maxCardinalityViolated(attribute, subject);
         }
     }
 

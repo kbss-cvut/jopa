@@ -22,16 +22,25 @@ import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.config.JenaOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.jena.environment.Generator;
 import cz.cvut.kbss.ontodriver.jena.exception.ReasonerInitializationException;
+import org.apache.jena.ontapi.OntModelFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.ReadWrite;
-import org.apache.jena.rdf.model.*;
+import org.apache.jena.rdf.model.InfModel;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.reasoner.InfGraph;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.ReasonerFactory;
 import org.apache.jena.reasoner.ValidityReport;
-import org.apache.jena.reasoner.rulesys.*;
-import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
+import org.apache.jena.reasoner.rulesys.GenericRuleReasonerFactory;
+import org.apache.jena.reasoner.rulesys.OWLFBRuleReasonerFactory;
+import org.apache.jena.reasoner.rulesys.OWLMiniReasonerFactory;
+import org.apache.jena.reasoner.rulesys.RDFSRuleReasoner;
+import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory;
+import org.apache.jena.tdb1.TDB1Factory;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -46,11 +55,24 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.*;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.NAMED_GRAPH;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.SUBJECT;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.TYPE_ONE;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.TYPE_TWO;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.createConfiguration;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.generateTestData;
+import static cz.cvut.kbss.ontodriver.jena.connector.StorageTestUtil.statement;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SnapshotStorageWithInferenceTest {
 
@@ -129,7 +151,7 @@ public class SnapshotStorageWithInferenceTest {
     }
 
     private Model getModelForInference() {
-        final Model model = ModelFactory.createDefaultModel();
+        final Model model = OntModelFactory.createDefaultModel();
         model.add(statement(TYPE_ONE, RDFS.subClassOf.getURI(), TYPE_TWO));
         model.add(statement(SUBJECT, RDF.type.getURI(), TYPE_ONE));
         return model;
@@ -251,7 +273,7 @@ public class SnapshotStorageWithInferenceTest {
     }
 
     private Dataset getInconsistentDataset() {
-        final Model model = ModelFactory.createOntologyModel();
+        final Model model = OntModelFactory.createDefaultModel();
         final Resource clsOne = createResource(Generator.generateUri().toString());
         final Resource clsTwo = createResource(Generator.generateUri().toString());
         model.add(clsOne, RDF.type, RDFS.Class);
@@ -328,7 +350,7 @@ public class SnapshotStorageWithInferenceTest {
     public void initializationFromCentralTDBConnectorSupportsNonTransactionalModels() throws Exception {
         final File storageDir = Files.createTempDirectory("tdb-test").toFile();
         try {
-            final Dataset tdbDataset = TDBFactory.createDataset(storageDir.getAbsolutePath());
+            final Dataset tdbDataset = TDB1Factory.createDataset(storageDir.getAbsolutePath());
             tdbDataset.begin(ReadWrite.WRITE);
             generateTestData(tdbDataset);
             tdbDataset.commit();

@@ -24,9 +24,9 @@ import java.util.List;
 
 public abstract class AbstractFunctionExpression<X> extends AbstractExpression<X> {
 
-    protected final List<AbstractPathExpression> arguments;
+    protected final List<AbstractExpression> arguments;
 
-    public AbstractFunctionExpression(Class<X> type, CriteriaBuilderImpl cb, AbstractPathExpression ... arguments) {
+    public AbstractFunctionExpression(Class<X> type, CriteriaBuilderImpl cb, AbstractExpression ... arguments) {
         super(type, cb);
         this.arguments = List.of(arguments);
     }
@@ -42,12 +42,12 @@ public abstract class AbstractFunctionExpression<X> extends AbstractExpression<X
         for (int i = 0; i < arguments.size(); i++) {
             arguments.get(i).setExpressionToQuery(query, parameterFiller);
             if (i < arguments.size() - 1) {
-                query.append(',');
+                query.append(", ");
             }
         }
     }
 
-    public List<AbstractPathExpression> getArguments() {
+    public List<AbstractExpression> getArguments() {
         return arguments;
     }
 

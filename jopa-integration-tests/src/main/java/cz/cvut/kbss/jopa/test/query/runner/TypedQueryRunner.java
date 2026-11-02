@@ -529,11 +529,11 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
             assertEquals(instances.get(i).getSingularString(), result.get(i).getSingularString());
             assertEquals(instances.get(i).getPluralString().size(), result.get(i).getPluralString().size());
             final int index = i;
-            instances.get(i).getPluralString().forEach((mls) -> mls.getValue()
-                                                                   .forEach((lang, value) -> assertTrue(result.get(index)
-                                                                                                              .getPluralString()
-                                                                                                              .stream()
-                                                                                                              .anyMatch(resMls -> value.equals(resMls.get(lang))))));
+            instances.get(i).getPluralString().forEach((mls) -> mls
+                    .forEach((lang, value) -> assertTrue(result.get(index)
+                                                               .getPluralString()
+                                                               .stream()
+                                                               .anyMatch(resMls -> value.equals(resMls.get(lang))))));
         }
     }
 

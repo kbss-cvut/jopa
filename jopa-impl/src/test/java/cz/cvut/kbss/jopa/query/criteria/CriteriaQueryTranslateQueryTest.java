@@ -684,10 +684,35 @@ public class CriteriaQueryTranslateQueryTest {
             final String expectedSoql = "SELECT owlclassc FROM OWLClassC owlclassc WHERE :generatedName0 MEMBER OF owlclassc.rdfSeq AND :generatedName1 MEMBER OF owlclassc.rdfSeq";
             assertEquals(expectedSoql, query.translateQuery(criteriaParameterFiller));
         }
+
+        @Test
+        public void testTranslateQueryWithRegexLiteralPattern() {
+            CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root).where(cb.regex(root.getAttr("stringAttribute"), ".*@example\\\\.(com|org)"));
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE REGEX(owlclassa.stringAttribute, :generatedName0)";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryWithRegexLiteralParameter() {
+            CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            ParameterExpression<String> patternParam = cb.parameter(String.class);
+            query.select(root).where(cb.regex(root.getAttr("stringAttribute"), patternParam, "g"));
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa WHERE REGEX(owlclassa.stringAttribute, :generatedName0, :generatedName1)";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
     }
 
     @Nested
-    class MetamodelBasedPropertyQueryTests {
+    class StaticMetamodelBasedPropertyQueryTests {
         @Test
         public void testTranslateQuerySelectProperty() {
             CriteriaQueryImpl<String> query = cb.createQuery(String.class);
@@ -733,6 +758,16 @@ public class CriteriaQueryTranslateQueryTest {
             final String expectedSoqlQuery =
                     "SELECT owlclassa FROM OWLClassA owlclassa WHERE owlclassa.stringAttribute = :generatedName0";
             assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        public void testTranslateQueryRestrictionWithTypesSpecification() {
+            CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root).where(cb.isMember(Generators.createIndividualIdentifier(), root.getAttr(OWLClassA_.types)));
+
+            final String expectedSoql = "SELECT owlclassa FROM OWLClassA owlclassa WHERE :generatedName0 MEMBER OF owlclassa.types";
+            assertEquals(expectedSoql, query.translateQuery(criteriaParameterFiller));
         }
     }
 

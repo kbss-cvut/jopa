@@ -79,7 +79,9 @@ public class JenaOntoDriverProperties {
      * Jena TDB storage.
      *
      * @see #JENA_STORAGE_TYPE
+     * @deprecated Jena TDB1 is deprecated and will likely be removed in Jena 7
      */
+    @Deprecated
     public static final String TDB = "tdb";
 
     /**

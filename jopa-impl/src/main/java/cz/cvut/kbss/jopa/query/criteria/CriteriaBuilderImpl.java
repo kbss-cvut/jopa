@@ -49,6 +49,7 @@ import cz.cvut.kbss.jopa.query.criteria.expressions.LengthFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.LowerFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.OrderImpl;
 import cz.cvut.kbss.jopa.query.criteria.expressions.ParameterExpressionImpl;
+import cz.cvut.kbss.jopa.query.criteria.expressions.RegexFunction;
 import cz.cvut.kbss.jopa.query.criteria.expressions.UpperFunction;
 
 import java.util.Arrays;
@@ -275,6 +276,36 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     }
 
     @Override
+    public Predicate regex(Expression<String> x, String pattern) {
+        return new SimplePredicateImpl(
+                new RegexFunction(this, (AbstractExpression<String>) x,
+                        new ExpressionLiteralImpl<>(pattern, this)), this);
+    }
+
+    @Override
+    public Predicate regex(Expression<String> x, String pattern, String flags) {
+        return new SimplePredicateImpl(
+                new RegexFunction(this, (AbstractExpression<String>) x,
+                        new ExpressionLiteralImpl<>(pattern, this),
+                        new ExpressionLiteralImpl<>(flags, this)), this);
+    }
+
+    @Override
+    public Predicate regex(Expression<String> x, Expression<String> pattern) {
+        return new SimplePredicateImpl(
+                new RegexFunction(this, (AbstractExpression<String>) x,
+                        (AbstractExpression<String>) pattern), this);
+    }
+
+    @Override
+    public Predicate regex(Expression<String> x, Expression<String> pattern, String flags) {
+        return new SimplePredicateImpl(
+                new RegexFunction(this, (AbstractExpression<String>) x,
+                        (AbstractExpression<String>) pattern,
+                        new ExpressionLiteralImpl<>(flags, this)), this);
+    }
+
+    @Override
     public Predicate not(Expression<Boolean> restriction) {
         return wrapExpressionToPredicateWithRepair(restriction).not();
     }
@@ -292,12 +323,12 @@ public class CriteriaBuilderImpl implements CriteriaBuilder {
     }
 
     @Override
-    public <E, C extends Collection<E>> Predicate isMember(E elem, Expression<C> collection) {
+    public <E> Predicate isMember(E elem, Expression<? extends Collection<?>> collection) {
         return new IsMemberExpression<>(elem, collection, this);
     }
 
     @Override
-    public <E, C extends Collection<E>> Predicate isNotMember(E elem, Expression<C> collection) {
+    public <E> Predicate isNotMember(E elem, Expression<? extends Collection<?>> collection) {
         final IsMemberExpression<E> expr = new IsMemberExpression<>(elem, collection, this);
         expr.not();
         return expr;

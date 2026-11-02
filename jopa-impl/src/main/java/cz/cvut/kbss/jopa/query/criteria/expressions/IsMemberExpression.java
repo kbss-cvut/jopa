@@ -29,10 +29,10 @@ import java.util.List;
 
 public class IsMemberExpression<Y> extends AbstractPredicate {
 
-    private final Expression<? extends Collection<Y>> collectionExpression;
+    private final Expression<? extends Collection<?>> collectionExpression;
     private final Y value;
 
-    public IsMemberExpression(Y value, Expression<? extends Collection<Y>> collectionExpression, CriteriaBuilderImpl cb) {
+    public IsMemberExpression(Y value, Expression<? extends Collection<?>> collectionExpression, CriteriaBuilderImpl cb) {
         super(BooleanOperator.AND, cb);
         this.value = value;
         this.collectionExpression = collectionExpression;

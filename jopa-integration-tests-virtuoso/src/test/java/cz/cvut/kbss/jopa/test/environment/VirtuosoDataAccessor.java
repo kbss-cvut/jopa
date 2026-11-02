@@ -99,17 +99,20 @@ public class VirtuosoDataAccessor implements DataAccessor {
     }
 
     public static void clearRepository(EntityManager em) {
-        final Repository repository = em.unwrap(Repository.class);
-        try (final RepositoryConnection connection = repository.getConnection()) {
-            connection.begin();
-            try (RepositoryResult<Resource> contexts = connection.getContextIDs()) {
-                while (contexts.hasNext()) {
-                    connection.clear(contexts.next());
-                }
-                connection.clear();
-            }
-            connection.commit();
+        if (em.getTransaction().isActive()) {
+            em.getTransaction().rollback();
         }
+        em.getTransaction().begin();
+        // Force connection initialization
+        em.createNativeQuery("ASK { ?x a ?type }", Boolean.class).getSingleResult();
+        final RepositoryConnection connection = em.unwrap(RepositoryConnection.class);
+        try (RepositoryResult<Resource> contexts = connection.getContextIDs()) {
+            while (contexts.hasNext()) {
+                connection.clear(contexts.next());
+            }
+            connection.clear();
+        }
+        em.getTransaction().commit();
     }
 
     @Override

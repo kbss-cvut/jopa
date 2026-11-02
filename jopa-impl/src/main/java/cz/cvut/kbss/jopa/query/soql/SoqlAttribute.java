@@ -101,7 +101,7 @@ class SoqlAttribute extends SoqlParameter {
     public List<String> getFilterExpressions(String rootVariable) {
         assert requiresFilter();
         String filterParam = getAsParam(rootVariable);
-        final String filterValue = value != null ? SoqlUtils.soqlVariableToSparqlVariable(value) : null;
+        final String filterValue = getFilterValue();
         if (getFirstNode().requiresFilterExpression()) {
             filterParam = getFirstNode().toFilterExpression(filterParam, filterValue);
         }
@@ -110,6 +110,17 @@ class SoqlAttribute extends SoqlParameter {
         } else {
             return List.of(filterValue != null ? filterParam + " = " + filterValue : filterParam);
         }
+    }
+
+    private String getFilterValue() {
+        if (value == null) {
+            return null;
+        }
+        final char first = value.charAt(0);
+        if (first == ':' || first == '?') {
+            return SoqlUtils.soqlVariableToSparqlVariable(value);
+        }
+        return value;
     }
 
     public List<String> getBasicGraphPattern(String rootVariable, String rootIdentificationVariable, Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers) {

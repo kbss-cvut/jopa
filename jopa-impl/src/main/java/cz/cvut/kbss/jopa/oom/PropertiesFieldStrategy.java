@@ -144,7 +144,7 @@ class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<?
     private static Set<Value<?>> objectsToValues(Collection<?> strValues) {
         return new HashSet<>(strValues.stream().filter(Objects::nonNull).flatMap(obj -> {
             if (obj instanceof MultilingualString mls) {
-                return mls.getValue().entrySet().stream()
+                return mls.entrySet().stream()
                           .map(e -> new Value<>(new LangString(e.getValue(), e.getKey())));
             } else {
                 return Stream.of(new Value<>(obj));

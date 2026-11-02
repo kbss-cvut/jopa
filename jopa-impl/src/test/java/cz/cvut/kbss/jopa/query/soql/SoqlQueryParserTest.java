@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exception.SoqlException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
+import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
@@ -43,6 +44,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.util.regex.Pattern;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalToCompressingWhiteSpace;
@@ -50,6 +53,7 @@ import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -1116,6 +1120,41 @@ public class SoqlQueryParserTest {
                 "?h " + strUri(Vocabulary.p_h_hasA) + " ?a . " +
                 "?h " + strUri(RDFS.LABEL) + " ?hName . " +
                 "?a " + strUri(Vocabulary.p_a_stringAttribute) + " ?aStringAtt . }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQueryReplacesPercentInLikeWithCorrectRegexAlternatives() {
+        final String soqlQuery = "SELECT p FROM Person p WHERE p.username LIKE '%@example.com'";
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x " + strUri(Vocabulary.p_p_username) + " ?pUsername . FILTER (REGEX(?pUsername, '.*@example\\\\.com')) }";
+        parseAndAssertEquality(expectedSparqlQuery, soqlQuery);
+    }
+
+    @Test
+    void parseQuerySupportsEscapingRegexCharactersInLikeOperatorWhenValueIsPassedAsVariable() {
+        final String soqlQuery = "SELECT p FROM Person p WHERE p.username LIKE :pattern";
+        final QueryHolder holder = sut.parseQuery(soqlQuery);
+        final Parameter<?> p = holder.getParameter("pattern");
+        holder.setParameter(p, "%@example.com");
+        final String expectedSparqlQuery =
+                "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x " + strUri(Vocabulary.p_p_username) + " ?pUsername . FILTER (REGEX(?pUsername, \".*@example\\\\.com\")) }";
+        assertThat(holder.assembleQuery(), equalToCompressingWhiteSpace(expectedSparqlQuery));
+    }
+
+    @Test
+    void parseQuerySupportsRegexFunction() {
+        Pattern p = Pattern.compile(".*@example\\.(com|org)");
+        assertTrue(p.matcher("test@example.com").matches());
+        final String soql = "SELECT p FROM Person p WHERE REGEX(p.username, '.*@example\\\\.(com|org)')";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x " + strUri(Vocabulary.p_p_username) + " ?pUsername . FILTER (REGEX(?pUsername, '.*@example\\\\.(com|org)')) }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsRegexFunctionWithFlags() {
+        final String soql = "SELECT p FROM Person p WHERE REGEX(p.username, '.*@example\\\\.(com|org)', 'i')";
+        final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x " + strUri(Vocabulary.p_p_username) + " ?pUsername . FILTER (REGEX(?pUsername, '.*@example\\\\.(com|org)', 'i')) }";
         parseAndAssertEquality(expectedSparql, soql);
     }
 }

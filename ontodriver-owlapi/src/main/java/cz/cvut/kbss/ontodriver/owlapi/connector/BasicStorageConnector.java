@@ -24,6 +24,7 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.change.TransactionalChange;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OntologyChangeApplicationException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OntologySnapshotException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OntologyStorageException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
@@ -254,7 +255,7 @@ public class BasicStorageConnector extends AbstractConnector {
             try {
                 writeToFile();
             } catch (OntologyStorageException e) {
-                LOG.error("Unable to write out ontology.", e);
+                throw new OntologyChangeApplicationException("Unable to write out ontology.", e);
             }
         } finally {
             WRITE.unlock();

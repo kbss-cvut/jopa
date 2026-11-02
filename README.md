@@ -135,7 +135,7 @@ JOPA examples can be found in a separate repository at [https://github.com/kbss-
 
 A real-world, up-to-date project using JOPA is [TermIt](https://github.com/kbss-cvut/termit) - a SKOS-compatible vocabulary manager.
 
-Note that JOPA requires **Java 17** or later.
+Note that JOPA requires **Java 25** or later.
 
 ## Getting JOPA
 
@@ -185,19 +185,6 @@ Some related libraries:
 * [JOPA-Spring-transaction](https://github.com/ledsoft/jopa-spring-transaction) - Declarative Spring transactions (using the `@Transactional` annotation) with JOPA.
 * [Reporting Tool](https://github.com/kbss-cvut/reporting-tool) - Real-life use case of JOPA. _No longer actively maintained_.
 * [TermIt](https://github.com/kbss-cvut/termit) - A more complex and up-to-date use case of JOPA.
-
-## History
-
-Notable changes:
-
-* **2.3.0** - Add Virtuoso driver.
-* **2.0.0** - Major rewrite of change tracking and lazy loading, remove internal API from the `jopa-api` module etc.
-* **1.0.0** - Support for static metamodel generation and mapping multiple inheritance via Java interfaces.
-* **0.20.0** - Allow editing inferred attributes (See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details). Support `IN`, `NOT LIKE`, `<>` operators in SOQL.
-* **0.19.0** - Add RDF4J driver (renaming of Sesame driver, which has been deprecated and will be removed in the future).
-* **0.17.0** - Support for SPARQL-based entity attributes and Criteria API. See the [wiki](https://github.com/kbss-cvut/jopa/wiki) for more details.
-
-See [CHANGELOG.md](./CHANGELOG.md) for detailed change history.
 
 ## References
   

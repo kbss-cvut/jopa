@@ -25,6 +25,7 @@ import cz.cvut.kbss.ontodriver.owlapi.change.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
 import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OntologyChangeApplicationException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -163,6 +164,29 @@ public class BasicStorageConnectorTest {
         final OWLClass cls = addClassToOntology(snapshot);
         final OntologySnapshot result = connector.getOntologySnapshot();
         assertTrue(result.ontology().containsClassInSignature(cls.getIRI()));
+    }
+
+    @Test
+    void applyChangesPropagatesExceptionWhenOntologyFileIsNotWritable() throws Exception {
+        final URI physicalUri = initOntology(Collections.emptySet(), false);
+        final File physicalFile = new File(physicalUri);
+        final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, ONTOLOGY_URI);
+        this.connector = new BasicStorageConnector(new DriverConfiguration(storageProperties));
+        final OntologySnapshot snapshot = connector.getOntologySnapshot();
+        final OWLClass cls = snapshot.dataFactory().getOWLClass(
+                IRI.create("http://krizik.felk.cvut.cz/ontologies/jopa#OWLClassA"));
+        final OWLAxiom classDeclaration = snapshot.dataFactory().getOWLDeclarationAxiom(cls);
+        final MutableAddAxiom add = new MutableAddAxiom(snapshot.ontology(), classDeclaration);
+
+        assertTrue(physicalFile.setWritable(false));
+        try {
+            // The ontology file is not writable, so persisting the change should fail loudly instead of
+            // being silently logged and swallowed, which would leave the change only in memory.
+            assertThrows(OntologyChangeApplicationException.class,
+                    () -> connector.applyChanges(Collections.singletonList(add)));
+        } finally {
+            physicalFile.setWritable(true);
+        }
     }
 
     private OWLClass addClassToOntology(OntologySnapshot snapshot) {

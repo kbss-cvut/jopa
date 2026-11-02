@@ -18,7 +18,11 @@
 package cz.cvut.kbss.jopa.model;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Represents a string with translations to (possibly) multiple languages.
@@ -30,16 +34,22 @@ import java.util.*;
  * Instances of this class basically represent all available translations of the string, allowing to read (and write)
  * particular versions by specifying the corresponding language tag. A special case supported by this class are <a
  * href="https://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal">simple literals</a> (language-less strings with
- * type {@code xsd:string}), for which the language tag is {@code null}.
+ * type {@code xsd:string}), for which the language tag is the JSON-LD key {@code @none}.
  * <p>
  * Note that this class is not thread-safe.
  */
-public class MultilingualString implements Serializable {
+public class MultilingualString extends HashMap<String, String> implements Serializable {
 
-    private final Map<String, String> value;
+    /**
+     * Key representing no language.
+     * <p>
+     * We are reusing the JSON-LD {@code @none} key to simplify (de)serialization library integration (they generally do
+     * not like {@code null} keys).
+     */
+    public static final String NO_LANG = "@none";
 
     public MultilingualString() {
-        this.value = new HashMap<>(8);
+        super(4);
     }
 
     /**
@@ -50,7 +60,7 @@ public class MultilingualString implements Serializable {
      * @param value Map of language to translation values
      */
     public MultilingualString(Map<String, String> value) {
-        this.value = new HashMap<>(Objects.requireNonNull(value));
+        putAll(value);
     }
 
     /**
@@ -58,16 +68,24 @@ public class MultilingualString implements Serializable {
      * <p>
      * This overrides any previous value in the specified language, if it existed.
      *
-     * @param language Language to use with the specified value. Passing {@code null} has the same effect as {@link
-     *                 #set(String)}
+     * @param language Language to use with the specified value. Passing {@code null} or {@link #NO_LANG} has the same
+     *                 effect as {@link #set(String)}
      * @param value    String value in the specified language
      * @return This instance
      * @see #set(String)
      */
     public MultilingualString set(String language, String value) {
         Objects.requireNonNull(value);
-        this.value.put(language, value);
+        put(language, value);
         return this;
+    }
+
+    @Override
+    public String put(String key, String value) {
+        if (key == null) {
+            key = NO_LANG;
+        }
+        return super.put(key, value);
     }
 
     /**
@@ -80,9 +98,7 @@ public class MultilingualString implements Serializable {
      * @see #set(String, String)
      */
     public MultilingualString set(String value) {
-        Objects.requireNonNull(value);
-        this.value.put(null, value);
-        return this;
+        return this.set(NO_LANG, value);
     }
 
     /**
@@ -92,11 +108,14 @@ public class MultilingualString implements Serializable {
      * value is returned. However, note that, in case of missing simple literal, repeated calls may return values in
      * different languages. If there are no translations, {@code null} is returned.
      *
-     * @param language Requested language (language tag). Can be {@code null}
+     * @param language Requested language (language tag). Can be {@code null} or {@link #NO_LANG}
      * @return Value of this string for the specified language (or {@code null} if not available)
      */
     public String get(String language) {
-        return language != null ? value.get(language) : get();
+        if (language == null || NO_LANG.equals(language)) {
+            return get();
+        }
+        return super.get(language);
     }
 
     /**
@@ -111,20 +130,23 @@ public class MultilingualString implements Serializable {
      * @return Value of simple literal represented by this string
      */
     public String get() {
-        return value.getOrDefault(null, value.isEmpty() ? null : value.get(value.keySet().iterator().next()));
+        return getOrDefault(NO_LANG, isEmpty() ? null : super.get(keySet().iterator().next()));
     }
 
     /**
      * Checks whether this string contains value in the specified language.
      * <p>
-     * If no language is specified (argument is {@code null}), this method will return {@code true} if there is value
-     * without language tag (simple literal) or in any other language.
+     * If no language is specified (argument is {@code null} or {@link #NO_LANG}), this method will return {@code true}
+     * if there is value without language tag (simple literal) or in any other language.
      *
      * @param language Requested language (language tag)
      * @return {@code true} if this string exists in the specified language
      */
     public boolean contains(String language) {
-        return value.containsKey(language) || (language == null && !value.isEmpty());
+        if (language == null) {
+            language = NO_LANG;
+        }
+        return containsKey(language) || NO_LANG.equals(language) && !isEmpty();
     }
 
     /**
@@ -135,7 +157,7 @@ public class MultilingualString implements Serializable {
      * @return {@code true} if and only if this string exists as a simple literal
      */
     public boolean containsSimple() {
-        return value.containsKey(null);
+        return containsKey(NO_LANG);
     }
 
     /**
@@ -144,63 +166,32 @@ public class MultilingualString implements Serializable {
      * @return {@code true} if no translations exist in this instance
      */
     public boolean isEmpty() {
-        return value.isEmpty();
+        return super.isEmpty();
     }
 
     /**
      * Removes translation in the specified language.
      * <p>
-     * Passing in {@code null} will remove the simple literal contained in this instance.
+     * Passing in {@code null}/{@link #NO_LANG} will remove the simple literal contained in this instance.
      *
      * @param language Language for which translation should be removed
      */
     public void remove(String language) {
-        value.remove(language);
+        if (language == null) {
+            language = NO_LANG;
+        }
+        super.remove(language);
     }
 
     /**
      * Gets the set of languages for which translations exist in the instance.
      * <p>
-     * Note that the result may contain {@code null}, indicating a simple literal.
+     * Note that the result may contain {@link #NO_LANG}, indicating a simple literal.
      *
      * @return Set of languages available in this multilingual string
      */
     public Set<String> getLanguages() {
-        return Collections.unmodifiableSet(value.keySet());
-    }
-
-    /**
-     * Gets the translations contained in this instance as a map of language-value pairs.
-     * <p>
-     * Convenience method for accessing all values at once. Note that this method returns the actual value used
-     * by this instance, so any changes to it will be reflected in the instance's behavior. It is not a general purpose
-     * method, rather a way to access and manipulate the underlying data structure more efficiently when necessary.
-     *
-     * @return Map of language to translation values
-     */
-    public Map<String, String> getValue() {
-        return value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof MultilingualString that)) {
-            return false;
-        }
-        return value.equals(that.getValue());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value);
-    }
-
-    @Override
-    public String toString() {
-        return value.toString();
+        return Collections.unmodifiableSet(keySet());
     }
 
     /**

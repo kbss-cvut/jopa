@@ -19,8 +19,8 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
-import org.apache.jena.tdb.TDB;
-import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.tdb1.TDB1;
+import org.apache.jena.tdb1.TDB1Factory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -66,11 +66,11 @@ public class TDBStorageTest {
     public void initializeLoadsExistingTDBDataset() throws Exception {
         this.storageDir = Files.createTempDirectory("tdb-test").toFile();
         storageDir.deleteOnExit();
-        final Dataset dataset = TDBFactory.createDataset(storageDir.getAbsolutePath());
+        final Dataset dataset = TDB1Factory.createDataset(storageDir.getAbsolutePath());
         dataset.begin(ReadWrite.WRITE);
         generateTestData(dataset);
         dataset.commit();
-        TDB.sync(dataset);
+        TDB1.sync(dataset);
         dataset.close();
 
         this.storage = new TDBStorage(createConfiguration(storageDir.getAbsolutePath()));
@@ -98,7 +98,7 @@ public class TDBStorageTest {
         storage.writeChanges();
         storage.close();
 
-        final Dataset result = TDBFactory.createDataset(storageDir.getAbsolutePath());
+        final Dataset result = TDB1Factory.createDataset(storageDir.getAbsolutePath());
         result.begin(ReadWrite.READ);
         assertTrue(result.getDefaultModel().contains(RESOURCE, RDF.type, createResource(TYPE_ONE)));
         result.abort();

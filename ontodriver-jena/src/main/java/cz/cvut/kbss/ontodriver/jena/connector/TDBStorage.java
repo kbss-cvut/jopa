@@ -19,9 +19,10 @@ package cz.cvut.kbss.ontodriver.jena.connector;
 
 import cz.cvut.kbss.ontodriver.config.DriverConfiguration;
 import cz.cvut.kbss.ontodriver.jena.exception.JenaDriverException;
-import org.apache.jena.tdb.TDB;
-import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.tdb1.TDB1;
+import org.apache.jena.tdb1.TDB1Factory;
 
+@Deprecated
 class TDBStorage extends LocalStorage {
 
     TDBStorage(DriverConfiguration configuration) {
@@ -30,13 +31,13 @@ class TDBStorage extends LocalStorage {
         if (location.startsWith(FILE_PREFIX)) {
             location = configuration.getStorageProperties().getPhysicalURI().getSchemeSpecificPart();
         }
-        this.dataset = TDBFactory.createDataset(location);
+        this.dataset = TDB1Factory.createDataset(location);
     }
 
     @Override
     public void writeChanges() throws JenaDriverException {
         try {
-            TDB.sync(dataset);
+            TDB1.sync(dataset);
         } catch (RuntimeException e) {
             throw new JenaDriverException("Unable to synchronize TDB storage with file system.", e);
         }
