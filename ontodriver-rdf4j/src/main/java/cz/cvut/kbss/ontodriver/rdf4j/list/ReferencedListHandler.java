@@ -116,7 +116,7 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
             final Collection<Value> content = toRdf4jValue(listValueDescriptor.getNodeContent(), it.next());
             previous = appendListNode(owner, hasNext, hasContent, content, context, previous, statements);
         }
-        createNilTerminal(previous, hasNext, listValueDescriptor).ifPresent(statements::add);
+        createNilTerminal(previous, hasNext, context, listValueDescriptor).ifPresent(statements::add);
         return statements;
     }
 
@@ -129,8 +129,8 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
         return node;
     }
 
-    private Optional<Statement> createNilTerminal(Resource lastNode, IRI hasNext, ReferencedListDescriptor descriptor) {
-        return descriptor.isTerminatedByNil() ? Optional.of(vf.createStatement(lastNode, hasNext, RDF.NIL)) : Optional.empty();
+    private Optional<Statement> createNilTerminal(Resource lastNode, IRI hasNext, IRI context, ReferencedListDescriptor descriptor) {
+        return descriptor.isTerminatedByNil() ? Optional.of(vf.createStatement(lastNode, hasNext, RDF.NIL, context)) : Optional.empty();
     }
 
     @Override
@@ -202,7 +202,7 @@ public class ReferencedListHandler extends ListHandler<ReferencedListValueDescri
             previous = appendListNode(owner, hasNext, hasContent, content, context, previous, toAdd);
             i++;
         }
-        createNilTerminal(previous, hasNext, listDescriptor).ifPresent(toAdd::add);
+        createNilTerminal(previous, hasNext, context, listDescriptor).ifPresent(toAdd::add);
         connector.addStatements(toAdd);
     }
 
