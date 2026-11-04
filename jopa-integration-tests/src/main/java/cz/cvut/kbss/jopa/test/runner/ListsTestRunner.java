@@ -20,6 +20,8 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassE;
@@ -39,6 +41,7 @@ import org.slf4j.Logger;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -758,5 +761,48 @@ public abstract class ListsTestRunner extends BaseRunner {
         assertEquals(1, em.createNativeQuery("SELECT (COUNT(?node) as ?cnt) WHERE { ?node ?hasNext ?nil . }", Integer.class)
                           .setParameter("hasNext", URI.create(RDF.REST))
                           .setParameter("nil", URI.create(RDF.NIL)).getSingleResult());
+    }
+
+    /**
+     * @see <a href="https://github.com/kbss-cvut/jopa/issues/502">GH-502</a>
+     */
+    @Test
+    public void rdfCollectionWithSingleMemberCanBeLoadedWithoutContextDescriptorAfterUpdate() {
+        this.em = getEntityManager("rdfCollectionWithSingleMemberCanBeLoadedWithoutContextDescriptorAfterUpdate", false);
+
+        final List<OWLClassA> rdfCollection = new ArrayList<>(Generators.createRDFCollection(5));
+        final List<OWLClassA> expectedList = List.copyOf(rdfCollection);
+
+        final URI context = Generators.generateUri();
+        final Descriptor descriptor = new EntityDescriptor(context);
+
+        transactional(() -> rdfCollection.forEach(entity -> em.persist(entity, descriptor)));
+
+        transactional(() -> {
+            // persisting new collection with single member
+            entityC.setRdfCollection(new ArrayList<>());
+            entityC.getRdfCollection().add(rdfCollection.removeFirst());
+            // persisting in descriptor context
+            em.persist(entityC, descriptor);
+        });
+
+        transactional(() -> {
+            // updating the existing collection with more members
+            OWLClassC managed = findRequired(OWLClassC.class, entityC.getUri(), descriptor);
+            managed.getRdfCollection().addAll(rdfCollection);
+            em.merge(managed, descriptor);
+        });
+
+        transactional(() -> {
+            // loading collection with descriptor
+            final OWLClassC fromContext = findRequired(OWLClassC.class, entityC.getUri(), descriptor);
+            assertEquals(expectedList.size(), fromContext.getRdfCollection().size());
+            assertEquals(expectedList, fromContext.getRdfCollection());
+
+            // loading collection without
+            final OWLClassC withoutContext = findRequired(OWLClassC.class, entityC.getUri());
+            assertEquals(expectedList.size(), withoutContext.getRdfCollection().size());
+            assertEquals(expectedList, withoutContext.getRdfCollection());
+        });
     }
 }
