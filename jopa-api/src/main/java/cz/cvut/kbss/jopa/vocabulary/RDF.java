@@ -68,6 +68,11 @@ public final class RDF {
     public static final String OBJECT = NAMESPACE + "object";
 
     /**
+     * The {@code rdf:reifies} property for connecting reifier to the reified triple term.
+     */
+    public static final String REIFIES = NAMESPACE + "reifies";
+
+    /**
      * {@code rdf:Property} represents those resources that are RDF properties.
      */
     public static final String PROPERTY = NAMESPACE + "Property";
@@ -78,9 +83,19 @@ public final class RDF {
     public static final String LANG_STRING = NAMESPACE + "langString";
 
     /**
+     * The class {@code rdf:dirLangString} representing language-tagged string values with base direction.
+     */
+    public static final String DIR_LANG_STRING = NAMESPACE + "dirLangString";
+
+    /**
      * The {@code rdf:HTML} datatype representing HTML literal values.
      */
     public static final String HTML = NAMESPACE + "HTML";
+
+    /**
+     * The {@code rdf:JSON} datatype representing JSON literal values.
+     */
+    public static final String JSON = NAMESPACE + "JSON";
 
     /**
      * The {@code rdf:XMLLiteral} datatype representing XML literal values.
