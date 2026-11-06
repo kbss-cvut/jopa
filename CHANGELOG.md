@@ -1,5 +1,9 @@
 # JOPA - Change Log
 
+### 2.12.6 - 2026-11-06
+
+- Backport a critical RDF4J OntoDriver fix (5117fe1cfa1b41c0722a21935cb2070b0b643bc7).
+
 ### 2.12.5 - 2026-10-10
 - Fix na issue with updating unmapped properties losing existing value (Bug #490).
 - Minor performance improvements and refactoring.
