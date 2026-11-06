@@ -29,7 +29,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
-import cz.cvut.kbss.jopa.query.sparql.Sparql11QueryParser;
+import cz.cvut.kbss.jopa.query.sparql.Sparql12QueryParser;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
@@ -58,11 +58,11 @@ class SparqlQueryResultLoadingOptimizerTest {
     @Mock
     private ConnectionWrapper connectionWrapper;
 
-    private Sparql11QueryParser parser;
+    private Sparql12QueryParser parser;
 
     @BeforeEach
     void setUp() {
-        this.parser = new Sparql11QueryParser(new ParameterValueFactory(uow));
+        this.parser = new Sparql12QueryParser(new ParameterValueFactory(uow));
     }
 
     @Test

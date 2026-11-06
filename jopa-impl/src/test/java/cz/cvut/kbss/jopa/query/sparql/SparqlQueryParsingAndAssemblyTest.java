@@ -59,7 +59,7 @@ public class SparqlQueryParsingAndAssemblyTest {
 
     private final Configuration configuration = new Configuration();
 
-    private Sparql11QueryParser queryParser;
+    private Sparql12QueryParser queryParser;
 
     private TokenStreamSparqlQueryHolder sut;
 
@@ -68,7 +68,7 @@ public class SparqlQueryParsingAndAssemblyTest {
         UnitOfWork uowMock = mock(UnitOfWork.class);
         when(uowMock.getConfiguration()).thenReturn(configuration);
         this.valueFactory = new ParameterValueFactory(uowMock);
-        this.queryParser = new Sparql11QueryParser(valueFactory);
+        this.queryParser = new Sparql12QueryParser(valueFactory);
     }
 
     @Test

@@ -315,7 +315,7 @@ dataBlockValues
     ;
 
 dataBlockValue
-    : iri | rdfLiteral | numericLiteral | booleanLiteral | UNDEF
+    : iri | rdfLiteral | numericLiteral | booleanLiteral | UNDEF | tripleTermData
     ;
 
 minusGraphPattern
@@ -505,6 +505,18 @@ nil
 
 tripleTerm
     : '<<' tripleTermSubject verb tripleTermObject '>>'
+    ;
+
+tripleTermData
+    : '<<(' tripleTermDataSubject (iri | A) tripleTermDataObject ')>>'
+    ;
+
+tripleTermDataSubject
+    : iri
+    ;
+
+tripleTermDataObject
+    : iri | rdfLiteral | numericLiteral | booleanLiteral | tripleTermData
     ;
 
 tripleTermSubject

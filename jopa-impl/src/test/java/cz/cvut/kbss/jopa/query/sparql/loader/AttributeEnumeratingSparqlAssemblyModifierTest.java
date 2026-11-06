@@ -32,7 +32,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableEntityType;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
-import cz.cvut.kbss.jopa.query.sparql.Sparql11QueryParser;
+import cz.cvut.kbss.jopa.query.sparql.Sparql12QueryParser;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
@@ -71,7 +71,7 @@ class AttributeEnumeratingSparqlAssemblyModifierTest {
 
     private final ParameterValueFactory valueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
 
-    private final Sparql11QueryParser parser = new Sparql11QueryParser(valueFactory);
+    private final Sparql12QueryParser parser = new Sparql12QueryParser(valueFactory);
 
     @BeforeAll
     static void setUpBeforeAll() throws Exception {

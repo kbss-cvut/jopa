@@ -32,6 +32,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.stream.Stream;
 
@@ -55,7 +56,7 @@ public class SparqlQueryParserTest {
         final UnitOfWork uow = mock(UnitOfWork.class);
         when(uow.getConfiguration()).thenReturn(new Configuration());
         this.valueFactory = new ParameterValueFactory(uow);
-        this.queryParser = new Sparql11QueryParser(valueFactory);
+        this.queryParser = new Sparql12QueryParser(valueFactory);
     }
 
     @Test
@@ -487,4 +488,40 @@ public class SparqlQueryParserTest {
         assertTrue(holder.hasParameter("annotationProperty"));
         assertTrue(holder.hasParameter("annotationValue"));
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "ex:o", "\"value\"", "\"value\"@en", "\"value\"^^ex:datatype",
+            "42", "-1.5", "1e2", "true", "false", "<<(ex:s a ex:Type)>>",
+            "<<(ex:s ex:p <<(ex:s ex:p 42)>>)>>"
+    })
+    void parserSupportsTripleTermDataInValues(String object) {
+        final String query = "PREFIX ex: <https://example.com/> SELECT ?t WHERE { VALUES ?t { <<(ex:s ex:p " + object + ")>> } }";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(1, holder.getParameters().size());
+        assertTrue(holder.hasParameter("t"));
+        assertEquals(query, holder.assembleQuery());
+    }
+
+    @Test
+    void parserSupportsTripleTermDataInFullTrailingValues() {
+        final String query = "SELECT ?t WHERE {} VALUES (?t ?n) { (<<(<https://example.com/s> a <https://example.com/Type>)>> 1) }";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(2, holder.getParameters().size());
+        assertEquals(query, holder.assembleQuery());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "?s ex:p ex:o", "ex:s ?p ex:o", "ex:s ex:p ?o",
+            "_:s ex:p ex:o", "[] ex:p ex:o", "ex:s ex:p _:o", "ex:s ex:p []",
+            "\"subject\" ex:p ex:o", "42 ex:p ex:o", "true ex:p ex:o",
+            "<<(ex:s ex:p ex:o)>> ex:p ex:o", "ex:s ex:p <<(ex:s ex:p ?o)>>",
+            "ex:s ex:p UNDEF"
+    })
+    void parserRejectsInvalidTripleTermData(String triple) {
+        final String query = "PREFIX ex: <https://example.com/> SELECT ?t WHERE {} VALUES ?t { <<(" + triple + ")>> }";
+        assertThrows(QueryParserException.class, () -> queryParser.parseQuery(query));
+    }
+
 }

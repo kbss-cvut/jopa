@@ -18,7 +18,7 @@
 package cz.cvut.kbss.jopa.query.sparql.loader;
 
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
-import cz.cvut.kbss.jopa.query.sparql.Sparql11QueryParser;
+import cz.cvut.kbss.jopa.query.sparql.Sparql12QueryParser;
 import cz.cvut.kbss.jopa.query.sparql.TokenStreamSparqlQueryHolder;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ class UnboundPredicateObjectSparqlAssemblyModifierTest {
 
     private final ParameterValueFactory valueFactory = new ParameterValueFactory(mock(MetamodelProvider.class));
 
-    private final Sparql11QueryParser parser = new Sparql11QueryParser(valueFactory);
+    private final Sparql12QueryParser parser = new Sparql12QueryParser(valueFactory);
 
     private final UnboundPredicateObjectSparqlAssemblyModifier sut = new UnboundPredicateObjectSparqlAssemblyModifier();
 
