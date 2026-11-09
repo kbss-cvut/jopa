@@ -143,6 +143,7 @@ public class Vocabulary {
     public static final String P_HAS_REFERENCED_LIST = ATTRIBUTE_IRI_BASE + "hasReferencedSequence";
 
     public static final String P_HAS_RDF_COLLECTION = ATTRIBUTE_IRI_BASE + "hasRdfCollection";
+    public static final String P_HAS_RDF_COLLECTION_ANNOTATION = ATTRIBUTE_IRI_BASE + "hasRdfCollectionAnnotation";
     public static final String P_HAS_RDF_BAG = ATTRIBUTE_IRI_BASE + "hasRdfBag";
 
     public static final String P_X_LOCAL_DATE_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "xLocalDate";

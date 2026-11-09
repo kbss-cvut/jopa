@@ -116,7 +116,9 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralAnnotationPropertyStrategy(
             EntityType<Y> et, AbstractPluralAttribute<? super Y, ?, ?> attribute, Descriptor descriptor,
             EntityMappingHelper mapper) {
-        if (MultilingualString.class.equals(attribute.getElementType().getJavaType())) {
+        if (attribute.getCollectionType() == CollectionType.LIST) {
+            return new ReferencedListAnnotationPropertyStrategy<>(et, (ListAttributeImpl<? super Y, ?>) attribute, descriptor, mapper);
+        } else if (MultilingualString.class.equals(attribute.getElementType().getJavaType())) {
             return new PluralMultilingualStringFieldStrategy<>(et,
                     (AbstractPluralAttribute<? super Y, ?, MultilingualString>) attribute,
                     descriptor, mapper);
