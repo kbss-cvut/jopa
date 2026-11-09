@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.metamodel.AbstractPluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
+import cz.cvut.kbss.jopa.utils.MultilingualStringCondenser;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.LangString;
@@ -38,25 +39,18 @@ import java.util.stream.Collectors;
 
 class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> {
 
+    private final ListItemLoadMapper itemLoadMapper;
+
     PluralAnnotationPropertyStrategy(EntityType<X> et, AbstractPluralAttribute<? super X, ?, ?> att,
                                      Descriptor attributeDescriptor, EntityMappingHelper mapper) {
         super(et, att, attributeDescriptor, mapper);
+        this.itemLoadMapper = new ListItemLoadMapper(elementType, multilingualStringCondenser, values, this);
     }
 
     @Override
     void addAxiomValue(Axiom<?> ax) {
         final Object value = ax.getValue().getValue();
-        if (isValidRange(value)) {
-            if (value instanceof LangString ls && elementType.isAssignableFrom(MultilingualString.class)) {
-                multilingualStringCondenser.add(ls);
-            } else {
-                values.add(toAttributeValue(value));
-            }
-        } else if (value instanceof NamedResource && IdentifierTransformer.isValidIdentifierType(elementType)) {
-            values.add(IdentifierTransformer
-                    .transformToIdentifier(ToLexicalFormConverter.INSTANCE.convertToAttribute(value),
-                            elementType));
-        }
+        itemLoadMapper.handleAxiomValue(value);
     }
 
     @Override
@@ -79,7 +73,7 @@ class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
 
     private Function<Object, Collection<Value<?>>> resolveValueMapper() {
         if (SingularAnnotationPropertyStrategy.isResourceIdentifierType(elementType)) {
-            return  v -> Collections.singleton(new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(v))));
+            return v -> Collections.singleton(new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(v))));
         } else {
             return this::toAxiomValue;
         }
@@ -89,5 +83,38 @@ class PluralAnnotationPropertyStrategy<X> extends PluralDataPropertyStrategy<X> 
     Assertion createAssertion() {
         return Assertion
                 .createAnnotationPropertyAssertion(attribute.getIRI().toURI(), getLanguage(), attribute.isInferred());
+    }
+
+    /**
+     * Maps individual axiom values to a collection of attribute values.
+     */
+    static class ListItemLoadMapper {
+        private final Class<?> elementType;
+        private final MultilingualStringCondenser multilingualStringCondenser;
+        private final Collection<Object> values;
+
+        private final DataPropertyFieldStrategy<?, ?> strategy;
+
+        ListItemLoadMapper(Class<?> elementType, MultilingualStringCondenser multilingualStringCondenser,
+                           Collection<Object> values, DataPropertyFieldStrategy<?, ?> strategy) {
+            this.elementType = elementType;
+            this.multilingualStringCondenser = multilingualStringCondenser;
+            this.values = values;
+            this.strategy = strategy;
+        }
+
+        void handleAxiomValue(Object value) {
+            if (strategy.isValidRange(value)) {
+                if (value instanceof LangString ls && elementType.isAssignableFrom(MultilingualString.class)) {
+                    multilingualStringCondenser.add(ls);
+                } else {
+                    values.add(strategy.toAttributeValue(value));
+                }
+            } else if (value instanceof NamedResource && IdentifierTransformer.isValidIdentifierType(elementType)) {
+                values.add(IdentifierTransformer
+                        .transformToIdentifier(ToLexicalFormConverter.INSTANCE.convertToAttribute(value),
+                                elementType));
+            }
+        }
     }
 }
