@@ -20,6 +20,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
@@ -43,6 +44,7 @@ class ListDescriptorFactoryTest {
     void createReferencedListDescriptorCreatesDescriptorTerminatedByNilForRDFCollectionListAttribute() {
         final ListAttribute<?, ?> att = mock(ListAttribute.class);
         when(att.isRDFCollection()).thenReturn(true);
+        when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
         when(att.getHasNextPropertyIRI()).thenReturn(IRI.create(RDF.REST));
         when(att.getHasContentsPropertyIRI()).thenReturn(IRI.create(RDF.FIRST));
         when(att.getIRI()).thenReturn(IRI.create(HAS_LIST));
@@ -62,6 +64,7 @@ class ListDescriptorFactoryTest {
     void createReferencedListDescriptorCreatesDescriptorNotTerminatedByNilForReferencedListAttribute() {
         final ListAttribute<?, ?> att = mock(ListAttribute.class);
         when(att.isRDFCollection()).thenReturn(false);
+        when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
         when(att.getHasNextPropertyIRI()).thenReturn(IRI.create(RDF.REST));
         when(att.getHasContentsPropertyIRI()).thenReturn(IRI.create(RDF.FIRST));
         when(att.getIRI()).thenReturn(IRI.create(HAS_LIST));
@@ -75,6 +78,7 @@ class ListDescriptorFactoryTest {
     void createReferencedListValueDescriptorCreatesDescriptorTerminatedByNilForRDFCollectionListAttribute() {
         final ListAttribute<?, ?> att = mock(ListAttribute.class);
         when(att.isRDFCollection()).thenReturn(true);
+        when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(att.getHasNextPropertyIRI()).thenReturn(IRI.create(RDF.REST));
         when(att.getHasContentsPropertyIRI()).thenReturn(IRI.create(RDF.FIRST));
         when(att.getIRI()).thenReturn(IRI.create(HAS_LIST));
@@ -88,6 +92,7 @@ class ListDescriptorFactoryTest {
     void createReferencedListValueDescriptorCreatesDescriptorNotTerminatedByNilForReferencedListAttribute() {
         final ListAttribute<?, ?> att = mock(ListAttribute.class);
         when(att.isRDFCollection()).thenReturn(false);
+        when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(att.getHasNextPropertyIRI()).thenReturn(IRI.create(RDF.REST));
         when(att.getHasContentsPropertyIRI()).thenReturn(IRI.create(RDF.FIRST));
         when(att.getIRI()).thenReturn(IRI.create(HAS_LIST));

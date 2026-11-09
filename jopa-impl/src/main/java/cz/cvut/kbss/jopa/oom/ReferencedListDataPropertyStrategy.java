@@ -34,9 +34,9 @@ import java.util.Set;
 
 class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<ListAttributeImpl<? super X, ?>, X> {
 
-    private final Class<?> elementType;
+    final Class<?> elementType;
 
-    private final List<Object> values = new ArrayList<>();
+    final List<Object> values = new ArrayList<>();
 
     ReferencedListDataPropertyStrategy(EntityType<X> et, ListAttributeImpl<? super X, ?> att,
                                        Descriptor attributeDescriptor, EntityMappingHelper mapper) {
@@ -51,12 +51,14 @@ class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Li
         sequence.stream()
                 .filter(item -> item.getAssertion().getIdentifier()
                                     .equals(attribute.getHasContentsPropertyIRI().toURI()))
-                .forEach(item -> {
-                    final Object value = item.getValue().getValue();
-                    if (isValidRange(value)) {
-                        values.add(toAttributeValue(value));
-                    }
-                });
+                .forEach(this::handleSingleElementAxiom);
+    }
+
+    void handleSingleElementAxiom(Axiom<?> item) {
+        final Object value = item.getValue().getValue();
+        if (isValidRange(value)) {
+            values.add(toAttributeValue(value));
+        }
     }
 
     ReferencedListDescriptor createListDescriptor(Axiom<?> ax) {
@@ -95,7 +97,7 @@ class ReferencedListDataPropertyStrategy<X> extends DataPropertyFieldStrategy<Li
         valueBuilder.addReferencedListValues(listDescriptor);
     }
 
-    private <V> ReferencedListValueDescriptor<V> createListValueDescriptor(X instance) {
+    <V> ReferencedListValueDescriptor<V> createListValueDescriptor(X instance) {
         final NamedResource owner = NamedResource.create(EntityPropertiesUtils.getIdentifier(instance, et));
         final ReferencedListValueDescriptor<V> descriptor = ListDescriptorFactory.createReferencedListValueDescriptor(owner, attribute);
         descriptor.setContext(getAttributeWriteContext());

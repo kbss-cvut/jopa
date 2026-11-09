@@ -41,7 +41,6 @@ import org.slf4j.Logger;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,7 +65,7 @@ public abstract class ListsTestRunner extends BaseRunner {
         super(logger, persistenceFactory, dataAccessor);
     }
 
-    static void verifyLists(List<OWLClassE> expected, List<OWLClassE> actual) {
+    public static void verifyLists(List<OWLClassE> expected, List<OWLClassE> actual) {
         assertEquals(expected.size(), actual.size());
         for (int i = 0; i < expected.size(); i++) {
             assertEquals(expected.get(i).getUri(), actual.get(i).getUri());
@@ -123,7 +122,7 @@ public abstract class ListsTestRunner extends BaseRunner {
         em.persist(entityC);
         entityC.getReferencedList().forEach(em::persist);
         assertTrue(em.contains(entityC));
-        assertTrue(em.contains(entityC.getReferencedList().get(0)));
+        assertTrue(em.contains(entityC.getReferencedList().getFirst()));
         em.getTransaction().commit();
 
         final OWLClassC c = findRequired(OWLClassC.class, entityC.getUri());
@@ -602,9 +601,9 @@ public abstract class ListsTestRunner extends BaseRunner {
         em.getTransaction().commit();
 
         final OWLClassK result = findRequired(OWLClassK.class, entityK.getUri());
-        assertEquals(addedSimple.getUri(), result.getSimpleList().get(result.getSimpleList().size() - 1).getUri());
+        assertEquals(addedSimple.getUri(), result.getSimpleList().getLast().getUri());
         assertEquals(addedReferenced.getUri(),
-                result.getReferencedList().get(result.getReferencedList().size() - 1).getUri());
+                result.getReferencedList().getLast().getUri());
     }
 
     private static List<OWLClassE> generateEInstances(int count) {
@@ -701,12 +700,11 @@ public abstract class ListsTestRunner extends BaseRunner {
                 new MultilingualString(Map.of("en", "Third", "cs", "Třetí"))
         ));
         persist(entityM);
-        final MultilingualString toRemove = entityM.getMultilingualReferencedList()
-                                                   .get(entityM.getMultilingualReferencedList().size() - 1);
+        final MultilingualString toRemove = entityM.getMultilingualReferencedList().getLast();
 
         transactional(() -> {
             final OWLClassM update = findRequired(OWLClassM.class, entityM.getKey());
-            update.getMultilingualReferencedList().remove(update.getMultilingualReferencedList().size() - 1);
+            update.getMultilingualReferencedList().removeLast();
         });
 
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
@@ -736,8 +734,8 @@ public abstract class ListsTestRunner extends BaseRunner {
         persistCWithLists(entityC);
 
         final List<OWLClassA> expectedList = new ArrayList<>(entityC.getRdfCollection());
-        entityC.getRdfCollection().remove(entityC.getRdfCollection().size() - 1);
-        expectedList.remove(expectedList.size() - 1);
+        entityC.getRdfCollection().removeLast();
+        expectedList.removeLast();
 
         transactional(() -> em.merge(entityC));
         final OWLClassC midUpdate = findRequired(OWLClassC.class, entityC.getUri());
@@ -804,5 +802,27 @@ public abstract class ListsTestRunner extends BaseRunner {
             assertEquals(expectedList.size(), withoutContext.getRdfCollection().size());
             assertEquals(expectedList, withoutContext.getRdfCollection());
         });
+    }
+
+    /**
+     * GH#504
+     */
+    @Test
+    public void persistSavesAnnotationPropertyWithRdfCollectionTerminatedByNil() {
+        this.em = getEntityManager("persistSavesAnnotationPropertyWithRdfCollectionTerminatedByNil", false);
+        final OWLClassC localC = new OWLClassC(Generators.generateUri());
+        localC.setRdfCollectionAnnotation(List.of(
+                Generators.generateUri(),
+                Generators.generateUri(),
+                Generators.generateUri(),
+                Generators.generateUri()
+        ));
+        persist(localC);
+
+        final OWLClassC result = findRequired(OWLClassC.class, localC.getUri());
+        assertEquals(localC.getRdfCollectionAnnotation(), result.getRdfCollectionAnnotation());
+        assertTrue(em.createNativeQuery("ASK { ?node ?hasNext ?nil . }", Boolean.class)
+                     .setParameter("hasNext", URI.create(RDF.REST))
+                     .setParameter("nil", URI.create(RDF.NIL)).getSingleResult());
     }
 }

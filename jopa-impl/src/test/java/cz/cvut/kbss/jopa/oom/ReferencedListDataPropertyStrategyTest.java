@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.BasicTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.Converters;
@@ -103,6 +104,7 @@ class ReferencedListDataPropertyStrategyTest extends ListPropertyStrategyTestBas
         when(att.isAssociation()).thenReturn(false);
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.ATTRIBUTE_BASE + "hasDataList"));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);
+        when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         final Field field  = DataPropertyReferencedList.class.getDeclaredField("list");
         field.trySetAccessible();
         when(att.getJavaField()).thenReturn(field);

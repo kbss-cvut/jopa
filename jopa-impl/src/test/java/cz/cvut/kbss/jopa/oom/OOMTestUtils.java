@@ -55,11 +55,9 @@ final class OOMTestUtils {
 	@SuppressWarnings("unchecked")
 	public static List<ReferencedListValueDescriptor> getReferencedListValueDescriptors(
 			AxiomValueGatherer builder) throws Exception {
-		final Field descriptorsField = AxiomValueGatherer.class
-				.getDeclaredField("referencedListDescriptors");
+		final Field descriptorsField = AxiomValueGatherer.class.getDeclaredField("referencedListDescriptors");
 		descriptorsField.setAccessible(true);
-		return (List<ReferencedListValueDescriptor>) descriptorsField
-				.get(builder);
+		return (List<ReferencedListValueDescriptor>) descriptorsField.get(builder);
 	}
 
 	public static Set<URI> getTypesToAdd(AxiomValueGatherer builder) throws Exception {

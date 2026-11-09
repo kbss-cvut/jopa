@@ -38,6 +38,7 @@ import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import cz.cvut.kbss.jopa.test.runner.ListsTestRunner;
 import cz.cvut.kbss.ontodriver.Statement;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -505,11 +506,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                                                          .getResultList();
         entities.sort(Comparator.comparing(OWLClassE::getUri));
         result.sort(Comparator.comparing(OWLClassE::getUri));   // Sort here instead of in the query due to OWL2Query lacking proper sorting support
-        assertEquals(entities.size(), result.size());
-        for (int i = 0; i < entities.size(); i++) {
-            assertEquals(entities.get(i).getUri(), result.get(i).getUri());
-            assertEquals(entities.get(i).getStringAttribute(), result.get(i).getStringAttribute());
-        }
+        ListsTestRunner.verifyLists(entities, result);
     }
 
     @Test
