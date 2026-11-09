@@ -1,21 +1,16 @@
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.MultilingualString;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
-import cz.cvut.kbss.jopa.oom.converter.ToLexicalFormConverter;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.jopa.utils.MultilingualStringCondenser;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.LangString;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -24,25 +19,18 @@ public class ReferencedListAnnotationPropertyStrategy<X> extends ReferencedListD
 
     final MultilingualStringCondenser multilingualStringCondenser = new MultilingualStringCondenser();
 
+    private final PluralAnnotationPropertyStrategy.ListItemLoadMapper itemLoadMapper;
+
     ReferencedListAnnotationPropertyStrategy(EntityType<X> et, ListAttributeImpl<? super X, ?> att,
                                              Descriptor attributeDescriptor, EntityMappingHelper mapper) {
         super(et, att, attributeDescriptor, mapper);
+        this.itemLoadMapper = new PluralAnnotationPropertyStrategy.ListItemLoadMapper(elementType, multilingualStringCondenser, values, this);
     }
 
     @Override
     void handleSingleElementAxiom(Axiom<?> item) {
         final Object value = item.getValue().getValue();
-        if (isValidRange(value)) {
-            if (value instanceof LangString ls && elementType.isAssignableFrom(MultilingualString.class)) {
-                multilingualStringCondenser.add(ls);
-            } else {
-                values.add(toAttributeValue(value));
-            }
-        } else if (value instanceof NamedResource && IdentifierTransformer.isValidIdentifierType(elementType)) {
-            values.add(IdentifierTransformer
-                    .transformToIdentifier(ToLexicalFormConverter.INSTANCE.convertToAttribute(value),
-                            elementType));
-        }
+        itemLoadMapper.handleAxiomValue(value);
     }
 
     @Override
