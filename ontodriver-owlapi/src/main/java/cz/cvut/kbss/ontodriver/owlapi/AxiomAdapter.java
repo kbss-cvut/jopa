@@ -102,8 +102,12 @@ public class AxiomAdapter {
         if (assertionAxiom.getValue().asIRI().isPresent()) {
             return createAxiom(subject, assertion, assertionAxiom.getValue().asIRI().get().toURI());
         } else {
-            return createAxiom(subject, assertion, OwlapiUtils.owlLiteralToValue(
-                    assertionAxiom.getValue().asLiteral().get()));
+            if (assertionAxiom.getValue().isLiteral()) {
+                assert assertionAxiom.getValue().asLiteral().isPresent();
+                return createAxiom(subject, assertion, OwlapiUtils.owlLiteralToValue(
+                        assertionAxiom.getValue().asLiteral().get()));
+            }
+            return null;
         }
     }
 }
