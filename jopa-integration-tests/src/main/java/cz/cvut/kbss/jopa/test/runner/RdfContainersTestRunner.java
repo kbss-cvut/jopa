@@ -38,6 +38,7 @@ import java.util.stream.IntStream;
 
 import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -131,7 +132,7 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
     }
 
     private Set<OWLClassA> generateAndPersistBagOfAs() {
-        final Set<OWLClassA> aBag = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassA())
+        final Set<OWLClassA> aBag = IntStream.range(0, 5).mapToObj(_ -> Generators.generateOwlClassA())
                                              .collect(Collectors.toSet());
         entityC.setRdfBag(aBag);
         transactional(() -> {
@@ -177,12 +178,12 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
             update.getRdfBag().clear();
         });
         assertFalse(em.createNativeQuery("ASK {" +
-                                  "  ?owner ?hasContainer ?container . " +
-                                  "  ?container ?hasMember ?level ." +
-                                  "  FILTER (STRSTARTS(STR(?hasMember), \"" + RDF.NAMESPACE + "_\")) }", Boolean.class)
-                          .setParameter("owner", entityC)
-                          .setParameter("hasContainer", URI.create(Vocabulary.P_HAS_RDF_BAG))
-                          .getSingleResult());
+                              "  ?owner ?hasContainer ?container . " +
+                              "  ?container ?hasMember ?level ." +
+                              "  FILTER (STRSTARTS(STR(?hasMember), \"" + RDF.NAMESPACE + "_\")) }", Boolean.class)
+                      .setParameter("owner", entityC)
+                      .setParameter("hasContainer", URI.create(Vocabulary.P_HAS_RDF_BAG))
+                      .getSingleResult());
     }
 
     @Test
@@ -209,5 +210,29 @@ public abstract class RdfContainersTestRunner extends BaseRunner {
         final OWLClassM result = findRequired(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getMultilingualRdfSequence(), result.getMultilingualRdfSequence());
         assertEquals("Dve", result.getMultilingualRdfSequence().get(1).get("cs"));
+    }
+
+    @Test
+    public void persistAndRetrieveSupportsAnnotationPropertyRdfSeq() {
+        this.em = getEntityManager("persistAndRetrieveSupportsAnnotationPropertyRdfSeq", false);
+        final List<URI> annotations = List.of(Generators.generateUri(), Generators.generateUri());
+        entityC.setRdfContainerAnnotation(annotations);
+        transactional(() -> em.persist(entityC));
+
+        assertTrue(em.createNativeQuery("""
+                             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                             ASK WHERE {
+                               ?x ?hasContainer ?container .
+                               ?container a rdf:Seq ;
+                                 rdf:_1 ?valueOne ;
+                                 rdf:_2 ?valueTwo .
+                             }
+                             """, Boolean.class)
+                     .setParameter("x", entityC)
+                     .setParameter("hasContainer", URI.create(Vocabulary.P_HAS_RDF_CONTAINER_ANNOTATION))
+                     .getSingleResult());
+        final OWLClassC result = findRequired(OWLClassC.class, entityC.getUri());
+        assertEquals(annotations.size(), result.getRdfContainerAnnotation().size());
+        assertThat(result.getRdfContainerAnnotation(), hasItems(annotations.toArray(new URI[]{})));
     }
 }

@@ -55,7 +55,7 @@ public class AxiomAdapter {
                 .getOWLDataPropertyAssertionAxiom(dataProperty, toOWLIndividual(axiom.getSubject()), dataValue);
     }
 
-    OWLAxiom toOwlAnnotationPropertyAssertionAxiom(Axiom<?> axiom) {
+    public OWLAxiom toOwlAnnotationPropertyAssertionAxiom(Axiom<?> axiom) {
         final OWLAnnotationProperty annotationProperty = dataFactory.getOWLAnnotationProperty(IRI.create(
                 axiom.getAssertion().getIdentifier()));
         final Object value = axiom.getValue().getValue();
