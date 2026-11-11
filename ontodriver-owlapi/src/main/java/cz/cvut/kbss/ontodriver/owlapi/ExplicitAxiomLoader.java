@@ -95,7 +95,8 @@ class ExplicitAxiomLoader implements AxiomLoader {
         return assertionMap.containsKey(o.toURI()) || assertionMap.containsKey(UNSPECIFIED_ASSERTION.getIdentifier());
     }
 
-    private Collection<Axiom<?>> loadObjectPropertyAxioms(OWLNamedIndividual individual, NamedResource subject, boolean loadAll) {
+    private Collection<Axiom<?>> loadObjectPropertyAxioms(OWLNamedIndividual individual, NamedResource subject,
+                                                          boolean loadAll) {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         EntitySearcher.getObjectPropertyValues(individual, ontology.importsClosure())
                       .forEach((op, value) -> {
@@ -109,10 +110,11 @@ class ExplicitAxiomLoader implements AxiomLoader {
     private Collection<Axiom<?>> loadAnnotationPropertyAxioms(OWLNamedIndividual individual, NamedResource subject,
                                                               boolean loadAll) {
         return ontology.importsClosure().flatMap(
-                onto -> EntitySearcher.getAnnotationAssertionAxioms(individual.getIRI(), onto)
-                                      .filter(a -> loadAll || shouldLoadAnnotationPropertyValue(a)))
-                       .map(axiom -> axiomAdapter.toAxiom(subject, axiom)).collect(
-                        Collectors.toSet());
+                               onto -> EntitySearcher.getAnnotationAssertionAxioms(individual.getIRI(), onto)
+                                                     .filter(a -> loadAll || shouldLoadAnnotationPropertyValue(a)))
+                       .map(axiom -> axiomAdapter.toAxiom(subject, axiom))
+                       .filter(Objects::nonNull)
+                       .collect(Collectors.toSet());
     }
 
 
