@@ -51,7 +51,7 @@ public abstract class AnnotatedMethodsTestRunner extends BaseRunner {
     void nonEmptyParticipationConstraintsInInterfaceThrowExceptionIfNotMet() {
         this.em = getEntityManager("nonEmptyParticipationConstraintsInInterfaceThrowExceptionIfNotMet", false);
 
-        /// violate constraints
+        // violate constraints
         classWithAnnotatedMethodsInInterfaceParent.setData(null);
         em.getTransaction().begin();
 

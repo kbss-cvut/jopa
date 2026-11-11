@@ -115,7 +115,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         this.supertypes = supertypes;
 
         supertypes.forEach(supertype -> supertype.addSubtype(this));
-        /// find non-abstract parent (class), and use it later for finding attributes, as attributes can be only in AITs that represent classes
+        // find non-abstract parent (class), and use it later for finding attributes, as attributes can be only in AITs that represent classes
         supertypes.stream().filter(ait -> !ait.getJavaType().isInterface()).findAny()
                   .ifPresent(clsSupertype -> this.classSupertype = clsSupertype);
     }

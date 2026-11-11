@@ -51,7 +51,7 @@ public class IdentifierTransformer {
                 return val;
             }
             try {
-                return new URL(val.toString());
+                return URI.create(val.toString()).toURL();
             } catch (MalformedURLException e) {
                 throw new IllegalArgumentException("The identifier is not a valid URL.", e);
             }

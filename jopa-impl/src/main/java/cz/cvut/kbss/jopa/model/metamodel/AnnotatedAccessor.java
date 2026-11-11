@@ -62,14 +62,14 @@ public abstract class AnnotatedAccessor {
 
     private static boolean isGetter(Method m) {
         if (m.getParameterCount() != 0 || m.getReturnType()
-                                           .equals(Void.TYPE)) { /// getter has 0 arguments and returns something
+                                           .equals(Void.TYPE)) { // getter has 0 arguments and returns something
             return false;
         }
 
         if (m.getName().startsWith(GET_PREFIX)) {
             return true;
         } else if (m.getReturnType().isAssignableFrom(Boolean.class) || m.getReturnType()
-                                                                         .isAssignableFrom(boolean.class)) {/// getter on bools - can start with is,get or has
+                                                                         .isAssignableFrom(boolean.class)) {// getter on bools - can start with is,get or has
             return m.getName().startsWith(IS_PREFIX) || m.getName().startsWith(HAS_PREFIX);
         } else {
             return false;
@@ -101,7 +101,7 @@ public abstract class AnnotatedAccessor {
 
         @Override
         protected String extractPropertyNameFromMethod(Method m) {
-            String trimmedName = m.getName().substring(SET_PREFIX.length()); /// always starts with set
+            String trimmedName = m.getName().substring(SET_PREFIX.length()); // always starts with set
             return Introspector.decapitalize(trimmedName);
         }
     }
