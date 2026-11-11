@@ -83,13 +83,13 @@ public class ResultSetMappingProcessor {
     }
 
     private IdentifiableEntityType<?> getTargetType(EntityResult er) {
-        final AbstractIdentifiableType<?> targetType = metamodelBuilder.entity(er.entityClass());
+        final IdentifiableEntityType<?> targetType = metamodelBuilder.entity(er.entityClass());
         if (targetType == null || targetType.isAbstract()) {
             throw new SparqlResultMappingException(
                     "Type " + er.entityClass() +
                             " is not a known instantiable entity type and cannot be used as @EntityResult target class.");
         }
-        return (IdentifiableEntityType<?>) targetType;
+        return targetType;
     }
 
     private static void generateFieldMappersForFieldResults(EntityResult er, EntityType<?> et,

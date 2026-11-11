@@ -17,7 +17,6 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
@@ -64,11 +63,14 @@ class ListDescriptorFactory {
     }
 
     private static Assertion nodeContentProperty(ListAttribute<?, ?> attribute) {
-        return attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT
-                ? Assertion.createObjectPropertyAssertion(attribute.getHasContentsPropertyIRI()
-                                                                   .toURI(), attribute.isInferred())
-                : Assertion.createDataPropertyAssertion(attribute.getHasContentsPropertyIRI()
-                                                                 .toURI(), attribute.isInferred());
+        return switch (attribute.getPersistentAttributeType()) {
+            case OBJECT -> Assertion.createObjectPropertyAssertion(attribute.getHasContentsPropertyIRI()
+                                                                            .toURI(), attribute.isInferred());
+            case ANNOTATION -> Assertion.createAnnotationPropertyAssertion(attribute.getHasContentsPropertyIRI()
+                                                                                    .toURI(), attribute.isInferred());
+            case DATA -> Assertion.createDataPropertyAssertion(attribute.getHasContentsPropertyIRI()
+                                                                        .toURI(), attribute.isInferred());
+        };
     }
 
     static <V> ReferencedListValueDescriptor<V> createReferencedListValueDescriptor(NamedResource owner,

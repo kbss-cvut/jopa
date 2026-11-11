@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Enhances triple patterns for a RDF container attribute.
+ * Enhances triple patterns for an RDF container attribute.
  */
 class RdfContainerTriplePatternEnhancer extends TriplePatternEnhancer {
 

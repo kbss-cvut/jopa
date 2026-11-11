@@ -262,7 +262,7 @@ public final class JAnnotationUse extends JAnnotationValue {
 
     /**
      * This can be used to add annotations inside annotations
-     * for e.g  &#64;XmlCollection(values= &#64;XmlCollectionItem(type=Foo.class))
+     * for example,  &#64;XmlCollection(values= &#64;XmlCollectionItem(type=Foo.class))
      *
      * @param clazz The annotation class to be included
      * @return The JAnnotationUse that can be used as a member within this JAnnotationUse

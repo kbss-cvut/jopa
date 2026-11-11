@@ -45,4 +45,18 @@ public class ListsTest extends ListsTestRunner {
     public void updateUpdatesRdfCollectionTerminatedByNilAndMaintainsCorrectListEnding() {
         // Do nothing
     }
+
+    // RDF lists are not supported by the OWL API driver
+    @Disabled
+    @Override
+    public void rdfCollectionWithSingleMemberCanBeLoadedWithoutContextDescriptorAfterUpdate() {
+        // Do nothing
+    }
+
+    // RDF lists are not supported by the OWL API driver
+    @Disabled
+    @Override
+    public void persistSavesAnnotationPropertyWithRdfCollectionTerminatedByNil() {
+        // Do nothing
+    }
 }

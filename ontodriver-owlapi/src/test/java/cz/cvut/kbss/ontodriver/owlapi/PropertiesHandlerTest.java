@@ -307,8 +307,8 @@ public class PropertiesHandlerTest {
 
 
         propertiesHandler.removeProperties(INDIVIDUAL, toRemove);
-        assertTrue(ontology.dataPropertyAssertionAxioms(dataFactory.getOWLNamedIndividual(PK.toString()))
-                .collect(Collectors.toSet()).isEmpty());
+        assertTrue(ontology.dataPropertyAssertionAxioms(dataFactory.getOWLNamedIndividual(PK.toString())).findFirst()
+                           .isEmpty());
     }
 
     @Test

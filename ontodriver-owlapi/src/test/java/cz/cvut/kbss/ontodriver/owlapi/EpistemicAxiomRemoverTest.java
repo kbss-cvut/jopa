@@ -107,7 +107,7 @@ class EpistemicAxiomRemoverTest {
         descriptor.addAssertion(clsAssertion);
         initClassAssertions();
         axiomRemover.remove(descriptor);
-        assertTrue(ontology.classAssertionAxioms(individual).collect(Collectors.toSet()).isEmpty());
+        assertTrue(ontology.classAssertionAxioms(individual).findFirst().isEmpty());
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(adapterMock).addTransactionalChanges(captor.capture());
         final List<?> changes = captor.getValue();

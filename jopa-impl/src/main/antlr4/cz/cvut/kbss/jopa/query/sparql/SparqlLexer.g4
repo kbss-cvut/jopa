@@ -432,6 +432,10 @@ TRIPLE_TERM_OPEN: '<<';
 
 TRIPLE_TERM_CLOSE: '>>';
 
+TRIPLE_TERM_DATA_OPEN: '<<(';
+
+TRIPLE_TERM_DATA_CLOSE: ')>>';
+
 PIPE : '|';
 
 ANY : .;

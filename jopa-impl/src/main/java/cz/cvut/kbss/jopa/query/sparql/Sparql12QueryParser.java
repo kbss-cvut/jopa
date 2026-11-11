@@ -26,17 +26,17 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 /**
- * Grammar-based SPARQL 1.1 query parser.
+ * Grammar-based SPARQL 1.2 query parser.
  * <p>
- * Follows more strictly the standard SPARQL 1.1 grammar with one exception - it allows using variable in property
+ * Follows more strictly the standard SPARQL 1.2grammar with one exception - it allows using variable in property
  * paths, so that they can be set on the query. If they are not set, an exception will be thrown when the query is
  * executed.
  */
-public class Sparql11QueryParser implements QueryParser {
+public class Sparql12QueryParser implements QueryParser {
 
     private final ParameterValueFactory parameterValueFactory;
 
-    public Sparql11QueryParser(ParameterValueFactory parameterValueFactory) {
+    public Sparql12QueryParser(ParameterValueFactory parameterValueFactory) {
         this.parameterValueFactory = parameterValueFactory;
     }
 
@@ -47,7 +47,7 @@ public class Sparql11QueryParser implements QueryParser {
         final CommonTokenStream tokens = new CommonTokenStream(lexer);
         final SparqlParser s = new SparqlParser(tokens);
         s.addErrorListener(new ParserErrorListener());
-        final Sparql11QueryListener listener = new Sparql11QueryListener(parameterValueFactory);
+        final Sparql12QueryListener listener = new Sparql12QueryListener(parameterValueFactory);
 
         final ParseTree tree = s.query();
         final ParseTreeWalker walker = new ParseTreeWalker();

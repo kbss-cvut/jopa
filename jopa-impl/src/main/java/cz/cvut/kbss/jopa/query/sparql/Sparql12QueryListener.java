@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Sparql11QueryListener extends SparqlParserBaseListener {
+public class Sparql12QueryListener extends SparqlParserBaseListener {
 
     private QueryType queryType;
     private final Map<Object, TokenQueryParameter<?>> parameters = new HashMap<>();
@@ -44,7 +44,7 @@ public class Sparql11QueryListener extends SparqlParserBaseListener {
 
     private final ParameterValueFactory parameterValueFactory;
 
-    public Sparql11QueryListener(ParameterValueFactory parameterValueFactory) {
+    public Sparql12QueryListener(ParameterValueFactory parameterValueFactory) {
         this.parameterValueFactory = parameterValueFactory;
     }
 

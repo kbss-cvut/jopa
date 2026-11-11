@@ -54,18 +54,15 @@ class IndirectWrapperHelper {
      */
     Object createIndirectWrapper(Object wrapped, Object owner, Field field) {
         assert requiresIndirectWrapper(wrapped);
-        if (wrapped instanceof List) {
-            return new ChangeTrackingIndirectList<>(owner, field, uow, (List<?>) wrapped);
-        } else if (wrapped instanceof Set) {
-            return new ChangeTrackingIndirectSet<>(owner, field, uow, (Set<?>) wrapped);
-        } else if (wrapped instanceof MultilingualString) {
-            // MultilingualString check has to precede the Map check since it is a Map implementation
-            return new ChangeTrackingIndirectMultilingualString(owner, field, uow, (MultilingualString) wrapped);
-        } else if (wrapped instanceof Map) {
-            return new ChangeTrackingIndirectMap<>(owner, field, uow, (Map<?, ?>) wrapped);
-        } else {
-            throw new UnsupportedOperationException("Unsupported wrapped type " + wrapped.getClass());
-        }
+        return switch (wrapped) {
+            case List list -> new ChangeTrackingIndirectList<>(owner, field, uow, list);
+            case Set set -> new ChangeTrackingIndirectSet<>(owner, field, uow, set);
+            case MultilingualString multilingualString ->
+                // MultilingualString check has to precede the Map check since it is a Map implementation
+                    new ChangeTrackingIndirectMultilingualString(owner, field, uow, multilingualString);
+            case Map map -> new ChangeTrackingIndirectMap<>(owner, field, uow, map);
+            default -> throw new UnsupportedOperationException("Unsupported wrapped type " + wrapped.getClass());
+        };
     }
 
     /**

@@ -38,7 +38,7 @@ public class SparqlQueryFactory {
     private final UnitOfWork uow;
     private final ConnectionWrapper connection;
 
-    private final Sparql11QueryParser sparqlParser;
+    private final Sparql12QueryParser sparqlParser;
     private final SoqlQueryParser soqlParser;
 
     public SparqlQueryFactory(UnitOfWork uow, ConnectionWrapper connection) {
@@ -46,7 +46,7 @@ public class SparqlQueryFactory {
         assert connection != null;
         this.uow = uow;
         this.connection = connection;
-        this.sparqlParser = new Sparql11QueryParser(new ParameterValueFactory(uow));
+        this.sparqlParser = new Sparql12QueryParser(new ParameterValueFactory(uow));
         this.soqlParser = new SoqlQueryParser(sparqlParser, uow.getMetamodel());
     }
 

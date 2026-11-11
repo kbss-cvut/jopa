@@ -36,7 +36,7 @@ class PluralDataPropertyStrategy<X> extends DataPropertyFieldStrategy<AbstractPl
 
     final Class<?> elementType;
 
-    final Collection<Object> values;
+    protected final Collection<Object> values;
 
     final MultilingualStringCondenser multilingualStringCondenser = new MultilingualStringCondenser();
 

@@ -41,6 +41,14 @@ public class OWLClassC implements HasUri {
     @OWLObjectProperty(iri = Vocabulary.P_HAS_RDF_COLLECTION)
     private List<OWLClassA> rdfCollection;
 
+    @RDFCollection
+    @OWLAnnotationProperty(iri = Vocabulary.P_HAS_RDF_COLLECTION_ANNOTATION)
+    private List<URI> rdfCollectionAnnotation;
+
+    @RDFContainer(type = RDFContainerType.SEQ)
+    @OWLAnnotationProperty(iri = Vocabulary.P_HAS_RDF_CONTAINER_ANNOTATION)
+    private List<URI> rdfContainerAnnotation;
+
     @RDFContainer(type = RDFContainerType.BAG)
     @OWLObjectProperty(iri = Vocabulary.P_HAS_RDF_BAG)
     private Collection<OWLClassA> rdfBag;
@@ -85,6 +93,22 @@ public class OWLClassC implements HasUri {
         this.rdfCollection = rdfCollection;
     }
 
+    public List<URI> getRdfCollectionAnnotation() {
+        return rdfCollectionAnnotation;
+    }
+
+    public void setRdfCollectionAnnotation(List<URI> rdfCollectionAnnotation) {
+        this.rdfCollectionAnnotation = rdfCollectionAnnotation;
+    }
+
+    public List<URI> getRdfContainerAnnotation() {
+        return rdfContainerAnnotation;
+    }
+
+    public void setRdfContainerAnnotation(List<URI> rdfContainerAnnotation) {
+        this.rdfContainerAnnotation = rdfContainerAnnotation;
+    }
+
     public Collection<OWLClassA> getRdfBag() {
         return rdfBag;
     }
@@ -104,6 +128,12 @@ public class OWLClassC implements HasUri {
         }
         if (rdfCollection != null) {
             out += ", rdfCollection = {" + rdfCollection + "}";
+        }
+        if (rdfCollectionAnnotation != null) {
+            out += ", rdfCollectionAnnotation = {" + rdfCollectionAnnotation + "}";
+        }
+        if (rdfContainerAnnotation != null) {
+            out += ", rdfContainerAnnotation = {" + rdfContainerAnnotation + "}";
         }
         if (rdfBag != null) {
             out += ", rdfBag = {" + rdfBag + "}";

@@ -55,6 +55,8 @@ public class ListContentStorageHelper {
             case OBJECT_PROPERTY ->
                     List.of(new MutableAddAxiom(ontology, axiomAdapter.toOwlObjectPropertyAssertionAxiom(new AxiomImpl<>(subject, assertion, new Value<>(value)))));
             case DATA_PROPERTY -> toDataPropertyValues(subject, assertion, value);
+            case ANNOTATION_PROPERTY ->
+                    List.of(new MutableAddAxiom(ontology, axiomAdapter.toOwlAnnotationPropertyAssertionAxiom(new AxiomImpl<>(subject, assertion, new Value<>(value)))));
             default -> throw new IllegalArgumentException("Unsupported property type " + assertion.getType());
         };
     }

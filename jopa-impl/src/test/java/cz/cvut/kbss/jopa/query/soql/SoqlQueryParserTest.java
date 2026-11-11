@@ -26,7 +26,7 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.query.parameter.ParameterValueFactory;
-import cz.cvut.kbss.jopa.query.sparql.Sparql11QueryParser;
+import cz.cvut.kbss.jopa.query.sparql.Sparql12QueryParser;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
@@ -76,7 +76,7 @@ public class SoqlQueryParserTest {
         when(uow.getConfiguration()).thenReturn(new Configuration());
         when(uow.getMetamodel()).thenReturn(metamodel);
         when(uow.isEntityType(any())).thenAnswer(inv -> metamodel.isEntityType(inv.getArgument(0)));
-        final QueryParser qp = new Sparql11QueryParser(new ParameterValueFactory(uow));
+        final QueryParser qp = new Sparql12QueryParser(new ParameterValueFactory(uow));
         this.sut = new SoqlQueryParser(qp, metamodel);
     }
 

@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.test.runner.RdfContainersTestRunner;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,6 +35,7 @@ import java.util.stream.IntStream;
 
 import static cz.cvut.kbss.jopa.test.environment.util.ContainsSameEntities.containsSameEntities;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -85,7 +87,7 @@ public class RdfContainersTest extends RdfContainersTestRunner {
     @Override
     public void updateUpdatesEntityWithRdfContainerOfEntities() {
         this.em = getEntityManager("updateUpdatesEntityWithRdfContainerOfEntities", true);
-        final Set<OWLClassA> originalBag = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassA())
+        final Set<OWLClassA> originalBag = IntStream.range(0, 5).mapToObj(_ -> Generators.generateOwlClassA())
                                                     .collect(Collectors.toSet());
         entityC.setRdfBag(originalBag);
         transactional(() -> {
@@ -107,7 +109,7 @@ public class RdfContainersTest extends RdfContainersTestRunner {
     @Override
     public void persistPersistsEntityWithRdfContainerOfEntities() {
         this.em = getEntityManager("persistPersistsEntityWithRdfContainerOfEntities", false);
-        final Set<OWLClassA> aBag = IntStream.range(0, 5).mapToObj(i -> Generators.generateOwlClassA())
+        final Set<OWLClassA> aBag = IntStream.range(0, 5).mapToObj(_ -> Generators.generateOwlClassA())
                                              .collect(Collectors.toSet());
         entityC.setRdfBag(aBag);
         transactional(() -> {
@@ -117,5 +119,18 @@ public class RdfContainersTest extends RdfContainersTestRunner {
 
         final OWLClassC result = em.find(OWLClassC.class, entityC.getUri());
         assertEquals(aBag, result.getRdfBag());
+    }
+
+    @Test
+    @Override
+    public void persistAndRetrieveSupportsAnnotationPropertyRdfSeq() {
+        this.em = getEntityManager("persistAndRetrieveSupportsAnnotationPropertyRdfSeq", false);
+        final List<URI> annotations = List.of(Generators.generateUri(), Generators.generateUri());
+        entityC.setRdfContainerAnnotation(annotations);
+        transactional(() -> em.persist(entityC));
+
+        final OWLClassC result = findRequired(OWLClassC.class, entityC.getUri());
+        assertEquals(annotations.size(), result.getRdfContainerAnnotation().size());
+        assertThat(result.getRdfContainerAnnotation(), hasItems(annotations.toArray(new URI[]{})));
     }
 }

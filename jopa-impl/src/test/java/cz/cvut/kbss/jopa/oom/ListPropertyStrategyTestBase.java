@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttributeImpl;
 import cz.cvut.kbss.jopa.oom.converter.ObjectOneOfEnumConverter;
@@ -43,6 +44,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -78,7 +80,7 @@ class ListPropertyStrategyTestBase {
     }
 
     static List<URI> generateListOfIdentifiers() {
-        return IntStream.range(0, 10).mapToObj(i -> Generators.createIndividualIdentifier())
+        return IntStream.range(0, 10).mapToObj(_ -> Generators.createIndividualIdentifier())
                         .collect(Collectors.toList());
     }
 
@@ -104,6 +106,8 @@ class ListPropertyStrategyTestBase {
         when(att.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_objectOneOfEnumAttribute));
         when(att.getConverter()).thenReturn(new ObjectOneOfEnumConverter<>(OneOfEnum.class));
         when(att.getCollectionType()).thenReturn(CollectionType.LIST);
+        when(att.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        doReturn(List.class).when(att).getJavaType();
         final Field enumListField = WithEnumList.class.getDeclaredField("enumList");
         enumListField.trySetAccessible();
         when(att.getJavaField()).thenReturn(enumListField);
