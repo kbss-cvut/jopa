@@ -154,15 +154,17 @@ public class ContainerHandler {
                                        });
                                        return axiomAdapter.createAxiom(owner, property, mls);
                                    } else {
-                                       if (values.get(0).isLiteral()) {
-                                           assert values.get(0).asLiteral().isPresent();
-                                           return axiomAdapter.createAxiom(owner, property, OwlapiUtils.owlLiteralToValue(values.get(0)
+                                       if (values.getFirst().isLiteral()) {
+                                           assert values.getFirst().asLiteral().isPresent();
+                                           return axiomAdapter.createAxiom(owner, property, OwlapiUtils.owlLiteralToValue(values.getFirst()
                                                                                                                                 .asLiteral()
                                                                                                                                 .get()));
                                        } else {
-                                           assert values.get(0).asIRI().isPresent();
-                                           return axiomAdapter.createAxiom(owner, property, values.get(0).asIRI()
-                                                                                                  .get());
+                                           assert values.getFirst().asIRI().isPresent();
+                                           return axiomAdapter.createAxiom(owner, property, NamedResource.create(values.getFirst()
+                                                                                                                       .asIRI()
+                                                                                                                       .get()
+                                                                                                                       .toURI()));
                                        }
                                    }
                                }).filter(Objects::nonNull).toList();
@@ -187,7 +189,7 @@ public class ContainerHandler {
         if (containerCandidates.size() > 1) {
             throw new IntegrityConstraintViolatedException("Expected a single value of property <" + property + ">, but got multiple.");
         }
-        return Optional.of(containerCandidates.get(0));
+        return Optional.of(containerCandidates.getFirst());
     }
 
     private Optional<? extends OWLIndividual> getContainerAsAnnotationPropertyValue(ContainerDescriptor descriptor,
@@ -202,7 +204,7 @@ public class ContainerHandler {
         if (ans.size() > 1) {
             throw new IntegrityConstraintViolatedException("Expected a single value of property <" + property + ">, but got multiple.");
         }
-        final OWLAnnotationValue val = ans.get(0).getValue();
+        final OWLAnnotationValue val = ans.getFirst().getValue();
         if (val.isLiteral()) {
             throw new OwlapiDriverException("Expected an individual as value of property <" + property + ">, but got a literal.");
         }
@@ -240,9 +242,11 @@ public class ContainerHandler {
         owlapiAdapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
 
-    private OWLNamedIndividual createContainer(OWLNamedIndividual owner, ContainerValueDescriptor<?> descriptor, List<TransactionalChange> changes) {
+    private OWLNamedIndividual createContainer(OWLNamedIndividual owner, ContainerValueDescriptor<?> descriptor,
+                                               List<TransactionalChange> changes) {
         final OWLNamedIndividual container = dataFactory.getOWLNamedIndividual(generateContainerIri(descriptor));
-        final OWLObjectProperty containerOwnerProperty = dataFactory.getOWLObjectProperty(IRI.create(descriptor.getProperty().getIdentifier()));
+        final OWLObjectProperty containerOwnerProperty = dataFactory.getOWLObjectProperty(IRI.create(descriptor.getProperty()
+                                                                                                               .getIdentifier()));
         changes.add(new MutableAddAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(containerOwnerProperty, owner, container)));
         changes.add(new MutableAddAxiom(ontology, dataFactory.getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(descriptor.getType())), container)));
         return container;
@@ -270,6 +274,7 @@ public class ContainerHandler {
             final Assertion assertion = switch (property.getType()) {
                 case OBJECT_PROPERTY -> Assertion.createObjectPropertyAssertion(propertyUri, false);
                 case DATA_PROPERTY -> Assertion.createDataPropertyAssertion(propertyUri, false);
+                case ANNOTATION_PROPERTY -> Assertion.createAnnotationPropertyAssertion(propertyUri, false);
                 default -> throw new IllegalArgumentException("Unsupported property type " + property.getType());
             };
             result.addAll(helper.saveListValue(containerResource, assertion, value));
