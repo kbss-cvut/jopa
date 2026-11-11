@@ -1,5 +1,10 @@
 # JOPA - Change Log
 
+### 3.0.1 - 2026-11-11
+
+- Fix an issue with RDF list terminal node (`rdf:nil`) being persisted into default instead of target context (Bug #502).
+- Ensure annotation properties can be mapped to RDF collections and containers (Bug #504).
+
 ### 3.0.0 - 2026-11-02
 
 - Flatten `MultilingualString` - instead of wrapping a `Map` instance it now is a `Map` (Enhancement #488).
@@ -455,7 +460,7 @@
 ## 0.19.3 - 2022-12-13
 
 - Allow excluding `@OWLClass` annotated classes from persistence by using `NonEntity` (Enhancement #124).
-- Update dependencies: SF4J 2.0.6, Logback 1.3.5, Mockito 4.9.0.
+- Update dependencies: SLF4J 2.0.6, Logback 1.3.5, Mockito 4.9.0.
 
 ## 0.19.2 - 2022-11-10
 
