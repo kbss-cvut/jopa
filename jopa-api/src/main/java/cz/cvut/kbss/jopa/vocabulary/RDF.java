@@ -78,6 +78,21 @@ public final class RDF {
     public static final String PROPERTY = NAMESPACE + "Property";
 
     /**
+     * {@code rdf:CompooundLiteral} represents a compound literal.
+     */
+    public static final String COMPOUND_LITERAL = NAMESPACE + "CompoundLiteral";
+
+    /**
+     * {@code rdf:language} - the language component of a {@code CompoundLiteral}.
+     */
+    public static final String LANGUAGE = NAMESPACE + "language";
+
+    /**
+     * {@code rdf:direction} - the base direction component of a {@code CompoundLiteral}.
+     */
+    public static final String DIRECTION =  NAMESPACE + "direction";
+
+    /**
      * The class {@code rdf:langString} representing language-tagged string values.
      */
     public static final String LANG_STRING = NAMESPACE + "langString";
