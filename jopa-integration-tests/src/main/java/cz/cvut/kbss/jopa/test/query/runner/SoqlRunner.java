@@ -23,14 +23,18 @@ import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassJ;
 import cz.cvut.kbss.jopa.test.OWLClassM;
 import cz.cvut.kbss.jopa.test.OWLClassT;
+import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -273,5 +277,25 @@ public abstract class SoqlRunner extends BaseQueryRunner {
                                                          .getResultList();
         assertFalse(result.isEmpty());
         assertTrue(result.stream().anyMatch(c -> c.getUri().equals(cInstance.getUri())));
+    }
+
+    @Test
+    public void testSupportUsingToSpecifyDefaultGraph() throws Exception {
+        final URI context = Generators.generateUri();
+        final URI subject = Generators.generateUri();
+        persistTestData(Set.of(
+                new Quad(subject, URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_A), context),
+                new Quad(subject, URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), "String attribute value", context)
+        ), getEntityManager());
+
+        try {
+            final List<OWLClassA> result = getEntityManager().createQuery("SELECT a FROM OWLClassA a USING :context", OWLClassA.class)
+                                                             .setParameter("context", context).getResultList();
+            assertEquals(1, result.size());
+            assertEquals(subject, result.getFirst().getUri());
+            assertEquals("String attribute value", result.getFirst().getStringAttribute());
+        } finally {
+            dataAccessor.clear(Set.of(context), getEntityManager());
+        }
     }
 }
