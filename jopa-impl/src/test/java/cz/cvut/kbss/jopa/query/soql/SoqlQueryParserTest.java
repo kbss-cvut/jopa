@@ -1157,4 +1157,65 @@ public class SoqlQueryParserTest {
         final String expectedSparql = "SELECT ?x WHERE { ?x a " + strUri(Vocabulary.c_Person) + " . ?x " + strUri(Vocabulary.p_p_username) + " ?pUsername . FILTER (REGEX(?pUsername, '.*@example\\\\.(com|org)', 'i')) }";
         parseAndAssertEquality(expectedSparql, soql);
     }
+
+    @Test
+    void parseQuerySupportsUsingDefaultGraph() {
+        final String soql = "SELECT p FROM Person p USING <http://example.org/people>";
+        final String expectedSparql = "SELECT ?x FROM <http://example.org/people> WHERE { ?x a " + strUri(
+                Vocabulary.c_Person) + " . }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsUsingNamedGraph() {
+        final String soql = "SELECT p FROM Person p USING NAMED <http://example.org/people>";
+        final String expectedSparql = "SELECT ?x FROM NAMED <http://example.org/people> WHERE { ?x a " + strUri(
+                Vocabulary.c_Person) + " . }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsMultipleUsingAndUsingNamedGraphs() {
+        final String soql =
+                "SELECT p FROM Person p USING <http://example.org/g1> USING <http://example.org/g2> USING NAMED <http://example.org/g3>";
+        final String expectedSparql =
+                "SELECT ?x FROM <http://example.org/g1> FROM <http://example.org/g2> FROM NAMED <http://example.org/g3> WHERE { ?x a " +
+                        strUri(Vocabulary.c_Person) + " . }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsUsingGraphWithWhereAndOrderBy() {
+        final String soql =
+                "SELECT p FROM Person p USING <http://example.org/people> WHERE p.age > :age ORDER BY p.age DESC";
+        final String expectedSparql =
+                "SELECT ?x FROM <http://example.org/people> WHERE { ?x a " + strUri(Vocabulary.c_Person) +
+                        " . ?x <" + Vocabulary.p_p_age + "> ?pAge . FILTER (?pAge > ?age) } ORDER BY DESC(?pAge) ";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsUsingDefaultGraphVariable() {
+        final String soql = "SELECT p FROM Person p USING :graph";
+        final String expectedSparql = "SELECT ?x FROM ?graph WHERE { ?x a " + strUri(
+                Vocabulary.c_Person) + " . }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsUsingNamedGraphVariable() {
+        final String soql = "SELECT p FROM Person p USING NAMED :graph";
+        final String expectedSparql = "SELECT ?x FROM NAMED ?graph WHERE { ?x a " + strUri(
+                Vocabulary.c_Person) + " . }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
+
+    @Test
+    void parseQuerySupportsUsingGraphInAskQuery() {
+        final String soql = "ASK FROM Person p USING <http://example.org/people> WHERE p.username = :uname";
+        final String expectedSparql =
+                "ASK FROM <http://example.org/people> WHERE { ?x a " + strUri(Vocabulary.c_Person) +
+                        " . ?x " + strUri(Vocabulary.p_p_username) + " ?uname . }";
+        parseAndAssertEquality(expectedSparql, soql);
+    }
 }

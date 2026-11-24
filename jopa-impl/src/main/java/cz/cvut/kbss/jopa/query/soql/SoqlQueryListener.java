@@ -74,6 +74,10 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     private final List<SoqlGroupParameter> groupAttributes;
 
+    private final List<String> defaultGraphs = new ArrayList<>();
+
+    private final List<String> namedGraphs = new ArrayList<>();
+
     private final Map<String, String> objectTypes;
 
     private final Set<String> likePatternParameterNames = new HashSet<>();
@@ -177,7 +181,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     private void popAttribute() {
-        this.attrPointer = attributes.remove(attributes.size() - 1);
+        this.attrPointer = attributes.removeLast();
     }
 
     @Override
@@ -248,7 +252,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     private ParseTree resolveInExpressionValue(SoqlParser.InExpressionContext ctx) {
-        return ctx.inItem().get(ctx.inItem().size() - 1);
+        return ctx.inItem().getLast();
     }
 
     @Override
@@ -350,6 +354,17 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     @Override
+    public void enterGraphClause(SoqlParser.GraphClauseContext ctx) {
+        final String iriOrVar = ctx.iri() != null ? ctx.iri().getText() :
+                           SoqlUtils.soqlVariableToSparqlVariable(ctx.inputParameter().getText());
+        if (ctx.NAMED() != null) {
+            namedGraphs.add(iriOrVar);
+        } else {
+            defaultGraphs.add(iriOrVar);
+        }
+    }
+
+    @Override
     public void enterJoinClause(SoqlParser.JoinClauseContext ctx) {
         this.parentClause = ParentClause.JOIN;
     }
@@ -400,7 +415,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
         final FunctionNode node = new FunctionNode(functionName, functionArguments.pop().stream()
                                                                                   .peek(n -> n.setOccursInFilter(true))
                                                                                   .toArray(SoqlNode[]::new));
-        node.getChildren().get(0).getSoqlAttribute().setFirstNode(node);
+        node.getChildren().getFirst().getSoqlAttribute().setFirstNode(node);
         this.attrPointer = node.getSoqlAttribute();
         if (functionCallDepth > 1) {
             assert !functionArguments.isEmpty();
@@ -619,6 +634,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
         if (typeDef == QueryType.SELECT) {
             appendProjection(newQueryBuilder);
         }
+        appendDatasetClauses(newQueryBuilder);
         newQueryBuilder.append(" WHERE { ");
         final String supremeAttributes = processSupremeAttributes().toString();
         newQueryBuilder.append(supremeAttributes);
@@ -642,7 +658,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     private void appendProjection(StringBuilder sparqlBuilder) {
         // the first attribute is either a projected parameter or a type attribute
-        final String selectParameter = getSelectParameter(attributes.get(0));
+        final String selectParameter = getSelectParameter(attributes.getFirst());
         if (selectProjection.aggregateFunction() != null) {
             if (selectProjection.distinct()) {
                 sparqlBuilder.append(' ').append(SoqlConstants.DISTINCT);
@@ -653,6 +669,16 @@ public class SoqlQueryListener extends SoqlBaseListener {
                 sparqlBuilder.append(' ').append(SoqlConstants.DISTINCT);
             }
             sparqlBuilder.append(' ').append(selectParameter);
+        }
+    }
+
+    private void appendDatasetClauses(StringBuilder sparqlBuilder) {
+        for (String iri : defaultGraphs) {
+            sparqlBuilder.append(' ').append(SoqlConstants.FROM).append(' ').append(iri);
+        }
+        for (String iri : namedGraphs) {
+            sparqlBuilder.append(' ').append(SoqlConstants.FROM).append(' ').append(SoqlConstants.NAMED)
+                         .append(' ').append(iri);
         }
     }
 
