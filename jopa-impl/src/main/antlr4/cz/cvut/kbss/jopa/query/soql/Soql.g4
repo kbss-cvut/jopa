@@ -4,9 +4,9 @@ start: querySentence EOF ;
 
 querySentence: selectStatement | askStatement ;
 
-selectStatement: selectClause fromClause whereClause? groupByClause? orderByClause? ;
+selectStatement: selectClause fromClause datasetClause? whereClause? groupByClause? orderByClause? ;
 
-askStatement: ASK fromClause whereClause? ;
+askStatement: ASK fromClause datasetClause? whereClause? ;
 
 singleValuedObjectPathExpression: simpleSubpath DOT singleValuedObjectField ;
 
@@ -27,6 +27,12 @@ fromClause: FROM entityName IDENTIFICATION_VARIABLE joinClause* ;
 joinClause: JOIN simpleSubpath IDENTIFICATION_VARIABLE ;
 
 entityName: IDENTIFICATION_VARIABLE ;
+
+datasetClause: graphClause+ ;
+
+graphClause: USING NAMED? iri ;
+
+iri: IRI_REF ;
 
 whereClause
     : WHERE conditionalExpression
@@ -193,6 +199,10 @@ IN: 'IN' ;
 
 MEMBER: 'MEMBER' ;
 
+USING: 'USING' ;
+
+NAMED: 'NAMED' ;
+
 EQUAL: '=' ;
 NOT_EQUAL: '<>' | '!=' ;
 
@@ -211,6 +221,8 @@ FALSE: 'FALSE';
 IDENTIFICATION_VARIABLE: (LOWERCASE | UPPERCASE | '_') (LOWERCASE | UPPERCASE | DIGIT | '_')* ;
 
 STRING_LITERAL: QMARK ~["\r\n]* QMARK | SQUOTE ~['\r\n]* SQUOTE ;
+
+IRI_REF: '<' ~[>\r\n]* '>' ;
 
 INT_LITERAL: DIGIT+;
 
