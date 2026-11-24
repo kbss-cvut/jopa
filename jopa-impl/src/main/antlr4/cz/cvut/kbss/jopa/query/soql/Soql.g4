@@ -30,7 +30,7 @@ entityName: IDENTIFICATION_VARIABLE ;
 
 datasetClause: graphClause+ ;
 
-graphClause: USING NAMED? iri ;
+graphClause: USING NAMED? (iri | inputParameter) ;
 
 iri: IRI_REF ;
 
