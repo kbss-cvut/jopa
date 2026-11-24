@@ -64,7 +64,12 @@ class EpistemicAxiomRemover {
             final Set<Resource> contexts = axiomDescriptor.getAssertionContexts(a).stream()
                                                      .map(uri -> toRdf4jIri(uri, valueFactory))
                                                      .collect(Collectors.toSet());
-            toRemove.add(new SubjectPredicateContext(individual, toRdf4jIri(a, valueFactory), contexts));
+            if (a.getType() == Assertion.AssertionType.PROPERTY) {
+                // If it is an unspecified property, pass no predicate to remove all property values in the contexts
+                toRemove.add(new SubjectPredicateContext(individual, null, contexts));
+            } else {
+                toRemove.add(new SubjectPredicateContext(individual, toRdf4jIri(a, valueFactory), contexts));
+            }
         }
         connector.removePropertyValues(toRemove);
     }

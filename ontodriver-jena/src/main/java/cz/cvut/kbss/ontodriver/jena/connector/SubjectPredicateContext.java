@@ -31,7 +31,7 @@ import java.util.Set;
 public record SubjectPredicateContext(Resource subject, Property predicate, Set<String> contexts) {
 
     public boolean matches(Statement s, String context) {
-        return subject.equals(s.getSubject()) && predicate.equals(s.getPredicate()) &&
+        return subject.equals(s.getSubject()) && (predicate == null || predicate.equals(s.getPredicate())) &&
                 (contexts.isEmpty() || contexts.contains(context));
     }
 }
