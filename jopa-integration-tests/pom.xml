@@ -25,6 +25,11 @@
             <artifactId>junit-jupiter-api</artifactId>
             <version>${org.junit.jupiter.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${org.junit.jupiter.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
