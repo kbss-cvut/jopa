@@ -32,6 +32,8 @@ import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.slf4j.Logger;
 
 import java.net.URI;
@@ -168,6 +170,79 @@ public abstract class SoqlRunner extends BaseQueryRunner {
             matches |= item.getIntAttribute() <= sample.getIntAttribute();
             assertTrue(matches);
         }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false,false", "true,false", "false,true", "true,true"})
+    public void testAndPrecedesOrWithNegatedPredicates(boolean negateFirst, boolean negateSecond) {
+        final List<OWLClassT> expected = QueryTestEnvironment.getData(OWLClassT.class).stream()
+                                                             .filter(t -> (negateFirst != (t.getIntAttribute() > 8)) ||
+                                                                     (negateSecond != (t.getIntAttribute() > 2)) && t.getIntAttribute() < 5)
+                                                             .toList();
+        final String soql = "SELECT DISTINCT t FROM OWLClassT t WHERE " + (negateFirst ? "NOT " : "") +
+                "t.intAttribute > :first OR " + (negateSecond ? "NOT " : "") +
+                "t.intAttribute > :second AND t.intAttribute < :upper";
+        final List<OWLClassT> result = getEntityManager().createQuery(soql, OWLClassT.class)
+                                                         .setParameter("first", 8).setParameter("second", 2)
+                                                         .setParameter("upper", 5)
+                                                         .getResultList();
+        assertEquals(expected.size(), result.size());
+        assertThat(result, containsSameEntities(expected));
+    }
+
+    @Test
+    public void testRepeatedPathRangeAndNestedPathWithOrdering() {
+        final List<OWLClassT> instances = QueryTestEnvironment.getData(OWLClassT.class);
+        final OWLClassA sample = instances.get(2).getOwlClassA();
+        final List<OWLClassT> expected = instances.stream()
+                                                  .filter(t -> t.getIntAttribute() >= 2 && t.getIntAttribute() < 8 &&
+                                                          t.getOwlClassA().getUri().equals(sample.getUri()))
+                                                  .sorted(Comparator.comparing(OWLClassT::getIntAttribute).reversed())
+                                                  .toList();
+        final List<OWLClassT> result = getEntityManager().createQuery(
+                                                                 "SELECT t FROM OWLClassT t WHERE t.intAttribute >= :lower AND t.intAttribute < :upper " +
+                                                                         "AND t.owlClassA.stringAttribute = :value ORDER BY t.intAttribute DESC", OWLClassT.class)
+                                                         .setParameter("lower", 2).setParameter("upper", 8)
+                                                         .setParameter("value", sample.getStringAttribute(), "en")
+                                                         .getResultList();
+        assertEquals(expected.stream().map(OWLClassT::getUri).toList(),
+                result.stream().map(OWLClassT::getUri).toList());
+    }
+
+    @Test
+    public void testNegationIncludesEntitiesWithMissingProperty() throws Exception {
+        final URI missingPropertySubject = Generators.generateUri();
+        persistTestData(Set.of(new Quad(missingPropertySubject, URI.create(RDF.TYPE),
+                URI.create(Vocabulary.C_OWL_CLASS_A))), getEntityManager());
+        final List<OWLClassA> instances = QueryTestEnvironment.getData(OWLClassA.class);
+        final OWLClassA excluded = instances.getFirst();
+        final Set<URI> expected = instances.stream().map(OWLClassA::getUri)
+                                           .filter(uri -> !uri.equals(excluded.getUri())).collect(Collectors.toSet());
+        expected.add(missingPropertySubject);
+        final List<OWLClassA> result = getEntityManager().createQuery(
+                                                                 "SELECT a FROM OWLClassA a WHERE NOT a.stringAttribute = :excluded", OWLClassA.class)
+                                                         .setParameter("excluded", excluded.getStringAttribute(), "en")
+                                                         .getResultList();
+        assertEquals(expected.size(), result.size());
+        assertEquals(expected, result.stream().map(OWLClassA::getUri).collect(Collectors.toSet()));
+    }
+
+    @Test
+    public void testJoinAndNestedPathNegationReturnCompleteResultSet() {
+        final List<OWLClassT> instances = QueryTestEnvironment.getData(OWLClassT.class);
+        final OWLClassA excluded = instances.getFirst().getOwlClassA();
+        final List<OWLClassT> expected = instances.stream()
+                                                  .filter(t -> t.getIntAttribute() < 5 && !t.getOwlClassA().getUri()
+                                                                                            .equals(excluded.getUri()))
+                                                  .toList();
+        final List<OWLClassT> result = getEntityManager().createQuery(
+                                                                 "SELECT t FROM OWLClassT t JOIN t.owlClassA a WHERE t.intAttribute < :upper " +
+                                                                         "AND NOT a.stringAttribute = :excluded", OWLClassT.class)
+                                                         .setParameter("upper", 5)
+                                                         .setParameter("excluded", excluded.getStringAttribute(), "en")
+                                                         .getResultList();
+        assertEquals(expected.size(), result.size());
+        assertThat(result, containsSameEntities(expected));
     }
 
     @Test

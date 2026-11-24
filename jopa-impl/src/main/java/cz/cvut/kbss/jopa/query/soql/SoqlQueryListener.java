@@ -67,6 +67,10 @@ public class SoqlQueryListener extends SoqlBaseListener {
     // keeps index of first object of SoqlAttribute after OR operator
     private final Set<SoqlAttribute> objectOfNextOr;
 
+    private int conditionalTermStart;
+
+    private SoqlAttribute projectionAttribute;
+
     private final Deque<List<SoqlNode>> functionArguments = new ArrayDeque<>();
     private int functionCallDepth = 0;
 
@@ -223,10 +227,15 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     @Override
+    public void enterConditionalTerm(SoqlParser.ConditionalTermContext ctx) {
+        conditionalTermStart = attributes.size();
+    }
+
+    @Override
     public void exitConditionalTerm(SoqlParser.ConditionalTermContext ctx) {
         final ParserRuleContext parentCtx = ctx.getParent();
-        if (parentCtx.getChildCount() > 1 && !parentCtx.getChild(0).equals(ctx)) {
-            objectOfNextOr.add(attrPointer);
+        if (!parentCtx.getChild(0).equals(ctx) && conditionalTermStart < attributes.size()) {
+            objectOfNextOr.add(attributes.get(conditionalTermStart));
         }
     }
 
@@ -658,7 +667,8 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     private void appendProjection(StringBuilder sparqlBuilder) {
         // the first attribute is either a projected parameter or a type attribute
-        final String selectParameter = getSelectParameter(attributes.getFirst());
+        this.projectionAttribute = attributes.getFirst();
+        final String selectParameter = getSelectParameter(projectionAttribute);
         if (selectProjection.aggregateFunction() != null) {
             if (selectProjection.distinct()) {
                 sparqlBuilder.append(' ').append(SoqlConstants.DISTINCT);
@@ -702,19 +712,25 @@ public class SoqlQueryListener extends SoqlBaseListener {
                 it.remove();
             }
         }
+        if (projectionAttribute != null && attributes.remove(projectionAttribute)) {
+            processAttribute(projectionAttribute).stream().filter(bgp -> attributesPart.indexOf(bgp) == -1)
+                                                 .forEach(attributesPart::append);
+        }
         return attributesPart;
     }
 
     private StringBuilder processAttributes(String supremeAttributes) {
         StringBuilder attributesPart = new StringBuilder();
+        final Set<String> branchPatterns = new HashSet<>();
         ArrayList<SoqlAttribute> toFilter = new ArrayList<>();
         ArrayList<SoqlAttribute> toInvFilter = new ArrayList<>();
         for (SoqlAttribute myAttr : attributes) {
             if (objectOfNextOr.contains(myAttr)) {
                 StringBuilder orPart = new StringBuilder();
-                orPart.append(processAllFilters(toFilter, toInvFilter));
+                orPart.append(processAllFilters(toFilter, toInvFilter, branchPatterns, supremeAttributes));
                 toFilter.clear();
                 toInvFilter.clear();
+                branchPatterns.clear();
                 orPart.append("} UNION { ");
                 attributesPart.append(orPart);
             }
@@ -725,16 +741,20 @@ public class SoqlQueryListener extends SoqlBaseListener {
                     toFilter.add(myAttr);
                 }
                 final List<String> bgps = processAttribute(myAttr);
-                bgps.stream().filter(bgp -> attributesPart.indexOf(bgp) == -1 && !supremeAttributes.contains(bgp))
+                bgps.stream().filter(bgp -> !supremeAttributes.contains(bgp) && branchPatterns.add(bgp))
                     .forEach(attributesPart::append);
             }
         }
-        attributesPart.append(processAllFilters(toFilter, toInvFilter));
+        attributesPart.append(processAllFilters(toFilter, toInvFilter, branchPatterns, supremeAttributes));
         return attributesPart;
     }
 
-    private StringBuilder processAllFilters(ArrayList<SoqlAttribute> toFilter, ArrayList<SoqlAttribute> toInvFilter) {
+    private StringBuilder processAllFilters(ArrayList<SoqlAttribute> toFilter, ArrayList<SoqlAttribute> toInvFilter,
+                                            Set<String> branchPatterns, String supremeAttributes) {
         StringBuilder part = new StringBuilder();
+        if (!objectOfNextOr.isEmpty() && branchPatterns.isEmpty() && !toInvFilter.isEmpty()) {
+            part.append(supremeAttributes);
+        }
         if (!toFilter.isEmpty()) {
             part.append(processFilter(toFilter));
         }

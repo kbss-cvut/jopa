@@ -41,7 +41,8 @@ class SoqlOrderParameter extends SoqlParameter {
             // Ordering by the entity identifier
             return SoqlConstants.ASC.equals(orderingBy) ? rootVariable + " " : orderingBy + "(" + rootVariable + ") ";
         }
-        String param = attribute.requiresFilter() ? getAsParam(rootVariable).substring(1) : attribute.getValue().substring(1);
+        String param = attribute.requiresFilter() ? getAsParam(rootVariable).substring(1) :
+                (attribute.getValue() != null ? attribute.getValue() : attribute.getAsValue(rootVariable)).substring(1);
         return orderingBy + "(?" + param + ") ";
     }
 }
