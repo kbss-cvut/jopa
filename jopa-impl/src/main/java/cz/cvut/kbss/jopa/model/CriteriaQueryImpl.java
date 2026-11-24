@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.criteria.CriteriaQuery;
 import cz.cvut.kbss.jopa.model.query.criteria.Expression;
 import cz.cvut.kbss.jopa.model.query.criteria.Order;
+import cz.cvut.kbss.jopa.model.query.criteria.ParameterExpression;
 import cz.cvut.kbss.jopa.model.query.criteria.Predicate;
 import cz.cvut.kbss.jopa.model.query.criteria.Root;
 import cz.cvut.kbss.jopa.model.query.criteria.Selection;
@@ -32,7 +33,9 @@ import cz.cvut.kbss.jopa.query.criteria.CriteriaParameterFiller;
 import cz.cvut.kbss.jopa.query.criteria.CriteriaQueryHolder;
 import cz.cvut.kbss.jopa.query.criteria.RootImpl;
 import cz.cvut.kbss.jopa.query.criteria.expressions.AbstractExpression;
+import cz.cvut.kbss.jopa.query.criteria.expressions.ParameterExpressionImpl;
 import cz.cvut.kbss.jopa.query.soql.SoqlConstants;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +71,40 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
         RootImpl<X> root = new RootImpl<>(metamodel, entity.getJavaType(), this.cb);
         query.setRoot(root);
         return root;
+    }
+
+    @Override
+    public CriteriaQuery<T> using(Object iri) {
+        Objects.requireNonNull(iri);
+        if (!IdentifierTransformer.isValidIdentifierType(iri.getClass())) {
+            throw new IllegalArgumentException("Invalid argument type. Expected one of " + PersistenceProperties.IDENTIFIER_TYPES + ", got " + iri.getClass());
+        }
+        query.addDefaultGraph(iri);
+        return this;
+    }
+
+    @Override
+    public <X> CriteriaQuery<T> using(ParameterExpression<X> iri) {
+        Objects.requireNonNull(iri);
+        query.addDefaultGraph(iri);
+        return this;
+    }
+
+    @Override
+    public CriteriaQuery<T> usingNamed(Object iri) {
+        Objects.requireNonNull(iri);
+        if (!IdentifierTransformer.isValidIdentifierType(iri.getClass())) {
+            throw new IllegalArgumentException("Invalid argument type. Expected one of " + PersistenceProperties.IDENTIFIER_TYPES + ", got " + iri.getClass());
+        }
+        query.addNamedGraph(iri);
+        return this;
+    }
+
+    @Override
+    public <X> CriteriaQuery<T> usingNamed(ParameterExpression<X> iri) {
+        Objects.requireNonNull(iri);
+        query.addNamedGraph(iri);
+        return this;
     }
 
     @Override
@@ -218,6 +255,8 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
 
         appendFromClause(parameterFiller, soqlQuery);
 
+        appendDatasetClause(parameterFiller, soqlQuery);
+
         appendWhereClause(parameterFiller, soqlQuery);
 
         appendGroupByClause(parameterFiller, soqlQuery);
@@ -234,6 +273,26 @@ public class CriteriaQueryImpl<T> implements CriteriaQuery<T> {
                  .append(query.getRoot().getJavaType().getSimpleName()).append(' ');
         query.getRoot().setExpressionToQuery(soqlQuery, parameterFiller);
         query.getRoot().appendJoins(soqlQuery);
+    }
+
+    private void appendDatasetClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {
+        for (Object graph : query.getDefaultGraphs()) {
+            soqlQuery.append(' ').append(SoqlConstants.USING).append(' ');
+            appendGraphReference(graph, parameterFiller, soqlQuery);
+        }
+        for (Object graph : query.getNamedGraphs()) {
+            soqlQuery.append(' ').append(SoqlConstants.USING).append(' ').append(SoqlConstants.NAMED).append(' ');
+            appendGraphReference(graph, parameterFiller, soqlQuery);
+        }
+    }
+
+    private void appendGraphReference(Object graph, CriteriaParameterFiller parameterFiller,
+                                      StringBuilder soqlQuery) {
+        if (graph instanceof ParameterExpressionImpl<?> pe) {
+            pe.setExpressionToQuery(soqlQuery, parameterFiller);
+        } else {
+            soqlQuery.append('<').append(graph).append('>');
+        }
     }
 
     private void appendWhereClause(CriteriaParameterFiller parameterFiller, StringBuilder soqlQuery) {

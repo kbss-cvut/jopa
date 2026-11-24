@@ -53,6 +53,11 @@ public class SoqlConstants {
     public static final String NAMED = "NAMED";
 
     /**
+     * {@code USING} keyword.
+     */
+    public static final String USING = "USING";
+
+    /**
      * {@code WHERE} keyword.
      */
     public static final String WHERE = "WHERE";
