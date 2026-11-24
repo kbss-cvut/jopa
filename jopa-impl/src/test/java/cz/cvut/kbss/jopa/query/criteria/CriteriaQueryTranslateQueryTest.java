@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -226,6 +227,101 @@ public class CriteriaQueryTranslateQueryTest {
         final String generatedSoql = query.translateQuery(criteriaParameterFiller);
         final String expectedSoql = "SELECT owlclassm FROM OWLClassM owlclassm WHERE owlclassm.key IN (:generatedName0)";
         assertEquals(expectedSoql, generatedSoql);
+    }
+
+    @Nested
+    class UsingGraphTranslateTests {
+
+        @Test
+        void translateQuerySupportsUsingDefaultGraph() {
+            CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root).using(URI.create("http://example.org/graph"));
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa USING <http://example.org/graph>";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        void translateQueryWithUsingDefaultGraphThrowsIllegalArgumentExceptionForInvalidGraphIriType() {
+            CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            assertThrows(IllegalArgumentException.class, () -> query.select(root).using(578));
+        }
+
+        @Test
+        void translateQueryWithUsingNamedThrowsIllegalArgumentExceptionForInvalidGraphIriType() {
+            CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            assertThrows(IllegalArgumentException.class, () -> query.select(root).usingNamed(578));
+        }
+
+        @Test
+        void translateQuerySupportsUsingDefaultGraphParameter() {
+            CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root).using(cb.parameter(URI.class, "graph"));
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa USING :graph";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        void translateQuerySupportsUsingNamedGraph() {
+            CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root).usingNamed("http://example.org/graph");
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa USING NAMED <http://example.org/graph>";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        void translateQuerySupportsUsingNamedGraphParameter() {
+            CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root).usingNamed(cb.parameter(URI.class, "graph"));
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery = "SELECT owlclassa FROM OWLClassA owlclassa USING NAMED :graph";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        void translateQuerySupportsMultipleUsingAndUsingNamed() {
+            CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root)
+                 .using("http://example.org/g1")
+                 .using("http://example.org/g2")
+                 .usingNamed("http://example.org/g3");
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa USING <http://example.org/g1> " +
+                            "USING <http://example.org/g2> USING NAMED <http://example.org/g3>";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
+
+        @Test
+        void translateQuerySupportsUsingWithWhereClause() {
+            CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root)
+                 .using("http://example.org/graph")
+                 .where(cb.equal(root.getAttr("stringAttribute"), "value"));
+
+            final String generatedSoqlQuery = query.translateQuery(criteriaParameterFiller);
+            final String expectedSoqlQuery =
+                    "SELECT owlclassa FROM OWLClassA owlclassa USING <http://example.org/graph> " +
+                            "WHERE owlclassa.stringAttribute = :generatedName0";
+            assertEquals(expectedSoqlQuery, generatedSoqlQuery);
+        }
     }
 
     @Nested
@@ -764,7 +860,8 @@ public class CriteriaQueryTranslateQueryTest {
         public void testTranslateQueryRestrictionWithTypesSpecification() {
             CriteriaQueryImpl<OWLClassA> query = cb.createQuery(OWLClassA.class);
             Root<OWLClassA> root = query.from(OWLClassA.class);
-            query.select(root).where(cb.isMember(Generators.createIndividualIdentifier(), root.getAttr(OWLClassA_.types)));
+            query.select(root)
+                 .where(cb.isMember(Generators.createIndividualIdentifier(), root.getAttr(OWLClassA_.types)));
 
             final String expectedSoql = "SELECT owlclassa FROM OWLClassA owlclassa WHERE :generatedName0 MEMBER OF owlclassa.types";
             assertEquals(expectedSoql, query.translateQuery(criteriaParameterFiller));

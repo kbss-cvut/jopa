@@ -46,6 +46,48 @@ public interface CriteriaQuery<T> {
     <X> Root<X> from(EntityType<X> entity);
 
     /**
+     * Restrict the default graph of the query to the graph with the specified IRI.
+     * <p>
+     * Corresponds to the SPARQL {@code FROM}.
+     *
+     * @param iri graph IRI
+     * @return the modified query
+     * @throws IllegalArgumentException If the specified argument is not a valid identifier
+     */
+    CriteriaQuery<T> using(Object iri);
+
+    /**
+     * Restrict the default graph of the query to the graph identified by the specified parameter.
+     * <p>
+     * Corresponds to the SPARQL {@code FROM}.
+     *
+     * @param iri parameter identifying the graph
+     * @return the modified query
+     */
+    <X> CriteriaQuery<T> using(ParameterExpression<X> iri);
+
+    /**
+     * Add the graph with the specified IRI to the named graphs of the query.
+     * <p>
+     * Corresponds to the SPARQL {@code FROM NAMED}.
+     *
+     * @param iri graph IRI
+     * @return the modified query
+     * @throws IllegalArgumentException If the specified argument is not a valid identifier
+     */
+    CriteriaQuery<T> usingNamed(Object iri);
+
+    /**
+     * Add the graph identified by the specified parameter to the named graphs of the query.
+     * <p>
+     * Corresponds to the SPARQL {@code FROM NAMED}.
+     *
+     * @param iri parameter identifying the graph
+     * @return the modified query
+     */
+    <X> CriteriaQuery<T> usingNamed(ParameterExpression<X> iri);
+
+    /**
      * Specify the item that is to be returned in the query result. Replaces the previously specified selection(s), if
      * any.
      *

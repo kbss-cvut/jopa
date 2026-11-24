@@ -18,6 +18,7 @@
 package cz.cvut.kbss.jopa.query.criteria;
 
 import cz.cvut.kbss.jopa.model.query.criteria.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CriteriaQueryHolder<T> {
@@ -30,6 +31,8 @@ public class CriteriaQueryHolder<T> {
     protected List<Order> orderBy;
     protected List<Expression<?>> groupBy;
     protected Predicate having;
+    protected final List<Object> defaultGraphs = new ArrayList<>();
+    protected final List<Object> namedGraphs = new ArrayList<>();
 
     public CriteriaQueryHolder(Class<T> resultType) {
         this.resultType = resultType;
@@ -54,6 +57,22 @@ public class CriteriaQueryHolder<T> {
 
     public void setRoot(RootImpl<?> root) {
         this.root = root;
+    }
+
+    public List<Object> getDefaultGraphs() {
+        return defaultGraphs;
+    }
+
+    public void addDefaultGraph(Object graph) {
+        this.defaultGraphs.add(graph);
+    }
+
+    public List<Object> getNamedGraphs() {
+        return namedGraphs;
+    }
+
+    public void addNamedGraph(Object graph) {
+        this.namedGraphs.add(graph);
     }
 
     public Predicate getWhere() {
