@@ -19,6 +19,7 @@ package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 
+import java.net.URI;
 import java.util.Collection;
 
 public interface DataAccessor {
@@ -57,6 +58,15 @@ public interface DataAccessor {
      * @throws Exception If storage access error occurs
      */
     void verifyDataNotPresent(Collection<Quad> data, EntityManager em) throws Exception;
+
+    /**
+     * Removes all statements that belong to the given contexts from the underlying storage.
+     *
+     * @param contexts the collection of context URIs whose data should be removed
+     * @param em       Means of getting vendor-specific storage access
+     * @throws Exception If storage access error occurs
+     */
+    void clear(Collection<URI> contexts, EntityManager em) throws Exception;
 
     /**
      * Exports the contents of the repository managed by the specified entity manager.

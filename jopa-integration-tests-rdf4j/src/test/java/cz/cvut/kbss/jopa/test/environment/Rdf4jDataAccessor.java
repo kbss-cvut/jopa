@@ -23,6 +23,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.rio.RDFHandler;
@@ -93,6 +94,14 @@ public class Rdf4jDataAccessor implements DataAccessor {
         final Repository repository = em.unwrap(Repository.class);
         try (final RepositoryConnection connection = repository.getConnection()) {
             data.forEach(t -> assertFalse(doesQuadExist(t, connection)));
+        }
+    }
+
+    @Override
+    public void clear(Collection<URI> contexts, EntityManager em) {
+        final Repository repository = em.unwrap(Repository.class);
+        try (final RepositoryConnection connection = repository.getConnection()) {
+            connection.clear(contexts.stream().map(uri -> Values.iri(uri.toString())).toArray(IRI[]::new));
         }
     }
 

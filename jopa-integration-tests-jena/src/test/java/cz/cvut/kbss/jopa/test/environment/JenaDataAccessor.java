@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.jena.util.JenaUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Value;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
@@ -32,6 +33,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,6 +84,14 @@ public class JenaDataAccessor implements DataAccessor {
         final Dataset ds = em.unwrap(Dataset.class);
         data.forEach(t -> assertFalse(doesQuadExist(t,
                 t.getContext() == null ? ds.getDefaultModel() : ds.getNamedModel(t.getContext().toString()))));
+    }
+
+    @Override
+    public void clear(Collection<URI> contexts, EntityManager em) {
+        final Dataset ds = em.unwrap(Dataset.class);
+        ds.begin(ReadWrite.WRITE);
+        contexts.forEach(ctx -> ds.removeNamedModel(ctx.toString()));
+        ds.commit();
     }
 
     @Override

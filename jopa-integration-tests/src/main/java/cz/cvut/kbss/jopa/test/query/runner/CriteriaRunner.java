@@ -31,10 +31,13 @@ import cz.cvut.kbss.jopa.test.OWLClassJ;
 import cz.cvut.kbss.jopa.test.OWLClassM;
 import cz.cvut.kbss.jopa.test.OWLClassT;
 import cz.cvut.kbss.jopa.test.OWLClassY;
+import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.Quad;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import cz.cvut.kbss.jopa.vocabulary.RDF;
 import cz.cvut.kbss.ontodriver.model.LangString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -643,5 +646,29 @@ public abstract class CriteriaRunner extends BaseQueryRunner {
         final List<OWLClassA> result = tq.getResultList();
         assertFalse(result.isEmpty());
         result.forEach(a -> assertThat(a.getStringAttribute(), startsWith("stringAttribute")));
+    }
+
+    @Test
+    public void testSupportUsingToSpecifyDefaultGraph() throws Exception {
+        final URI context = Generators.generateUri();
+        final URI subject = Generators.generateUri();
+        persistTestData(Set.of(
+                new Quad(subject, URI.create(RDF.TYPE), URI.create(Vocabulary.C_OWL_CLASS_A), context),
+                new Quad(subject, URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), "String attribute value", context)
+        ), getEntityManager());
+
+        try {
+            CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+            CriteriaQuery<OWLClassA> query = cb.createQuery(OWLClassA.class);
+            Root<OWLClassA> root = query.from(OWLClassA.class);
+            query.select(root).using(cb.parameter(URI.class, "context"));
+            final List<OWLClassA> result = getEntityManager().createQuery(query)
+                                                             .setParameter("context", context).getResultList();
+            assertEquals(1, result.size());
+            assertEquals(subject, result.getFirst().getUri());
+            assertEquals("String attribute value", result.getFirst().getStringAttribute());
+        } finally {
+            dataAccessor.clear(Set.of(context), getEntityManager());
+        }
     }
 }

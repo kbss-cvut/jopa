@@ -128,6 +128,11 @@ public class OwlapiDataAccessor implements DataAccessor {
     }
 
     @Override
+    public void clear(Collection<URI> contexts, EntityManager em) {
+        // Do nothing, contexts are not supported by OWL API
+    }
+
+    @Override
     public String exportRepository(EntityManager em) {
         final OWLOntology ontology = em.unwrap(OWLOntology.class);
         final ByteArrayOutputStream writer = new ByteArrayOutputStream();
