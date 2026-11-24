@@ -21,6 +21,8 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.proxy.lazy.LazyLoadingProxy;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.DataAccessor;
@@ -31,13 +33,17 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.vocabulary.DC;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
@@ -293,7 +299,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         em.detach(toUpdate);
         // Copy the keys to prevent concurrent modification
         final Set<URI> keys = new HashSet<>(toUpdate.getProperties().keySet());
-        keys.stream().filter(k -> Generators.randomBoolean())
+        keys.stream().filter(_ -> Generators.randomBoolean())
             .forEach(key -> toUpdate.getProperties().remove(key));
         em.getTransaction().begin();
         final OWLClassP merged = em.merge(toUpdate);
@@ -523,5 +529,75 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         assertFalse(
                 em.createNativeQuery("ASK { ?x ?y ?z .}", Boolean.class).setParameter("x", entityA.getUri())
                   .getSingleResult());
+    }
+
+    /**
+     * Bug #508
+     */
+    @Test
+    public void removalRemovesAdditionalPropertiesWithoutCache() {
+        this.em = getEntityManager("removalRemovesAdditionalPropertiesWithoutCache", false);
+        URI context = Generators.generateUri();
+        OWLClassP p = new OWLClassP();
+        final URI attribute = Generators.generateUri();
+        final Set<Object> originalValue = Set.of(123);
+        p.setProperties(new HashMap<>(Map.of(attribute, originalValue)));
+
+        final Descriptor descriptor = new EntityDescriptor(context);
+
+        transactional(() -> em.persist(p, descriptor));
+        transactional(() -> {
+            OWLClassP managed = em.find(OWLClassP.class, p.getUri());
+            assertEquals(managed.getProperties().get(attribute), originalValue);
+            em.remove(managed);
+        });
+
+        transactional(() -> assertFalse(
+                em.createNativeQuery("ASK {?x ?y ?z}", Boolean.class)
+                  .setParameter("x", p.getUri())
+                  .getSingleResult(), "Additional properties were not removed!"));
+    }
+
+    static Stream<BiConsumer<OWLClassP, URI>> additionalPropertiesRemovalActions() {
+        return Stream.of(
+                (p, _) -> p.setProperties(new HashMap<>()),
+                (p, _) -> p.getProperties().clear(),
+                (p, attr) -> p.getProperties().put(attr, Set.of(Generators.randomInt())),
+                (p, attr) -> assertNotNull(p.getProperties().remove(attr)),
+                (p, _) -> p.getProperties().put(Generators.generateUri(), Set.of(Generators.randomInt())),
+                (p, attr) -> {
+                    assertNotNull(p.getProperties().remove(attr));
+                    p.getProperties().put(Generators.generateUri(), Set.of(Generators.randomInt()));
+                }
+        );
+    }
+
+    /**
+     * Bug #508
+     */
+    @ParameterizedTest
+    @MethodSource("additionalPropertiesRemovalActions")
+    public void removalRemovesAdditionalPropertiesAfterModification(BiConsumer<OWLClassP, URI> action) {
+        this.em = getEntityManager("removalRemovesAdditionalPropertiesAfterModification", true);
+        URI context = Generators.generateUri();
+        OWLClassP p = new OWLClassP();
+        final URI attribute = Generators.generateUri();
+        final Set<Object> originalValue = Set.of(123);
+        p.setProperties(new HashMap<>(Map.of(attribute, originalValue)));
+
+        final Descriptor descriptor = new EntityDescriptor(context);
+
+        transactional(() -> em.persist(p, descriptor));
+        transactional(() -> {
+            OWLClassP managed = em.find(OWLClassP.class, p.getUri());
+            assertEquals(managed.getProperties().get(attribute), originalValue);
+            action.accept(managed, attribute);
+            em.remove(managed);
+        });
+
+        transactional(() -> assertFalse(
+                em.createNativeQuery("ASK {?x ?y ?z}", Boolean.class)
+                  .setParameter("x", p.getUri())
+                  .getSingleResult(), "Additional properties were not removed!"));
     }
 }
