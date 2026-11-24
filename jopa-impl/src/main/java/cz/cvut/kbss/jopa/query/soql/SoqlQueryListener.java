@@ -31,31 +31,24 @@ import cz.cvut.kbss.jopa.query.sparql.SparqlConstants;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class SoqlQueryListener extends SoqlBaseListener {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SoqlQueryListener.class);
-
     private final MetamodelImpl metamodel;
 
-    private String soql;
-    private String sparql;
+    private SoqlQueryModel queryModel;
 
     private QueryType typeDef = QueryType.SELECT;
 
@@ -65,9 +58,13 @@ public class SoqlQueryListener extends SoqlBaseListener {
     private final List<SoqlAttribute> attributes;
 
     // keeps index of first object of SoqlAttribute after OR operator
-    private final Set<SoqlAttribute> objectOfNextOr;
+    private final Deque<Integer> conditionAttributeStarts = new ArrayDeque<>();
 
-    private int conditionalTermStart;
+    private final ParseTreeProperty<SoqlCondition> conditions = new ParseTreeProperty<>();
+
+    private final Set<SoqlAttribute> conditionAttributes = new HashSet<>();
+
+    private SoqlCondition whereCondition = new SoqlCondition.Conjunction(List.of());
 
     private SoqlAttribute projectionAttribute;
 
@@ -86,8 +83,6 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     private final Set<String> likePatternParameterNames = new HashSet<>();
 
-    private final Map<FieldSpecification<?, ?>, TriplePatternEnhancer> tpEnhancers = new HashMap<>();
-
     private SelectProjection selectProjection = new SelectProjection(null, false, false);
 
     private boolean isInObjectIdentifierExpression = false;
@@ -102,7 +97,6 @@ public class SoqlQueryListener extends SoqlBaseListener {
     public SoqlQueryListener(MetamodelImpl metamodel) {
         this.metamodel = Objects.requireNonNull(metamodel);
         this.attributes = new ArrayList<>();
-        this.objectOfNextOr = new HashSet<>();
         this.orderAttributes = new ArrayList<>();
         this.groupAttributes = new ArrayList<>();
         this.objectTypes = new HashMap<>();
@@ -110,8 +104,7 @@ public class SoqlQueryListener extends SoqlBaseListener {
 
     @Override
     public void exitQuerySentence(SoqlParser.QuerySentenceContext ctx) {
-        this.soql = ctx.getText();
-        buildSparqlQueryString();
+        this.queryModel = buildQueryModel();
     }
 
     @Override
@@ -227,23 +220,40 @@ public class SoqlQueryListener extends SoqlBaseListener {
     }
 
     @Override
-    public void enterConditionalTerm(SoqlParser.ConditionalTermContext ctx) {
-        conditionalTermStart = attributes.size();
+    public void exitWhereClause(SoqlParser.WhereClauseContext ctx) {
+        this.whereCondition = conditions.get(ctx.conditionalExpression());
+    }
+
+    @Override
+    public void exitConditionalExpression(SoqlParser.ConditionalExpressionContext ctx) {
+        final List<SoqlCondition> terms = ctx.conditionalTerm().stream().map(conditions::get).toList();
+        conditions.put(ctx, terms.size() == 1 ? terms.getFirst() : new SoqlCondition.Disjunction(terms));
     }
 
     @Override
     public void exitConditionalTerm(SoqlParser.ConditionalTermContext ctx) {
-        final ParserRuleContext parentCtx = ctx.getParent();
-        if (!parentCtx.getChild(0).equals(ctx) && conditionalTermStart < attributes.size()) {
-            objectOfNextOr.add(attributes.get(conditionalTermStart));
-        }
+        conditions.put(ctx, new SoqlCondition.Conjunction(ctx.conditionalFactor().stream().map(conditions::get).toList()));
+    }
+
+    @Override
+    public void enterConditionalFactor(SoqlParser.ConditionalFactorContext ctx) {
+        conditionAttributeStarts.push(attributes.size());
     }
 
     @Override
     public void exitConditionalFactor(SoqlParser.ConditionalFactorContext ctx) {
-        if (ctx.getChildCount() > 1) {
-            attrPointer.setNot(true);
+        final int start = conditionAttributeStarts.pop();
+        final List<SoqlAttribute> factorAttributes = List.copyOf(attributes.subList(start, attributes.size()));
+        conditionAttributes.addAll(factorAttributes);
+        final List<SoqlCondition> predicates = new ArrayList<>();
+        for (SoqlAttribute attribute : factorAttributes) {
+            SoqlCondition predicate = new SoqlCondition.Predicate(attribute);
+            if (attribute.isNot() || ctx.NOT() != null && attribute == attrPointer) {
+                predicate = new SoqlCondition.Negation(predicate);
+            }
+            predicates.add(predicate);
         }
+        conditions.put(ctx, new SoqlCondition.Conjunction(predicates));
     }
 
     @Override
@@ -614,9 +624,8 @@ public class SoqlQueryListener extends SoqlBaseListener {
         }
     }
 
-    public String getSparqlQuery() {
-        assert sparql != null;
-        return sparql;
+    SoqlQueryModel getQueryModel() {
+        return Objects.requireNonNull(queryModel, "Query has not been parsed yet.");
     }
 
     Set<String> getLikePatternParameterNames() {
@@ -633,185 +642,31 @@ public class SoqlQueryListener extends SoqlBaseListener {
         return attribute.getAsValue(rootVariable);
     }
 
-    //Methods to build new Query
-    private void buildSparqlQueryString() {
-        if (attributes.isEmpty()) {
-            return;
-        }
-
-        StringBuilder newQueryBuilder = new StringBuilder(typeDef.getKeyword());
+    private SoqlQueryModel buildQueryModel() {
+        String selectedVariable = rootVariable;
         if (typeDef == QueryType.SELECT) {
-            appendProjection(newQueryBuilder);
+            // the first attribute is either a projected parameter or a type attribute
+            this.projectionAttribute = attributes.getFirst();
+            selectedVariable = getSelectParameter(projectionAttribute);
         }
-        appendDatasetClauses(newQueryBuilder);
-        newQueryBuilder.append(" WHERE { ");
-        final String supremeAttributes = processSupremeAttributes().toString();
-        newQueryBuilder.append(supremeAttributes);
-        if (!objectOfNextOr.isEmpty()) {
-            newQueryBuilder.append("{ ");
-        }
-        newQueryBuilder.append(processAttributes(supremeAttributes));
-        if (!objectOfNextOr.isEmpty()) {
-            newQueryBuilder.append("} ");
-        }
-        newQueryBuilder.append('}');
-        if (!groupAttributes.isEmpty()) {
-            newQueryBuilder.append(' ').append(buildGrouping());
-        }
-        if (!orderAttributes.isEmpty()) {
-            newQueryBuilder.append(' ').append(buildOrdering());
-        }
-        sparql = newQueryBuilder.toString();
-        LOG.trace("Translated SOQL query '{}' to SPARQL '{}'.", soql, sparql);
-    }
-
-    private void appendProjection(StringBuilder sparqlBuilder) {
-        // the first attribute is either a projected parameter or a type attribute
-        this.projectionAttribute = attributes.getFirst();
-        final String selectParameter = getSelectParameter(projectionAttribute);
-        if (selectProjection.aggregateFunction() != null) {
-            if (selectProjection.distinct()) {
-                sparqlBuilder.append(' ').append(SoqlConstants.DISTINCT);
-            }
-            sparqlBuilder.append(getAggregatePart(selectParameter));
-        } else {
-            if (selectProjection.distinct()) {
-                sparqlBuilder.append(' ').append(SoqlConstants.DISTINCT);
-            }
-            sparqlBuilder.append(' ').append(selectParameter);
-        }
-    }
-
-    private void appendDatasetClauses(StringBuilder sparqlBuilder) {
-        for (String iri : defaultGraphs) {
-            sparqlBuilder.append(' ').append(SoqlConstants.FROM).append(' ').append(iri);
-        }
-        for (String iri : namedGraphs) {
-            sparqlBuilder.append(' ').append(SoqlConstants.FROM).append(' ').append(SoqlConstants.NAMED)
-                         .append(' ').append(iri);
-        }
-    }
-
-    private StringBuilder getAggregatePart(String selectParameter) {
-        final AggregateFunction fn = selectProjection.aggregateFunction();
-        final StringBuilder aggregatePart = new StringBuilder(" (").append(fn.soqlName()).append('(');
-        if (selectProjection.aggregateDistinct()) {
-            aggregatePart.append(SoqlConstants.DISTINCT).append(' ');
-        }
-        aggregatePart.append(selectParameter).append(") AS ").append(fn.resultVariable()).append(")");
-        return aggregatePart;
-    }
-
-    private StringBuilder processSupremeAttributes() {
-        StringBuilder attributesPart = new StringBuilder();
-        final Iterator<SoqlAttribute> it = attributes.iterator();
-        while (it.hasNext()) {
-            final SoqlAttribute current = it.next();
-            if (current.isInstanceOf() || current.isOrderBy() || current.isGroupBy()) {
-                processAttribute(current).forEach(attributesPart::append);
-                it.remove();
+        final List<SoqlAttribute> required = new ArrayList<>();
+        for (SoqlAttribute attribute : attributes) {
+            if (attribute.isInstanceOf() || attribute.isOrderBy() || attribute.isGroupBy()) {
+                required.add(attribute);
             }
         }
-        if (projectionAttribute != null && attributes.remove(projectionAttribute)) {
-            processAttribute(projectionAttribute).stream().filter(bgp -> attributesPart.indexOf(bgp) == -1)
-                                                 .forEach(attributesPart::append);
+        if (projectionAttribute != null && !required.contains(projectionAttribute)) {
+            required.add(projectionAttribute);
         }
-        return attributesPart;
-    }
-
-    private StringBuilder processAttributes(String supremeAttributes) {
-        StringBuilder attributesPart = new StringBuilder();
-        final Set<String> branchPatterns = new HashSet<>();
-        ArrayList<SoqlAttribute> toFilter = new ArrayList<>();
-        ArrayList<SoqlAttribute> toInvFilter = new ArrayList<>();
-        for (SoqlAttribute myAttr : attributes) {
-            if (objectOfNextOr.contains(myAttr)) {
-                StringBuilder orPart = new StringBuilder();
-                orPart.append(processAllFilters(toFilter, toInvFilter, branchPatterns, supremeAttributes));
-                toFilter.clear();
-                toInvFilter.clear();
-                branchPatterns.clear();
-                orPart.append("} UNION { ");
-                attributesPart.append(orPart);
-            }
-            if (myAttr.isNot()) {
-                toInvFilter.add(myAttr);
-            } else {
-                if (myAttr.requiresFilter()) {
-                    toFilter.add(myAttr);
-                }
-                final List<String> bgps = processAttribute(myAttr);
-                bgps.stream().filter(bgp -> !supremeAttributes.contains(bgp) && branchPatterns.add(bgp))
-                    .forEach(attributesPart::append);
+        final List<SoqlCondition> body = new ArrayList<>();
+        for (SoqlAttribute attribute : attributes) {
+            if (!required.contains(attribute) && !conditionAttributes.contains(attribute)) {
+                body.add(new SoqlCondition.Predicate(attribute));
             }
         }
-        attributesPart.append(processAllFilters(toFilter, toInvFilter, branchPatterns, supremeAttributes));
-        return attributesPart;
-    }
-
-    private StringBuilder processAllFilters(ArrayList<SoqlAttribute> toFilter, ArrayList<SoqlAttribute> toInvFilter,
-                                            Set<String> branchPatterns, String supremeAttributes) {
-        StringBuilder part = new StringBuilder();
-        if (!objectOfNextOr.isEmpty() && branchPatterns.isEmpty() && !toInvFilter.isEmpty()) {
-            part.append(supremeAttributes);
-        }
-        if (!toFilter.isEmpty()) {
-            part.append(processFilter(toFilter));
-        }
-        if (!toInvFilter.isEmpty()) {
-            part.append(processInvFilter(toInvFilter));
-        }
-        return part;
-    }
-
-    private String processFilter(ArrayList<SoqlAttribute> toFilter) {
-        StringBuilder buildFilter = new StringBuilder();
-        if (toFilter.isEmpty()) {
-            return "";
-        }
-        buildFilter.append("FILTER (");
-        buildFilter.append(toFilter.stream().map(att -> att.getFilterExpressions(rootVariable))
-                                   .flatMap(Collection::stream)
-                                   .collect(Collectors.joining(" && ")));
-        buildFilter.append(") ");
-        return buildFilter.toString();
-    }
-
-    private String processInvFilter(ArrayList<SoqlAttribute> toInvFilter) {
-        StringBuilder buildInvFilter = new StringBuilder();
-        ArrayList<SoqlAttribute> toFilter = new ArrayList<>();
-        if (toInvFilter.isEmpty()) {
-            return "";
-        }
-        buildInvFilter.append("FILTER NOT EXISTS { ");
-        for (SoqlAttribute attr : toInvFilter) {
-            processAttribute(attr).forEach(buildInvFilter::append);
-            if (attr.requiresFilter()) {
-                toFilter.add(attr);
-            }
-        }
-        buildInvFilter.append(processFilter(toFilter)).append("} ");
-        return buildInvFilter.toString();
-    }
-
-    private List<String> processAttribute(SoqlAttribute attr) {
-        return attr.getBasicGraphPattern(rootVariable, rootIdentificationVariable, tpEnhancers);
-    }
-
-    private String buildOrdering() {
-        StringBuilder sb = new StringBuilder(SoqlConstants.ORDER_BY);
-        for (SoqlOrderParameter orderParam : orderAttributes) {
-            sb.append(' ').append(orderParam.getOrderByPart(rootVariable));
-        }
-        return sb.toString();
-    }
-
-    private String buildGrouping() {
-        StringBuilder sb = new StringBuilder(SoqlConstants.GROUP_BY);
-        for (SoqlGroupParameter groupParam : groupAttributes) {
-            sb.append(' ').append(groupParam.getGroupByPart(rootVariable));
-        }
-        return sb.toString();
+        body.add(whereCondition);
+        return new SoqlQueryModel(typeDef, selectProjection, selectedVariable, rootVariable, rootIdentificationVariable,
+                required, new SoqlCondition.Conjunction(body), defaultGraphs, namedGraphs, groupAttributes, orderAttributes);
     }
 
     private boolean inClauseWithOwnAttributeHandling() {

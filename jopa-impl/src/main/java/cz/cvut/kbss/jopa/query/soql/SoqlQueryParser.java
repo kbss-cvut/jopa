@@ -26,8 +26,12 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SoqlQueryParser implements QueryParser {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SoqlQueryParser.class);
 
     private final QueryParser sparqlParser;
     private final MetamodelImpl metamodel;
@@ -51,7 +55,9 @@ public class SoqlQueryParser implements QueryParser {
         final ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(listener, tree);
 
-        final QueryHolder result = sparqlParser.parseQuery(listener.getSparqlQuery());
+        final String sparql = new SoqlSparqlTranslator(listener.getQueryModel()).translate();
+        LOG.trace("Translated SOQL query '{}' to SPARQL '{}'.", query, sparql);
+        final QueryHolder result = sparqlParser.parseQuery(sparql);
         for (String patternVar: listener.getLikePatternParameterNames()) {
             if (result.hasParameter(patternVar)) {
                 ((QueryParameter<?>) result.getParameter(patternVar)).markAsLikePattern();
