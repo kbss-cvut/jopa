@@ -86,4 +86,16 @@ public class EpistemicAxiomRemoverTest {
                 new SubjectPredicateContext(SUBJECT_RESOURCE, createProperty(ap.getIdentifier().toString()), Set.of(assertionContext.toString()))
         ));
     }
+
+    @Test
+    void removeUnspecifiedPropertyRemovesAllPropertyValuesInContext() {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(SUBJECT);
+        final Assertion ass = Assertion.createPropertyAssertion(Generator.generateUri(), false);
+        descriptor.addAssertion(ass);
+
+        remover.remove(descriptor);
+        verify(connectorMock).removePropertyValues(Set.of(
+                new SubjectPredicateContext(SUBJECT_RESOURCE, null, Collections.emptySet())
+        ));
+    }
 }

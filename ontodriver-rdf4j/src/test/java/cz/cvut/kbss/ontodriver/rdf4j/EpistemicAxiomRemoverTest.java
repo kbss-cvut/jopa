@@ -44,6 +44,7 @@ public class EpistemicAxiomRemoverTest {
             .create("https://onto.fel.cvut.cz/ontologies/jopa/entityX");
 
     private static final String PROPERTY = "https://onto.fel.cvut.cz/ontologies/jopa/propertyOne";
+    private static final URI PROPERTY_URI = URI.create(PROPERTY);
 
     private AxiomDescriptor descriptor;
 
@@ -65,24 +66,34 @@ public class EpistemicAxiomRemoverTest {
     @Test
     public void removeWithAssertionContextSpecifiesContextForSubjectAndPredicateRemoval() throws Exception {
         final URI context = Generator.generateUri();
-        final Assertion ass = Assertion.createObjectPropertyAssertion(URI.create(PROPERTY), false);
+        final Assertion ass = Assertion.createObjectPropertyAssertion(PROPERTY_URI, false);
         descriptor.addAssertion(ass);
         descriptor.addAssertionContext(ass, context);
 
         axiomRemover.remove(descriptor);
 
         verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(vf.createIRI(SUBJECT.toString()),
-                                                                                      vf.createIRI(PROPERTY), Set.of(vf.createIRI(context.toString())))));
+                vf.createIRI(PROPERTY), Set.of(vf.createIRI(context.toString())))));
     }
 
     @Test
     public void removeWithoutAssertionContextUsesEmptyContextCollectionForSubjectAndPredicateRemoval() throws Exception {
-        final Assertion ass = Assertion.createObjectPropertyAssertion(URI.create(PROPERTY), false);
+        final Assertion ass = Assertion.createObjectPropertyAssertion(PROPERTY_URI, false);
         descriptor.addAssertion(ass);
 
         axiomRemover.remove(descriptor);
 
         verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(vf.createIRI(SUBJECT.toString()),
-                                                                                      vf.createIRI(PROPERTY), Collections.emptySet())));
+                vf.createIRI(PROPERTY), Collections.emptySet())));
+    }
+
+    @Test
+    void removeUnspecifiedPropertyRemovesAllPropertyValuesInContext() throws Exception {
+        final Assertion ass = Assertion.createPropertyAssertion(PROPERTY_URI, false);
+        descriptor.addAssertion(ass);
+
+        axiomRemover.remove(descriptor);
+        verify(connectorMock).removePropertyValues(Set.of(new SubjectPredicateContext(vf.createIRI(SUBJECT.toString()),
+                null, Collections.emptySet())));
     }
 }
