@@ -27,6 +27,7 @@ import cz.cvut.kbss.ontodriver.owlapi.change.SubjectAnnotationPropertyRemove;
 import cz.cvut.kbss.ontodriver.owlapi.change.SubjectClassAssertionRemove;
 import cz.cvut.kbss.ontodriver.owlapi.change.SubjectDataPropertyRemove;
 import cz.cvut.kbss.ontodriver.owlapi.change.SubjectObjectPropertyRemove;
+import cz.cvut.kbss.ontodriver.owlapi.change.SubjectPropertiesRemove;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.semanticweb.owlapi.model.IRI;
@@ -78,6 +79,10 @@ class EpistemicAxiomRemover {
                     break;
                 case ANNOTATION_PROPERTY:
                     changes.add(new SubjectAnnotationPropertyRemove(individual, dataFactory.getOWLAnnotationProperty(IRI.create(a.getIdentifier()))));
+                    break;
+                case PROPERTY:
+                    // Unspecified property - remove all property assertions of the subject
+                    changes.add(new SubjectPropertiesRemove(individual));
                     break;
                 default:
                     break;

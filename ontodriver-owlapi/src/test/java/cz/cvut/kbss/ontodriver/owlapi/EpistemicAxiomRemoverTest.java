@@ -25,6 +25,7 @@ import cz.cvut.kbss.ontodriver.owlapi.change.SubjectAnnotationPropertyRemove;
 import cz.cvut.kbss.ontodriver.owlapi.change.SubjectClassAssertionRemove;
 import cz.cvut.kbss.ontodriver.owlapi.change.SubjectDataPropertyRemove;
 import cz.cvut.kbss.ontodriver.owlapi.change.SubjectObjectPropertyRemove;
+import cz.cvut.kbss.ontodriver.owlapi.change.SubjectPropertiesRemove;
 import cz.cvut.kbss.ontodriver.owlapi.change.SubjectPropertyRemove;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
@@ -353,5 +354,33 @@ class EpistemicAxiomRemoverTest {
         axiomRemover.removeAxioms(SUBJECT, toRemove);
         verify(manager, never()).applyChange(any(OWLOntologyChange.class));
         verify(manager).applyChanges(Collections.emptyList());
+    }
+
+    @Test
+    void removeUnspecifiedPropertyRemovesAllPropertyValues() {
+        final Assertion ass = Assertion
+                .createPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#someProperty"), false);
+        descriptor.addAssertion(ass);
+        final OWLDataProperty odp = dataFactory
+                .getOWLDataProperty(IRI.create("http://krizik.felk.cvut.cz/jopa#dataProperty"));
+        final OWLObjectProperty oop = dataFactory
+                .getOWLObjectProperty(IRI.create("http://krizik.felk.cvut.cz/jopa#objectProperty"));
+        final OWLAnnotationProperty oap = dataFactory
+                .getOWLAnnotationProperty(IRI.create("http://krizik.felk.cvut.cz/jopa#annotationProperty"));
+        initDataPropertyAssertions(odp);
+        initObjectPropertyAssertions(oop);
+        initAnnotationAssertions(oap);
+
+        axiomRemover.remove(descriptor);
+
+        assertTrue(EntitySearcher.getDataPropertyValues(individual, odp, ontology).findFirst().isEmpty());
+        assertTrue(EntitySearcher.getObjectPropertyValues(individual, oop, ontology).findFirst().isEmpty());
+        assertTrue(EntitySearcher.getAnnotationAssertionAxioms(individual.getIRI(), ontology).findFirst().isEmpty());
+        assertTrue(ontology.classAssertionAxioms(individual).findFirst().isEmpty());
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(adapterMock).addTransactionalChanges(captor.capture());
+        final List<?> changes = captor.getValue();
+        assertEquals(1, changes.size());
+        assertInstanceOf(SubjectPropertiesRemove.class, changes.getFirst());
     }
 }
